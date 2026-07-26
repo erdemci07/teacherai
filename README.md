@@ -37,3 +37,4 @@ This separation makes lessons reviewable by teachers, reusable for datasets, ver
 - [`docs/architecture/backend-fastapi-design.md`](docs/architecture/backend-fastapi-design.md) defines the Python FastAPI backend architecture, feature modules, and dependency injection design.
 - [`docs/architecture/frontend-nextjs-design.md`](docs/architecture/frontend-nextjs-design.md) defines the Next.js TypeScript App Router frontend architecture and portal design.
 - [`docs/architecture/ai-engine-architecture.md`](docs/architecture/ai-engine-architecture.md) defines the independent AI engines, responsibilities, data flow, and long-term improvement architecture.
+- [`docs/architecture/whiteboard-rendering-engine.md`](docs/architecture/whiteboard-rendering-engine.md) defines the extensible LessonPlan-to-visual-artifact rendering architecture.

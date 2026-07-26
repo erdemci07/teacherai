@@ -9,3 +9,4 @@ TeacherAI architecture is documented as a complete system blueprint instead of a
 - [`architecture/backend-fastapi-design.md`](architecture/backend-fastapi-design.md) defines the Python FastAPI backend architecture, feature-module contract, dependency injection approach, and test strategy.
 - [`architecture/frontend-nextjs-design.md`](architecture/frontend-nextjs-design.md) defines the Next.js TypeScript App Router architecture for Student, Teacher, Admin, lesson, whiteboard, media, chat, and analytics experiences.
 - [`architecture/ai-engine-architecture.md`](architecture/ai-engine-architecture.md) defines the independent AI engines, their responsibilities, data flows, events, scaling, and governance rules.
+- [`architecture/whiteboard-rendering-engine.md`](architecture/whiteboard-rendering-engine.md) defines the extensible rendering engine that converts LessonPlan JSON into SVG, PNG, JPEG/JPG, PDF, animated whiteboard, and future video artifacts.
