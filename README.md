@@ -34,3 +34,4 @@ This separation makes lessons reviewable by teachers, reusable for datasets, ver
 - [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md) defines the future repository and module layout.
 - [`docs/architecture/data-flow.md`](docs/architecture/data-flow.md) defines the end-to-end learning, review, dataset, and model-improvement flows.
 - [`docs/architecture/api-and-database.md`](docs/architecture/api-and-database.md) defines API boundaries and database ownership.
+- [`docs/architecture/backend-fastapi-design.md`](docs/architecture/backend-fastapi-design.md) defines the Python FastAPI backend architecture, feature modules, and dependency injection design.

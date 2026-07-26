@@ -6,3 +6,4 @@ TeacherAI architecture is documented as a complete system blueprint instead of a
 - [`architecture/folder-structure.md`](architecture/folder-structure.md) defines the future repository layout and why each top-level area exists.
 - [`architecture/data-flow.md`](architecture/data-flow.md) explains student learning, interaction, teacher review, dataset, training, analytics, and recovery flows.
 - [`architecture/api-and-database.md`](architecture/api-and-database.md) defines API boundaries, database ownership, storage choices, and event contracts.
+- [`architecture/backend-fastapi-design.md`](architecture/backend-fastapi-design.md) defines the Python FastAPI backend architecture, feature-module contract, dependency injection approach, and test strategy.
