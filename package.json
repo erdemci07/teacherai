@@ -2,14 +2,23 @@
   "name": "teacherai",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc --noEmit",
-    "test": "node --test --import tsx tests/*.test.ts"
+    "dev": "concurrently -n web,api -c cyan,magenta \"npm run dev --workspace @teacherai/web\" \"./scripts/dev-api.sh\"",
+    "build": "npm run build --workspace @teacherai/web",
+    "lint": "npm run lint --workspace @teacherai/web",
+    "dev:api": "./scripts/dev-api.sh",
+    "dev:web": "npm run dev --workspace @teacherai/web",
+    "build:web": "npm run build --workspace @teacherai/web"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "tsx": "latest",
-    "typescript": "latest"
+    "concurrently": "^9.2.1"
+  },
+  "overrides": {
+    "postcss": "latest",
+    "sharp": "latest"
   }
 }
