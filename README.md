@@ -1,25 +1,36 @@
 # TeacherAI
 
-TeacherAI is a long-term AI education platform designed to teach mathematics like an experienced teacher, not merely solve questions.
+TeacherAI is a long-term AI education platform whose purpose is to teach mathematics like an experienced teacher, not merely answer math questions.
 
-The platform follows Clean Architecture so core learning workflows remain independent from AI providers, renderers, databases, API frameworks, and delivery channels.
+This repository currently contains the production architecture blueprint only. It intentionally avoids application code until the system design, module boundaries, contracts, data ownership, and scaling rules are clear.
 
-## Core Flow
-
-1. A student uploads a math question.
-2. TeacherAI analyzes the question to identify topic, subtopic, difficulty, and learning objectives.
-3. TeacherAI creates a structured lesson plan.
-4. A renderer converts the lesson plan into whiteboard instructions.
-5. A voice engine explains each step.
-6. Students interact with the AI teacher.
-7. Teachers review, edit, and improve explanations and datasets.
-
-## Architectural Rule
-
-AI providers must never directly draw on the whiteboard. AI produces structured lesson plans, and renderers convert those plans into visual experiences.
+## Vision
 
 ```text
-AI Provider -> Lesson Planner -> Structured Lesson Plan -> Renderer -> Whiteboard
+Student uploads a math question
+  -> AI understands the question
+  -> AI determines topic, subtopic, difficulty, and learning objectives
+  -> AI creates a structured lesson plan
+  -> Renderer converts the lesson plan into a digital whiteboard
+  -> Voice explains every step
+  -> Student interacts with AI
+  -> Teacher reviews explanations
+  -> Teacher feedback improves TeacherAI
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) for the platform architecture and module boundaries.
+## Non-Negotiable Architecture Rule
+
+AI must never directly draw on the whiteboard.
+
+```text
+AI Provider -> Structured Lesson Plan -> Renderer -> Whiteboard Output
+```
+
+This separation makes lessons reviewable by teachers, reusable for datasets, verifiable by math engines, renderable across many clients, and safe to improve over time.
+
+## Architecture Documents
+
+- [`docs/architecture/system-architecture.md`](docs/architecture/system-architecture.md) defines the complete scalable system architecture.
+- [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md) defines the future repository and module layout.
+- [`docs/architecture/data-flow.md`](docs/architecture/data-flow.md) defines the end-to-end learning, review, dataset, and model-improvement flows.
+- [`docs/architecture/api-and-database.md`](docs/architecture/api-and-database.md) defines API boundaries and database ownership.
