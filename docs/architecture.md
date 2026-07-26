@@ -7,3 +7,4 @@ TeacherAI architecture is documented as a complete system blueprint instead of a
 - [`architecture/data-flow.md`](architecture/data-flow.md) explains student learning, interaction, teacher review, dataset, training, analytics, and recovery flows.
 - [`architecture/api-and-database.md`](architecture/api-and-database.md) defines API boundaries, database ownership, storage choices, and event contracts.
 - [`architecture/backend-fastapi-design.md`](architecture/backend-fastapi-design.md) defines the Python FastAPI backend architecture, feature-module contract, dependency injection approach, and test strategy.
+- [`architecture/frontend-nextjs-design.md`](architecture/frontend-nextjs-design.md) defines the Next.js TypeScript App Router architecture for Student, Teacher, Admin, lesson, whiteboard, media, chat, and analytics experiences.
