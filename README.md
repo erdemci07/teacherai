@@ -39,3 +39,4 @@ This separation makes lessons reviewable by teachers, reusable for datasets, ver
 - [`docs/architecture/ai-engine-architecture.md`](docs/architecture/ai-engine-architecture.md) defines the independent AI engines, responsibilities, data flow, and long-term improvement architecture.
 - [`docs/architecture/whiteboard-rendering-engine.md`](docs/architecture/whiteboard-rendering-engine.md) defines the extensible LessonPlan-to-visual-artifact rendering architecture.
 - [`docs/architecture/dataset-format.md`](docs/architecture/dataset-format.md) defines the complete AI-training-ready dataset format and JSON examples.
+- [`docs/architecture/lessonplan-json-standard.md`](docs/architecture/lessonplan-json-standard.md) defines the core LessonPlan JSON language used by AI, verification, rendering, voice, video, review, and datasets.
