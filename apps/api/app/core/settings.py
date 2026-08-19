@@ -1,7 +1,9 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, Field
+from pathlib import Path
+
+from pydantic import AliasChoices, AnyHttpUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +21,19 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     log_level: str = "INFO"
     cors_allowed_origins: list[AnyHttpUrl | str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    debug: bool = False
+    max_upload_size_bytes: int = 10 * 1024 * 1024
+    upload_temp_directory: Path = Path("tmp/uploads")
+    vision_provider: str = "openai"
+    openai_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("OPENAI_API_KEY", "TEACHERAI_OPENAI_API_KEY"),
+    )
+    openai_vision_model: str = Field(
+        default="gpt-4.1-mini",
+        validation_alias=AliasChoices("OPENAI_VISION_MODEL", "TEACHERAI_OPENAI_VISION_MODEL"),
+    )
+    vision_provider_timeout_seconds: float = 45.0
 
 
 @lru_cache

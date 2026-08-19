@@ -10,4 +10,5 @@ out/
 __pycache__/
 .pytest_cache/
 *.pyc
+tmp/
 !.env.example
