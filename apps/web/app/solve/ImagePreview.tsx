@@ -20,7 +20,7 @@ export function ImagePreview({ file, previewUrl, disabled, onRemove, onReplace }
         <div><strong>{file.name}</strong><span>{formatBytes(file.size)}</span></div>
         <div className="previewActions">
           <button type="button" className="textButton" onClick={onReplace} disabled={disabled}>Değiştir</button>
-          <button type="button" className="textButton dangerText" onClick={onRemove} disabled={disabled}>Kaldır</button>
+          <button type="button" className="textButton dangerText" onClick={onRemove} disabled={disabled}>Sil</button>
         </div>
       </div>
     </div>

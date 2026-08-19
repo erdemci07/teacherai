@@ -1,18 +1,1 @@
-import Link from 'next/link';
-
-export const metadata = { title: 'Privacy | TeacherAI' };
-
-export default function Page() {
-  return (
-    <div className="pageShell narrow">
-      <div className="panel">
-        <p className="eyebrow">Privacy</p>
-        <h1>Privacy and trust</h1>
-        <p>Privacy, consent, and data controls will protect students, teachers, and schools.</p>
-        <div className="placeholderActions">
-          <Link className="primaryButton" href="/">Back to home</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+import Link from 'next/link';export const metadata={title:'Gizlilik | TeacherAI'};export default function Page(){return <div className="pageShell narrow"><div className="panel"><p className="eyebrow">Gizlilik</p><h1>Verilerin senin kontrolünde.</h1><p>Soru görselleri çözüm sırasında geçici olarak işlenir. Hesabınla kaydedilen öğrenme bilgilerini panelinden görebilir ve öğrenme hafızanı sıfırlayabilirsin.</p><div className="placeholderActions"><Link className="primaryButton" href="/dashboard">Panelime git</Link></div></div></div>}

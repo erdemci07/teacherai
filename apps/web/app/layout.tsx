@@ -6,13 +6,13 @@ import { AuthProvider } from './auth/AuthProvider';
 import { Navigation } from './components/Navigation';
 
 export const metadata: Metadata = {
-  title: 'TeacherAI | The AI mathematics teacher',
-  description: 'TeacherAI creates structured, teacher-quality lessons from student questions.',
+  title: 'TeacherAI | Matematiği mantığıyla öğren',
+  description: 'Matematik sorunu yükle; TeacherAI matematiksel olarak kontrol edip öğretmen gibi adım adım anlatsın.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="tr">
       <body>
         <AuthProvider>
         <Navigation />

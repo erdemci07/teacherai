@@ -1,103 +1,45 @@
 import Link from 'next/link';
 
 const steps = [
-  'Upload a math question',
-  'TeacherAI understands the topic and objective',
-  'A structured lesson plan is created',
-  'Renderer and voice engines prepare the learning experience',
+  'Sorunu yükle',
+  'Soruyu anlar',
+  'Matematiği kontrol eder',
+  'Öğretmen gibi anlatır',
+  'Anlamadıysan farklı açıklar',
 ];
 
-const features = [
-  { title: 'Teacher-quality explanations', description: 'Lessons are designed around objectives, misconceptions, and checks for understanding.' },
-  { title: 'Structured LessonPlan language', description: 'AI produces reviewable JSON, while renderers and voice engines remain downstream.' },
-  { title: 'Built for review', description: 'Teachers will be able to approve, correct, and improve TeacherAI outputs over time.' },
-  { title: 'Scalable foundations', description: 'The platform is organized for millions of students, thousands of teachers, and replaceable AI providers.' },
+const benefits = [
+  { icon: '✎', title: 'Öğretmen Gibi Anlatır', description: 'Soruyu sadece çözmez; kullanılan kuralı, yöntemi ve kritik noktaları açıklar.' },
+  { icon: '✓', title: 'MathAI ile Kontrol Eder', description: 'Desteklenen matematiksel işlemleri bağımsız olarak doğrular.' },
+  { icon: '◌', title: 'Seni Zamanla Tanır', description: 'Çözümlerinden ve çalışma davranışlarından yararlanarak anlatımı sana göre uyarlayabilir.' },
+  { icon: '↗', title: 'Eksiklerini Fark Eder', description: 'Hata örüntülerini ve zorlandığın konuları takip ederek neye çalışman gerektiğini anlamana yardımcı olur.' },
 ];
-
-const roadmap = ['Vision intake', 'Lesson planning', 'Whiteboard rendering', 'Voice lessons', 'Teacher review', 'Personalized learning paths'];
 
 const faqs = [
-  { question: 'Does TeacherAI solve questions directly?', answer: 'The product goal is deeper: TeacherAI creates structured lessons that teach the reasoning behind each step.' },
-  { question: 'Does the AI draw on the whiteboard?', answer: 'No. AI creates LessonPlan JSON. Rendering engines convert that structure into visual learning artifacts.' },
-  { question: 'Is AI implemented in Sprint 1?', answer: 'No. Sprint 1 creates the runnable web and API foundation without AI business logic.' },
+  { question: 'TeacherAI yalnızca cevabı mı verir?', answer: 'Hayır. Hangi kuralın kullanıldığını, adımların neden yapıldığını ve dikkat etmen gereken noktaları anlatır.' },
+  { question: 'Hangi soruları yükleyebilirim?', answer: 'JPG, PNG veya WEBP biçimindeki okul, LGS, TYT, AYT ve diğer matematik sorularını yükleyebilirsin.' },
+  { question: 'Çözümüm kaydedilir mi?', answer: 'Hesabınla giriş yaparsan geçmiş çözümlerine dönebilir ve TeacherAI anlatımını çalışma davranışlarına göre uyarlayabilir.' },
 ];
 
 export default function Home() {
-  return (
-    <>
-      <section className="hero">
-        <div className="heroContent">
-          <p className="eyebrow">AI education platform</p>
-          <h1>Teach every student like an experienced mathematics teacher.</h1>
-          <p className="heroText">TeacherAI turns student questions into structured, reviewable lessons designed for whiteboards, voice, teacher feedback, and long-term learning.</p>
-          <div className="heroActions">
-            <Link className="primaryButton" href="/solve">Upload a question</Link>
-            <Link className="secondaryButton" href="/teacher">Explore teacher tools</Link>
-          </div>
-        </div>
-        <div className="uploadPreview" aria-label="Upload area preview">
-          <div className="uploadIcon">↑</div>
-          <h2>Upload Area Placeholder</h2>
-          <p>Images, screenshots, and typed questions will start the TeacherAI lesson flow.</p>
-          <div className="uploadLine" />
-          <span>LessonPlan JSON → Renderer → Whiteboard</span>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="sectionHeader">
-          <p className="eyebrow">How it works</p>
-          <h2>From question to teachable lesson.</h2>
-        </div>
-        <div className="stepsGrid">
-          {steps.map((step, index) => (
-            <article className="stepCard" key={step}>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <h3>{step}</h3>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section altSection">
-        <div className="sectionHeader">
-          <p className="eyebrow">Features</p>
-          <h2>Production foundations, not a demo.</h2>
-        </div>
-        <div className="featureGrid">
-          {features.map((feature) => (
-            <article className="featureCard" key={feature.title}>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section roadmapSection">
-        <div className="sectionHeader">
-          <p className="eyebrow">Roadmap</p>
-          <h2>Designed for the full AI teacher journey.</h2>
-        </div>
-        <div className="roadmap">
-          {roadmap.map((item) => <span key={item}>{item}</span>)}
-        </div>
-      </section>
-
-      <section className="section faqSection">
-        <div className="sectionHeader">
-          <p className="eyebrow">FAQ</p>
-          <h2>Clear boundaries from day one.</h2>
-        </div>
-        <div className="faqList">
-          {faqs.map((faq) => (
-            <article className="faqItem" key={faq.question}>
-              <h3>{faq.question}</h3>
-              <p>{faq.answer}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </>
-  );
+  return <>
+    <section className="hero betaHero">
+      <div className="heroContent">
+        <p className="eyebrow">Matematiği gerçekten öğren</p>
+        <h1>Matematik sorunu yükle. <span>Cevabı değil, mantığını öğren.</span></h1>
+        <p className="heroText">TeacherAI sorunu analiz eder, matematiksel olarak kontrol eder ve gerçek bir öğretmen gibi adım adım anlatır.</p>
+        <div className="heroActions"><Link className="primaryButton" href="/solve">Sorunu Çöz</Link><a className="secondaryButton" href="#nasil-calisir">Nasıl Çalışır?</a></div>
+        <p className="heroTrust">Fotoğrafını çek veya galeriden seç. İlk sorunu hemen deneyebilirsin.</p>
+      </div>
+      <div className="teacherPreview" aria-label="TeacherAI örnek anlatım görünümü">
+        <span className="previewBadge">TeacherAI</span><h2>Adım adım, nedenleriyle.</h2>
+        <div className="previewNote">Ne arıyoruz?<strong>x'i yalnız bırakmak</strong></div>
+        <div className="previewEquation">3x + 7 = 19</div><div className="previewArrow">↓ iki taraftan 7 çıkar</div><div className="previewEquation result">x = 4 <b>✓</b></div>
+      </div>
+    </section>
+    <section className="section" id="nasil-calisir"><div className="sectionHeader"><p className="eyebrow">TeacherAI nasıl çalışır?</p><h2>Sorudan anlamaya, beş net adım.</h2></div><div className="stepsGrid betaSteps">{steps.map((step,index)=><article className="stepCard" key={step}><span>{index+1}</span><h3>{step}</h3></article>)}</div></section>
+    <section className="section altSection"><div className="sectionHeader"><p className="eyebrow">Neden TeacherAI?</p><h2>Çözümü görmek yetmez. Mantığını kur.</h2></div><div className="featureGrid">{benefits.map(x=><article className="featureCard" key={x.title}><span className="benefitIcon" aria-hidden="true">{x.icon}</span><h3>{x.title}</h3><p>{x.description}</p></article>)}</div></section>
+    <section className="section faqSection"><div className="sectionHeader"><p className="eyebrow">Merak ettiklerin</p><h2>Kısaca TeacherAI.</h2></div><div className="faqList">{faqs.map(x=><article className="faqItem" key={x.question}><h3>{x.question}</h3><p>{x.answer}</p></article>)}</div></section>
+    <section className="section homeCta"><h2>Bir soruyla başlayalım.</h2><p>Fotoğrafını yükle; TeacherAI mantığını adım adım anlatsın.</p><Link className="primaryButton" href="/solve">Sorunu Çöz</Link></section>
+  </>;
 }

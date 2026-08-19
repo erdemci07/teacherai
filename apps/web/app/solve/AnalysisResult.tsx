@@ -31,7 +31,6 @@ export function AnalysisResult({ result }: { result: VisionAnalysis }) {
         <p>{result.visual_elements.description ?? (visualLabels.length ? visualLabels.join(', ') : 'Ek bir görsel öğe algılanmadı.')}</p>
       </div>
       {result.ocr_uncertainties.length > 0 && <div className="uncertainty"><strong>Kontrol edilecek alanlar</strong><ul>{result.ocr_uncertainties.map((item) => <li key={item}>{item}</li>)}</ul></div>}
-      <button type="button" className="primaryButton resultCta" disabled>Öğretmen Gibi Anlat · Sprint 3</button>
       {result.debug && <details className="technicalDetails"><summary>Teknik Detaylar</summary><pre>{JSON.stringify(result.debug, null, 2)}</pre></details>}
     </section>
   );

@@ -1,18 +1,1 @@
-import Link from 'next/link';
-
-export const metadata = { title: 'About | TeacherAI' };
-
-export default function Page() {
-  return (
-    <div className="pageShell narrow">
-      <div className="panel">
-        <p className="eyebrow">About</p>
-        <h1>About TeacherAI</h1>
-        <p>TeacherAI is being built as a long-term AI education platform for teacher-quality instruction.</p>
-        <div className="placeholderActions">
-          <Link className="primaryButton" href="/">Back to home</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+import Link from 'next/link';export const metadata={title:'Hakkında | TeacherAI'};export default function Page(){return <div className="pageShell narrow"><div className="panel"><p className="eyebrow">Hakkımızda</p><h1>Matematiği cevap ezberlemeden öğren.</h1><p>TeacherAI, matematik sorularını gerçek bir öğretmenin yaklaşımıyla açıklamak için geliştiriliyor. Amacımız yalnızca doğru sonuca ulaşmak değil; kullanılan yöntemi, nedeni ve kritik noktaları anlaşılır hâle getirmek.</p><div className="placeholderActions"><Link className="primaryButton" href="/solve">Bir soru çöz</Link></div></div></div>}
