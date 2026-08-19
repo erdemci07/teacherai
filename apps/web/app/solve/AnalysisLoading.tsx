@@ -1,15 +1,1 @@
-interface AnalysisLoadingProps {
-  uploading: boolean;
-}
-
-export function AnalysisLoading({ uploading }: AnalysisLoadingProps) {
-  return (
-    <div className="analysisLoading" role="status" aria-live="polite">
-      <span className="loadingSpinner" aria-hidden="true" />
-      <div>
-        <strong>{uploading ? 'Görsel güvenle yükleniyor...' : 'Soruyu inceliyorum...'}</strong>
-        <p>{uploading ? 'Dosyanızı analiz için hazırlıyorum.' : 'Matematiksel ifadeler, şekiller ve soru türü belirleniyor.'}</p>
-      </div>
-    </div>
-  );
-}
+export function AnalysisLoading({uploading,stage}:{uploading:boolean;stage?:string}){const messages:Record<string,[string,string]>={uploading:['Soruyu gönderiyorum...','Görsel güvenli biçimde hazırlanıyor.'],analyzing:['Soruyu okuyorum...','Matematiksel ifadeler ve görseller inceleniyor.'],planning:['Öğretmen anlatımını hazırlıyorum...','Kural, strateji ve çözüm adımları düzenleniyor.'],verifying:['Matematiği kontrol ediyorum...','Sonuçlar bağımsız olarak doğrulanıyor.'],rendering:['Teacher Board hazırlanıyor...','Çözüm tahtaya yerleştiriliyor.']};const [title,text]=messages[uploading?'uploading':stage??'analyzing']??messages.analyzing;return <div className="analysisLoading" role="status"><span className="loadingSpinner"/><div><strong>{title}</strong><p>{text}</p></div></div>}

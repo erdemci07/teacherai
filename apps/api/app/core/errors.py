@@ -8,11 +8,17 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from apps.api.app.schemas.responses import ErrorResponse
 from apps.api.app.features.vision.exceptions import VisionError
+from apps.api.app.features.lessons.exceptions import LessonError
 
 logger = logging.getLogger(__name__)
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(LessonError)
+    async def lesson_exception_handler(request: Request, exc: LessonError) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(status_code=exc.status_code, content=ErrorResponse(error=exc.code, detail=exc.public_message, request_id=request_id).model_dump())
+
     @app.exception_handler(VisionError)
     async def vision_exception_handler(request: Request, exc: VisionError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", request.headers.get("x-request-id", str(uuid4())))

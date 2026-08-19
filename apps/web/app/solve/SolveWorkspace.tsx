@@ -1,99 +1,16 @@
 'use client';
-
-import { ClipboardEvent, useEffect, useRef, useState } from 'react';
-import { analyzeQuestionImage, VisionAnalysis, VisionApiError } from '../lib/vision-api';
-import { AnalysisLoading } from './AnalysisLoading';
-import { AnalysisResult } from './AnalysisResult';
-import { ErrorBanner } from './ErrorBanner';
-import { ImagePreview } from './ImagePreview';
-import { UploadCard } from './UploadCard';
-
-type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'success' | 'error';
-const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const ERROR_MESSAGES: Record<string, string> = {
-  image_required: 'Lütfen bir soru görseli seçin.',
-  unsupported_image_type: 'Bu dosya türü desteklenmiyor. JPG, PNG veya WEBP kullanın.',
-  image_too_large: 'Görsel 10 MB sınırını aşıyor. Daha küçük bir görsel seçin.',
-  invalid_image: 'Görsel okunamadı. Dosyanın bozuk olmadığını kontrol edin.',
-  provider_not_configured: 'Analiz servisi şu anda hazır değil. Lütfen daha sonra tekrar deneyin.',
-  provider_unavailable: 'Analiz servisine ulaşılamıyor. Birkaç dakika sonra tekrar deneyin.',
-  provider_timeout: 'Analiz beklenenden uzun sürdü. Lütfen tekrar deneyin.',
-  invalid_provider_response: 'Soru güvenilir biçimde okunamadı. Daha net bir fotoğrafla tekrar deneyin.',
-  request_timeout: 'İstek zaman aşımına uğradı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
-  network_error: 'TeacherAI sunucusuna ulaşılamıyor. İnternet bağlantınızı kontrol edin.',
-  unexpected_response: 'Beklenmeyen bir sorun oluştu. Lütfen tekrar deneyin.',
-};
-
-export function SolveWorkspace() {
-  const [state, setState] = useState<SolveState>('idle');
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [result, setResult] = useState<VisionAnalysis | null>(null);
-  const [error, setError] = useState('');
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const busy = state === 'uploading' || state === 'analyzing';
-
-  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
-
-  const selectFile = (selected: File) => {
-    if (!SUPPORTED_TYPES.includes(selected.type)) {
-      setError(ERROR_MESSAGES.unsupported_image_type); setState('error'); return;
-    }
-    if (selected.size > MAX_FILE_BYTES) {
-      setError(ERROR_MESSAGES.image_too_large); setState('error'); return;
-    }
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setFile(selected); setPreviewUrl(URL.createObjectURL(selected)); setResult(null); setError(''); setState('image_selected');
-  };
-
-  const reset = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setFile(null); setPreviewUrl(''); setResult(null); setError(''); setState('idle');
-  };
-
-  const analyze = async () => {
-    if (!file) { setError(ERROR_MESSAGES.image_required); setState('error'); return; }
-    setError(''); setResult(null); setState('uploading');
-    try {
-      const analysis = await analyzeQuestionImage(file, () => setState('analyzing'));
-      setResult(analysis); setState('success');
-    } catch (caught) {
-      const code = caught instanceof VisionApiError ? caught.code : 'unexpected_response';
-      setError(ERROR_MESSAGES[code] ?? ERROR_MESSAGES.unexpected_response); setState('error');
-    }
-  };
-
-  const pasted = (event: ClipboardEvent<HTMLElement>) => {
-    const image = Array.from(event.clipboardData.files).find((item) => item.type.startsWith('image/'));
-    if (image && !busy) { event.preventDefault(); selectFile(image); }
-  };
-
-  return (
-    <div className="solvePage" onPaste={pasted}>
-      <header className="solveIntro">
-        <p className="eyebrow">TeacherAI Vision</p>
-        <h1>Sorunu yükle,<br /><span>önce doğru anlayalım.</span></h1>
-        <p>Matematik sorununun fotoğrafını çek veya yükle. TeacherAI metni, formülleri ve görsel bağlamı birlikte inceler.</p>
-      </header>
-      <div className="solveGrid">
-        <section className="solveInput" aria-label="Soru görseli yükleme alanı">
-          {!file ? <UploadCard inputRef={inputRef} disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={selectFile} /> : <ImagePreview file={file} previewUrl={previewUrl} disabled={busy} onRemove={reset} onReplace={() => inputRef.current?.click()} />}
-          {file && <input ref={inputRef} className="visuallyHidden" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="Soru görselini değiştir" onChange={(event) => { const next = event.target.files?.[0]; if (next) selectFile(next); event.target.value = ''; }} />}
-          {error && <ErrorBanner message={error} />}
-          <div className="solveActions">
-            <button type="button" className="primaryButton analyzeButton" onClick={analyze} disabled={!file || busy}>Soruyu İncele</button>
-            <button type="button" className="secondaryButton" onClick={reset} disabled={!file || busy}>Temizle</button>
-          </div>
-          <p className="privacyNote">Görselin yalnızca analiz sırasında işlenir ve işlemden sonra geçici depolamadan silinir.</p>
-        </section>
-        <aside className="solveOutput" aria-label="Analiz sonucu">
-          {(state === 'idle' || state === 'image_selected' || state === 'error') && !result && <div className="resultEmpty"><span aria-hidden="true">✦</span><h2>Analiz burada görünecek</h2><p>Soru türü, konu, zorluk, formüller ve görsel öğeler yapılandırılmış şekilde sunulur.</p></div>}
-          {(state === 'uploading' || state === 'analyzing') && <AnalysisLoading uploading={state === 'uploading'} />}
-          {result && <AnalysisResult result={result} />}
-        </aside>
-      </div>
-    </div>
-  );
-}
+import {ClipboardEvent,useEffect,useRef,useState} from 'react';
+import {analyzeQuestionImage,VisionAnalysis,VisionApiError} from '../lib/vision-api';
+import {generateLesson,GeneratedLesson,LessonApiError} from '../lib/lesson-api';
+import {AnalysisLoading} from './AnalysisLoading';import {ErrorBanner} from './ErrorBanner';import {ImagePreview} from './ImagePreview';import {UploadCard} from './UploadCard';import {TeacherBoard} from './TeacherBoard';import {LessonText} from './LessonText';
+type State='idle'|'image_selected'|'uploading'|'analyzing'|'planning'|'verifying'|'rendering'|'success'|'error';
+const TYPES=['image/jpeg','image/png','image/webp'],MAX=10*1024*1024;
+const ERRORS:Record<string,string>={image_required:'Lütfen bir soru görseli seçin.',unsupported_image_type:'Yalnızca JPG, PNG veya WEBP kullanın.',image_too_large:'Görsel 10 MB sınırını aşıyor.',invalid_image:'Görsel okunamadı.',provider_not_configured:'AI servisi yapılandırılmamış.',provider_unavailable:'AI servisine şu anda ulaşılamıyor.',lesson_provider_not_configured:'Öğretmen anlatımı servisi yapılandırılmamış.',lesson_provider_unavailable:'Anlatım şu anda oluşturulamadı.',verification_contradiction:'Bu çözüm matematiksel kontrolden geçemedi. Yeniden inceleyelim.',lesson_timeout:'İşlem zaman aşımına uğradı.',network_error:'TeacherAI sunucusuna ulaşılamıyor.',lesson_error:'Çözüm oluşturulamadı.'};
+export function SolveWorkspace(){const[state,setState]=useState<State>('idle'),[file,setFile]=useState<File|null>(null),[preview,setPreview]=useState(''),[analysis,setAnalysis]=useState<VisionAnalysis|null>(null),[result,setResult]=useState<GeneratedLesson|null>(null),[error,setError]=useState(''),[dragging,setDragging]=useState(false),[showText,setShowText]=useState(false);const inputRef=useRef<HTMLInputElement>(null);const busy=['uploading','analyzing','planning','verifying','rendering'].includes(state);
+useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview)},[preview]);
+function select(selected:File){if(!TYPES.includes(selected.type)){setError(ERRORS.unsupported_image_type);setState('error');return}if(selected.size>MAX){setError(ERRORS.image_too_large);setState('error');return}if(preview)URL.revokeObjectURL(preview);setFile(selected);setPreview(URL.createObjectURL(selected));setAnalysis(null);setResult(null);setError('');setState('image_selected')}
+function reset(){if(preview)URL.revokeObjectURL(preview);setFile(null);setPreview('');setAnalysis(null);setResult(null);setError('');setState('idle')}
+async function createLesson(value:VisionAnalysis){setState('planning');try{const generated=await generateLesson(value);setState('rendering');setResult(generated);setState('success')}catch(e){const code=e instanceof LessonApiError?e.code:'lesson_error';setError(ERRORS[code]??ERRORS.lesson_error);setState('error')}}
+async function solve(){if(!file)return;setError('');setResult(null);setState('uploading');try{const value=await analyzeQuestionImage(file,()=>setState('analyzing'));setAnalysis(value);await createLesson(value)}catch(e){const code=e instanceof VisionApiError?e.code:'network_error';setError(ERRORS[code]??ERRORS.network_error);setState('error')}}
+function paste(e:ClipboardEvent<HTMLElement>){const image=Array.from(e.clipboardData.files).find(x=>x.type.startsWith('image/'));if(image&&!busy){e.preventDefault();select(image)}}
+return <div className="solvePage" onPaste={paste}><header className="solveIntro"><p className="eyebrow">TeacherAI • MathAI</p><h1>Sorunu yükle,<br/><span>tahtada birlikte çözelim.</span></h1><p>Soruyu okur, öğretmen anlatımını hazırlar ve desteklenen matematiği bağımsız olarak kontrol eder.</p></header><div className="solveGrid"><section className="solveInput">{!file?<UploadCard inputRef={inputRef} disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select}/>:<ImagePreview file={file} previewUrl={preview} disabled={busy} onRemove={reset} onReplace={()=>inputRef.current?.click()}/>} {file&&<input ref={inputRef} className="visuallyHidden" type="file" accept={TYPES.join(',')} capture="environment" aria-label="Görseli değiştir" onChange={e=>{const f=e.target.files?.[0];if(f)select(f);e.target.value=''}}/>}{error&&<ErrorBanner message={error}/>} {error&&analysis&&!result&&<button className="secondaryButton retryButton" onClick={()=>createLesson(analysis)}>Yeniden incele</button>}<div className="solveActions"><button className="primaryButton analyzeButton" onClick={solve} disabled={!file||busy}>Soruyu Çöz</button><button className="secondaryButton" onClick={reset} disabled={!file||busy}>Temizle</button></div><p className="privacyNote">Görsel işlemden sonra geçici depolamadan silinir.</p></section><aside className="solveOutput">{busy&&<AnalysisLoading uploading={state==='uploading'} stage={state}/>} {!busy&&!result&&!error&&<div className="resultEmpty"><span>✦</span><h2>Teacher Board burada açılacak</h2><p>Kurallar, adımlar, öğretmen işaretleri ve kontrol edilmiş sonuç tek tahtada.</p></div>}{result&&<><TeacherBoard result={result}/><button className="textToggle" onClick={()=>setShowText(!showText)} aria-expanded={showText}>{showText?'Metin anlatımını gizle':'Metin olarak göster'}</button>{showText&&<LessonText lesson={result.lesson}/>} {process.env.NEXT_PUBLIC_TEACHERAI_DEBUG==='true'&&<details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result,null,2)}</pre></details>}</>}</aside></div></div>}
