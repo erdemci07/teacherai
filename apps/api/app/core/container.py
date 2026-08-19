@@ -8,6 +8,9 @@ from apps.api.app.features.lessons.openai_provider import OpenAILessonProvider
 from apps.api.app.features.lessons.service import LessonService
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.features.board.planner import BoardPlanner
+from apps.api.app.features.interactions.openai_provider import OpenAIInteractionProvider
+from apps.api.app.features.interactions.service import InteractionService
+from apps.api.app.features.interactions.store import InMemoryPracticeStore
 from apps.api.app.services.health_service import HealthService
 from apps.api.app.services.version_service import VersionService
 
@@ -19,6 +22,7 @@ class Container:
     version_service: VersionService
     vision_service: VisionService
     lesson_service: LessonService
+    interaction_service: InteractionService
 
 
 def build_container(settings: Settings | None = None) -> Container:
@@ -32,6 +36,7 @@ def build_container(settings: Settings | None = None) -> Container:
         settings=resolved_settings,
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
+        interaction_service=InteractionService(OpenAIInteractionProvider(resolved_settings.openai_api_key, resolved_settings.openai_interaction_model, resolved_settings.interaction_provider_timeout_seconds), MathAIService(), InMemoryPracticeStore()),
         lesson_service=LessonService(OpenAILessonProvider(resolved_settings.openai_api_key, resolved_settings.openai_lesson_model, resolved_settings.lesson_provider_timeout_seconds), MathAIService(), BoardPlanner()),
         vision_service=VisionService(
             provider=vision_provider,

@@ -83,3 +83,27 @@ class MathAIService:
     def pythagorean_hypotenuse(self,a:float,b:float)->float:
         if a<=0 or b<=0: raise ValueError("lengths must be positive")
         return float(sympy.sqrt(a*a+b*b))
+    def check_answer(self, question: str, answer: str, variable_name: str | None = None) -> tuple[bool, str]:
+        """Deterministically compare a student's claimed solution set with an equation."""
+        original = equation(question)
+        variables = sorted(original.free_symbols, key=str)
+        if len(variables) != 1:
+            raise MathParseError("practice equation must contain one variable")
+        variable = variables[0]
+        normalized = answer.strip()
+        if "=" not in normalized:
+            normalized = f"{variable_name or variable}={normalized}"
+        claimed_equation = equation(normalized)
+        expected = set(solve(original, variable))
+        claimed = set(solve(claimed_equation, variable))
+        if claimed == expected:
+            return True, "unknown"
+        if len(claimed) < len(expected) and claimed.issubset(expected):
+            return False, "missing_case"
+        if len(claimed) == len(expected) == 1:
+            actual, given = next(iter(expected)), next(iter(claimed))
+            if simplify(actual + given) == 0:
+                return False, "sign_error"
+            if actual.is_number and given.is_number:
+                return False, "arithmetic_error"
+        return False, "unknown"

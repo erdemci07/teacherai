@@ -27,6 +27,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_VISION_MODEL: ${OPENAI_VISION_MODEL:-gpt-4.1-mini}
       OPENAI_LESSON_MODEL: ${OPENAI_LESSON_MODEL:-gpt-4.1-mini}
+      OPENAI_INTERACTION_MODEL: ${OPENAI_INTERACTION_MODEL:-gpt-4.1-mini}
     ports:
       - "8000:8000"
     volumes:
