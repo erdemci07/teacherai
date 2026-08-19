@@ -1,0 +1,2 @@
+import type {LessonPlan} from '../lib/lesson-api';import {MathExpression} from './MathExpression';
+export function LessonText({lesson}:{lesson:LessonPlan}){return <div className="lessonText"><h2>Metin anlatımı</h2><p>{lesson.content.question_understanding}</p><p><strong>Strateji:</strong> {lesson.content.strategy}</p>{lesson.content.steps.map(x=><section key={x.id}><h3>{x.title}</h3><p>{x.explanation}</p>{x.expressions.map((e,i)=><MathExpression latex={e.latex} key={i}/>)}</section>)}<h3>Cevap</h3><p>{lesson.content.final_answer}</p></div>}
