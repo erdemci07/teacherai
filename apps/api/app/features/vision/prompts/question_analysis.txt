@@ -1,0 +1,6 @@
+Analyze the supplied question image only. Preserve all mathematical and semantic visual context.
+Identify the source question; do not solve it, teach it, create a LessonPlan, or invent unreadable content.
+Use Turkish text where the image is Turkish. Record uncertain OCR fragments in ocr_uncertainties.
+For story problems, describe meaningful maps, objects, measurements, number lines, coordinate planes,
+graphs, tables, geometry, and real-life scenes in visual_elements.description.
+Return only the requested structured result.
