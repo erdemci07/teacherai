@@ -1,0 +1,16 @@
+{
+  "name": "teacherai-local-development",
+  "services": {
+    "web": {
+      "port": 3000,
+      "url": "http://localhost:3000"
+    },
+    "api": {
+      "port": 8000,
+      "url": "http://localhost:8000",
+      "healthEndpoint": "/api/v1/health",
+      "versionEndpoint": "/api/v1/version"
+    }
+  },
+  "dockerComposeFile": "docker-compose.yml"
+}
