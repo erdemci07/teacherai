@@ -12,7 +12,7 @@ from apps.api.tests.test_mathai import plan
 
 class Provider:
     def __init__(self,fail=False,bad_practice=False):self.actions=[];self.fail=fail;self.bad=bad_practice
-    async def adapt(self,action,lesson,hint_level):
+    async def adapt(self,action,lesson,hint_level,teaching_context=None):
         self.actions.append((action,hint_level))
         if self.fail:raise InteractionProviderError
         common=dict(title="Birlikte bakalım",text="Önce küçük adıma odaklanalım.",steps=["İşlemi iki tarafa da uygula."],expressions=[Expression(type="equation",latex="3x=12")])

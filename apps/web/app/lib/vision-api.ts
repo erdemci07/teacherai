@@ -1,3 +1,4 @@
+import {currentToken} from '../auth/AuthProvider';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'unknown';
 
 export interface VisualElements {
@@ -59,10 +60,12 @@ export function analyzeQuestionImage(
   onUploadComplete: () => void,
   timeoutMs = 60_000,
 ): Promise<VisionAnalysis> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('POST', `${API_BASE_URL}/vision/analyze`);
     request.timeout = timeoutMs;
+    const token = await currentToken();
+    if (token) request.setRequestHeader('Authorization', `Bearer ${token}`);
     request.responseType = 'json';
     request.upload.addEventListener('load', onUploadComplete);
     request.addEventListener('load', () => {

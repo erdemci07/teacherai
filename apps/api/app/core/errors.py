@@ -10,11 +10,22 @@ from apps.api.app.schemas.responses import ErrorResponse
 from apps.api.app.features.vision.exceptions import VisionError
 from apps.api.app.features.lessons.exceptions import LessonError
 from apps.api.app.features.interactions.exceptions import InteractionError
+from apps.api.app.features.auth.dependencies import AuthenticationRequired
+from apps.api.app.core.usage import UsageLimitExceeded
 
 logger = logging.getLogger(__name__)
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(UsageLimitExceeded)
+    async def usage_handler(request: Request, exc: UsageLimitExceeded) -> JSONResponse:
+        return JSONResponse(status_code=429, content=ErrorResponse(error="usage_limit_exceeded", detail="Günlük kullanım sınırına ulaşıldı.", request_id=getattr(request.state, "request_id", None)).model_dump())
+
+    @app.exception_handler(AuthenticationRequired)
+    async def authentication_handler(request: Request, exc: AuthenticationRequired) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(status_code=401, content=ErrorResponse(error="authentication_required", detail="Geçerli bir oturum gerekli.", request_id=request_id).model_dump())
+
     @app.exception_handler(InteractionError)
     async def interaction_exception_handler(request: Request, exc: InteractionError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))

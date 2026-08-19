@@ -1,18 +1,1 @@
-import Link from 'next/link';
-
-export const metadata = { title: 'Dashboard | TeacherAI' };
-
-export default function Page() {
-  return (
-    <div className="pageShell narrow">
-      <div className="panel">
-        <p className="eyebrow">Dashboard</p>
-        <h1>Student dashboard</h1>
-        <p>Learning progress, active lessons, and recommendations will be organized here.</p>
-        <div className="placeholderActions">
-          <Link className="primaryButton" href="/">Back to home</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+import{DashboardClient}from'./DashboardClient';export const metadata={title:'Panelim | TeacherAI'};export default function Page(){return <div className="pageShell"><p className="eyebrow">Öğrenci paneli</p><h1>Öğrenme özetin.</h1><DashboardClient/></div>}

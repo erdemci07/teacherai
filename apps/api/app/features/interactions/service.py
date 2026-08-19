@@ -9,7 +9,7 @@ from .store import InMemoryPracticeStore,PracticeRecord
 _EVENT={"understood":"understood_clicked","simplify":"simpler_explanation_requested","alternative":"alternative_method_requested","hint":"hint_requested","similar_example":"similar_example_requested","practice":"practice_started"}
 class InteractionService:
     def __init__(self,provider:InteractionProvider,mathai:MathAIService,store:InMemoryPracticeStore):self.provider=provider;self.mathai=mathai;self.store=store
-    async def interact(self,lesson_id:str,request:InteractionRequest)->InteractionResponse:
+    async def interact(self,lesson_id:str,request:InteractionRequest,teaching_context=None)->InteractionResponse:
         lesson=request.lesson
         if lesson.lesson_plan_id!=lesson_id:raise InvalidInteractionError
         interaction_id=f"interaction_{uuid4().hex}"
@@ -17,7 +17,7 @@ class InteractionService:
         if request.action=="understood":
             message=f"Güzel. Bu sorudaki ana fikir {lesson.content.strategy.lower()}. İstersen şimdi benzer bir soruyu sen deneyebilirsin."
             return InteractionResponse(interaction_id=interaction_id,action=request.action,message=message,event=event)
-        draft=await self.provider.adapt(request.action,lesson,request.hint_level)
+        draft=await self.provider.adapt(request.action,lesson,request.hint_level,teaching_context)
         if request.action == "hint" and lesson.content.final_answer.strip().lower() in draft.text.strip().lower():
             raise InvalidInteractionError
         if request.action=="practice":

@@ -1,30 +1,49 @@
-import Link from 'next/link';
-import { Logo } from './Logo';
+"use client";
 
-const navigationItems = [
-  { href: '/solve', label: 'Solve' },
-  { href: '/teacher', label: 'Teacher' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/about', label: 'About' },
+import React from "react";
+import Link from "next/link";
+import { useAuth } from "../auth/AuthProvider";
+import { Logo } from "./Logo";
+
+const items = [
+  { href: "/solve", label: "Soru Çöz" },
+  { href: "/history", label: "Geçmiş" },
+  { href: "/dashboard", label: "Panelim" },
+  { href: "/about", label: "Hakkımızda" },
 ] as const;
 
-export function Navigation() {
+export function Navigation(): JSX.Element {
+  const { user, loading, logout } = useAuth();
+
   return (
     <header className="siteHeader">
-      <nav className="navShell" aria-label="Primary navigation">
+      <nav className="navShell" aria-label="Ana menü">
         <Link href="/" className="logoLink">
           <Logo />
         </Link>
+
         <div className="navLinks">
-          {navigationItems.map((item) => (
-            <Link href={item.href} key={item.href}>
-              {item.label}
+          {items.map((x) => (
+            <Link href={x.href} key={x.href}>
+              {x.label}
             </Link>
           ))}
         </div>
+
         <div className="navActions">
-          <Link href="/login" className="ghostButton">Log in</Link>
-          <Link href="/solve" className="primaryButton">Upload question</Link>
+          {!loading && user ? (
+            <button className="ghostButton navLogout" onClick={logout}>
+              Çıkış yap
+            </button>
+          ) : (
+            <Link href="/login" className="ghostButton">
+              Giriş yap
+            </Link>
+          )}
+
+          <Link href="/solve" className="primaryButton">
+            Soru yükle
+          </Link>
         </div>
       </nav>
     </header>

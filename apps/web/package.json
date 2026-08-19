@@ -10,16 +10,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "firebase": "^12.17.1",
+    "katex": "^0.16.22",
     "next": "^16.3.1",
     "react": "latest",
-    "react-dom": "latest",
-    "katex": "^0.16.22"
+    "react-dom": "latest"
   },
   "devDependencies": {
+    "@types/katex": "^0.16.7",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "^5.9.3",
-    "@types/katex": "^0.16.7"
+    "typescript": "^5.9.3"
   }
 }

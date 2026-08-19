@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     lesson_provider_timeout_seconds: float = 60.0
     openai_interaction_model: str = Field(default="gpt-4.1-mini", validation_alias=AliasChoices("OPENAI_INTERACTION_MODEL", "TEACHERAI_OPENAI_INTERACTION_MODEL"))
     interaction_provider_timeout_seconds: float = 60.0
+    firebase_project_id: str | None = None
+    firebase_service_account_json: str | None = None
+    firebase_enabled: bool = False
+    authenticated_daily_ai_limit: int = 50
 
 
 @lru_cache

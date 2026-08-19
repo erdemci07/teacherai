@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import 'katex/dist/katex.min.css';
 import { Footer } from './components/Footer';
+import { AuthProvider } from './auth/AuthProvider';
 import { Navigation } from './components/Navigation';
 
 export const metadata: Metadata = {
@@ -13,9 +14,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
+        <AuthProvider>
         <Navigation />
         <main>{children}</main>
         <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

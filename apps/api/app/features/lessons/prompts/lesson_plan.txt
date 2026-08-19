@@ -4,3 +4,4 @@ Denklem ve sonuçları LaTeX uyumlu expressions alanlarına ayrıca yaz. Adımla
 Görsel varsa semantik referans ver. CSS, HTML, SVG, koordinat veya çizim komutu üretme.
 Nihai cevabı final_answer_expressions içinde doğrulanabilir denklem/küme olarak mutlaka ver.
 Kural, hata, kısa yol ve mini örneği yalnızca pedagojik olarak anlamlıysa ekle.
+Varsa teaching_context yalnızca kanıta dayalı öğretim derinliği, destek ihtiyacı ve tekrar eden hata vurgusu için kullan; geçmişi gereksiz yere öğrenciye söyleme.

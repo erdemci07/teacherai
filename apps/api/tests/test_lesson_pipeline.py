@@ -10,7 +10,7 @@ from apps.api.tests.test_mathai import plan
 class CorrectingProvider:
     model="mock"
     def __init__(self,remain_wrong=False): self.calls=[];self.remain_wrong=remain_wrong
-    async def generate_lesson_plan(self,analysis,correction_feedback=None):
+    async def generate_lesson_plan(self,analysis,correction_feedback=None,teaching_context=None):
         self.calls.append(correction_feedback)
         answer="x = 5" if correction_feedback is None or self.remain_wrong else "x = 4"
         content=LessonContent(question_understanding="x'i yalnız bırak",unknown="x",key_rule="Eşitliğin iki tarafına aynı işlem uygulanır.",strategy="terimleri düzenle",strategy_id="strategy_isolate",steps=[Step(id="step_1",type="transformation",title="Sabit terimi çıkar",explanation="İki taraftan 7 çıkar.",expressions=[Expression(type="equation",latex="3x = 12")]),Step(id="step_2",type="result",title="Katsayıya böl",explanation="İki tarafı 3'e böl.",expressions=[Expression(type="equation",latex=answer)])],common_mistake="Yalnızca bir taraftan 7 çıkarma.",mistake_type="equality_balance",final_answer=answer,final_answer_expressions=[Expression(type="equation",latex=answer)],takeaway="Eşitlik dengedir.")
