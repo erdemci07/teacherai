@@ -1,0 +1,37 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    command: npm run dev --workspace @teacherai/web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_TEACHERAI_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    environment:
+      TEACHERAI_ENVIRONMENT: development
+      TEACHERAI_CORS_ALLOWED_ORIGINS: '["http://localhost:3000"]'
+      TEACHERAI_MAX_UPLOAD_SIZE_BYTES: ${TEACHERAI_MAX_UPLOAD_SIZE_BYTES:-10485760}
+      TEACHERAI_UPLOAD_TEMP_DIRECTORY: /tmp/teacherai/uploads
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_VISION_MODEL: ${OPENAI_VISION_MODEL:-gpt-4.1-mini}
+      OPENAI_LESSON_MODEL: ${OPENAI_LESSON_MODEL:-gpt-4.1-mini}
+      OPENAI_INTERACTION_MODEL: ${OPENAI_INTERACTION_MODEL:-gpt-4.1-mini}
+      TEACHERAI_FIREBASE_ENABLED: ${TEACHERAI_FIREBASE_ENABLED:-false}
+      TEACHERAI_FIREBASE_PROJECT_ID: ${TEACHERAI_FIREBASE_PROJECT_ID:-}
+      TEACHERAI_FIREBASE_SERVICE_ACCOUNT_JSON: ${TEACHERAI_FIREBASE_SERVICE_ACCOUNT_JSON:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps:/app/apps

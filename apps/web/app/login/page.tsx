@@ -1,0 +1,2 @@
+import Link from'next/link';import{AuthForm}from'../auth/AuthForm';
+export const metadata={title:'Giriş | TeacherAI'};export default function Page(){return <div className="pageShell narrow"><div className="panel"><p className="eyebrow">Tekrar hoş geldin</p><h1>TeacherAI seni hatırlasın.</h1><AuthForm mode="login"/><p>Hesabın yok mu? <Link href="/register">Ücretsiz hesap oluştur</Link></p></div></div>}

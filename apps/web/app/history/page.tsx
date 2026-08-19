@@ -1,0 +1,1 @@
+import{HistoryClient}from'./HistoryClient';export const metadata={title:'Geçmiş | TeacherAI'};export default function Page(){return <div className="pageShell"><p className="eyebrow">Ders geçmişim</p><h1>Kaldığın yer burada.</h1><HistoryClient/></div>}

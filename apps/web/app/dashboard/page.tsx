@@ -1,0 +1,1 @@
+import{DashboardClient}from'./DashboardClient';export const metadata={title:'Panelim | TeacherAI'};export default function Page(){return <div className="pageShell"><p className="eyebrow">Öğrenci paneli</p><h1>Öğrenme özetin.</h1><DashboardClient/></div>}
