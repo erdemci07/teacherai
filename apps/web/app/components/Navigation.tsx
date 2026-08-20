@@ -1,0 +1,4 @@
+'use client';
+import Link from 'next/link';import {useAuth} from '../auth/AuthProvider';import {Logo} from './Logo';
+const items=[{href:'/solve',label:'Soru Çöz'},{href:'/history',label:'Geçmiş'},{href:'/dashboard',label:'Panelim'},{href:'/about',label:'Hakkında'}] as const;
+export function Navigation(){const{user,loading,logout}=useAuth();return <header className="siteHeader"><nav className="navShell" aria-label="Ana menü"><Link href="/" className="logoLink"><Logo/></Link><div className="navLinks">{items.map(x=><Link href={x.href} key={x.href}>{x.label}</Link>)}</div><div className="navActions"><span className="accountAction">{!loading&&user?<button className="ghostButton navLogout" onClick={logout}>Çıkış Yap</button>:<Link href="/login" className="ghostButton">Giriş Yap</Link>}</span><Link href="/solve" className="primaryButton navSolve">Soru Çöz</Link></div></nav></header>}
