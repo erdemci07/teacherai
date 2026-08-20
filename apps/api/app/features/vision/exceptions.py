@@ -34,6 +34,18 @@ class ProviderConfigurationError(VisionError):
     public_message = "Görsel analiz servisi henüz yapılandırılmamış."
 
 
+class ProviderAuthenticationError(VisionError):
+    code = "provider_not_configured"
+    status_code = 503
+    public_message = "Görsel analiz servisi henüz yapılandırılmamış."
+
+
+class ProviderRateLimitError(VisionError):
+    code = "provider_unavailable"
+    status_code = 503
+    public_message = "Görsel analiz servisi şu anda yoğun. Lütfen biraz sonra tekrar deneyin."
+
+
 class ProviderUnavailableError(VisionError):
     code = "provider_unavailable"
     status_code = 503

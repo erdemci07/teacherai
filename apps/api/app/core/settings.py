@@ -1,10 +1,12 @@
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
+import json
+from urllib.parse import urlsplit
 
 from pathlib import Path
 
-from pydantic import AliasChoices, AnyHttpUrl, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import AliasChoices, Field, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -20,7 +22,35 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
     api_prefix: str = "/api/v1"
     log_level: str = "INFO"
-    cors_allowed_origins: list[AnyHttpUrl | str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_allowed_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: [
+            "https://math-ai-07.web.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
+    )
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> list[str]:
+        defaults = ["https://math-ai-07.web.app", "http://localhost:3000", "http://127.0.0.1:3000"]
+        if isinstance(value, (list, tuple)):
+            candidates = [str(item).strip() for item in value]
+        elif isinstance(value, str):
+            try:
+                decoded = json.loads(value)
+                candidates = decoded if isinstance(decoded, list) else value.split(",")
+            except (json.JSONDecodeError, TypeError):
+                candidates = value.split(",")
+        else:
+            return defaults
+        origins: list[str] = []
+        for candidate in candidates:
+            origin = str(candidate).strip().strip("[]\"'")
+            parsed = urlsplit(origin)
+            if parsed.scheme in {"http", "https"} and parsed.netloc and not parsed.path.rstrip("/"):
+                origins.append(origin.rstrip("/"))
+        return list(dict.fromkeys(origins)) or defaults
+
     debug: bool = False
     max_upload_size_bytes: int = 10 * 1024 * 1024
     upload_temp_directory: Path = Path("tmp/uploads")

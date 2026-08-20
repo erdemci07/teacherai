@@ -13,12 +13,19 @@ from apps.api.app.core.logging import configure_logging
 from apps.api.app.core.settings import get_settings
 
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+def create_app(settings_override=None) -> FastAPI:
+    settings = settings_override or get_settings()
     configure_logging(settings)
 
     app = FastAPI(title=settings.app_name, version=settings.version)
     app.state.container = build_container(settings)
+    diagnostic = app.state.container.vision_service.diagnostics()
+    logging.getLogger("teacherai.startup").info(
+        "Vision provider configuration provider=%s configured=%s model=%s",
+        diagnostic.provider,
+        diagnostic.configured,
+        diagnostic.model,
+    )
 
     @app.middleware("http")
     async def attach_request_id(request: Request, call_next):

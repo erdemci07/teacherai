@@ -14,7 +14,7 @@ from apps.api.app.features.vision.exceptions import (
     VisionError,
 )
 from apps.api.app.features.vision.provider import VisionProvider
-from apps.api.app.features.vision.schemas import VisionAnalysis
+from apps.api.app.features.vision.schemas import VisionAnalysis, VisionProviderDiagnostics
 from apps.api.app.features.vision.storage import TemporaryImageStorage
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,9 @@ class VisionService:
         self._storage = storage
         self._max_upload_size_bytes = max_upload_size_bytes
         self._debug = debug
+
+    def diagnostics(self) -> VisionProviderDiagnostics:
+        return VisionProviderDiagnostics.model_validate(self._provider.diagnostics())
 
     async def analyze(self, upload: UploadFile | None, request_id: str | None = None) -> VisionAnalysis:
         resolved_request_id = request_id or str(uuid4())
@@ -57,7 +60,7 @@ class VisionService:
                     "model": self._provider.model,
                 },
             )
-            provider_result = await self._provider.analyze_image(normalized, media_type)
+            provider_result = await self._provider.analyze_image(normalized, media_type, resolved_request_id)
             duration = round((perf_counter() - started) * 1000)
             logger.info(
                 "Vision processing succeeded",

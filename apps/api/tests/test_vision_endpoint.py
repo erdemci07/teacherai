@@ -31,7 +31,7 @@ class SuccessfulProvider:
     def __init__(self, image_status: str = "valid_math_question") -> None:
         self.image_status = image_status
 
-    async def analyze_image(self, image: bytes, media_type: str) -> ProviderResult:
+    async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
         assert image
         assert media_type == "image/png"
         return ProviderResult(
@@ -75,7 +75,7 @@ class FailingProvider:
     def __init__(self, error: Exception) -> None:
         self.error = error
 
-    async def analyze_image(self, image: bytes, media_type: str) -> ProviderResult:
+    async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
         raise self.error
 
     async def health(self) -> bool:

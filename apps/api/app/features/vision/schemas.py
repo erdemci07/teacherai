@@ -71,3 +71,9 @@ class VisionAnalysis(VisionProviderAnalysis):
     model: str
     processing_time_ms: int = Field(ge=0)
     debug: dict[str, str] | None = None
+
+
+class VisionProviderDiagnostics(BaseModel):
+    provider: str
+    configured: bool
+    model: str
