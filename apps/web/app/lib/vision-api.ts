@@ -9,7 +9,12 @@ export interface VisualElements {
   description: string | null;
 }
 
+export type ImageStatus = 'valid_math_question' | 'not_math_question' | 'unreadable' | 'incomplete_question';
+
 export interface VisionAnalysis {
+  image_status: ImageStatus;
+  is_valid_question: boolean;
+  rejection_reason: string | null;
   request_id: string;
   subject: string;
   exam_context: string | null;

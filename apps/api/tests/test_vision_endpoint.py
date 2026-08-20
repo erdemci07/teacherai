@@ -28,21 +28,27 @@ class SuccessfulProvider:
     name = "test-provider"
     model = "test-model"
 
+    def __init__(self, image_status: str = "valid_math_question") -> None:
+        self.image_status = image_status
+
     async def analyze_image(self, image: bytes, media_type: str) -> ProviderResult:
         assert image
         assert media_type == "image/png"
         return ProviderResult(
             analysis=VisionProviderAnalysis(
-                subject="mathematics",
-                exam_context="TYT",
-                topic="Mutlak Değer",
-                subtopic="Denklemler",
-                question_type="multiple_choice",
+                image_status=self.image_status,
+                is_valid_question=self.image_status == "valid_math_question",
+                rejection_reason=None if self.image_status == "valid_math_question" else "Görsel güvenilir biçimde okunamadı.",
+                subject="mathematics" if self.image_status == "valid_math_question" else "",
+                exam_context="TYT" if self.image_status == "valid_math_question" else None,
+                topic="Mutlak Değer" if self.image_status == "valid_math_question" else "",
+                subtopic="Denklemler" if self.image_status == "valid_math_question" else None,
+                question_type="multiple_choice" if self.image_status == "valid_math_question" else "",
                 language="tr",
-                difficulty="medium",
-                question_text="|x - 2| = 4 denkleminin çözümleri nelerdir?",
-                mathematical_expressions=["|x - 2| = 4"],
-                answer_choices=["-2 ve 6", "2 ve 4"],
+                difficulty="medium" if self.image_status == "valid_math_question" else "unknown",
+                question_text="|x - 2| = 4 denkleminin çözümleri nelerdir?" if self.image_status == "valid_math_question" else "",
+                mathematical_expressions=["|x - 2| = 4"] if self.image_status == "valid_math_question" else [],
+                answer_choices=["-2 ve 6", "2 ve 4"] if self.image_status == "valid_math_question" else [],
                 visual_elements=VisualElements(
                     has_diagram=False,
                     has_graph=False,
@@ -96,9 +102,25 @@ def test_successful_upload_uses_injected_provider_and_cleans_file(tmp_path) -> N
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["topic"] == "Mutlak Değer"
+    assert payload["data"]["image_status"] == "valid_math_question"
+    assert payload["data"]["is_valid_question"] is True
     assert payload["data"]["provider"] == "test-provider"
     assert payload["data"]["request_id"] == response.headers["x-request-id"]
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("image_status", ["not_math_question", "unreadable", "incomplete_question"])
+def test_returns_normal_structured_rejection_for_invalid_question_images(tmp_path, image_status) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider(image_status)) as client:
+        response = client.post("/api/v1/vision/analyze", files={"image": ("image.png", image_bytes(), "image/png")})
+
+    assert response.status_code == 200
+    analysis = response.json()["data"]
+    assert analysis["image_status"] == image_status
+    assert analysis["is_valid_question"] is False
+    assert analysis["rejection_reason"]
+    assert analysis["question_text"] == ""
+    assert analysis["mathematical_expressions"] == []
 
 
 def test_rejects_unsupported_content_type(tmp_path) -> None:

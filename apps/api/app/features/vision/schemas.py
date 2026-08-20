@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class VisualElements(BaseModel):
@@ -16,6 +16,14 @@ class VisualElements(BaseModel):
 class VisionProviderAnalysis(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    image_status: Literal[
+        "valid_math_question",
+        "not_math_question",
+        "unreadable",
+        "incomplete_question",
+    ]
+    is_valid_question: bool
+    rejection_reason: str | None
     subject: str
     exam_context: str | None
     topic: str
@@ -29,6 +37,32 @@ class VisionProviderAnalysis(BaseModel):
     visual_elements: VisualElements
     ocr_uncertainties: list[str]
     confidence: float = Field(ge=0, le=1)
+
+    @model_validator(mode="after")
+    def validate_image_decision(self) -> "VisionProviderAnalysis":
+        valid_status = self.image_status == "valid_math_question"
+        if self.is_valid_question != valid_status:
+            raise ValueError("is_valid_question must match image_status")
+        if valid_status and self.rejection_reason is not None:
+            raise ValueError("valid questions cannot have a rejection_reason")
+        if not valid_status and not self.rejection_reason:
+            raise ValueError("invalid images require a rejection_reason")
+        if not valid_status and any(
+            (
+                self.subject,
+                self.exam_context,
+                self.topic,
+                self.subtopic,
+                self.question_type,
+                self.question_text,
+                self.mathematical_expressions,
+                self.answer_choices,
+            )
+        ):
+            raise ValueError("invalid images cannot contain invented question content")
+        if not valid_status and self.difficulty != "unknown":
+            raise ValueError("invalid images must use unknown difficulty")
+        return self
 
 
 class VisionAnalysis(VisionProviderAnalysis):

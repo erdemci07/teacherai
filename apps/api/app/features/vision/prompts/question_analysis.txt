@@ -1,4 +1,12 @@
-Analyze the supplied question image only. Preserve all mathematical and semantic visual context.
+FIRST decide whether the supplied image contains one real, sufficiently readable, complete mathematics question.
+Use exactly one image_status: valid_math_question, not_math_question, unreadable, or incomplete_question.
+Set is_valid_question=true only for valid_math_question; otherwise set it to false and provide a short Turkish rejection_reason.
+Use not_math_question for selfies, people, animals, landscapes, unrelated screenshots/documents, empty images, and non-mathematical content.
+Use unreadable when blur, resolution, glare, or obstruction prevents reliable reading.
+Use incomplete_question when relevant text, answer choices, diagrams, graphs, or other required parts are cut off or missing.
+For every invalid image, use neutral empty values for required analysis fields. Do not infer or invent a subject, topic,
+equation, question text, answer choice, visual fact, or solution.
+Only for valid_math_question, analyze the supplied question image and preserve all mathematical and semantic visual context.
 Identify the source question; do not solve it, teach it, create a LessonPlan, or invent unreadable content.
 Use Turkish text where the image is Turkish. Record uncertain OCR fragments in ocr_uncertainties.
 For story problems, describe meaningful maps, objects, measurements, number lines, coordinate planes,

@@ -1,6 +1,6 @@
 import pytest
 from apps.api.app.features.board.planner import BoardPlanner
-from apps.api.app.features.lessons.exceptions import VerificationContradictionError
+from apps.api.app.features.lessons.exceptions import InvalidQuestionAnalysisError, VerificationContradictionError
 from apps.api.app.features.lessons.provider import LessonProviderResult
 from apps.api.app.features.lessons.schemas import Expression,LessonContent,LessonDraft,Step
 from apps.api.app.features.lessons.service import LessonService
@@ -28,6 +28,23 @@ async def test_pipeline_corrects_once_then_builds_verified_board():
 async def test_persistent_contradiction_is_not_returned():
     with pytest.raises(VerificationContradictionError):
         await LessonService(CorrectingProvider(True),MathAIService(),BoardPlanner()).generate(plan().source_analysis)
+
+
+@pytest.mark.asyncio
+async def test_invalid_image_analysis_stops_before_lesson_generation():
+    provider = CorrectingProvider()
+    analysis = plan().source_analysis.model_copy(
+        update={
+            "image_status": "not_math_question",
+            "is_valid_question": False,
+            "rejection_reason": "Matematik sorusu bulunamadı.",
+        }
+    )
+
+    with pytest.raises(InvalidQuestionAnalysisError):
+        await LessonService(provider, MathAIService(), BoardPlanner()).generate(analysis)
+
+    assert provider.calls == []
 def test_generate_endpoint_returns_verified_board():
     from dataclasses import replace
     from fastapi.testclient import TestClient

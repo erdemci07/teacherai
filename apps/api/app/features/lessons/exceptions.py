@@ -8,3 +8,5 @@ class InvalidLessonPlanError(LessonError):
     code = "invalid_lesson_plan"; status_code = 502; public_message = "Güvenilir bir anlatım oluşturulamadı."
 class VerificationContradictionError(LessonError):
     code = "verification_contradiction"; status_code = 422; public_message = "Bu çözüm matematiksel kontrolden geçemedi. Yeniden inceleyelim."
+class InvalidQuestionAnalysisError(LessonError):
+    code = "invalid_question_analysis"; status_code = 422; public_message = "Bu görsel geçerli ve okunabilir bir matematik sorusu içermiyor."

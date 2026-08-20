@@ -1,7 +1,7 @@
 from time import perf_counter
 from uuid import uuid4
 from pydantic import BaseModel
-from .exceptions import VerificationContradictionError
+from .exceptions import InvalidQuestionAnalysisError, VerificationContradictionError
 from .provider import LessonProvider
 from .schemas import LessonPlan
 from ..vision.schemas import VisionAnalysis
@@ -14,6 +14,8 @@ class GeneratedLesson(BaseModel):
 class LessonService:
     def __init__(self,provider:LessonProvider,mathai:MathAIService,board_planner:BoardPlanner): self.provider=provider;self.mathai=mathai;self.board_planner=board_planner
     async def generate(self,analysis:VisionAnalysis,teaching_context=None)->GeneratedLesson:
+        if not analysis.is_valid_question or analysis.image_status != "valid_math_question":
+            raise InvalidQuestionAnalysisError
         started=perf_counter(); correction=False
         plan=await self._plan(analysis,None,teaching_context)
         verification=self.mathai.verify(plan)
