@@ -19,6 +19,8 @@ from apps.api.app.features.vision.storage import TemporaryImageStorage
 
 logger = logging.getLogger(__name__)
 SUPPORTED_MEDIA_TYPES = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
+MEDIA_TYPE_ALIASES = {"image/jpg": "image/jpeg"}
+SUPPORTED_EXTENSIONS = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
 MAX_IMAGE_PIXELS = 40_000_000
 
 
@@ -43,12 +45,11 @@ class VisionService:
         started = perf_counter()
         if upload is None:
             raise MissingImageError
-        if upload.content_type not in SUPPORTED_MEDIA_TYPES:
-            raise UnsupportedImageError
+        media_type = self._resolve_media_type(upload.content_type, upload.filename)
 
         logger.info("Vision processing started", extra={"request_id": resolved_request_id, "stage": "validation"})
         content = await self._read_limited(upload)
-        normalized, media_type, suffix = self._normalize(content, upload.content_type)
+        normalized, media_type, suffix = self._normalize(content, media_type)
         temporary_path = await self._storage.save(normalized, suffix)
         try:
             logger.info(
@@ -105,6 +106,22 @@ class VisionService:
         if not content:
             raise InvalidImageError
         return bytes(content)
+
+    @staticmethod
+    def _resolve_media_type(content_type: str | None, filename: str | None) -> str:
+        normalized_type = (content_type or "").split(";", 1)[0].strip().lower()
+        normalized_type = MEDIA_TYPE_ALIASES.get(normalized_type, normalized_type)
+        if normalized_type in SUPPORTED_MEDIA_TYPES:
+            return normalized_type
+        if normalized_type and normalized_type != "application/octet-stream":
+            raise UnsupportedImageError
+
+        suffix = (filename or "").rsplit(".", 1)
+        extension = f".{suffix[-1].lower()}" if len(suffix) == 2 else ""
+        try:
+            return SUPPORTED_EXTENSIONS[extension]
+        except KeyError as exc:
+            raise UnsupportedImageError from exc
 
     @staticmethod
     def _normalize(content: bytes, declared_media_type: str) -> tuple[bytes, str, str]:

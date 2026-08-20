@@ -13,7 +13,7 @@ class MissingImageError(VisionError):
 class UnsupportedImageError(VisionError):
     code = "unsupported_image_type"
     status_code = 415
-    public_message = "Yalnızca JPG, PNG veya WEBP görselleri desteklenir."
+    public_message = "Yalnızca JPG, JPEG, PNG veya WEBP görselleri desteklenir."
 
 
 class ImageTooLargeError(VisionError):

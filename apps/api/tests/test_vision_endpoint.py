@@ -33,7 +33,7 @@ class SuccessfulProvider:
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
         assert image
-        assert media_type == "image/png"
+        assert media_type in {"image/jpeg", "image/png", "image/webp"}
         return ProviderResult(
             analysis=VisionProviderAnalysis(
                 image_status=self.image_status,
@@ -128,6 +128,60 @@ def test_rejects_unsupported_content_type(tmp_path) -> None:
         response = client.post("/api/v1/vision/analyze", files={"image": ("question.gif", b"GIF89a", "image/gif")})
     assert response.status_code == 415
     assert response.json()["error"] == "unsupported_image_type"
+
+
+@pytest.mark.parametrize(
+    ("filename", "content_type", "image_format"),
+    [
+        ("test.jpg", "image/jpeg", "JPEG"),
+        ("test.JPG", "image/jpeg", "JPEG"),
+        ("test.jpeg", "image/jpeg", "JPEG"),
+        ("test.JPEG", "image/jpeg", "JPEG"),
+        ("IMG_4537.jpeg", "image/jpeg", "JPEG"),
+        ("test.jpg", "image/jpg", "JPEG"),
+        ("test.png", "image/png", "PNG"),
+        ("test.PNG", "image/png", "PNG"),
+        ("test.webp", "image/webp", "WEBP"),
+        ("test.WEBP", "image/webp", "WEBP"),
+    ],
+)
+def test_accepts_supported_image_names_and_media_types(tmp_path, filename, content_type, image_format) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": (filename, image_bytes(image_format), content_type)},
+        )
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    ("filename", "content_type"),
+    [
+        ("test.pdf", "application/pdf"),
+        ("test.txt", "text/plain"),
+        ("test.svg", "image/svg+xml"),
+        ("renamed.jpg", "application/pdf"),
+    ],
+)
+def test_rejects_unsupported_names_and_media_types(tmp_path, filename, content_type) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": (filename, b"unsupported", content_type)},
+        )
+    assert response.status_code == 415
+    assert response.json()["error"] == "unsupported_image_type"
+
+
+@pytest.mark.parametrize("filename", ["test.jpg", "test.JPG", "test.jpeg", "test.JPEG", "test.png", "test.PNG", "test.webp", "test.WEBP"])
+def test_supported_extension_is_used_when_browser_omits_media_type(tmp_path, filename) -> None:
+    image_format = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}[filename.rsplit(".", 1)[1].lower()]
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": (filename, image_bytes(image_format), "application/octet-stream")},
+        )
+    assert response.status_code == 200
 
 
 def test_requires_an_image(tmp_path) -> None:

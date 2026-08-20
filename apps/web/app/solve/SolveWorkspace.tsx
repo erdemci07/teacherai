@@ -13,11 +13,12 @@ import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
-const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ERRORS: Record<string, string> = {
   image_required: 'Lütfen bir soru görseli seç.',
-  unsupported_image_type: 'Bu dosya türünü okuyamıyorum. JPG, PNG veya WEBP biçiminde bir görsel deneyebilir misin?',
+  unsupported_image_type: 'Bu dosya türünü okuyamıyorum. JPG, JPEG, PNG veya WEBP biçiminde bir görsel deneyebilir misin?',
   image_too_large: 'Bu görsel 10 MB sınırını aşıyor. Daha küçük bir fotoğraf seçebilir misin?',
   invalid_image: 'Bu görseli okuyamadım. Sorunun tamamının net göründüğü başka bir fotoğraf deneyebilir misin?',
   provider_not_configured: 'Öğretmen servisi henüz hazır değil. Biraz sonra tekrar deneyebilirsin.',
@@ -53,7 +54,10 @@ export function SolveWorkspace() {
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
   const select = (selected: File) => {
-    if (!SUPPORTED_TYPES.includes(selected.type)) { setError(ERRORS.unsupported_image_type); setState('error'); return; }
+    const mediaType = selected.type.toLowerCase();
+    const extension = selected.name.includes('.') ? `.${selected.name.split('.').pop()?.toLowerCase()}` : '';
+    const supported = SUPPORTED_TYPES.includes(mediaType) || (!mediaType && SUPPORTED_EXTENSIONS.includes(extension));
+    if (!supported) { setError(ERRORS.unsupported_image_type); setState('error'); return; }
     if (selected.size > MAX_FILE_BYTES) { setError(ERRORS.image_too_large); setState('error'); return; }
     if (preview) URL.revokeObjectURL(preview);
     setFile(selected); setPreview(URL.createObjectURL(selected)); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
@@ -101,7 +105,7 @@ export function SolveWorkspace() {
   return <div className="solvePage" onPaste={pasted}>
     <input ref={cameraRef} className="visuallyHidden" type="file" accept="image/*" capture="environment" onChange={changed} disabled={busy} aria-label="Arka kamerayla soru fotoğrafı çek" />
     <input ref={galleryRef} className="visuallyHidden" type="file" accept="image/*" onChange={changed} disabled={busy} aria-label="Galeriden soru görseli seç" />
-    <input ref={fileRef} className="visuallyHidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={changed} disabled={busy} aria-label="Dosyadan soru görseli seç" />
+    <input ref={fileRef} className="visuallyHidden" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={changed} disabled={busy} aria-label="Dosyadan soru görseli seç" />
     <header className="solveIntro"><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Sorunu yükle,<br /><span>mantığını birlikte öğrenelim.</span></h1><p>Fotoğrafını çek veya galeriden seç. TeacherAI soruyu inceler, kontrol eder ve adım adım anlatır.</p></header>
     <div className="solveGrid">
       <section className="solveInput" aria-label="Soru görseli">
