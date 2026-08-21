@@ -1,0 +1,14 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-f",
+        "docker/api/Dockerfile",
+        "-t",
+        "us-east4-docker.pkg.dev/math-ai-07/teacherai/teacherai-api:latest",
+        "."
+      ]
+
+images:
+  - "us-east4-docker.pkg.dev/math-ai-07/teacherai/teacherai-api:latest"
