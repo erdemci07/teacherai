@@ -55,6 +55,7 @@ def test_selection_uses_backend_preparation_and_preserves_original_file() -> Non
     assert "/vision/preview" in api
     assert "prepared_image_id" in api
     assert "prepared_image_data_url" in api
+    assert "prepared_image_expires_at" in api
     assert "format: 'png'" in api
     assert "content_type: 'image/png'" in api
     assert "preview: string" in api
@@ -72,6 +73,16 @@ def test_backend_preview_success_and_failure_paths_are_non_blocking() -> None:
     assert "setState('image_selected')" in workspace
     assert "Görseli yeniden hazırla" in workspace
     assert "setError(" not in workspace.split("const requestBackendPreview", 1)[1].split("const select", 1)[0]
+
+
+def test_solve_sends_prepared_png_with_original_file_fallback() -> None:
+    api = Path("apps/web/app/lib/vision-api.ts").read_text(encoding="utf-8")
+
+    prepared_block = api.split("if (preparedImage) {", 1)[1].split("} else {", 1)[0]
+    assert "form.append('prepared_image_id', preparedImage.image_id)" in prepared_block
+    assert "form.append('prepared_image_data_url', preparedImage.preview)" in prepared_block
+    assert "form.append('prepared_image_expires_at', preparedImage.expires_at)" in prepared_block
+    assert "form.append('image', image)" in prepared_block
 
 
 def test_jpeg_png_webp_keep_native_preview_while_backend_preparation_runs() -> None:
@@ -99,6 +110,7 @@ def test_generated_preview_urls_are_cleaned_up_on_replace_remove() -> None:
     assert "previewAbortRef.current?.abort()" in workspace
     assert "previewRequestRef.current += 1" in workspace
     assert "setPreparedImage(null)" in workspace
+    assert "if (previewRequestRef.current !== requestId) return;" in workspace
     assert "onRemove={reset}" in workspace
     assert "onReplace={() => galleryRef.current?.click()}" in workspace
 
@@ -129,3 +141,4 @@ def test_png_preview_state_remains_after_downstream_solve_error() -> None:
     assert "setPreview('')" not in catch_block
     assert "setPreparedImage(null)" not in catch_block
     assert "setFile(null)" not in catch_block
+    assert "Görseli yeniden hazırla" in workspace

@@ -21,8 +21,9 @@ from .exceptions import (
     LessonProviderTimeoutError,
     LessonProviderUnavailableError,
 )
+from .normalization import normalize_lesson_draft_response
 from .provider import LessonProviderResult
-from .schemas import LessonDraft, LessonDraftResponse
+from .schemas import LessonDraftResponse
 from ..vision.schemas import VisionAnalysis
 
 logger = logging.getLogger(__name__)
@@ -98,10 +99,10 @@ class OpenAILessonProvider:
             self._log_failure(InvalidLessonPlanError(), started)
             raise InvalidLessonPlanError
         try:
-            draft = LessonDraft.model_validate(parsed.model_dump())
-        except (ValidationError, ValueError) as exc:
+            draft = normalize_lesson_draft_response(parsed)
+        except InvalidLessonPlanError as exc:
             self._log_failure(exc, started)
-            raise InvalidLessonPlanError from exc
+            raise
         return LessonProviderResult(draft, self.name, self.model)
 
     def _log_failure(self, exc: Exception, started: float) -> None:

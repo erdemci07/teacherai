@@ -2,6 +2,7 @@ import io
 import base64
 import re
 from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -287,6 +288,7 @@ def test_analyze_can_reuse_prepared_png_without_reuploading_original(tmp_path, f
             data={
                 "prepared_image_id": prepared["image_id"],
                 "prepared_image_data_url": prepared["preview"],
+                "prepared_image_expires_at": prepared["expires_at"],
             },
         )
 
@@ -299,6 +301,35 @@ def test_analyze_can_reuse_prepared_png_without_reuploading_original(tmp_path, f
     assert list(tmp_path.iterdir()) == []
 
 
+@pytest.mark.parametrize(
+    ("filename", "content_type", "image_format"),
+    [
+        ("iphone.heic", "image/heic", "HEIF"),
+        ("question.jpg", "image/jpeg", "JPEG"),
+    ],
+)
+def test_preview_to_prepared_png_then_analyze_succeeds(tmp_path, filename, content_type, image_format) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        prepared_response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": (filename, image_bytes(image_format), content_type)},
+        )
+        prepared = prepared_response.json()["data"]
+        analysis_response = client.post(
+            "/api/v1/vision/analyze",
+            data={
+                "prepared_image_id": prepared["image_id"],
+                "prepared_image_data_url": prepared["preview"],
+                "prepared_image_expires_at": prepared["expires_at"],
+            },
+        )
+
+    assert prepared_response.status_code == 200
+    assert analysis_response.status_code == 200
+    assert provider.calls[0][1] == "image/png"
+
+
 def test_incomplete_prepared_payload_is_rejected_before_provider_call(tmp_path) -> None:
     provider = SuccessfulProvider()
     with client_with_provider(tmp_path, provider) as client:
@@ -307,8 +338,8 @@ def test_incomplete_prepared_payload_is_rejected_before_provider_call(tmp_path) 
             data={"prepared_image_id": "prepared_00000000000000000000000000000000"},
         )
 
-    assert response.status_code == 422
-    assert response.json()["error"] == "invalid_image"
+    assert response.status_code == 404
+    assert response.json()["error"] == "prepared_image_not_found"
     assert provider.calls == []
 
 
@@ -324,8 +355,94 @@ def test_invalid_prepared_data_url_is_rejected_before_provider_call(tmp_path) ->
         )
 
     assert response.status_code == 422
-    assert response.json()["error"] == "invalid_image"
+    assert response.json()["error"] == "invalid_prepared_image"
     assert provider.calls == []
+
+
+def test_missing_prepared_payload_uses_original_file_fallback_when_available(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            data={"prepared_image_id": "prepared_00000000000000000000000000000000"},
+            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/png"
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert image.format == "PNG"
+
+
+def test_expired_prepared_payload_uses_original_heic_fallback_when_available(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    expired = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+    with client_with_provider(tmp_path, provider) as client:
+        prepared_response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
+        )
+        prepared = prepared_response.json()["data"]
+        response = client.post(
+            "/api/v1/vision/analyze",
+            data={
+                "prepared_image_id": prepared["image_id"],
+                "prepared_image_data_url": prepared["preview"],
+                "prepared_image_expires_at": expired,
+            },
+            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
+        )
+
+    assert prepared_response.status_code == 200
+    assert response.status_code == 200
+    assert provider.calls[0][1] == "image/png"
+
+
+def test_expired_prepared_payload_without_fallback_returns_specific_error(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    expired = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+    with client_with_provider(tmp_path, provider) as client:
+        prepared_response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": ("question.png", image_bytes(), "image/png")},
+        )
+        prepared = prepared_response.json()["data"]
+        response = client.post(
+            "/api/v1/vision/analyze",
+            data={
+                "prepared_image_id": prepared["image_id"],
+                "prepared_image_data_url": prepared["preview"],
+                "prepared_image_expires_at": expired,
+            },
+        )
+
+    assert prepared_response.status_code == 200
+    assert response.status_code == 410
+    assert response.json()["error"] == "prepared_image_expired"
+    assert provider.calls == []
+
+
+def test_prepared_and_direct_payload_ambiguity_is_resolved_by_prepared_first(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        prepared_response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": ("question.png", image_bytes(), "image/png")},
+        )
+        prepared = prepared_response.json()["data"]
+        response = client.post(
+            "/api/v1/vision/analyze",
+            data={
+                "prepared_image_id": prepared["image_id"],
+                "prepared_image_data_url": prepared["preview"],
+                "prepared_image_expires_at": prepared["expires_at"],
+            },
+            files={"image": ("renamed.png", image_bytes("JPEG"), "image/png")},
+        )
+
+    assert response.status_code == 200
+    assert provider.calls[0][0] == base64.b64decode(prepared["preview"].split(",", 1)[1])
 
 
 def test_preview_endpoint_applies_orientation_without_provider(tmp_path) -> None:

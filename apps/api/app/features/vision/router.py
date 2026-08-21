@@ -24,8 +24,9 @@ async def analyze_question_image(
     image: Annotated[UploadFile | None, File()] = None,
     prepared_image_id: Annotated[str | None, Form()] = None,
     prepared_image_data_url: Annotated[str | None, Form()] = None,
+    prepared_image_expires_at: Annotated[str | None, Form()] = None,
 ) -> ApiResponse[VisionAnalysis]:
-    analysis = await service.analyze(image, request.state.request_id, prepared_image_id, prepared_image_data_url)
+    analysis = await service.analyze(image, request.state.request_id, prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
     return ApiResponse(data=analysis)
 
 

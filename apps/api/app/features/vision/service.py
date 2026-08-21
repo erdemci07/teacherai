@@ -14,7 +14,10 @@ from pillow_heif import register_heif_opener
 from apps.api.app.features.vision.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
+    InvalidPreparedImageError,
     MissingImageError,
+    PreparedImageExpiredError,
+    PreparedImageNotFoundError,
     UnsupportedImageError,
     VisionError,
 )
@@ -88,12 +91,13 @@ class VisionService:
         request_id: str | None = None,
         prepared_image_id: str | None = None,
         prepared_image_data_url: str | None = None,
+        prepared_image_expires_at: str | None = None,
     ) -> VisionAnalysis:
         resolved_request_id = request_id or str(uuid4())
         started = perf_counter()
 
         logger.info("Vision processing started", extra={"request_id": resolved_request_id, "stage": "validation"})
-        prepared = await self._resolve_prepared_image(upload, prepared_image_id, prepared_image_data_url)
+        prepared = await self._resolve_prepared_image(upload, prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
         temporary_path = await self._storage.save(prepared.content, prepared.suffix)
         try:
             logger.info(
@@ -154,11 +158,17 @@ class VisionService:
         upload: UploadFile | None,
         prepared_image_id: str | None,
         prepared_image_data_url: str | None,
+        prepared_image_expires_at: str | None,
     ) -> PreparedImage:
-        if prepared_image_id or prepared_image_data_url:
-            if not prepared_image_id or not prepared_image_data_url:
-                raise InvalidImageError
-            return self._prepared_from_data_url(prepared_image_id, prepared_image_data_url)
+        if prepared_image_id or prepared_image_data_url or prepared_image_expires_at:
+            try:
+                if not prepared_image_id or not prepared_image_data_url:
+                    raise PreparedImageNotFoundError
+                return self._prepared_from_data_url(prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
+            except (PreparedImageNotFoundError, PreparedImageExpiredError, InvalidPreparedImageError):
+                if upload is None:
+                    raise
+                return self._prepare_bytes(await self._read_limited(upload), self._resolve_media_type(upload.content_type, upload.filename))
         if upload is None:
             raise MissingImageError
         return self._prepare_bytes(await self._read_limited(upload), self._resolve_media_type(upload.content_type, upload.filename))
@@ -219,28 +229,31 @@ class VisionService:
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
             raise InvalidImageError from exc
 
-    def _prepared_from_data_url(self, image_id: str, data_url: str) -> PreparedImage:
+    def _prepared_from_data_url(self, image_id: str, data_url: str, expires_at: str | None) -> PreparedImage:
         if not PREPARED_IMAGE_ID_PATTERN.fullmatch(image_id):
-            raise InvalidImageError
+            raise InvalidPreparedImageError
+        expires = self._parse_prepared_expiry(expires_at)
+        if expires and expires <= datetime.now(timezone.utc):
+            raise PreparedImageExpiredError
         prefix = "data:image/png;base64,"
         if not data_url.startswith(prefix):
-            raise InvalidImageError
+            raise InvalidPreparedImageError
         try:
             content = base64.b64decode(data_url[len(prefix):], validate=True)
             if len(content) > MAX_PREPARED_IMAGE_BYTES:
                 raise ImageTooLargeError
             with Image.open(io.BytesIO(content)) as image:
                 if image.format != "PNG":
-                    raise InvalidImageError
+                    raise InvalidPreparedImageError
                 if image.width * image.height > MAX_IMAGE_PIXELS:
-                    raise InvalidImageError
+                    raise InvalidPreparedImageError
                 image.verify()
             with Image.open(io.BytesIO(content)) as image:
                 width, height = image.size
-        except InvalidImageError:
+        except (InvalidPreparedImageError, ImageTooLargeError):
             raise
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
-            raise InvalidImageError from exc
+            raise InvalidPreparedImageError from exc
         return PreparedImage(
             image_id=image_id,
             content=content,
@@ -248,8 +261,18 @@ class VisionService:
             suffix="png",
             width=width,
             height=height,
-            expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
+            expires_at=expires or datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
         )
+
+    @staticmethod
+    def _parse_prepared_expiry(value: str | None) -> datetime | None:
+        if not value:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise InvalidPreparedImageError from exc
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
     @staticmethod
     def _preview_data_url(content: bytes, media_type: str) -> str | None:

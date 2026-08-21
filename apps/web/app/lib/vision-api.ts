@@ -101,6 +101,8 @@ export function analyzeQuestionImage(
     if (preparedImage) {
       form.append('prepared_image_id', preparedImage.image_id);
       form.append('prepared_image_data_url', preparedImage.preview);
+      form.append('prepared_image_expires_at', preparedImage.expires_at);
+      form.append('image', image);
     } else {
       form.append('image', image);
     }
