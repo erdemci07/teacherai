@@ -3,8 +3,8 @@ from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field
 from apps.api.app.features.board.schemas import BoardPlan
 from apps.api.app.features.lessons.schemas import Expression,LessonPlan
-Action=Literal["understood","simplify","alternative","hint","similar_example","practice"]
-EventName=Literal["solution_completed","understood_clicked","simpler_explanation_requested","alternative_method_requested","hint_requested","similar_example_requested","practice_started","practice_answered","practice_correct","practice_incorrect"]
+Action=Literal["understood","simplify","alternative","hint","similar_example"]
+EventName=Literal["solution_completed","understood_clicked","simpler_explanation_requested","alternative_method_requested","hint_requested","similar_example_requested","practice_answered","practice_correct","practice_incorrect"]
 MistakeType=Literal["sign_error","arithmetic_error","operation_order_error","missing_case","formula_error","concept_error","graph_interpretation_error","unknown"]
 class InteractionEvent(BaseModel):
     event_id:str;event:EventName;occurred_at:datetime=Field(default_factory=lambda:datetime.now(timezone.utc));student_id:str|None=None

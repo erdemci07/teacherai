@@ -41,8 +41,10 @@ class SuccessfulProvider:
     name = "test-provider"
     model = "test-model"
 
-    def __init__(self, image_status: str = "valid_math_question") -> None:
+    def __init__(self, image_status: str = "valid_math_question", topic: str = "Mutlak Değer", subtopic: str | None = "Denklemler") -> None:
         self.image_status = image_status
+        self.topic = topic
+        self.subtopic = subtopic
         self.calls: list[tuple[bytes, str]] = []
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
@@ -56,8 +58,8 @@ class SuccessfulProvider:
                 rejection_reason=None if self.image_status == "valid_math_question" else "Görsel güvenilir biçimde okunamadı.",
                 subject="mathematics" if self.image_status == "valid_math_question" else "",
                 exam_context="TYT" if self.image_status == "valid_math_question" else None,
-                topic="Mutlak Değer" if self.image_status == "valid_math_question" else "",
-                subtopic="Denklemler" if self.image_status == "valid_math_question" else None,
+                topic=self.topic if self.image_status == "valid_math_question" else "",
+                subtopic=self.subtopic if self.image_status == "valid_math_question" else None,
                 question_type="multiple_choice" if self.image_status == "valid_math_question" else "",
                 language="tr",
                 difficulty="medium" if self.image_status == "valid_math_question" else "unknown",
@@ -136,6 +138,16 @@ def test_returns_normal_structured_rejection_for_invalid_question_images(tmp_pat
     assert analysis["rejection_reason"]
     assert analysis["question_text"] == ""
     assert analysis["mathematical_expressions"] == []
+
+
+def test_normalizes_english_topic_and_subtopic_before_response(tmp_path) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider(topic="Algebra", subtopic="Linear equations")) as client:
+        response = client.post("/api/v1/vision/analyze", files={"image": ("question.png", image_bytes(), "image/png")})
+
+    assert response.status_code == 200
+    analysis = response.json()["data"]
+    assert analysis["topic"] == "Cebir"
+    assert analysis["subtopic"] == "Denklemler"
 
 
 def test_rejects_unsupported_content_type(tmp_path) -> None:

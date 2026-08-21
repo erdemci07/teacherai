@@ -17,6 +17,7 @@ from apps.api.app.features.vision.exceptions import (
 from apps.api.app.features.vision.provider import VisionProvider
 from apps.api.app.features.vision.schemas import VisionAnalysis, VisionProviderDiagnostics
 from apps.api.app.features.vision.storage import TemporaryImageStorage
+from apps.api.app.features.vision.topic_normalization import normalize_topic_name
 
 logger = logging.getLogger(__name__)
 SUPPORTED_MEDIA_TYPES = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
@@ -84,8 +85,14 @@ class VisionService:
                     "duration_ms": duration,
                 },
             )
+            analysis = provider_result.analysis.model_copy(
+                update={
+                    "topic": normalize_topic_name(provider_result.analysis.topic) or "",
+                    "subtopic": normalize_topic_name(provider_result.analysis.subtopic),
+                }
+            )
             return VisionAnalysis(
-                **provider_result.analysis.model_dump(),
+                **analysis.model_dump(),
                 request_id=resolved_request_id,
                 provider=provider_result.provider,
                 model=provider_result.model,

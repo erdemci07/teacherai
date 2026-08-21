@@ -9,6 +9,7 @@ equation, question text, answer choice, visual fact, or solution.
 Only for valid_math_question, analyze the supplied question image and preserve all mathematical and semantic visual context.
 Identify the source question; do not solve it, teach it, create a LessonPlan, or invent unreadable content.
 Use Turkish text where the image is Turkish. Record uncertain OCR fragments in ocr_uncertainties.
+For Turkish student experience, return subject, topic, and subtopic as natural Turkish names. Do not translate mathematical notation.
 For story problems, describe meaningful maps, objects, measurements, number lines, coordinate planes,
 graphs, tables, geometry, and real-life scenes in visual_elements.description.
 Return only the requested structured result.

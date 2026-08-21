@@ -1,6 +1,6 @@
 import{currentToken}from'../auth/AuthProvider';
 import type {BoardPlan,LessonPlan} from './lesson-api';
-export type InteractionAction='understood'|'simplify'|'alternative'|'hint'|'similar_example'|'practice';
+export type InteractionAction='understood'|'simplify'|'alternative'|'hint'|'similar_example';
 export interface InteractionEvent{event_id:string;event:string;occurred_at:string;student_id:null;lesson_id:string;topic:string;subtopic:string|null;skill:string;difficulty:string;action:string;mistake_type:string|null;correctness:boolean|null;attempt_count:number|null;explanation_mode:string|null}
 export interface PracticeQuestion{practice_question_id:string;question:string;question_expression:string;topic:string;subtopic:string|null;skill_id:string;difficulty:string}
 export interface InteractionResponse{interaction_id:string;action:InteractionAction;message:string;board:BoardPlan|null;practice:PracticeQuestion|null;event:InteractionEvent;next_hint_level:number|null;verification_status:string|null}

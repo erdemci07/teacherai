@@ -38,6 +38,53 @@ def test_frontend_accepts_jpeg_extensions_and_supported_mime_types() -> None:
 def test_heic_preview_can_fall_back_to_generic_file_state() -> None:
     preview = Path("apps/web/app/solve/ImagePreview.tsx").read_text(encoding="utf-8")
 
-    assert "previewable" in preview
+    assert "previewAvailable && previewUrl" in preview
     assert "genericImagePreview" in preview
     assert "Önizleme bu tarayıcıda desteklenmeyebilir." in preview
+
+
+def test_heic_preview_conversion_is_preview_only_and_preserves_upload_file() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    helper = Path("apps/web/app/solve/heicPreview.ts").read_text(encoding="utf-8")
+
+    assert "setFile(selected)" in workspace
+    assert "createHeicPreviewUrl(selected)" in workspace
+    assert "analyzeQuestionImage(file" in workspace
+    assert "heic2any({ blob: file" in helper
+    assert "new File" not in helper
+    assert "setFile(url" not in workspace
+
+
+def test_heic_preview_success_and_failure_paths_are_non_blocking() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    helper = Path("apps/web/app/solve/heicPreview.ts").read_text(encoding="utf-8")
+
+    assert "if (url) { setPreview(url); setPreviewAvailable(true); }" in workspace
+    assert "return null;" in helper
+    assert "} catch {" in helper
+    assert "setState('image_selected')" in workspace
+
+
+def test_jpeg_png_webp_preview_behavior_remains_direct_object_url() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+
+    assert "if (isHeicLike(selected))" in workspace
+    assert "setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);" in workspace
+
+
+def test_generated_preview_urls_are_cleaned_up_on_replace_remove_and_stale_conversion() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+
+    assert "useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview])" in workspace
+    assert "if (preview) URL.revokeObjectURL(preview);" in workspace
+    assert "previewRequestRef.current += 1" in workspace
+    assert "if (url) URL.revokeObjectURL(url);" in workspace
+    assert "onRemove={reset}" in workspace
+    assert "onReplace={() => galleryRef.current?.click()}" in workspace
+
+
+def test_large_heic_files_skip_browser_preview_conversion() -> None:
+    helper = Path("apps/web/app/solve/heicPreview.ts").read_text(encoding="utf-8")
+
+    assert "MAX_PREVIEW_CONVERSION_BYTES = 8 * 1024 * 1024" in helper
+    assert "file.size > MAX_PREVIEW_CONVERSION_BYTES" in helper

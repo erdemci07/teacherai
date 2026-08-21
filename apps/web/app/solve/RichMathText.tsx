@@ -6,6 +6,7 @@ type TextPart = { type: 'text'; value: string };
 type MathPart = { type: 'math'; value: string; display: boolean };
 type Part = TextPart | MathPart;
 
+const RAW_COMMANDS = new Set(['frac', 'sqrt', 'cdot', 'times', 'le', 'ge', 'neq', 'pi', 'theta', 'alpha', 'beta', 'gamma', 'Delta', 'sum', 'int', 'infty']);
 const RAW_COMMAND_PATTERN = /\\(frac|sqrt|cdot|times|le|ge|neq|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b/;
 const MATH_SIGNAL_PATTERN = /(\\[a-zA-Z]+|[=<>^_]|[0-9]\s*[+\-*/]|[+\-*/]\s*[0-9]|[a-zA-Z]\s*[+\-*/=^_])/;
 
@@ -31,6 +32,87 @@ function pushText(parts: Part[], value: string) {
   else parts.push({ type: 'text', value });
 }
 
+function commandAt(input: string, index: number) {
+  if (input[index] !== '\\') return null;
+  const match = /^\\([A-Za-z]+)/.exec(input.slice(index));
+  return match && RAW_COMMANDS.has(match[1]) ? match[1] : null;
+}
+
+function readBalancedGroup(input: string, index: number) {
+  if (input[index] !== '{') return index;
+  let depth = 0;
+  for (let i = index; i < input.length; i += 1) {
+    if (input[i] === '{') depth += 1;
+    if (input[i] === '}') depth -= 1;
+    if (depth === 0) return i + 1;
+  }
+  return index;
+}
+
+function scanCommand(input: string, index: number) {
+  const command = commandAt(input, index);
+  if (!command) return index;
+  let cursor = index + command.length + 1;
+  while (input[cursor] === ' ') cursor += 1;
+  if (command === 'frac') {
+    const numeratorEnd = readBalancedGroup(input, cursor);
+    if (numeratorEnd === cursor) return cursor;
+    cursor = numeratorEnd;
+    while (input[cursor] === ' ') cursor += 1;
+    const denominatorEnd = readBalancedGroup(input, cursor);
+    return denominatorEnd === cursor ? cursor : denominatorEnd;
+  }
+  if (command === 'sqrt' && input[cursor] === '{') return readBalancedGroup(input, cursor);
+  return cursor;
+}
+
+function scanSimpleAtom(input: string, index: number) {
+  const match = /^[A-Za-z0-9]+(?:\s*(?:\^|_)\s*(?:\{[^{}]+\}|[A-Za-z0-9]+))+/.exec(input.slice(index));
+  return match ? index + match[0].length : index;
+}
+
+function scanRawMath(input: string, index: number) {
+  if (!commandAt(input, index) && scanSimpleAtom(input, index) === index) return null;
+  let cursor = index;
+  let sawMath = false;
+
+  while (cursor < input.length) {
+    const commandEnd = scanCommand(input, cursor);
+    if (commandEnd > cursor) {
+      cursor = commandEnd; sawMath = true; continue;
+    }
+
+    const atomEnd = scanSimpleAtom(input, cursor);
+    if (atomEnd > cursor) {
+      cursor = atomEnd; sawMath = true; continue;
+    }
+
+    const word = /^[A-Za-z]+/.exec(input.slice(cursor));
+    if (word) {
+      if (word[0].length > 1) break;
+      cursor += 1; continue;
+    }
+
+    const char = input[cursor];
+    if (/[0-9{}()[\]]/.test(char)) {
+      cursor += 1; continue;
+    }
+    if (/[=<>+\-*/^_]/.test(char)) {
+      cursor += 1; sawMath = true; continue;
+    }
+    if (/\s/.test(char)) {
+      const rest = input.slice(cursor);
+      if (/^\s*(?:[=<>+\-*/]|\\(?:frac|sqrt|cdot|times|le|ge|neq|pi|theta)\b|[A-Za-z0-9]+(?:\s*(?:\^|_)))/.test(rest)) {
+        cursor += 1; continue;
+      }
+    }
+    break;
+  }
+
+  const value = normalizeLatex(input.slice(index, cursor));
+  return sawMath && value ? { end: cursor, value } : null;
+}
+
 export function parseRichMathText(input: string): Part[] {
   const parts: Part[] = [];
   let index = 0;
@@ -43,6 +125,13 @@ export function parseRichMathText(input: string): Part[] {
     let display = false;
     let startOffset = 1;
     let candidateNeedsSignal = false;
+
+    const rawMath = scanRawMath(input, index);
+    if (rawMath) {
+      parts.push({ type: 'math', value: rawMath.value, display: false });
+      index = rawMath.end;
+      continue;
+    }
 
     if (two === '$$') {
       close = '$$'; display = true; startOffset = 2; end = input.indexOf(close, index + startOffset);
@@ -82,6 +171,7 @@ function RenderMath({ latex, display }: { latex: string; display: boolean }) {
     return (
       <span
         className={display ? 'richMath richMathDisplay' : 'richMath'}
+        data-math-boundary="true"
         dangerouslySetInnerHTML={{ __html: katex.renderToString(latex, { displayMode: display, throwOnError: true }) }}
       />
     );

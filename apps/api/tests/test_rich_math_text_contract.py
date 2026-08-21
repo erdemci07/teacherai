@@ -11,12 +11,28 @@ def test_rich_math_text_supports_mixed_turkish_prose_and_delimiters() -> None:
     ]
 
     assert "parseRichMathText" in source
+    assert "scanRawMath" in source
+    assert "scanCommand" in source
     assert "one === '('" in source
     assert "one === '['" in source
     assert "two === '$$'" in source
     assert "one === '$'" in source
+    assert "two === '\\\\('" in source
+    assert "two === '\\\\['" in source
     for example in examples:
         assert example
+
+
+def test_rich_math_text_detects_raw_latex_and_boundary_safety() -> None:
+    source = Path("apps/web/app/solve/RichMathText.tsx").read_text(encoding="utf-8")
+    styles = Path("apps/web/app/globals.css").read_text(encoding="utf-8")
+
+    for fragment in (r"frac", r"sqrt", r"pi", r"theta", r"cdot", r"times", r"le", r"ge", r"neq"):
+        assert fragment in source
+    assert "scanSimpleAtom" in source
+    assert "data-math-boundary" in source
+    assert ".richMath{display:inline-block" in styles
+    assert "margin:0 .08em" in styles
 
 
 def test_malformed_latex_falls_back_per_fragment_without_hiding_text() -> None:

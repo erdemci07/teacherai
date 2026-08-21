@@ -11,6 +11,7 @@ import { ImagePreview } from './ImagePreview';
 import { UploadCard } from './UploadCard';
 import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
+import { createHeicPreviewUrl, isHeicLike } from './heicPreview';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -40,6 +41,7 @@ export function SolveWorkspace() {
   const [state, setState] = useState<SolveState>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
+  const [previewAvailable, setPreviewAvailable] = useState(false);
   const [analysis, setAnalysis] = useState<VisionAnalysis | null>(null);
   const [result, setResult] = useState<GeneratedLesson | null>(null);
   const [error, setError] = useState('');
@@ -48,6 +50,7 @@ export function SolveWorkspace() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewRequestRef = useRef(0);
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
 
@@ -59,8 +62,21 @@ export function SolveWorkspace() {
     const supported = SUPPORTED_TYPES.includes(mediaType) || (!mediaType && SUPPORTED_EXTENSIONS.includes(extension));
     if (!supported) { setError(ERRORS.unsupported_image_type); setState('error'); return; }
     if (selected.size > MAX_FILE_BYTES) { setError(ERRORS.image_too_large); setState('error'); return; }
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
     if (preview) URL.revokeObjectURL(preview);
-    setFile(selected); setPreview(URL.createObjectURL(selected)); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
+    setFile(selected); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
+    if (isHeicLike(selected)) {
+      void createHeicPreviewUrl(selected).then((url) => {
+        if (previewRequestRef.current !== requestId) {
+          if (url) URL.revokeObjectURL(url);
+          return;
+        }
+        if (url) { setPreview(url); setPreviewAvailable(true); }
+      });
+      return;
+    }
+    setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);
   };
   const changed = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
@@ -68,8 +84,9 @@ export function SolveWorkspace() {
     event.target.value = '';
   };
   const reset = () => {
+    previewRequestRef.current += 1;
     if (preview) URL.revokeObjectURL(preview);
-    setFile(null); setPreview(''); setAnalysis(null); setResult(null); setError(''); setState('idle');
+    setFile(null); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('idle');
   };
   const createLesson = async (value: VisionAnalysis) => {
     setState('planning');
@@ -109,7 +126,7 @@ export function SolveWorkspace() {
     <header className="solveIntro"><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Sorunu yükle,<br /><span>mantığını birlikte öğrenelim.</span></h1><p>Fotoğrafını çek veya galeriden seç. TeacherAI soruyu inceler, kontrol eder ve adım adım anlatır.</p></header>
     <div className="solveGrid">
       <section className="solveInput" aria-label="Soru görseli">
-        {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} />}
+        {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} />}
         {error && <ErrorBanner message={error} />}
         {invalidAnalysis && <div className="invalidImageActions"><button type="button" className="primaryButton" onClick={() => cameraRef.current?.click()}>📷 Tekrar Çek</button><button type="button" className="secondaryButton" onClick={() => galleryRef.current?.click()}>Başka Görsel Seç</button></div>}
         {error && analysis?.is_valid_question && !result && <button className="secondaryButton retryButton" onClick={() => createLesson(analysis)}>Yeniden incele</button>}
