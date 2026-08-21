@@ -50,8 +50,13 @@ interface ApiErrorResponse {
 }
 
 export interface NormalizedImagePreview {
-  normalized_preview_url: string;
-  media_type: 'image/jpeg' | 'image/png' | 'image/webp';
+  image_id: string;
+  format: 'jpeg';
+  content_type: 'image/jpeg';
+  width: number;
+  height: number;
+  preview: string;
+  expires_at: string;
 }
 
 export class VisionApiError extends Error {
@@ -69,6 +74,7 @@ const API_BASE_URL =
 export function analyzeQuestionImage(
   image: File,
   onUploadComplete: () => void,
+  preparedImage?: NormalizedImagePreview | null,
   timeoutMs = 60_000,
 ): Promise<VisionAnalysis> {
   return new Promise(async (resolve, reject) => {
@@ -92,7 +98,12 @@ export function analyzeQuestionImage(
     request.addEventListener('timeout', () => reject(new VisionApiError('request_timeout')));
 
     const form = new FormData();
-    form.append('image', image);
+    if (preparedImage) {
+      form.append('prepared_image_id', preparedImage.image_id);
+      form.append('prepared_image_data_url', preparedImage.preview);
+    } else {
+      form.append('image', image);
+    }
     request.send(form);
   });
 }

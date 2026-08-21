@@ -1,6 +1,9 @@
 import io
 import base64
 import logging
+import re
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from time import perf_counter
 from uuid import uuid4
 
@@ -33,8 +36,21 @@ SUPPORTED_EXTENSIONS = {
     ".heif": "image/heif",
 }
 MAX_IMAGE_PIXELS = 40_000_000
+PREPARED_IMAGE_TTL_MINUTES = 15
+PREPARED_IMAGE_ID_PATTERN = re.compile(r"^prepared_[a-f0-9]{32}$")
 
 register_heif_opener()
+
+
+@dataclass(frozen=True)
+class PreparedImage:
+    image_id: str
+    content: bytes
+    media_type: str
+    suffix: str
+    width: int
+    height: int
+    expires_at: datetime
 
 
 class VisionService:
@@ -53,31 +69,31 @@ class VisionService:
     def diagnostics(self) -> VisionProviderDiagnostics:
         return VisionProviderDiagnostics.model_validate(self._provider.diagnostics())
 
-    async def preview(self, upload: UploadFile | None) -> NormalizedImagePreview:
+    async def prepare(self, upload: UploadFile | None) -> NormalizedImagePreview:
         if upload is None:
             raise MissingImageError
         try:
-            media_type = self._resolve_media_type(upload.content_type, upload.filename)
-            content = await self._read_limited(upload)
-            normalized, media_type, _ = self._normalize(content, media_type)
-            preview_url = self._preview_data_url(normalized, media_type)
-            if preview_url is None:
-                raise InvalidImageError
-            return NormalizedImagePreview(normalized_preview_url=preview_url, media_type=media_type)
+            prepared = self._prepare_bytes(
+                await self._read_limited(upload),
+                self._resolve_media_type(upload.content_type, upload.filename),
+            )
+            return self._preview_response(prepared)
         finally:
             await upload.close()
 
-    async def analyze(self, upload: UploadFile | None, request_id: str | None = None) -> VisionAnalysis:
+    async def analyze(
+        self,
+        upload: UploadFile | None,
+        request_id: str | None = None,
+        prepared_image_id: str | None = None,
+        prepared_image_data_url: str | None = None,
+    ) -> VisionAnalysis:
         resolved_request_id = request_id or str(uuid4())
         started = perf_counter()
-        if upload is None:
-            raise MissingImageError
-        media_type = self._resolve_media_type(upload.content_type, upload.filename)
 
         logger.info("Vision processing started", extra={"request_id": resolved_request_id, "stage": "validation"})
-        content = await self._read_limited(upload)
-        normalized, media_type, suffix = self._normalize(content, media_type)
-        temporary_path = await self._storage.save(normalized, suffix)
+        prepared = await self._resolve_prepared_image(upload, prepared_image_id, prepared_image_data_url)
+        temporary_path = await self._storage.save(prepared.content, prepared.suffix)
         try:
             logger.info(
                 "Vision provider analysis started",
@@ -88,7 +104,7 @@ class VisionService:
                     "model": self._provider.model,
                 },
             )
-            provider_result = await self._provider.analyze_image(normalized, media_type, resolved_request_id)
+            provider_result = await self._provider.analyze_image(prepared.content, prepared.media_type, resolved_request_id)
             duration = round((perf_counter() - started) * 1000)
             logger.info(
                 "Vision processing succeeded",
@@ -112,7 +128,7 @@ class VisionService:
                 provider=provider_result.provider,
                 model=provider_result.model,
                 processing_time_ms=duration,
-                normalized_preview_url=self._preview_data_url(normalized, media_type),
+                normalized_preview_url=self._preview_data_url(prepared.content, prepared.media_type),
                 debug={"provider_response_id": provider_result.response_id} if self._debug and provider_result.response_id else None,
             )
         except VisionError:
@@ -129,7 +145,22 @@ class VisionService:
             raise
         finally:
             await self._storage.delete(temporary_path)
-            await upload.close()
+            if upload is not None:
+                await upload.close()
+
+    async def _resolve_prepared_image(
+        self,
+        upload: UploadFile | None,
+        prepared_image_id: str | None,
+        prepared_image_data_url: str | None,
+    ) -> PreparedImage:
+        if prepared_image_id or prepared_image_data_url:
+            if not prepared_image_id or not prepared_image_data_url:
+                raise InvalidImageError
+            return self._prepared_from_data_url(prepared_image_id, prepared_image_data_url)
+        if upload is None:
+            raise MissingImageError
+        return self._prepare_bytes(await self._read_limited(upload), self._resolve_media_type(upload.content_type, upload.filename))
 
     async def _read_limited(self, upload: UploadFile) -> bytes:
         content = bytearray()
@@ -158,7 +189,7 @@ class VisionService:
             raise UnsupportedImageError from exc
 
     @staticmethod
-    def _normalize(content: bytes, declared_media_type: str) -> tuple[bytes, str, str]:
+    def _prepare_bytes(content: bytes, declared_media_type: str) -> PreparedImage:
         try:
             with Image.open(io.BytesIO(content)) as source:
                 if source.width * source.height > MAX_IMAGE_PIXELS:
@@ -170,16 +201,53 @@ class VisionService:
                     raise UnsupportedImageError
                 normalized = ImageOps.exif_transpose(source)
                 output = io.BytesIO()
-                if source.format in {"JPEG", "HEIF"}:
-                    normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
-                    return output.getvalue(), "image/jpeg", "jpg"
-                normalized.save(output, format=source.format, optimize=True)
-                suffix = "png" if source.format == "PNG" else "webp"
-                return output.getvalue(), declared_media_type, suffix
+                normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
+                width, height = normalized.size
+                return PreparedImage(
+                    image_id=f"prepared_{uuid4().hex}",
+                    content=output.getvalue(),
+                    media_type="image/jpeg",
+                    suffix="jpg",
+                    width=width,
+                    height=height,
+                    expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
+                )
         except UnsupportedImageError:
             raise
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
             raise InvalidImageError from exc
+
+    def _prepared_from_data_url(self, image_id: str, data_url: str) -> PreparedImage:
+        if not PREPARED_IMAGE_ID_PATTERN.fullmatch(image_id):
+            raise InvalidImageError
+        prefix = "data:image/jpeg;base64,"
+        if not data_url.startswith(prefix):
+            raise InvalidImageError
+        try:
+            content = base64.b64decode(data_url[len(prefix):], validate=True)
+            if len(content) > self._max_upload_size_bytes:
+                raise ImageTooLargeError
+            with Image.open(io.BytesIO(content)) as image:
+                if image.format != "JPEG":
+                    raise InvalidImageError
+                if image.width * image.height > MAX_IMAGE_PIXELS:
+                    raise InvalidImageError
+                image.verify()
+            with Image.open(io.BytesIO(content)) as image:
+                width, height = image.size
+        except InvalidImageError:
+            raise
+        except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
+            raise InvalidImageError from exc
+        return PreparedImage(
+            image_id=image_id,
+            content=content,
+            media_type="image/jpeg",
+            suffix="jpg",
+            width=width,
+            height=height,
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
+        )
 
     @staticmethod
     def _preview_data_url(content: bytes, media_type: str) -> str | None:
@@ -190,3 +258,16 @@ class VisionService:
         except (ValueError, OSError):
             return None
         return f"data:{media_type};base64,{encoded}"
+
+    def _preview_response(self, prepared: PreparedImage) -> NormalizedImagePreview:
+        preview = self._preview_data_url(prepared.content, prepared.media_type)
+        if preview is None:
+            raise InvalidImageError
+        return NormalizedImagePreview(
+            image_id=prepared.image_id,
+            content_type="image/jpeg",
+            width=prepared.width,
+            height=prepared.height,
+            preview=preview,
+            expires_at=prepared.expires_at.isoformat(),
+        )

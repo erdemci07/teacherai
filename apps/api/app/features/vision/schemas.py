@@ -75,8 +75,13 @@ class VisionAnalysis(VisionProviderAnalysis):
 
 
 class NormalizedImagePreview(BaseModel):
-    normalized_preview_url: str
-    media_type: Literal["image/jpeg", "image/png", "image/webp"]
+    image_id: str
+    format: Literal["jpeg"] = "jpeg"
+    content_type: Literal["image/jpeg"] = "image/jpeg"
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    preview: str
+    expires_at: str
 
 
 class VisionProviderDiagnostics(BaseModel):
