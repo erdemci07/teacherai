@@ -13,7 +13,7 @@ class MissingImageError(VisionError):
 class UnsupportedImageError(VisionError):
     code = "unsupported_image_type"
     status_code = 415
-    public_message = "Yalnızca JPG, JPEG, PNG veya WEBP görselleri desteklenir."
+    public_message = "Yalnızca JPG, JPEG, PNG, WEBP, HEIC veya HEIF görselleri desteklenir."
 
 
 class ImageTooLargeError(VisionError):
@@ -25,7 +25,7 @@ class ImageTooLargeError(VisionError):
 class InvalidImageError(VisionError):
     code = "invalid_image"
     status_code = 422
-    public_message = "Görsel okunamadı. Geçerli bir JPG, PNG veya WEBP dosyası yükleyin."
+    public_message = "Görsel okunamadı. Geçerli bir JPG, PNG, WEBP, HEIC veya HEIF dosyası yükleyin."
 
 
 class ProviderConfigurationError(VisionError):

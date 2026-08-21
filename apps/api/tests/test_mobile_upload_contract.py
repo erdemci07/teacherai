@@ -26,10 +26,18 @@ def test_existing_desktop_and_retry_upload_paths_remain_available() -> None:
 def test_frontend_accepts_jpeg_extensions_and_supported_mime_types() -> None:
     workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
 
-    for media_type in ("image/jpeg", "image/jpg", "image/png", "image/webp"):
+    for media_type in ("image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"):
         assert media_type in workspace
-    for extension in (".jpg", ".jpeg", ".png", ".webp"):
+    for extension in (".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"):
         assert extension in workspace
     assert "selected.type.toLowerCase()" in workspace
     assert "selected.name.split('.').pop()?.toLowerCase()" in workspace
-    assert "JPG, JPEG, PNG veya WEBP" in workspace
+    assert "JPG, JPEG, PNG, WEBP, HEIC veya HEIF" in workspace
+
+
+def test_heic_preview_can_fall_back_to_generic_file_state() -> None:
+    preview = Path("apps/web/app/solve/ImagePreview.tsx").read_text(encoding="utf-8")
+
+    assert "previewable" in preview
+    assert "genericImagePreview" in preview
+    assert "Önizleme bu tarayıcıda desteklenmeyebilir." in preview

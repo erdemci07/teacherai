@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from fastapi import UploadFile
 from PIL import Image, ImageOps, UnidentifiedImageError
+from pillow_heif import register_heif_opener
 
 from apps.api.app.features.vision.exceptions import (
     ImageTooLargeError,
@@ -19,9 +20,19 @@ from apps.api.app.features.vision.storage import TemporaryImageStorage
 
 logger = logging.getLogger(__name__)
 SUPPORTED_MEDIA_TYPES = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
+HEIF_MEDIA_TYPES = {"image/heic": "HEIF", "image/heif": "HEIF"}
 MEDIA_TYPE_ALIASES = {"image/jpg": "image/jpeg"}
-SUPPORTED_EXTENSIONS = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+SUPPORTED_EXTENSIONS = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".heic": "image/heic",
+    ".heif": "image/heif",
+}
 MAX_IMAGE_PIXELS = 40_000_000
+
+register_heif_opener()
 
 
 class VisionService:
@@ -111,7 +122,7 @@ class VisionService:
     def _resolve_media_type(content_type: str | None, filename: str | None) -> str:
         normalized_type = (content_type or "").split(";", 1)[0].strip().lower()
         normalized_type = MEDIA_TYPE_ALIASES.get(normalized_type, normalized_type)
-        if normalized_type in SUPPORTED_MEDIA_TYPES:
+        if normalized_type in SUPPORTED_MEDIA_TYPES or normalized_type in HEIF_MEDIA_TYPES:
             return normalized_type
         if normalized_type and normalized_type != "application/octet-stream":
             raise UnsupportedImageError
@@ -131,11 +142,12 @@ class VisionService:
                     raise InvalidImageError
                 source.verify()
             with Image.open(io.BytesIO(content)) as source:
-                if source.format != SUPPORTED_MEDIA_TYPES[declared_media_type]:
+                expected_format = (SUPPORTED_MEDIA_TYPES | HEIF_MEDIA_TYPES)[declared_media_type]
+                if source.format != expected_format:
                     raise UnsupportedImageError
                 normalized = ImageOps.exif_transpose(source)
                 output = io.BytesIO()
-                if source.format == "JPEG":
+                if source.format in {"JPEG", "HEIF"}:
                     normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
                     return output.getvalue(), "image/jpeg", "jpg"
                 normalized.save(output, format=source.format, optimize=True)

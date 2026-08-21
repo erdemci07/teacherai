@@ -33,6 +33,6 @@ export function UploadCard({ disabled, dragging, onDraggingChange, onFile, onCam
       <button type="button" onClick={(event) => { event.stopPropagation(); onGallery(); }} disabled={disabled}><span aria-hidden="true">🖼️</span>Galeriden Seç</button>
       <button type="button" className="fileChoice" onClick={(event) => { event.stopPropagation(); onFilePicker(); }} disabled={disabled}><span aria-hidden="true">↥</span>Dosya Yükle</button>
     </div>
-    <p className="uploadGuidance">En iyi sonuç için sorunun tamamı ve varsa şekil veya grafik net görünsün.</p><span className="formatNote">JPG, PNG, WEBP · En fazla 10 MB</span>
+    <p className="uploadGuidance">En iyi sonuç için sorunun tamamı ve varsa şekil veya grafik net görünsün.</p><span className="formatNote">JPG, PNG, WEBP, HEIC, HEIF · En fazla 10 MB</span>
   </div>;
 }

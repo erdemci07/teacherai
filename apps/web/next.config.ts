@@ -3,6 +3,7 @@
 const nextConfig: NextConfig = {
   typedRoutes: true,
   output: 'export',
+  trailingSlash: true,
 };
 
 export default nextConfig;

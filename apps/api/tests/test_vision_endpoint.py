@@ -4,6 +4,8 @@ from dataclasses import replace
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from PIL import ImageOps
+from pillow_heif import register_heif_opener
 
 from apps.api.app.features.vision.exceptions import (
     InvalidProviderResponseError,
@@ -17,10 +19,21 @@ from apps.api.app.features.vision.service import VisionService
 from apps.api.app.features.vision.storage import LocalTemporaryImageStorage
 from apps.api.app.main import create_app
 
+register_heif_opener()
+
 
 def image_bytes(image_format: str = "PNG") -> bytes:
     output = io.BytesIO()
     Image.new("RGB", (32, 24), "white").save(output, format=image_format)
+    return output.getvalue()
+
+
+def oriented_jpeg_bytes() -> bytes:
+    output = io.BytesIO()
+    image = Image.new("RGB", (20, 40), "white")
+    exif = image.getexif()
+    exif[274] = 6
+    image.save(output, format="JPEG", exif=exif.tobytes())
     return output.getvalue()
 
 
@@ -30,10 +43,12 @@ class SuccessfulProvider:
 
     def __init__(self, image_status: str = "valid_math_question") -> None:
         self.image_status = image_status
+        self.calls: list[tuple[bytes, str]] = []
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
         assert image
         assert media_type in {"image/jpeg", "image/png", "image/webp"}
+        self.calls.append((image, media_type))
         return ProviderResult(
             analysis=VisionProviderAnalysis(
                 image_status=self.image_status,
@@ -154,6 +169,59 @@ def test_accepts_supported_image_names_and_media_types(tmp_path, filename, conte
     assert response.status_code == 200
 
 
+@pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
+def test_accepts_heic_and_heif_then_sends_normalized_jpeg_to_provider(tmp_path, filename, content_type) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": (filename, image_bytes("HEIF"), content_type)},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/jpeg"
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert image.format == "JPEG"
+
+
+@pytest.mark.parametrize(("filename", "content_type"), [("broken.heic", "image/heic"), ("broken.heif", "image/heif")])
+def test_rejects_corrupt_heic_and_heif_safely(tmp_path, filename, content_type) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": (filename, b"not a heif image", content_type)},
+        )
+
+    assert response.status_code == 422
+    assert response.json()["error"] == "invalid_image"
+
+
+def test_rejects_spoofed_supported_mime_and_content_mismatch(tmp_path) -> None:
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("renamed.png", image_bytes("JPEG"), "image/png")},
+        )
+
+    assert response.status_code == 415
+    assert response.json()["error"] == "unsupported_image_type"
+
+
+def test_applies_exif_orientation_before_provider_analysis(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("rotated.jpg", oriented_jpeg_bytes(), "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    normalized, _ = provider.calls[0]
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert ImageOps.exif_transpose(image).size == (40, 20)
+
+
 @pytest.mark.parametrize(
     ("filename", "content_type"),
     [
@@ -173,9 +241,9 @@ def test_rejects_unsupported_names_and_media_types(tmp_path, filename, content_t
     assert response.json()["error"] == "unsupported_image_type"
 
 
-@pytest.mark.parametrize("filename", ["test.jpg", "test.JPG", "test.jpeg", "test.JPEG", "test.png", "test.PNG", "test.webp", "test.WEBP"])
+@pytest.mark.parametrize("filename", ["test.jpg", "test.JPG", "test.jpeg", "test.JPEG", "test.png", "test.PNG", "test.webp", "test.WEBP", "test.heic", "test.HEIC", "test.heif", "test.HEIF"])
 def test_supported_extension_is_used_when_browser_omits_media_type(tmp_path, filename) -> None:
-    image_format = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}[filename.rsplit(".", 1)[1].lower()]
+    image_format = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP", "heic": "HEIF", "heif": "HEIF"}[filename.rsplit(".", 1)[1].lower()]
     with client_with_provider(tmp_path, SuccessfulProvider()) as client:
         response = client.post(
             "/api/v1/vision/analyze",

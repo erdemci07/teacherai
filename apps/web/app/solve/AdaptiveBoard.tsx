@@ -1,3 +1,3 @@
-import type{BoardElement,BoardPlan}from'../lib/lesson-api';import{MathExpression}from'./MathExpression';
-function Item({item}:{item:BoardElement}){const mark=item.mark==='check'?'✓':item.mark==='cross'?'✕':'';return <section className={`boardItem board-${item.type}`}>{mark&&<span className="teacherMark">{mark}</span>}{item.text&&<p>{item.text}</p>}{item.latex&&<MathExpression latex={item.latex}/>}</section>}
+import type{BoardElement,BoardPlan}from'../lib/lesson-api';import{MathExpression}from'./MathExpression';import{RichMathText}from'./RichMathText';
+function Item({item}:{item:BoardElement}){const mark=item.mark==='check'?'✓':item.mark==='cross'?'✕':'';return <section className={`boardItem board-${item.type}`}>{mark&&<span className="teacherMark">{mark}</span>}{item.text&&<p><RichMathText text={item.text}/></p>}{item.latex&&<MathExpression latex={item.latex}/>}</section>}
 export function AdaptiveBoard({board}:{board:BoardPlan}){return <article className="teacherBoard adaptiveBoard" aria-label={board.title}><header><span>TeacherAI</span><h2>{board.title}</h2></header>{board.elements.map(x=><Item item={x} key={x.id}/>)}</article>}
