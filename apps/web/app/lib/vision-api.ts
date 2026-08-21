@@ -51,8 +51,8 @@ interface ApiErrorResponse {
 
 export interface NormalizedImagePreview {
   image_id: string;
-  format: 'jpeg';
-  content_type: 'image/jpeg';
+  format: 'png';
+  content_type: 'image/png';
   width: number;
   height: number;
   preview: string;

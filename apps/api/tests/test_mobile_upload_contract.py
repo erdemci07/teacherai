@@ -55,6 +55,8 @@ def test_selection_uses_backend_preparation_and_preserves_original_file() -> Non
     assert "/vision/preview" in api
     assert "prepared_image_id" in api
     assert "prepared_image_data_url" in api
+    assert "format: 'png'" in api
+    assert "content_type: 'image/png'" in api
     assert "preview: string" in api
     assert "normalized_preview_url: string | null" in api
     assert "heic2any" not in workspace
@@ -118,3 +120,12 @@ def test_native_preview_failure_can_request_backend_preparation_again() -> None:
     assert "const handlePreviewError" in workspace
     assert "setPreviewAvailable(false)" in workspace
     assert "requestBackendPreview(file, previewRequestRef.current)" in workspace
+
+
+def test_png_preview_state_remains_after_downstream_solve_error() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    catch_block = workspace.split("} catch (caught) {", 1)[1].split("  const pasted", 1)[0]
+
+    assert "setPreview('')" not in catch_block
+    assert "setPreparedImage(null)" not in catch_block
+    assert "setFile(null)" not in catch_block

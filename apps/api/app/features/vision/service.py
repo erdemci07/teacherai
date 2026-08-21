@@ -36,6 +36,7 @@ SUPPORTED_EXTENSIONS = {
     ".heif": "image/heif",
 }
 MAX_IMAGE_PIXELS = 40_000_000
+MAX_PREPARED_IMAGE_BYTES = 32 * 1024 * 1024
 PREPARED_IMAGE_TTL_MINUTES = 15
 PREPARED_IMAGE_ID_PATTERN = re.compile(r"^prepared_[a-f0-9]{32}$")
 
@@ -201,13 +202,14 @@ class VisionService:
                     raise UnsupportedImageError
                 normalized = ImageOps.exif_transpose(source)
                 output = io.BytesIO()
-                normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
+                has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
+                normalized.convert("RGBA" if has_alpha else "RGB").save(output, format="PNG", optimize=True)
                 width, height = normalized.size
                 return PreparedImage(
                     image_id=f"prepared_{uuid4().hex}",
                     content=output.getvalue(),
-                    media_type="image/jpeg",
-                    suffix="jpg",
+                    media_type="image/png",
+                    suffix="png",
                     width=width,
                     height=height,
                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
@@ -220,15 +222,15 @@ class VisionService:
     def _prepared_from_data_url(self, image_id: str, data_url: str) -> PreparedImage:
         if not PREPARED_IMAGE_ID_PATTERN.fullmatch(image_id):
             raise InvalidImageError
-        prefix = "data:image/jpeg;base64,"
+        prefix = "data:image/png;base64,"
         if not data_url.startswith(prefix):
             raise InvalidImageError
         try:
             content = base64.b64decode(data_url[len(prefix):], validate=True)
-            if len(content) > self._max_upload_size_bytes:
+            if len(content) > MAX_PREPARED_IMAGE_BYTES:
                 raise ImageTooLargeError
             with Image.open(io.BytesIO(content)) as image:
-                if image.format != "JPEG":
+                if image.format != "PNG":
                     raise InvalidImageError
                 if image.width * image.height > MAX_IMAGE_PIXELS:
                     raise InvalidImageError
@@ -242,8 +244,8 @@ class VisionService:
         return PreparedImage(
             image_id=image_id,
             content=content,
-            media_type="image/jpeg",
-            suffix="jpg",
+            media_type="image/png",
+            suffix="png",
             width=width,
             height=height,
             expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
@@ -251,7 +253,7 @@ class VisionService:
 
     @staticmethod
     def _preview_data_url(content: bytes, media_type: str) -> str | None:
-        if media_type not in {"image/jpeg", "image/png", "image/webp"}:
+        if media_type != "image/png":
             return None
         try:
             encoded = base64.b64encode(content).decode("ascii")
@@ -265,7 +267,7 @@ class VisionService:
             raise InvalidImageError
         return NormalizedImagePreview(
             image_id=prepared.image_id,
-            content_type="image/jpeg",
+            content_type="image/png",
             width=prepared.width,
             height=prepared.height,
             preview=preview,
