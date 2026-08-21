@@ -4,6 +4,8 @@ class LessonProviderConfigurationError(LessonError):
     code = "lesson_provider_not_configured"; status_code = 503; public_message = "Öğretmen anlatımı servisi yapılandırılmamış."
 class LessonProviderUnavailableError(LessonError):
     code = "lesson_provider_unavailable"; status_code = 503
+class LessonProviderTimeoutError(LessonError):
+    code = "lesson_timeout"; status_code = 504; public_message = "İnceleme beklediğimden uzun sürdü. Tekrar deneyebilir misin?"
 class InvalidLessonPlanError(LessonError):
     code = "invalid_lesson_plan"; status_code = 502; public_message = "Güvenilir bir anlatım oluşturulamadı."
 class VerificationContradictionError(LessonError):

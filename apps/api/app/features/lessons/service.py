@@ -18,11 +18,12 @@ class LessonService:
             raise InvalidQuestionAnalysisError
         started=perf_counter(); correction=False
         plan=await self._plan(analysis,None,teaching_context)
+        plan=self.mathai.reconcile_answer_choice(plan)
         verification=self.mathai.verify(plan)
         if verification.contradiction:
             correction=True
             feedback="MathAI çelişki buldu: "+"; ".join(x.detail or x.statement for x in verification.checks if x.status=="failed")
-            plan=await self._plan(analysis,feedback,teaching_context); verification=self.mathai.verify(plan)
+            plan=await self._plan(analysis,feedback,teaching_context); plan=self.mathai.reconcile_answer_choice(plan); verification=self.mathai.verify(plan)
             if verification.contradiction: raise VerificationContradictionError
         board=self.board_planner.create(plan,verification)
         return GeneratedLesson(lesson=plan,verification=verification,board=board,correction_attempted=correction,total_processing_ms=analysis.processing_time_ms+round((perf_counter()-started)*1000))

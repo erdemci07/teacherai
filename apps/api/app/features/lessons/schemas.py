@@ -40,6 +40,42 @@ class LessonDraft(BaseModel):
     learning_objectives: list[str]=Field(min_length=1)
     concept_id: str=Field(pattern=r"^concept_[a-z0-9_]+$")
     content: LessonContent
+
+class ExpressionResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    type: Literal["equation","expression","inequality","system","function","geometry"]
+    latex: str
+class StepResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    type: Literal["explanation","equation","transformation","case","warning","result","diagram_reference","graph_reference"]
+    title: str
+    explanation: str
+    expressions: list[ExpressionResponse]
+    visual_reference: str|None
+class LessonContentResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    question_understanding: str
+    known_values: list[str]
+    unknown: str|None
+    prerequisite_reminder: str|None
+    key_rule: str|None
+    strategy: str
+    strategy_id: str
+    steps: list[StepResponse]
+    common_mistake: str|None
+    mistake_type: str|None
+    shortcut: str|None
+    mini_example: list[ExpressionResponse]
+    teacher_tip: str|None
+    final_answer: str
+    final_answer_expressions: list[ExpressionResponse]
+    takeaway: str
+class LessonDraftResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    learning_objectives: list[str]
+    concept_id: str
+    content: LessonContentResponse
 class LessonPlan(BaseModel):
     schema_: Annotated[dict[str,str], Field(alias="schema")]=Field(default_factory=lambda:{"name":"teacherai.lesson_plan","version":"1.0.0"})
     lesson_plan_id: str; lesson_plan_version: str="1"; status: str="verification_pending"

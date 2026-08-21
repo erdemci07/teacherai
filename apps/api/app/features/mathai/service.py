@@ -44,11 +44,80 @@ class MathAIService:
         final_verified=claimed is not None and claimed==expected
         contradiction=claimed is not None and claimed!=expected
         checks.append(VerificationCheck(id="final_answer",kind="final_answer",status="passed" if final_verified else "failed" if contradiction else "unsupported",statement=plan.content.final_answer,detail=f"Bağımsız çözüm kümesi: {sorted(map(str,expected))}"))
+        option_check=self._answer_choice_check(plan,claimed)
+        if option_check:
+            checks.append(option_check)
+        option_contradiction=option_check is not None and option_check.status=="failed"
+        contradiction=contradiction or option_contradiction
         failed=any(x.status=="failed" for x in checks)
         if contradiction: warnings.append("Üretilen final cevap bağımsız çözümle çelişiyor.")
+        if option_contradiction: warnings.append("Final cevap seçeneği hesaplanan değerle çelişiyor.")
         status="failed" if failed else "verified" if final_verified and all(x.status=="passed" for x in checks) else "partially_verified"
         confidence=1.0 if status=="verified" else .7 if status=="partially_verified" else 0.0
         return self._result(status,checks,final_verified,contradiction,warnings,started,confidence,graph)
+
+    def reconcile_answer_choice(self,plan:LessonPlan)->LessonPlan:
+        claimed=self._claimed_solutions_from_final_expressions(plan)
+        choices=self._numeric_answer_choices(plan.source_analysis.answer_choices)
+        selected=self._selected_option_label(plan.content.final_answer)
+        if not claimed or len(claimed)!=1 or not choices:
+            return plan
+        matching=[label for label,value,text in choices if simplify(next(iter(claimed))-value)==0]
+        if len(matching)!=1:
+            return plan
+        label=matching[0]
+        if selected==label:
+            return plan
+        choice_text=next(text for item_label,_,text in choices if item_label==label)
+        content=plan.content.model_copy(update={"final_answer":f"{label}) {choice_text}"})
+        return plan.model_copy(update={"content":content})
+
+    def _claimed_solutions_from_final_expressions(self,plan):
+        variables=self._source_variables(plan)
+        if len(variables)!=1:
+            return None
+        return self._claimed_solutions(plan,variables[0])
+
+    def _source_variables(self,plan):
+        originals=[x for x in plan.source_analysis.mathematical_expressions if "=" in x]
+        if not originals:
+            return []
+        try:
+            return sorted(equation(originals[0]).free_symbols,key=str)
+        except (MathParseError,NotImplementedError,TypeError):
+            return []
+
+    def _answer_choice_check(self,plan,claimed):
+        choices=self._numeric_answer_choices(plan.source_analysis.answer_choices)
+        selected=self._selected_option_label(plan.content.final_answer)
+        if not choices or not claimed or len(claimed)!=1:
+            return None
+        value=next(iter(claimed))
+        matching=[label for label,choice_value,_ in choices if simplify(value-choice_value)==0]
+        if len(matching)!=1:
+            return VerificationCheck(id="answer_choice",kind="final_answer",status="unsupported",statement=plan.content.final_answer,detail="Cevap seçenekleri güvenli biçimde eşleştirilemedi.")
+        expected_label=matching[0]
+        if selected and selected!=expected_label:
+            return VerificationCheck(id="answer_choice",kind="final_answer",status="failed",statement=plan.content.final_answer,detail=f"Hesaplanan değer {expected_label} seçeneğine karşılık geliyor.")
+        return VerificationCheck(id="answer_choice",kind="final_answer",status="passed",statement=plan.content.final_answer,detail=f"Hesaplanan değer {expected_label} seçeneğiyle uyumlu.")
+
+    def _numeric_answer_choices(self,choices):
+        parsed=[]
+        for index,choice in enumerate(choices):
+            text=choice.strip()
+            match=re.match(r"^\s*([A-Ea-e])\s*[\)\].:\-]\s*(.+?)\s*$",text)
+            label=match.group(1).upper() if match else chr(ord("A")+index)
+            value_text=match.group(2).strip() if match else text
+            try:
+                parsed.append((label,expression(value_text),value_text))
+            except MathParseError:
+                continue
+        return parsed
+
+    def _selected_option_label(self,text):
+        match=re.search(r"(?:^|[\s(])([A-Ea-e])\s*[\)\].:\-]",text)
+        return match.group(1).upper() if match else None
+
     def _claimed_solutions(self,plan,variable):
         values=set()
         for item in plan.content.final_answer_expressions:
