@@ -70,6 +70,7 @@ class VisionAnalysis(VisionProviderAnalysis):
     provider: str
     model: str
     processing_time_ms: int = Field(ge=0)
+    normalized_preview_url: str | None = None
     debug: dict[str, str] | None = None
 
 

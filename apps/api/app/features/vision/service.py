@@ -1,4 +1,5 @@
 import io
+import base64
 import logging
 from time import perf_counter
 from uuid import uuid4
@@ -97,6 +98,7 @@ class VisionService:
                 provider=provider_result.provider,
                 model=provider_result.model,
                 processing_time_ms=duration,
+                normalized_preview_url=self._preview_data_url(normalized, media_type),
                 debug={"provider_response_id": provider_result.response_id} if self._debug and provider_result.response_id else None,
             )
         except VisionError:
@@ -164,3 +166,13 @@ class VisionService:
             raise
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
             raise InvalidImageError from exc
+
+    @staticmethod
+    def _preview_data_url(content: bytes, media_type: str) -> str | None:
+        if media_type not in {"image/jpeg", "image/png", "image/webp"}:
+            return None
+        try:
+            encoded = base64.b64encode(content).decode("ascii")
+        except (ValueError, OSError):
+            return None
+        return f"data:{media_type};base64,{encoded}"

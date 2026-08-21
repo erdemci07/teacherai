@@ -11,7 +11,6 @@ import { ImagePreview } from './ImagePreview';
 import { UploadCard } from './UploadCard';
 import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
-import { createHeicPreviewUrl, isHeicLike } from './heicPreview';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -50,11 +49,14 @@ export function SolveWorkspace() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const previewRequestRef = useRef(0);
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
 
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+  const revokeBlobPreview = (url: string) => {
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => () => { if (preview) revokeBlobPreview(preview); }, [preview]);
 
   const select = (selected: File) => {
     const mediaType = selected.type.toLowerCase();
@@ -62,21 +64,11 @@ export function SolveWorkspace() {
     const supported = SUPPORTED_TYPES.includes(mediaType) || (!mediaType && SUPPORTED_EXTENSIONS.includes(extension));
     if (!supported) { setError(ERRORS.unsupported_image_type); setState('error'); return; }
     if (selected.size > MAX_FILE_BYTES) { setError(ERRORS.image_too_large); setState('error'); return; }
-    const requestId = previewRequestRef.current + 1;
-    previewRequestRef.current = requestId;
-    if (preview) URL.revokeObjectURL(preview);
+    if (preview) revokeBlobPreview(preview);
     setFile(selected); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
-    if (isHeicLike(selected)) {
-      void createHeicPreviewUrl(selected).then((url) => {
-        if (previewRequestRef.current !== requestId) {
-          if (url) URL.revokeObjectURL(url);
-          return;
-        }
-        if (url) { setPreview(url); setPreviewAvailable(true); }
-      });
-      return;
+    if (!['image/heic', 'image/heif'].includes(mediaType) && !['.heic', '.heif'].includes(extension)) {
+      setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);
     }
-    setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);
   };
   const changed = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
@@ -84,8 +76,7 @@ export function SolveWorkspace() {
     event.target.value = '';
   };
   const reset = () => {
-    previewRequestRef.current += 1;
-    if (preview) URL.revokeObjectURL(preview);
+    if (preview) revokeBlobPreview(preview);
     setFile(null); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('idle');
   };
   const createLesson = async (value: VisionAnalysis) => {
@@ -104,6 +95,7 @@ export function SolveWorkspace() {
     try {
       const value = await analyzeQuestionImage(file, () => setState('analyzing'));
       setAnalysis(value);
+      if (!previewAvailable && value.normalized_preview_url) { setPreview(value.normalized_preview_url); setPreviewAvailable(true); }
       if (!value.is_valid_question || value.image_status !== 'valid_math_question') {
         const status = value.image_status === 'valid_math_question' ? 'unreadable' : value.image_status;
         setError(INVALID_QUESTION_MESSAGES[status]); setState('error'); return;

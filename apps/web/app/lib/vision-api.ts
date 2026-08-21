@@ -32,6 +32,7 @@ export interface VisionAnalysis {
   provider: string;
   model: string;
   processing_time_ms: number;
+  normalized_preview_url: string | null;
   debug: Record<string, string> | null;
 }
 

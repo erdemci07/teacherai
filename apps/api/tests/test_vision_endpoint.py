@@ -1,4 +1,5 @@
 import io
+import base64
 from dataclasses import replace
 
 import pytest
@@ -191,10 +192,29 @@ def test_accepts_heic_and_heif_then_sends_normalized_jpeg_to_provider(tmp_path, 
         )
 
     assert response.status_code == 200
+    preview_url = response.json()["data"]["normalized_preview_url"]
+    assert preview_url.startswith("data:image/jpeg;base64,")
+    with Image.open(io.BytesIO(base64.b64decode(preview_url.split(",", 1)[1]))) as image:
+        assert image.format == "JPEG"
     normalized, media_type = provider.calls[0]
     assert media_type == "image/jpeg"
     with Image.open(io.BytesIO(normalized)) as image:
         assert image.format == "JPEG"
+
+
+def test_heif_normalized_preview_uses_same_jpeg_sent_to_provider(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("iphone.heif", image_bytes("HEIF"), "image/heif")},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/jpeg"
+    preview_url = response.json()["data"]["normalized_preview_url"]
+    assert base64.b64decode(preview_url.split(",", 1)[1]) == normalized
 
 
 @pytest.mark.parametrize(("filename", "content_type"), [("broken.heic", "image/heic"), ("broken.heif", "image/heif")])
@@ -232,6 +252,18 @@ def test_applies_exif_orientation_before_provider_analysis(tmp_path) -> None:
     normalized, _ = provider.calls[0]
     with Image.open(io.BytesIO(normalized)) as image:
         assert ImageOps.exif_transpose(image).size == (40, 20)
+    preview_url = response.json()["data"]["normalized_preview_url"]
+    with Image.open(io.BytesIO(base64.b64decode(preview_url.split(",", 1)[1]))) as image:
+        assert image.size == (40, 20)
+
+
+def test_preview_generation_failure_does_not_block_analysis(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(VisionService, "_preview_data_url", staticmethod(lambda content, media_type: None))
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post("/api/v1/vision/analyze", files={"image": ("question.png", image_bytes(), "image/png")})
+
+    assert response.status_code == 200
+    assert response.json()["data"]["normalized_preview_url"] is None
 
 
 @pytest.mark.parametrize(
