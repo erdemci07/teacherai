@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, ClipboardEvent, useEffect, useRef, useState } from 'react';
-import { analyzeQuestionImage, ImageStatus, VisionAnalysis, VisionApiError } from '../lib/vision-api';
+import { analyzeQuestionImage, ImageStatus, prepareImagePreview, VisionAnalysis, VisionApiError } from '../lib/vision-api';
 import { generateLesson, GeneratedLesson, LessonApiError } from '../lib/lesson-api';
 import { saveLesson } from '../lib/student-api';
 import { InteractionPanel } from './InteractionPanel';
@@ -41,6 +41,7 @@ export function SolveWorkspace() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
   const [previewAvailable, setPreviewAvailable] = useState(false);
+  const [previewPreparing, setPreviewPreparing] = useState(false);
   const [analysis, setAnalysis] = useState<VisionAnalysis | null>(null);
   const [result, setResult] = useState<GeneratedLesson | null>(null);
   const [error, setError] = useState('');
@@ -49,6 +50,8 @@ export function SolveWorkspace() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewRequestRef = useRef(0);
+  const previewAbortRef = useRef<AbortController | null>(null);
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
 
@@ -57,6 +60,26 @@ export function SolveWorkspace() {
   };
 
   useEffect(() => () => { if (preview) revokeBlobPreview(preview); }, [preview]);
+  useEffect(() => () => { previewAbortRef.current?.abort(); }, []);
+
+  const needsBackendPreview = (mediaType: string, extension: string) => ['image/heic', 'image/heif'].includes(mediaType) || ['.heic', '.heif'].includes(extension);
+
+  const requestBackendPreview = (selected: File, requestId: number) => {
+    previewAbortRef.current?.abort();
+    const controller = new AbortController();
+    previewAbortRef.current = controller;
+    setPreviewPreparing(true);
+    void prepareImagePreview(selected, controller.signal)
+      .then((value) => {
+        if (previewRequestRef.current !== requestId) return;
+        if (preview) revokeBlobPreview(preview);
+        setPreview(value.normalized_preview_url); setPreviewAvailable(true);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (previewRequestRef.current === requestId) setPreviewPreparing(false);
+      });
+  };
 
   const select = (selected: File) => {
     const mediaType = selected.type.toLowerCase();
@@ -64,9 +87,14 @@ export function SolveWorkspace() {
     const supported = SUPPORTED_TYPES.includes(mediaType) || (!mediaType && SUPPORTED_EXTENSIONS.includes(extension));
     if (!supported) { setError(ERRORS.unsupported_image_type); setState('error'); return; }
     if (selected.size > MAX_FILE_BYTES) { setError(ERRORS.image_too_large); setState('error'); return; }
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
+    previewAbortRef.current?.abort();
     if (preview) revokeBlobPreview(preview);
-    setFile(selected); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
-    if (!['image/heic', 'image/heif'].includes(mediaType) && !['.heic', '.heif'].includes(extension)) {
+    setFile(selected); setPreview(''); setPreviewAvailable(false); setPreviewPreparing(false); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
+    if (needsBackendPreview(mediaType, extension)) {
+      requestBackendPreview(selected, requestId);
+    } else {
       setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);
     }
   };
@@ -76,8 +104,10 @@ export function SolveWorkspace() {
     event.target.value = '';
   };
   const reset = () => {
+    previewRequestRef.current += 1;
+    previewAbortRef.current?.abort();
     if (preview) revokeBlobPreview(preview);
-    setFile(null); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('idle');
+    setFile(null); setPreview(''); setPreviewAvailable(false); setPreviewPreparing(false); setAnalysis(null); setResult(null); setError(''); setState('idle');
   };
   const createLesson = async (value: VisionAnalysis) => {
     setState('planning');
@@ -95,7 +125,7 @@ export function SolveWorkspace() {
     try {
       const value = await analyzeQuestionImage(file, () => setState('analyzing'));
       setAnalysis(value);
-      if (!previewAvailable && value.normalized_preview_url) { setPreview(value.normalized_preview_url); setPreviewAvailable(true); }
+      if (!previewAvailable && value.normalized_preview_url) { setPreview(value.normalized_preview_url); setPreviewAvailable(true); setPreviewPreparing(false); }
       if (!value.is_valid_question || value.image_status !== 'valid_math_question') {
         const status = value.image_status === 'valid_math_question' ? 'unreadable' : value.image_status;
         setError(INVALID_QUESTION_MESSAGES[status]); setState('error'); return;
@@ -110,6 +140,11 @@ export function SolveWorkspace() {
     const image = Array.from(event.clipboardData.files).find((item) => item.type.startsWith('image/'));
     if (image && !busy) { event.preventDefault(); select(image); }
   };
+  const handlePreviewError = () => {
+    if (!file || !preview.startsWith('blob:')) return;
+    setPreviewAvailable(false);
+    requestBackendPreview(file, previewRequestRef.current);
+  };
 
   return <div className="solvePage" onPaste={pasted}>
     <input ref={cameraRef} className="visuallyHidden" type="file" accept="image/*" capture="environment" onChange={changed} disabled={busy} aria-label="Arka kamerayla soru fotoğrafı çek" />
@@ -118,14 +153,14 @@ export function SolveWorkspace() {
     <header className="solveIntro"><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Sorunu yükle,<br /><span>mantığını birlikte öğrenelim.</span></h1><p>Fotoğrafını çek veya galeriden seç. TeacherAI soruyu inceler, kontrol eder ve adım adım anlatır.</p></header>
     <div className="solveGrid">
       <section className="solveInput" aria-label="Soru görseli">
-        {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} />}
+        {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} previewPreparing={previewPreparing} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} onPreviewError={handlePreviewError} />}
         {error && <ErrorBanner message={error} />}
         {invalidAnalysis && <div className="invalidImageActions"><button type="button" className="primaryButton" onClick={() => cameraRef.current?.click()}>📷 Tekrar Çek</button><button type="button" className="secondaryButton" onClick={() => galleryRef.current?.click()}>Başka Görsel Seç</button></div>}
         {error && analysis?.is_valid_question && !result && <button className="secondaryButton retryButton" onClick={() => createLesson(analysis)}>Yeniden incele</button>}
         <div className="solveActions"><button className="primaryButton analyzeButton" onClick={solve} disabled={!file || busy}>Soruyu Çöz</button><button className="secondaryButton" onClick={reset} disabled={!file || busy}>Temizle</button></div>
         <p className="privacyNote">Görsel işlemden sonra geçici depolamadan silinir.</p>
       </section>
-      <aside className="solveOutput" aria-label="TeacherAI anlatımı">{busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}{!busy && !result && !error && <div className="resultEmpty"><span>✦</span><h2>Çözümün burada görünecek</h2><p>TeacherAI kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p></div>}{result && <><TeacherBoard result={result} /><InteractionPanel lesson={result.lesson} /><button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>{showText && <LessonText lesson={result.lesson} />}{process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}</>}</aside>
+      <aside className="solveOutput" aria-label="TeacherAI anlatımı">{busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}{!busy && !result && !error && <div className="resultEmpty"><div className="emptyBoardIcon" aria-hidden="true"><span>∑</span></div><h2>Çözümün burada görünecek</h2><p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p></div>}{result && <><TeacherBoard result={result} /><InteractionPanel lesson={result.lesson} /><button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>{showText && <LessonText lesson={result.lesson} />}{process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}</>}</aside>
     </div>
   </div>;
 }

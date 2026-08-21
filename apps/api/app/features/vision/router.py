@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Request, UploadFile
 
 from apps.api.app.core.dependencies import get_vision_service
-from apps.api.app.features.vision.schemas import VisionAnalysis, VisionProviderDiagnostics
+from apps.api.app.features.vision.schemas import NormalizedImagePreview, VisionAnalysis, VisionProviderDiagnostics
 from apps.api.app.features.vision.service import VisionService
 from apps.api.app.schemas.responses import ApiResponse
 
@@ -25,3 +25,12 @@ async def analyze_question_image(
 ) -> ApiResponse[VisionAnalysis]:
     analysis = await service.analyze(image, request.state.request_id)
     return ApiResponse(data=analysis)
+
+
+@router.post("/preview", response_model=ApiResponse[NormalizedImagePreview])
+async def preview_question_image(
+    service: Annotated[VisionService, Depends(get_vision_service)],
+    image: Annotated[UploadFile | None, File()] = None,
+) -> ApiResponse[NormalizedImagePreview]:
+    preview = await service.preview(image)
+    return ApiResponse(data=preview)

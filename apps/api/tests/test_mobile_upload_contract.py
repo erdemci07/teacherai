@@ -48,8 +48,10 @@ def test_heic_preview_uses_backend_normalized_response_and_preserves_upload_file
     api = Path("apps/web/app/lib/vision-api.ts").read_text(encoding="utf-8")
 
     assert "setFile(selected)" in workspace
+    assert "prepareImagePreview(selected" in workspace
+    assert "requestBackendPreview(selected, requestId)" in workspace
     assert "analyzeQuestionImage(file" in workspace
-    assert "value.normalized_preview_url" in workspace
+    assert "/vision/preview" in api
     assert "normalized_preview_url: string | null" in api
     assert "heic2any" not in workspace
     assert "setFile(url" not in workspace
@@ -58,15 +60,16 @@ def test_heic_preview_uses_backend_normalized_response_and_preserves_upload_file
 def test_backend_preview_success_and_failure_paths_are_non_blocking() -> None:
     workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
 
-    assert "if (!previewAvailable && value.normalized_preview_url)" in workspace
     assert "setPreview(value.normalized_preview_url)" in workspace
+    assert ".catch(() => undefined)" in workspace
     assert "setState('image_selected')" in workspace
+    assert "setError(" not in workspace.split("const requestBackendPreview", 1)[1].split("const select", 1)[0]
 
 
 def test_jpeg_png_webp_preview_behavior_remains_direct_object_url() -> None:
     workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
 
-    assert "!['image/heic', 'image/heif'].includes(mediaType)" in workspace
+    assert "if (needsBackendPreview(mediaType, extension))" in workspace
     assert "setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true);" in workspace
 
 
@@ -76,6 +79,8 @@ def test_generated_preview_urls_are_cleaned_up_on_replace_remove() -> None:
     assert "useEffect(() => () => { if (preview) revokeBlobPreview(preview); }, [preview])" in workspace
     assert "if (preview) revokeBlobPreview(preview);" in workspace
     assert "url.startsWith('blob:')" in workspace
+    assert "previewAbortRef.current?.abort()" in workspace
+    assert "previewRequestRef.current += 1" in workspace
     assert "onRemove={reset}" in workspace
     assert "onReplace={() => galleryRef.current?.click()}" in workspace
 
@@ -87,3 +92,13 @@ def test_browser_heic_decoder_dependency_is_not_required() -> None:
     assert "heic2any" not in package_json
     assert "createHeicPreviewUrl" not in workspace
     assert not Path("apps/web/app/solve/heicPreview.ts").exists()
+
+
+def test_native_preview_failure_can_request_backend_preview_without_blocking_solve() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    preview = Path("apps/web/app/solve/ImagePreview.tsx").read_text(encoding="utf-8")
+
+    assert "onError={onPreviewError}" in preview
+    assert "const handlePreviewError" in workspace
+    assert "setPreviewAvailable(false)" in workspace
+    assert "requestBackendPreview(file, previewRequestRef.current)" in workspace

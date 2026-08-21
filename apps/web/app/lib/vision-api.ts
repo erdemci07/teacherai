@@ -49,6 +49,11 @@ interface ApiErrorResponse {
   request_id?: string;
 }
 
+export interface NormalizedImagePreview {
+  normalized_preview_url: string;
+  media_type: 'image/jpeg' | 'image/png' | 'image/webp';
+}
+
 export class VisionApiError extends Error {
   constructor(public readonly code: string, public readonly status?: number) {
     super(code);
@@ -90,4 +95,17 @@ export function analyzeQuestionImage(
     form.append('image', image);
     request.send(form);
   });
+}
+
+export async function prepareImagePreview(image: File, signal?: AbortSignal): Promise<NormalizedImagePreview> {
+  const form = new FormData();
+  form.append('image', image);
+  const headers = new Headers();
+  const token = await currentToken();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(`${API_BASE_URL}/vision/preview`, { method: 'POST', body: form, headers, signal });
+  const body = (await response.json()) as ApiResponse<NormalizedImagePreview> | ApiErrorResponse;
+  if (response.ok && 'data' in body) return body.data;
+  const code = 'error' in body ? body.error : 'unexpected_response';
+  throw new VisionApiError(code, response.status);
 }

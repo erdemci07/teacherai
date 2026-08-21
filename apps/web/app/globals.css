@@ -183,7 +183,8 @@ h3 { letter-spacing: -0.025em; }
 .solveError { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; padding: 14px 16px; border: 1px solid rgba(165,34,34,.28); border-radius: 14px; background: #fff1f1; color: #751818; }
 .solveError span { line-height: 1.5; }
 .resultEmpty { display: grid; place-items: center; min-height: 450px; padding: 50px; text-align: center; }
-.resultEmpty > span { color: var(--brand); font-size: 3rem; }
+.emptyBoardIcon { display: grid; place-items: center; width: 68px; height: 52px; border: 2px solid rgba(23,32,51,.24); border-bottom-width: 5px; border-radius: 8px; background: #fffdf7; color: var(--brand-dark); box-shadow: 0 10px 24px rgba(23,32,51,.08); }
+.emptyBoardIcon span { font-family: Georgia, serif; font-size: 1.85rem; line-height: 1; }
 .resultEmpty h2 { margin: 22px 0 10px; font-size: 1.8rem; }
 .resultEmpty p { max-width: 440px; color: var(--muted); line-height: 1.7; }
 .analysisLoading { display: flex; align-items: center; gap: 22px; min-height: 450px; justify-content: center; }

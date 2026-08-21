@@ -16,7 +16,7 @@ from apps.api.app.features.vision.exceptions import (
     VisionError,
 )
 from apps.api.app.features.vision.provider import VisionProvider
-from apps.api.app.features.vision.schemas import VisionAnalysis, VisionProviderDiagnostics
+from apps.api.app.features.vision.schemas import NormalizedImagePreview, VisionAnalysis, VisionProviderDiagnostics
 from apps.api.app.features.vision.storage import TemporaryImageStorage
 from apps.api.app.features.vision.topic_normalization import normalize_topic_name
 
@@ -52,6 +52,20 @@ class VisionService:
 
     def diagnostics(self) -> VisionProviderDiagnostics:
         return VisionProviderDiagnostics.model_validate(self._provider.diagnostics())
+
+    async def preview(self, upload: UploadFile | None) -> NormalizedImagePreview:
+        if upload is None:
+            raise MissingImageError
+        try:
+            media_type = self._resolve_media_type(upload.content_type, upload.filename)
+            content = await self._read_limited(upload)
+            normalized, media_type, _ = self._normalize(content, media_type)
+            preview_url = self._preview_data_url(normalized, media_type)
+            if preview_url is None:
+                raise InvalidImageError
+            return NormalizedImagePreview(normalized_preview_url=preview_url, media_type=media_type)
+        finally:
+            await upload.close()
 
     async def analyze(self, upload: UploadFile | None, request_id: str | None = None) -> VisionAnalysis:
         resolved_request_id = request_id or str(uuid4())

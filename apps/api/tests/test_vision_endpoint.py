@@ -217,6 +217,58 @@ def test_heif_normalized_preview_uses_same_jpeg_sent_to_provider(tmp_path) -> No
     assert base64.b64decode(preview_url.split(",", 1)[1]) == normalized
 
 
+@pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
+def test_preview_endpoint_returns_normalized_jpeg_without_vision_provider(tmp_path, filename, content_type) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": (filename, image_bytes("HEIF"), content_type)},
+        )
+
+    assert response.status_code == 200
+    assert provider.calls == []
+    assert list(tmp_path.iterdir()) == []
+    preview = response.json()["data"]
+    assert preview["media_type"] == "image/jpeg"
+    assert preview["normalized_preview_url"].startswith("data:image/jpeg;base64,")
+    with Image.open(io.BytesIO(base64.b64decode(preview["normalized_preview_url"].split(",", 1)[1]))) as image:
+        assert image.format == "JPEG"
+
+
+def test_preview_endpoint_applies_orientation_without_provider(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/preview",
+            files={"image": ("rotated.jpg", oriented_jpeg_bytes(), "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    assert provider.calls == []
+    preview = response.json()["data"]["normalized_preview_url"]
+    with Image.open(io.BytesIO(base64.b64decode(preview.split(",", 1)[1]))) as image:
+        assert image.size == (40, 20)
+
+
+def test_preview_endpoint_rejects_invalid_image_without_blocking_later_analysis_path(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        preview = client.post(
+            "/api/v1/vision/preview",
+            files={"image": ("broken.heic", b"not a heif image", "image/heic")},
+        )
+        analysis = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("question.png", image_bytes(), "image/png")},
+        )
+
+    assert preview.status_code == 422
+    assert preview.json()["error"] == "invalid_image"
+    assert analysis.status_code == 200
+    assert provider.calls
+
+
 @pytest.mark.parametrize(("filename", "content_type"), [("broken.heic", "image/heic"), ("broken.heif", "image/heif")])
 def test_rejects_corrupt_heic_and_heif_safely(tmp_path, filename, content_type) -> None:
     with client_with_provider(tmp_path, SuccessfulProvider()) as client:

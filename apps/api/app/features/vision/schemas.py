@@ -74,6 +74,11 @@ class VisionAnalysis(VisionProviderAnalysis):
     debug: dict[str, str] | None = None
 
 
+class NormalizedImagePreview(BaseModel):
+    normalized_preview_url: str
+    media_type: Literal["image/jpeg", "image/png", "image/webp"]
+
+
 class VisionProviderDiagnostics(BaseModel):
     provider: str
     configured: bool
