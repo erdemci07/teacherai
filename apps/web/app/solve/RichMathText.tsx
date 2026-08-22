@@ -6,14 +6,14 @@ type TextPart = { type: 'text'; value: string };
 type MathPart = { type: 'math'; value: string; display: boolean };
 type Part = TextPart | MathPart;
 
-const RAW_COMMANDS = new Set(['frac', 'sqrt', 'cdot', 'times', 'le', 'ge', 'neq', 'pi', 'theta', 'alpha', 'beta', 'gamma', 'Delta', 'sum', 'int', 'infty']);
-const RAW_COMMAND_PATTERN = /\\(frac|sqrt|cdot|times|le|ge|neq|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b/;
+const RAW_COMMANDS = new Set(['frac', 'sqrt', 'sin', 'cos', 'tan', 'cot', 'log', 'ln', 'circ', 'cdot', 'times', 'le', 'ge', 'neq', 'pm', 'pi', 'theta', 'alpha', 'beta', 'gamma', 'Delta', 'sum', 'int', 'infty']);
+const RAW_COMMAND_PATTERN = /\\(frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b/;
 const MATH_SIGNAL_PATTERN = /(\\[a-zA-Z]+|[=<>^_]|[0-9]\s*[+\-*/]|[+\-*/]\s*[0-9]|[a-zA-Z]\s*[+\-*/=^_])/;
 
 function normalizeLatex(value: string) {
   return value
     .trim()
-    .replace(/\\\\(?=(frac|sqrt|cdot|times|le|ge|neq|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b)/g, '\\')
+    .replace(/\\\\(?=(frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b)/g, '\\')
     .replace(/^\${1,2}\s*|\s*\${1,2}$/g, '')
     .replace(/^\\\(\s*|\s*\\\)$/g, '')
     .replace(/^\\\[\s*|\s*\\\]$/g, '')
@@ -102,7 +102,7 @@ function scanRawMath(input: string, index: number) {
     }
     if (/\s/.test(char)) {
       const rest = input.slice(cursor);
-      if (/^\s*(?:[=<>+\-*/]|\\(?:frac|sqrt|cdot|times|le|ge|neq|pi|theta)\b|[A-Za-z0-9]+(?:\s*(?:\^|_)))/.test(rest)) {
+      if (/^\s*(?:[=<>+\-*/^_]|\\(?:frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta)\b|[A-Za-z0-9]+(?:\s*(?:\^|_)))/.test(rest)) {
         cursor += 1; continue;
       }
     }
@@ -111,6 +111,24 @@ function scanRawMath(input: string, index: number) {
 
   const value = normalizeLatex(input.slice(index, cursor));
   return sawMath && value ? { end: cursor, value } : null;
+}
+
+function readableMathFallback(value: string) {
+  return normalizeLatex(value)
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1 / $2')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\(sin|cos|tan|cot|log|ln)\b/g, '$1')
+    .replace(/\\circ\b/g, '°')
+    .replace(/\\cdot\b/g, '·')
+    .replace(/\\times\b/g, '×')
+    .replace(/\\le\b/g, '≤')
+    .replace(/\\ge\b/g, '≥')
+    .replace(/\\neq\b/g, '≠')
+    .replace(/\\pm\b/g, '±')
+    .replace(/\\pi\b/g, 'π')
+    .replace(/\\theta\b/g, 'θ')
+    .replace(/\\alpha\b/g, 'α')
+    .replace(/\\beta\b/g, 'β');
 }
 
 export function parseRichMathText(input: string): Part[] {
@@ -176,7 +194,7 @@ function RenderMath({ latex, display }: { latex: string; display: boolean }) {
       />
     );
   } catch {
-    return <code className="richMathFallback">{latex}</code>;
+    return <code className="richMathFallback">{readableMathFallback(latex)}</code>;
   }
 }
 

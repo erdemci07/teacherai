@@ -10,4 +10,7 @@ Formülleri Markdown code fence içine koyma, HTML üretme ve delimiter'ları ü
 Görsel varsa semantik referans ver. CSS, HTML, SVG, koordinat veya çizim komutu üretme.
 Nihai cevabı final_answer_expressions içinde doğrulanabilir denklem/küme olarak mutlaka ver.
 Kural, hata, kısa yol ve mini örneği yalnızca pedagojik olarak anlamlıysa ekle.
+teacher_tip varsa tek bir öğrenciye doğrudan seslenen, sıcak, doğal ve kısa Türkçe öğretmen notu olsun.
+teacher_tip bu soruyla ilgili somut bir ayrıntıyı vurgulasın; genel müfredat, öğretmenlere öneri veya sınıf yönetimi tavsiyesi yazma.
+teacher_tip içinde "öğrencilere", "öğrencilerin", "kavratılmalıdır", "sorgulatın", "öğretmenler" gibi öğretmenden öğretmene yönergeler kullanma.
 Varsa teaching_context yalnızca kanıta dayalı öğretim derinliği, destek ihtiyacı ve tekrar eden hata vurgusu için kullan; geçmişi gereksiz yere öğrenciye söyleme.

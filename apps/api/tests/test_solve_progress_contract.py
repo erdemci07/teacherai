@@ -34,4 +34,10 @@ def test_vision_and_lesson_errors_remain_distinguishable() -> None:
     assert "caught instanceof VisionApiError" in workspace
     assert "caught instanceof LessonApiError" in workspace
     assert "provider_unavailable" in workspace
+    assert "provider_timeout" in workspace
+    assert "invalid_provider_response" in workspace
     assert "lesson_provider_unavailable" in workspace
+    assert "invalid_lesson_plan" in workspace
+    assert "math_verification_failed" in workspace
+    assert "lesson_timeout" in workspace
+    assert "network_error" in workspace

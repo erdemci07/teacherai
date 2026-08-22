@@ -43,11 +43,12 @@ class OpenAILessonProvider:
         analysis: VisionAnalysis,
         correction_feedback: str | None = None,
         teaching_context=None,
+        request_id: str | None = None,
     ) -> LessonProviderResult:
         started = perf_counter()
         if not self.api_key:
             error = LessonProviderConfigurationError()
-            self._log_failure(error, started)
+            self._log_failure(error, started, request_id)
             raise error
 
         payload = {
@@ -69,43 +70,43 @@ class OpenAILessonProvider:
                 timeout=self.timeout + 2,
             )
         except AuthenticationError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise LessonProviderConfigurationError from exc
         except RateLimitError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise LessonProviderUnavailableError from exc
         except BadRequestError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise InvalidLessonPlanError from exc
         except (APITimeoutError, TimeoutError, asyncio.TimeoutError) as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise LessonProviderTimeoutError from exc
         except APIConnectionError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise LessonProviderUnavailableError from exc
         except APIStatusError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             if exc.status_code == 401:
                 raise LessonProviderConfigurationError from exc
             if exc.status_code == 429 or exc.status_code >= 500:
                 raise LessonProviderUnavailableError from exc
             raise InvalidLessonPlanError from exc
         except ValidationError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise InvalidLessonPlanError from exc
 
         parsed = response.output_parsed
         if parsed is None:
-            self._log_failure(InvalidLessonPlanError(), started)
+            self._log_failure(InvalidLessonPlanError(), started, request_id)
             raise InvalidLessonPlanError
         try:
             draft = normalize_lesson_draft_response(parsed)
         except InvalidLessonPlanError as exc:
-            self._log_failure(exc, started)
+            self._log_failure(exc, started, request_id)
             raise
         return LessonProviderResult(draft, self.name, self.model)
 
-    def _log_failure(self, exc: Exception, started: float) -> None:
+    def _log_failure(self, exc: Exception, started: float, request_id: str | None = None) -> None:
         status = getattr(exc, "status_code", None)
         error_code = getattr(exc, "code", None)
         error_type = getattr(exc, "type", None)
@@ -116,12 +117,13 @@ class OpenAILessonProvider:
                 error_code = error_code or error.get("code")
                 error_type = error_type or error.get("type")
         logger.warning(
-            "OpenAI Lesson request failed exception_type=%s provider=%s model=%s http_status=%s openai_error_code=%s openai_error_type=%s duration_ms=%s",
+            "OpenAI Lesson request failed exception_type=%s provider=%s model=%s http_status=%s openai_error_code=%s openai_error_type=%s request_id=%s duration_ms=%s",
             type(exc).__name__,
             self.name,
             self.model,
             status,
             error_code,
             error_type,
+            request_id or "unknown",
             round((perf_counter() - started) * 1000),
         )

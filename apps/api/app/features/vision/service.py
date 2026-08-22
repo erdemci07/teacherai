@@ -46,6 +46,7 @@ class PreparedImage:
     content: bytes
     media_type: str
     suffix: str
+    source_format: str
     width: int
     height: int
     expires_at: datetime
@@ -93,6 +94,18 @@ class VisionService:
         if upload is None:
             raise MissingImageError
         prepared = self._prepare_bytes(await self._read_limited(upload), upload.content_type, upload.filename)
+        logger.info(
+            "Vision image normalized",
+            extra={
+                "request_id": resolved_request_id,
+                "stage": "normalization",
+                "original_detected_format": prepared.source_format,
+                "normalized_vision_format": prepared.media_type,
+                "width": prepared.width,
+                "height": prepared.height,
+                "duration_ms": round((perf_counter() - started) * 1000),
+            },
+        )
         temporary_path = await self._storage.save(prepared.content, prepared.suffix)
         try:
             logger.info(
@@ -215,6 +228,7 @@ class VisionService:
                     content=output.getvalue(),
                     media_type=media_type,
                     suffix=suffix,
+                    source_format=actual_format,
                     width=width,
                     height=height,
                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
