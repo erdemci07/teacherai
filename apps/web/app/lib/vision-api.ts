@@ -49,16 +49,6 @@ interface ApiErrorResponse {
   request_id?: string;
 }
 
-export interface NormalizedImagePreview {
-  image_id: string;
-  format: 'png';
-  content_type: 'image/png';
-  width: number;
-  height: number;
-  preview: string;
-  expires_at: string;
-}
-
 export class VisionApiError extends Error {
   constructor(public readonly code: string, public readonly status?: number) {
     super(code);
@@ -74,7 +64,6 @@ const API_BASE_URL =
 export function analyzeQuestionImage(
   image: File,
   onUploadComplete: () => void,
-  preparedImage?: NormalizedImagePreview | null,
   timeoutMs = 60_000,
 ): Promise<VisionAnalysis> {
   return new Promise(async (resolve, reject) => {
@@ -98,27 +87,7 @@ export function analyzeQuestionImage(
     request.addEventListener('timeout', () => reject(new VisionApiError('request_timeout')));
 
     const form = new FormData();
-    if (preparedImage) {
-      form.append('prepared_image_id', preparedImage.image_id);
-      form.append('prepared_image_data_url', preparedImage.preview);
-      form.append('prepared_image_expires_at', preparedImage.expires_at);
-      form.append('image', image);
-    } else {
-      form.append('image', image);
-    }
+    form.append('image', image);
     request.send(form);
   });
-}
-
-export async function prepareImagePreview(image: File, signal?: AbortSignal): Promise<NormalizedImagePreview> {
-  const form = new FormData();
-  form.append('image', image);
-  const headers = new Headers();
-  const token = await currentToken();
-  if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(`${API_BASE_URL}/vision/preview`, { method: 'POST', body: form, headers, signal });
-  const body = (await response.json()) as ApiResponse<NormalizedImagePreview> | ApiErrorResponse;
-  if (response.ok && 'data' in body) return body.data;
-  const code = 'error' in body ? body.error : 'unexpected_response';
-  throw new VisionApiError(code, response.status);
 }

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 
 from apps.api.app.core.dependencies import get_vision_service
 from apps.api.app.features.vision.schemas import NormalizedImagePreview, VisionAnalysis, VisionProviderDiagnostics
@@ -22,11 +22,8 @@ async def analyze_question_image(
     request: Request,
     service: Annotated[VisionService, Depends(get_vision_service)],
     image: Annotated[UploadFile | None, File()] = None,
-    prepared_image_id: Annotated[str | None, Form()] = None,
-    prepared_image_data_url: Annotated[str | None, Form()] = None,
-    prepared_image_expires_at: Annotated[str | None, Form()] = None,
 ) -> ApiResponse[VisionAnalysis]:
-    analysis = await service.analyze(image, request.state.request_id, prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
+    analysis = await service.analyze(image, request.state.request_id)
     return ApiResponse(data=analysis)
 
 

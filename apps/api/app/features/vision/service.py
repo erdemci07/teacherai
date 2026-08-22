@@ -1,7 +1,6 @@
 import io
 import base64
 import logging
-import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from time import perf_counter
@@ -14,10 +13,7 @@ from pillow_heif import register_heif_opener
 from apps.api.app.features.vision.exceptions import (
     ImageTooLargeError,
     InvalidImageError,
-    InvalidPreparedImageError,
     MissingImageError,
-    PreparedImageExpiredError,
-    PreparedImageNotFoundError,
     UnsupportedImageError,
     VisionError,
 )
@@ -39,9 +35,7 @@ SUPPORTED_EXTENSIONS = {
     ".heif": "image/heif",
 }
 MAX_IMAGE_PIXELS = 40_000_000
-MAX_PREPARED_IMAGE_BYTES = 32 * 1024 * 1024
 PREPARED_IMAGE_TTL_MINUTES = 15
-PREPARED_IMAGE_ID_PATTERN = re.compile(r"^prepared_[a-f0-9]{32}$")
 
 register_heif_opener()
 
@@ -79,7 +73,9 @@ class VisionService:
         try:
             prepared = self._prepare_bytes(
                 await self._read_limited(upload),
-                self._resolve_media_type(upload.content_type, upload.filename),
+                upload.content_type,
+                upload.filename,
+                preview=True,
             )
             return self._preview_response(prepared)
         finally:
@@ -89,15 +85,14 @@ class VisionService:
         self,
         upload: UploadFile | None,
         request_id: str | None = None,
-        prepared_image_id: str | None = None,
-        prepared_image_data_url: str | None = None,
-        prepared_image_expires_at: str | None = None,
     ) -> VisionAnalysis:
         resolved_request_id = request_id or str(uuid4())
         started = perf_counter()
 
         logger.info("Vision processing started", extra={"request_id": resolved_request_id, "stage": "validation"})
-        prepared = await self._resolve_prepared_image(upload, prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
+        if upload is None:
+            raise MissingImageError
+        prepared = self._prepare_bytes(await self._read_limited(upload), upload.content_type, upload.filename)
         temporary_path = await self._storage.save(prepared.content, prepared.suffix)
         try:
             logger.info(
@@ -153,26 +148,6 @@ class VisionService:
             if upload is not None:
                 await upload.close()
 
-    async def _resolve_prepared_image(
-        self,
-        upload: UploadFile | None,
-        prepared_image_id: str | None,
-        prepared_image_data_url: str | None,
-        prepared_image_expires_at: str | None,
-    ) -> PreparedImage:
-        if prepared_image_id or prepared_image_data_url or prepared_image_expires_at:
-            try:
-                if not prepared_image_id or not prepared_image_data_url:
-                    raise PreparedImageNotFoundError
-                return self._prepared_from_data_url(prepared_image_id, prepared_image_data_url, prepared_image_expires_at)
-            except (PreparedImageNotFoundError, PreparedImageExpiredError, InvalidPreparedImageError):
-                if upload is None:
-                    raise
-                return self._prepare_bytes(await self._read_limited(upload), self._resolve_media_type(upload.content_type, upload.filename))
-        if upload is None:
-            raise MissingImageError
-        return self._prepare_bytes(await self._read_limited(upload), self._resolve_media_type(upload.content_type, upload.filename))
-
     async def _read_limited(self, upload: UploadFile) -> bytes:
         content = bytearray()
         while chunk := await upload.read(1024 * 1024):
@@ -184,42 +159,62 @@ class VisionService:
         return bytes(content)
 
     @staticmethod
-    def _resolve_media_type(content_type: str | None, filename: str | None) -> str:
+    def _validate_upload_metadata(content_type: str | None, filename: str | None) -> None:
         normalized_type = (content_type or "").split(";", 1)[0].strip().lower()
         normalized_type = MEDIA_TYPE_ALIASES.get(normalized_type, normalized_type)
         if normalized_type in SUPPORTED_MEDIA_TYPES or normalized_type in HEIF_MEDIA_TYPES:
-            return normalized_type
+            return
         if normalized_type and normalized_type != "application/octet-stream":
             raise UnsupportedImageError
 
         suffix = (filename or "").rsplit(".", 1)
         extension = f".{suffix[-1].lower()}" if len(suffix) == 2 else ""
-        try:
-            return SUPPORTED_EXTENSIONS[extension]
-        except KeyError as exc:
-            raise UnsupportedImageError from exc
+        if extension and extension not in SUPPORTED_EXTENSIONS:
+            raise UnsupportedImageError
+        if not normalized_type and not extension:
+            raise UnsupportedImageError
 
     @staticmethod
-    def _prepare_bytes(content: bytes, declared_media_type: str) -> PreparedImage:
+    def _prepare_bytes(content: bytes, content_type: str | None, filename: str | None, preview: bool = False) -> PreparedImage:
+        VisionService._validate_upload_metadata(content_type, filename)
         try:
             with Image.open(io.BytesIO(content)) as source:
                 if source.width * source.height > MAX_IMAGE_PIXELS:
                     raise InvalidImageError
                 source.verify()
             with Image.open(io.BytesIO(content)) as source:
-                expected_format = (SUPPORTED_MEDIA_TYPES | HEIF_MEDIA_TYPES)[declared_media_type]
-                if source.format != expected_format:
+                actual_format = source.format
+                if actual_format not in {"JPEG", "PNG", "WEBP", "HEIF"}:
                     raise UnsupportedImageError
                 normalized = ImageOps.exif_transpose(source)
                 output = io.BytesIO()
-                has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
-                normalized.convert("RGBA" if has_alpha else "RGB").save(output, format="PNG", optimize=True)
+                if actual_format == "HEIF" or preview:
+                    has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
+                    normalized.convert("RGBA" if has_alpha else "RGB").save(output, format="PNG", optimize=True)
+                    media_type = "image/png"
+                    suffix = "png"
+                elif actual_format == "JPEG":
+                    orientation = source.getexif().get(274, 1)
+                    if orientation == 1:
+                        output.write(content)
+                    else:
+                        normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
+                    media_type = "image/jpeg"
+                    suffix = "jpg"
+                elif actual_format == "PNG":
+                    output.write(content)
+                    media_type = "image/png"
+                    suffix = "png"
+                else:
+                    output.write(content)
+                    media_type = "image/webp"
+                    suffix = "webp"
                 width, height = normalized.size
                 return PreparedImage(
                     image_id=f"prepared_{uuid4().hex}",
                     content=output.getvalue(),
-                    media_type="image/png",
-                    suffix="png",
+                    media_type=media_type,
+                    suffix=suffix,
                     width=width,
                     height=height,
                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
@@ -229,54 +224,9 @@ class VisionService:
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
             raise InvalidImageError from exc
 
-    def _prepared_from_data_url(self, image_id: str, data_url: str, expires_at: str | None) -> PreparedImage:
-        if not PREPARED_IMAGE_ID_PATTERN.fullmatch(image_id):
-            raise InvalidPreparedImageError
-        expires = self._parse_prepared_expiry(expires_at)
-        if expires and expires <= datetime.now(timezone.utc):
-            raise PreparedImageExpiredError
-        prefix = "data:image/png;base64,"
-        if not data_url.startswith(prefix):
-            raise InvalidPreparedImageError
-        try:
-            content = base64.b64decode(data_url[len(prefix):], validate=True)
-            if len(content) > MAX_PREPARED_IMAGE_BYTES:
-                raise ImageTooLargeError
-            with Image.open(io.BytesIO(content)) as image:
-                if image.format != "PNG":
-                    raise InvalidPreparedImageError
-                if image.width * image.height > MAX_IMAGE_PIXELS:
-                    raise InvalidPreparedImageError
-                image.verify()
-            with Image.open(io.BytesIO(content)) as image:
-                width, height = image.size
-        except (InvalidPreparedImageError, ImageTooLargeError):
-            raise
-        except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
-            raise InvalidPreparedImageError from exc
-        return PreparedImage(
-            image_id=image_id,
-            content=content,
-            media_type="image/png",
-            suffix="png",
-            width=width,
-            height=height,
-            expires_at=expires or datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
-        )
-
-    @staticmethod
-    def _parse_prepared_expiry(value: str | None) -> datetime | None:
-        if not value:
-            return None
-        try:
-            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError as exc:
-            raise InvalidPreparedImageError from exc
-        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
-
     @staticmethod
     def _preview_data_url(content: bytes, media_type: str) -> str | None:
-        if media_type != "image/png":
+        if media_type not in {"image/jpeg", "image/png", "image/webp"}:
             return None
         try:
             encoded = base64.b64encode(content).decode("ascii")

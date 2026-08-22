@@ -2,7 +2,6 @@ import io
 import base64
 import re
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -53,7 +52,7 @@ class SuccessfulProvider:
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
         assert image
-        assert media_type == "image/png"
+        assert media_type in {"image/jpeg", "image/png", "image/webp"}
         self.calls.append((image, media_type))
         return ProviderResult(
             analysis=VisionProviderAnalysis(
@@ -274,33 +273,6 @@ def test_prepare_endpoint_normalizes_every_supported_format_to_png(tmp_path, fil
         assert image.size == (32, 24)
 
 
-@pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
-def test_analyze_can_reuse_prepared_png_without_reuploading_original(tmp_path, filename, content_type) -> None:
-    provider = SuccessfulProvider()
-    with client_with_provider(tmp_path, provider) as client:
-        prepared_response = client.post(
-            "/api/v1/vision/preview",
-            files={"image": (filename, image_bytes("HEIF"), content_type)},
-        )
-        prepared = prepared_response.json()["data"]
-        analysis_response = client.post(
-            "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": prepared["image_id"],
-                "prepared_image_data_url": prepared["preview"],
-                "prepared_image_expires_at": prepared["expires_at"],
-            },
-        )
-
-    assert prepared_response.status_code == 200
-    assert analysis_response.status_code == 200
-    normalized, media_type = provider.calls[0]
-    assert media_type == "image/png"
-    assert normalized == base64.b64decode(prepared["preview"].split(",", 1)[1])
-    assert analysis_response.json()["data"]["normalized_preview_url"] == prepared["preview"]
-    assert list(tmp_path.iterdir()) == []
-
-
 @pytest.mark.parametrize(
     ("filename", "content_type", "image_format"),
     [
@@ -308,141 +280,16 @@ def test_analyze_can_reuse_prepared_png_without_reuploading_original(tmp_path, f
         ("question.jpg", "image/jpeg", "JPEG"),
     ],
 )
-def test_preview_to_prepared_png_then_analyze_succeeds(tmp_path, filename, content_type, image_format) -> None:
+def test_direct_upload_analyze_succeeds_without_prepared_image(tmp_path, filename, content_type, image_format) -> None:
     provider = SuccessfulProvider()
     with client_with_provider(tmp_path, provider) as client:
-        prepared_response = client.post(
-            "/api/v1/vision/preview",
-            files={"image": (filename, image_bytes(image_format), content_type)},
-        )
-        prepared = prepared_response.json()["data"]
         analysis_response = client.post(
             "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": prepared["image_id"],
-                "prepared_image_data_url": prepared["preview"],
-                "prepared_image_expires_at": prepared["expires_at"],
-            },
+            files={"image": (filename, image_bytes(image_format), content_type)},
         )
 
-    assert prepared_response.status_code == 200
     assert analysis_response.status_code == 200
-    assert provider.calls[0][1] == "image/png"
-
-
-def test_incomplete_prepared_payload_is_rejected_before_provider_call(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    with client_with_provider(tmp_path, provider) as client:
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={"prepared_image_id": "prepared_00000000000000000000000000000000"},
-        )
-
-    assert response.status_code == 404
-    assert response.json()["error"] == "prepared_image_not_found"
-    assert provider.calls == []
-
-
-def test_invalid_prepared_data_url_is_rejected_before_provider_call(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    with client_with_provider(tmp_path, provider) as client:
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": "prepared_00000000000000000000000000000000",
-                "prepared_image_data_url": "data:image/jpeg;base64,not-a-png",
-            },
-        )
-
-    assert response.status_code == 422
-    assert response.json()["error"] == "invalid_prepared_image"
-    assert provider.calls == []
-
-
-def test_missing_prepared_payload_uses_original_file_fallback_when_available(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    with client_with_provider(tmp_path, provider) as client:
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={"prepared_image_id": "prepared_00000000000000000000000000000000"},
-            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
-        )
-
-    assert response.status_code == 200
-    normalized, media_type = provider.calls[0]
-    assert media_type == "image/png"
-    with Image.open(io.BytesIO(normalized)) as image:
-        assert image.format == "PNG"
-
-
-def test_expired_prepared_payload_uses_original_heic_fallback_when_available(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    expired = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
-    with client_with_provider(tmp_path, provider) as client:
-        prepared_response = client.post(
-            "/api/v1/vision/preview",
-            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
-        )
-        prepared = prepared_response.json()["data"]
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": prepared["image_id"],
-                "prepared_image_data_url": prepared["preview"],
-                "prepared_image_expires_at": expired,
-            },
-            files={"image": ("iphone.heic", image_bytes("HEIF"), "image/heic")},
-        )
-
-    assert prepared_response.status_code == 200
-    assert response.status_code == 200
-    assert provider.calls[0][1] == "image/png"
-
-
-def test_expired_prepared_payload_without_fallback_returns_specific_error(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    expired = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
-    with client_with_provider(tmp_path, provider) as client:
-        prepared_response = client.post(
-            "/api/v1/vision/preview",
-            files={"image": ("question.png", image_bytes(), "image/png")},
-        )
-        prepared = prepared_response.json()["data"]
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": prepared["image_id"],
-                "prepared_image_data_url": prepared["preview"],
-                "prepared_image_expires_at": expired,
-            },
-        )
-
-    assert prepared_response.status_code == 200
-    assert response.status_code == 410
-    assert response.json()["error"] == "prepared_image_expired"
-    assert provider.calls == []
-
-
-def test_prepared_and_direct_payload_ambiguity_is_resolved_by_prepared_first(tmp_path) -> None:
-    provider = SuccessfulProvider()
-    with client_with_provider(tmp_path, provider) as client:
-        prepared_response = client.post(
-            "/api/v1/vision/preview",
-            files={"image": ("question.png", image_bytes(), "image/png")},
-        )
-        prepared = prepared_response.json()["data"]
-        response = client.post(
-            "/api/v1/vision/analyze",
-            data={
-                "prepared_image_id": prepared["image_id"],
-                "prepared_image_data_url": prepared["preview"],
-                "prepared_image_expires_at": prepared["expires_at"],
-            },
-            files={"image": ("renamed.png", image_bytes("JPEG"), "image/png")},
-        )
-
-    assert response.status_code == 200
-    assert provider.calls[0][0] == base64.b64decode(prepared["preview"].split(",", 1)[1])
+    assert provider.calls[0][1] == ("image/png" if image_format == "HEIF" else "image/jpeg")
 
 
 def test_preview_endpoint_applies_orientation_without_provider(tmp_path) -> None:
@@ -490,15 +337,43 @@ def test_rejects_corrupt_heic_and_heif_safely(tmp_path, filename, content_type) 
     assert response.json()["error"] == "invalid_image"
 
 
-def test_rejects_spoofed_supported_mime_and_content_mismatch(tmp_path) -> None:
-    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+def test_supported_mime_and_content_mismatch_uses_actual_decoded_content(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
         response = client.post(
             "/api/v1/vision/analyze",
             files={"image": ("renamed.png", image_bytes("JPEG"), "image/png")},
         )
 
-    assert response.status_code == 415
-    assert response.json()["error"] == "unsupported_image_type"
+    assert response.status_code == 200
+    assert provider.calls[0][1] == "image/jpeg"
+
+
+def test_jpeg_filename_with_actual_heif_uses_heif_decoder_fallback(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("IMG_4537.jpeg", image_bytes("HEIF"), "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/png"
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert image.format == "PNG"
+
+
+def test_heic_filename_with_actual_jpeg_uses_jpeg_fast_path(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("renamed.heic", image_bytes("JPEG"), "image/heic")},
+        )
+
+    assert response.status_code == 200
+    assert provider.calls[0][1] == "image/jpeg"
 
 
 def test_applies_exif_orientation_before_provider_analysis(tmp_path) -> None:
@@ -527,13 +402,12 @@ def test_preview_generation_failure_does_not_block_analysis(tmp_path, monkeypatc
     assert response.json()["data"]["normalized_preview_url"] is None
 
 
-def test_no_jpeg_normalized_internal_path_remains() -> None:
+def test_no_mandatory_prepared_image_analyze_path_remains() -> None:
     source = (Path(__file__).parents[1] / "app" / "features" / "vision" / "service.py").read_text(encoding="utf-8")
 
-    assert 'save(output, format="JPEG"' not in source
-    assert 'data:image/jpeg;base64,' not in source
-    assert 'media_type="image/jpeg"' not in source
-    assert 'content_type="image/jpeg"' not in source
+    assert "_resolve_prepared_image" not in source
+    assert "_prepared_from_data_url" not in source
+    assert "prepared_image_data_url" not in source
 
 
 @pytest.mark.parametrize(

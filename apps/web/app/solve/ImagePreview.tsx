@@ -2,7 +2,6 @@ interface ImagePreviewProps {
   file: File;
   previewUrl: string;
   previewAvailable: boolean;
-  previewPreparing: boolean;
   disabled: boolean;
   onRemove: () => void;
   onReplace: () => void;
@@ -13,7 +12,7 @@ function formatBytes(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-export function ImagePreview({ file, previewUrl, previewAvailable, previewPreparing, disabled, onRemove, onReplace, onPreviewError }: ImagePreviewProps) {
+export function ImagePreview({ file, previewUrl, previewAvailable, disabled, onRemove, onReplace, onPreviewError }: ImagePreviewProps) {
   return (
     <div className="imagePreview">
       {previewAvailable && previewUrl ? (
@@ -24,8 +23,8 @@ export function ImagePreview({ file, previewUrl, previewAvailable, previewPrepar
         </>
       ) : (
         <div className="genericImagePreview" role="img" aria-label="Seçilen görsel dosyası">
-          <strong>{previewPreparing ? 'Görsel hazırlanıyor...' : 'Görsel seçildi'}</strong>
-          <span>{previewPreparing ? 'Önizleme birazdan görünecek.' : 'Önizleme bu tarayıcıda desteklenmeyebilir.'}</span>
+          <strong>Görsel seçildi</strong>
+          <span>Önizleme bu tarayıcıda desteklenmeyebilir.</span>
         </div>
       )}
       <div className="fileMeta">

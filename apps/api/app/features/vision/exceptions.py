@@ -28,24 +28,6 @@ class InvalidImageError(VisionError):
     public_message = "Görsel okunamadı. Geçerli bir JPG, PNG, WEBP, HEIC veya HEIF dosyası yükleyin."
 
 
-class PreparedImageNotFoundError(VisionError):
-    code = "prepared_image_not_found"
-    status_code = 404
-    public_message = "Hazırlanan görsel bulunamadı. Görsel yeniden hazırlanacak şekilde tekrar deneyin."
-
-
-class PreparedImageExpiredError(VisionError):
-    code = "prepared_image_expired"
-    status_code = 410
-    public_message = "Hazırlanan görselin süresi doldu. Görseli yeniden hazırlayıp tekrar deneyin."
-
-
-class InvalidPreparedImageError(VisionError):
-    code = "invalid_prepared_image"
-    status_code = 422
-    public_message = "Hazırlanan görsel doğrulanamadı. Görseli yeniden hazırlayıp tekrar deneyin."
-
-
 class ProviderConfigurationError(VisionError):
     code = "provider_not_configured"
     status_code = 503
