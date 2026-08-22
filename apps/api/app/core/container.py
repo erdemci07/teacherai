@@ -15,6 +15,9 @@ from apps.api.app.features.auth.verifier import FirebaseTokenVerifier
 from apps.api.app.features.memory.engine import MemoryEngine
 from apps.api.app.features.students.repository import InMemoryStudentRepository
 from apps.api.app.features.students.service import StudentService
+from apps.api.app.features.feedback.email import GmailSmtpFeedbackEmailProvider, NoopFeedbackEmailProvider
+from apps.api.app.features.feedback.repository import InMemoryFeedbackRepository
+from apps.api.app.features.feedback.service import FeedbackService
 from apps.api.app.core.usage import UsageTracker
 from apps.api.app.services.health_service import HealthService
 from apps.api.app.services.version_service import VersionService
@@ -30,17 +33,34 @@ class Container:
     interaction_service: InteractionService
     token_verifier: FirebaseTokenVerifier
     student_service: StudentService
+    feedback_service: FeedbackService
     usage_tracker: UsageTracker
 
 
 def build_container(settings: Settings | None = None) -> Container:
     resolved_settings = settings or get_settings()
     student_repository = InMemoryStudentRepository()
+    feedback_repository = InMemoryFeedbackRepository()
     if resolved_settings.firebase_enabled:
         from apps.api.app.features.auth.firebase import initialize_firebase
+        from apps.api.app.features.feedback.firestore_repository import FirestoreFeedbackRepository
         from apps.api.app.features.students.firestore_repository import FirestoreStudentRepository
         initialize_firebase(resolved_settings.firebase_project_id, resolved_settings.firebase_service_account_json)
         student_repository = FirestoreStudentRepository()
+        feedback_repository = FirestoreFeedbackRepository()
+    feedback_email_provider = NoopFeedbackEmailProvider()
+    if (
+        resolved_settings.feedback_email_notifications
+        and resolved_settings.feedback_notification_email
+        and resolved_settings.gmail_smtp_username
+        and resolved_settings.gmail_smtp_app_password
+    ):
+        feedback_email_provider = GmailSmtpFeedbackEmailProvider(
+            username=resolved_settings.gmail_smtp_username,
+            app_password=resolved_settings.gmail_smtp_app_password,
+            recipient=resolved_settings.feedback_notification_email,
+            sender=resolved_settings.feedback_email_sender,
+        )
     vision_provider = OpenAIVisionProvider(
         api_key=resolved_settings.openai_api_key,
         model=resolved_settings.openai_vision_model,
@@ -50,6 +70,7 @@ def build_container(settings: Settings | None = None) -> Container:
         settings=resolved_settings,
         token_verifier=FirebaseTokenVerifier(resolved_settings.firebase_project_id),
         student_service=StudentService(student_repository, MemoryEngine()),
+        feedback_service=FeedbackService(feedback_repository, feedback_email_provider, resolved_settings),
         usage_tracker=UsageTracker(resolved_settings.authenticated_daily_ai_limit),
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),

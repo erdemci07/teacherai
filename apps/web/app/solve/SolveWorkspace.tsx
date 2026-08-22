@@ -11,6 +11,7 @@ import { ImagePreview } from './ImagePreview';
 import { UploadCard } from './UploadCard';
 import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
+import { SolutionFeedback } from './SolutionFeedback';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -147,7 +148,7 @@ export function SolveWorkspace() {
         <div className="solveActions"><button className="primaryButton analyzeButton" onClick={solve} disabled={!file || busy}>{solvedCurrentImage ? 'Yeniden Çöz' : 'Soruyu Çöz'}</button><button className="secondaryButton" onClick={reset} disabled={!file || busy}>Temizle</button></div>
         <p className="privacyNote">Görsel işlemden sonra geçici depolamadan silinir.</p>
       </section>
-      <aside className="solveOutput" aria-label="TeacherAI anlatımı">{busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}{!busy && !result && !error && <div className="resultEmpty"><div className="emptyBoardIcon" aria-hidden="true"><span>∑</span></div><h2>Çözümün burada görünecek</h2><p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p></div>}{result && <><TeacherBoard result={result} /><InteractionPanel lesson={result.lesson} /><button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>{showText && <LessonText lesson={result.lesson} />}{process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}</>}</aside>
+      <aside className="solveOutput" aria-label="TeacherAI anlatımı">{busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}{!busy && !result && !error && <div className="resultEmpty"><div className="emptyBoardIcon" aria-hidden="true"><span>∑</span></div><h2>Çözümün burada görünecek</h2><p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p></div>}{result && <><TeacherBoard result={result} /><InteractionPanel lesson={result.lesson} /><button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>{showText && <LessonText lesson={result.lesson} />}<SolutionFeedback result={result} />{process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}</>}</aside>
     </div>
   </div>;
 }

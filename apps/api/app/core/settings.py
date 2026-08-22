@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     firebase_service_account_json: str | None = None
     firebase_enabled: bool = False
     authenticated_daily_ai_limit: int = 50
+    feedback_email_notifications: bool = Field(default=False, validation_alias=AliasChoices("FEEDBACK_EMAIL_NOTIFICATIONS", "TEACHERAI_FEEDBACK_EMAIL_NOTIFICATIONS"))
+    feedback_notification_email: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_NOTIFICATION_EMAIL", "TEACHERAI_FEEDBACK_NOTIFICATION_EMAIL"))
+    feedback_email_sender: str = Field(default="farukerdemci07@gmail.com", validation_alias=AliasChoices("FEEDBACK_EMAIL_SENDER", "TEACHERAI_FEEDBACK_EMAIL_SENDER"))
+    gmail_smtp_username: str | None = Field(default=None, validation_alias=AliasChoices("GMAIL_SMTP_USERNAME", "TEACHERAI_GMAIL_SMTP_USERNAME"))
+    gmail_smtp_app_password: str | None = Field(default=None, validation_alias=AliasChoices("GMAIL_SMTP_APP_PASSWORD", "TEACHERAI_GMAIL_SMTP_APP_PASSWORD"))
 
 
 @lru_cache
