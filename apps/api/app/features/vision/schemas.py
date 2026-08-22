@@ -11,6 +11,9 @@ class VisualElements(BaseModel):
     has_table: bool
     has_geometry_figure: bool
     description: str | None
+    visual_relevance: Literal["none", "supporting", "essential"] = "none"
+    relevant_visual_facts: list[str] = Field(default_factory=list)
+    relationships: list[str] = Field(default_factory=list)
 
 
 class VisionProviderAnalysis(BaseModel):
@@ -62,6 +65,17 @@ class VisionProviderAnalysis(BaseModel):
             raise ValueError("invalid images cannot contain invented question content")
         if not valid_status and self.difficulty != "unknown":
             raise ValueError("invalid images must use unknown difficulty")
+        if not valid_status and (
+            self.visual_elements.has_diagram
+            or self.visual_elements.has_graph
+            or self.visual_elements.has_table
+            or self.visual_elements.has_geometry_figure
+            or self.visual_elements.description
+            or self.visual_elements.visual_relevance != "none"
+            or self.visual_elements.relevant_visual_facts
+            or self.visual_elements.relationships
+        ):
+            raise ValueError("invalid images cannot contain invented visual facts")
         return self
 
 

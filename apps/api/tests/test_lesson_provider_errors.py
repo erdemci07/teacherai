@@ -259,6 +259,46 @@ def test_truly_invalid_mathematical_response_still_fails_cleanly() -> None:
         normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
 
 
+def test_optional_placeholder_teacher_tip_is_omitted() -> None:
+    payload = lesson_payload()
+    payload["content"]["teacher_tip"] = "{metin buraya}"
+
+    draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+    assert draft.content.teacher_tip is None
+
+
+def test_required_placeholder_contaminated_explanation_is_rejected() -> None:
+    payload = lesson_payload()
+    payload["content"]["steps"][0]["explanation"] = "Önce {metin buraya} sonra işlemi yap."
+
+    with pytest.raises(InvalidLessonPlanError):
+        normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+
+def test_todo_and_buraya_yaz_artifacts_are_rejected_without_hiding_math() -> None:
+    payload = lesson_payload()
+    payload["content"]["question_understanding"] = "TODO"
+    with pytest.raises(InvalidLessonPlanError):
+        normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+    payload = lesson_payload()
+    payload["content"]["question_understanding"] = "Bu kümeyi {x | x > 0} olarak düşünürüz."
+    payload["content"]["steps"][0]["expressions"] = [{"type": "expression", "latex": r"\frac{a}{b}"}]
+    draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+    assert "{x | x > 0}" in draft.content.question_understanding
+    assert draft.content.steps[0].expressions[0].latex == r"\frac{a}{b}"
+
+
+def test_placeholder_known_values_are_dropped_but_real_values_remain() -> None:
+    payload = lesson_payload()
+    payload["content"]["known_values"] = ["[metin buraya]", "3x + 7 = 19"]
+
+    draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+    assert draft.content.known_values == ["3x + 7 = 19"]
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model", ["gpt-5.6-terra", "gpt-4.1-mini"])
 async def test_normalization_behavior_is_independent_of_configured_lesson_model(monkeypatch, model) -> None:

@@ -27,6 +27,14 @@ _TURKISH_ASCII = str.maketrans(
         "Ü": "u",
     }
 )
+_OPTIONAL_TEXT_FIELDS = {"prerequisite_reminder", "key_rule", "common_mistake", "mistake_type", "shortcut", "teacher_tip", "visual_reference"}
+_REQUIRED_CONTENT_TEXT_FIELDS = {"question_understanding", "strategy", "final_answer", "takeaway"}
+_REQUIRED_STEP_TEXT_FIELDS = {"title", "explanation"}
+_PLACEHOLDER_PATTERNS = (
+    re.compile(r"^\s*[\{\[\(<]*\s*metin\s+buraya\s*[\}\]\)>]*\s*\.?\s*$", re.IGNORECASE),
+    re.compile(r"^\s*[\{\[\(<]*\s*(?:placeholder|todo|tbd|insert_text)\s*[\}\]\)>]*\s*\.?\s*$", re.IGNORECASE),
+    re.compile(r"\bburaya\b.{0,40}\byaz\b", re.IGNORECASE),
+)
 
 
 def normalize_lesson_draft_response(response: LessonDraftResponse) -> LessonDraft:
@@ -35,6 +43,7 @@ def normalize_lesson_draft_response(response: LessonDraftResponse) -> LessonDraf
     content = data.get("content", {})
     content["strategy_id"] = _normalize_prefixed_slug(content.get("strategy_id"), "strategy")
     content["steps"] = [_normalize_step(step, index) for index, step in enumerate(content.get("steps", []), start=1)]
+    _sanitize_student_facing_text(data)
     if not content.get("final_answer_expressions"):
         extracted = _extract_final_answer_expression(content.get("final_answer"))
         if extracted:
@@ -70,6 +79,61 @@ def _normalize_prefixed_slug(value: object, prefix: str) -> object:
     base = re.sub(rf"^{prefix}[_\s-]*", "", text, flags=re.IGNORECASE)
     slug = _slugify(base)
     return f"{prefix}_{slug}" if slug else value
+
+
+def _sanitize_student_facing_text(data: dict[str, Any]) -> None:
+    objectives = data.get("learning_objectives", [])
+    if isinstance(objectives, list):
+        for objective in objectives:
+            _reject_placeholder_contamination(objective)
+
+    content = data.get("content", {})
+    if not isinstance(content, dict):
+        return
+    for field in _REQUIRED_CONTENT_TEXT_FIELDS:
+        _reject_placeholder_contamination(content.get(field))
+    for field in _OPTIONAL_TEXT_FIELDS:
+        value = content.get(field)
+        if _is_primary_placeholder(value):
+            content[field] = None
+        else:
+            _reject_placeholder_contamination(value)
+
+    known_values = content.get("known_values", [])
+    if isinstance(known_values, list):
+        content["known_values"] = [value for value in known_values if not _is_primary_placeholder(value)]
+        for value in content["known_values"]:
+            _reject_placeholder_contamination(value)
+
+    for step in content.get("steps", []):
+        if not isinstance(step, dict):
+            continue
+        for field in _REQUIRED_STEP_TEXT_FIELDS:
+            _reject_placeholder_contamination(step.get(field))
+        value = step.get("visual_reference")
+        if _is_primary_placeholder(value):
+            step["visual_reference"] = None
+        else:
+            _reject_placeholder_contamination(value)
+
+
+def _reject_placeholder_contamination(value: object) -> None:
+    if isinstance(value, str) and _contains_placeholder_artifact(value):
+        raise InvalidLessonPlanError
+
+
+def _is_primary_placeholder(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    return any(pattern.search(text) for pattern in _PLACEHOLDER_PATTERNS)
+
+
+def _contains_placeholder_artifact(value: str) -> bool:
+    text = value.strip()
+    if _is_primary_placeholder(text):
+        return True
+    return bool(re.search(r"[\{\[\(<]\s*metin\s+buraya\s*[\}\]\)>]|<\s*placeholder\s*>|\b(?:TODO|TBD|INSERT_TEXT|PLACEHOLDER)\b|\bburaya\b.{0,40}\byaz\b", text, re.IGNORECASE))
 
 
 def _slugify(value: str) -> str:

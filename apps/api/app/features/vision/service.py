@@ -119,6 +119,12 @@ class VisionService:
             )
             provider_result = await self._provider.analyze_image(prepared.content, prepared.media_type, resolved_request_id)
             duration = round((perf_counter() - started) * 1000)
+            analysis = provider_result.analysis.model_copy(
+                update={
+                    "topic": normalize_topic_name(provider_result.analysis.topic) or "",
+                    "subtopic": normalize_topic_name(provider_result.analysis.subtopic),
+                }
+            )
             logger.info(
                 "Vision processing succeeded",
                 extra={
@@ -127,13 +133,10 @@ class VisionService:
                     "provider": provider_result.provider,
                     "model": provider_result.model,
                     "duration_ms": duration,
+                    "visual_relevance": analysis.visual_elements.visual_relevance,
+                    "visual_relationship_count": len(analysis.visual_elements.relationships),
+                    "uncertainty_count": len(analysis.ocr_uncertainties),
                 },
-            )
-            analysis = provider_result.analysis.model_copy(
-                update={
-                    "topic": normalize_topic_name(provider_result.analysis.topic) or "",
-                    "subtopic": normalize_topic_name(provider_result.analysis.subtopic),
-                }
             )
             return VisionAnalysis(
                 **analysis.model_dump(),
