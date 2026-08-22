@@ -48,7 +48,6 @@ def test_feedback_accessibility_contract() -> None:
 def test_feedback_api_does_not_use_public_email_secrets() -> None:
     api = Path("apps/web/app/lib/feedback-api.ts").read_text(encoding="utf-8")
 
-    assert "GMAIL_SMTP_APP_PASSWORD" not in api
-    assert "GMAIL_SMTP_USERNAME" not in api
+    assert "RESEND_API_KEY" not in api
     assert "FEEDBACK_NOTIFICATION_EMAIL" not in api
     assert "/feedback" in api

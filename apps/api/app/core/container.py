@@ -15,7 +15,7 @@ from apps.api.app.features.auth.verifier import FirebaseTokenVerifier
 from apps.api.app.features.memory.engine import MemoryEngine
 from apps.api.app.features.students.repository import InMemoryStudentRepository
 from apps.api.app.features.students.service import StudentService
-from apps.api.app.features.feedback.email import GmailSmtpFeedbackEmailProvider, NoopFeedbackEmailProvider
+from apps.api.app.features.feedback.email import NoopFeedbackEmailProvider, ResendFeedbackEmailProvider
 from apps.api.app.features.feedback.repository import InMemoryFeedbackRepository
 from apps.api.app.features.feedback.service import FeedbackService
 from apps.api.app.core.usage import UsageTracker
@@ -52,12 +52,11 @@ def build_container(settings: Settings | None = None) -> Container:
     if (
         resolved_settings.feedback_email_notifications
         and resolved_settings.feedback_notification_email
-        and resolved_settings.gmail_smtp_username
-        and resolved_settings.gmail_smtp_app_password
+        and resolved_settings.feedback_email_sender
+        and resolved_settings.resend_api_key
     ):
-        feedback_email_provider = GmailSmtpFeedbackEmailProvider(
-            username=resolved_settings.gmail_smtp_username,
-            app_password=resolved_settings.gmail_smtp_app_password,
+        feedback_email_provider = ResendFeedbackEmailProvider(
+            api_key=resolved_settings.resend_api_key,
             recipient=resolved_settings.feedback_notification_email,
             sender=resolved_settings.feedback_email_sender,
         )

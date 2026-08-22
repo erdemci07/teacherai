@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from apps.api.app.core.settings import Settings
 from apps.api.app.core.container import build_container
 from apps.api.app.features.board.planner import BoardPlanner
-from apps.api.app.features.feedback.email import GMAIL_SMTP_HOST, GMAIL_SMTP_PORT, GmailSmtpFeedbackEmailProvider, NoopFeedbackEmailProvider, _email_body
+from apps.api.app.features.feedback.email import RESEND_EMAILS_URL, NoopFeedbackEmailProvider, ResendFeedbackEmailProvider, _email_body
 from apps.api.app.features.feedback.repository import InMemoryFeedbackRepository
 from apps.api.app.features.feedback.service import FeedbackService
 from apps.api.app.features.lessons.service import GeneratedLesson
@@ -158,14 +158,11 @@ def test_feedback_record_and_email_do_not_include_uploaded_image_bytes():
     assert "api key" not in body.lower()
 
 
-def test_critical_feedback_triggers_gmail_smtp_notification_attempt(monkeypatch):
+def test_critical_feedback_triggers_resend_notification_attempt(monkeypatch):
     sent = {}
 
-    class FakeSmtp:
-        def __init__(self, host, port, timeout):
-            sent["host"] = host
-            sent["port"] = port
-            sent["timeout"] = timeout
+    class FakeResponse:
+        status = 200
 
         def __enter__(self):
             return self
@@ -173,65 +170,44 @@ def test_critical_feedback_triggers_gmail_smtp_notification_attempt(monkeypatch)
         def __exit__(self, exc_type, exc, tb):
             return False
 
-        def starttls(self, context):
-            sent["starttls"] = True
+    def fake_urlopen(request, timeout):
+        sent["url"] = request.full_url
+        sent["timeout"] = timeout
+        sent["authorization"] = request.headers["Authorization"]
+        sent["content_type"] = request.headers["Content-type"]
+        sent["payload"] = request.data.decode("utf-8")
+        return FakeResponse()
 
-        def login(self, username, password):
-            sent["username"] = username
-            sent["password"] = password
-
-        def send_message(self, message):
-            sent["to"] = message["To"]
-            sent["from"] = message["From"]
-            sent["subject"] = message["Subject"]
-            sent["body"] = message.get_content()
-
-    monkeypatch.setattr("apps.api.app.features.feedback.email.smtplib.SMTP", FakeSmtp)
-    provider = GmailSmtpFeedbackEmailProvider(
-        username="farukerdemci07@gmail.com",
-        app_password="app-secret",
+    monkeypatch.setattr("apps.api.app.features.feedback.email.urlopen", fake_urlopen)
+    provider = ResendFeedbackEmailProvider(
+        api_key="resend-secret",
         recipient="farukerdemci07@gmail.com",
-        sender="farukerdemci07@gmail.com",
+        sender="TeacherAI <feedback@example.com>",
     )
     client, repo, _ = client_with_feedback(provider)
 
     response = client.post("/api/v1/feedback", json=payload(rating="negative", reasons=["wrong_solution"], comment="Son cevap hatalı."))
 
     assert response.status_code == 200
-    assert sent["host"] == GMAIL_SMTP_HOST
-    assert sent["port"] == GMAIL_SMTP_PORT
-    assert sent["starttls"] is True
-    assert sent["username"] == "farukerdemci07@gmail.com"
-    assert sent["password"] == "app-secret"
-    assert sent["to"] == "farukerdemci07@gmail.com"
-    assert "TeacherAI - Yeni kritik geri bildirim" in sent["subject"]
-    assert "Son cevap hatalı." in sent["body"]
+    assert sent["url"] == RESEND_EMAILS_URL
+    assert sent["authorization"] == "Bearer resend-secret"
+    assert sent["content_type"] == "application/json"
+    assert '"to": ["farukerdemci07@gmail.com"]' in sent["payload"]
+    assert '"from": "TeacherAI <feedback@example.com>"' in sent["payload"]
+    assert "TeacherAI \\u2014 Yeni kritik geri bildirim" in sent["payload"]
+    assert "Son cevap hatal" in sent["payload"]
     assert len(repo.items) == 1
 
 
-def test_smtp_failure_does_not_log_credentials_or_rollback(caplog, monkeypatch):
-    class FailingSmtp:
-        def __init__(self, host, port, timeout):
-            return None
+def test_resend_failure_does_not_log_credentials_or_rollback(caplog, monkeypatch):
+    def failing_urlopen(request, timeout):
+        raise OSError("resend unavailable")
 
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            return False
-
-        def starttls(self, context):
-            return None
-
-        def login(self, username, password):
-            raise OSError("smtp unavailable")
-
-    monkeypatch.setattr("apps.api.app.features.feedback.email.smtplib.SMTP", FailingSmtp)
-    provider = GmailSmtpFeedbackEmailProvider(
-        username="farukerdemci07@gmail.com",
-        app_password="super-secret-app-password",
+    monkeypatch.setattr("apps.api.app.features.feedback.email.urlopen", failing_urlopen)
+    provider = ResendFeedbackEmailProvider(
+        api_key="super-secret-resend-key",
         recipient="farukerdemci07@gmail.com",
-        sender="farukerdemci07@gmail.com",
+        sender="TeacherAI <feedback@example.com>",
     )
     client, repo, _ = client_with_feedback(provider)
 
@@ -240,20 +216,19 @@ def test_smtp_failure_does_not_log_credentials_or_rollback(caplog, monkeypatch):
     assert response.status_code == 200
     assert len(repo.items) == 1
     logs = caplog.text
-    assert "super-secret-app-password" not in logs
+    assert "super-secret-resend-key" not in logs
     assert "farukerdemci07@gmail.com" not in logs
 
 
-def test_missing_smtp_config_falls_back_to_noop_provider():
+def test_missing_resend_api_key_falls_back_to_noop_provider():
     container = build_container(
         Settings(
             environment="test",
             firebase_enabled=False,
             feedback_email_notifications=True,
             feedback_notification_email="farukerdemci07@gmail.com",
-            feedback_email_sender="farukerdemci07@gmail.com",
-            gmail_smtp_username=None,
-            gmail_smtp_app_password=None,
+            feedback_email_sender="TeacherAI <feedback@example.com>",
+            resend_api_key=None,
         )
     )
 
