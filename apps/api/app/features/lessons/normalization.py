@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from apps.api.app.features.mathai.parser import MathParseError, equation
+from apps.api.app.features.mathai.parser import MathParseError, equation, expression
 
 from .exceptions import InvalidLessonPlanError
 from .schemas import LessonDraft, LessonDraftResponse
@@ -36,9 +36,9 @@ def normalize_lesson_draft_response(response: LessonDraftResponse) -> LessonDraf
     content["strategy_id"] = _normalize_prefixed_slug(content.get("strategy_id"), "strategy")
     content["steps"] = [_normalize_step(step, index) for index, step in enumerate(content.get("steps", []), start=1)]
     if not content.get("final_answer_expressions"):
-        extracted = _extract_exact_equation(content.get("final_answer"))
+        extracted = _extract_final_answer_expression(content.get("final_answer"))
         if extracted:
-            content["final_answer_expressions"] = [{"type": "equation", "latex": extracted}]
+            content["final_answer_expressions"] = [extracted]
     try:
         return LessonDraft.model_validate(data)
     except (ValidationError, ValueError) as exc:
@@ -87,5 +87,41 @@ def _extract_exact_equation(value: object) -> str | None:
     try:
         equation(text)
     except MathParseError:
+        return None
+    return text
+
+
+def _extract_final_answer_expression(value: object) -> dict[str, str] | None:
+    text = _strip_answer_choice_prefix(value)
+    if text is None:
+        return None
+    equation_text = _extract_exact_equation(text)
+    if equation_text:
+        return {"type": "equation", "latex": equation_text}
+    numeric_text = _extract_exact_numeric_expression(text)
+    if numeric_text:
+        return {"type": "expression", "latex": numeric_text}
+    return None
+
+
+def _strip_answer_choice_prefix(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    match = re.fullmatch(r"[A-Ea-e]\s*[\)\].:\-]\s*(.+)", text)
+    if match:
+        return match.group(1).strip()
+    return text
+
+
+def _extract_exact_numeric_expression(value: str) -> str | None:
+    text = value.strip().replace(",", ".")
+    if not re.fullmatch(r"-?(?:\d+(?:\.\d+)?|\d+\s*/\s*\d+|\\frac\{\d+\}\{\d+\})", text):
+        return None
+    try:
+        parsed = expression(text)
+    except MathParseError:
+        return None
+    if parsed.free_symbols:
         return None
     return text

@@ -219,6 +219,32 @@ def test_heif_normalized_preview_uses_same_png_sent_to_provider(tmp_path) -> Non
     assert base64.b64decode(preview_url.split(",", 1)[1]) == normalized
 
 
+def test_heic_and_jpeg_analysis_payloads_match_after_normalization(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        jpeg_response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("question.jpeg", image_bytes("JPEG"), "image/jpeg")},
+        )
+        heic_response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("question.heic", image_bytes("HEIF"), "image/heic")},
+        )
+
+    assert jpeg_response.status_code == 200
+    assert heic_response.status_code == 200
+    jpeg_analysis = jpeg_response.json()["data"]
+    heic_analysis = heic_response.json()["data"]
+    for analysis in (jpeg_analysis, heic_analysis):
+        analysis.pop("request_id")
+        analysis.pop("processing_time_ms")
+        analysis.pop("normalized_preview_url")
+
+    assert heic_analysis == jpeg_analysis
+    assert provider.calls[0][1] == "image/jpeg"
+    assert provider.calls[1][1] == "image/png"
+
+
 @pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
 def test_preview_endpoint_returns_normalized_png_without_vision_provider(tmp_path, filename, content_type) -> None:
     provider = SuccessfulProvider()

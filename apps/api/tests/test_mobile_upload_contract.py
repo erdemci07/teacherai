@@ -124,3 +124,14 @@ def test_preview_state_remains_after_downstream_solve_error() -> None:
 
     assert "setPreview('')" not in catch_block
     assert "setFile(null)" not in catch_block
+
+
+def test_successful_solve_marks_only_current_file_for_resolve_label() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+
+    assert "const fileKey = (value: File)" in workspace
+    assert "selectedFileKeyRef.current = key" in workspace
+    assert "setSolvedFileKey('')" in workspace
+    assert "if (solveFileKey && selectedFileKeyRef.current === solveFileKey) setSolvedFileKey(solveFileKey)" in workspace
+    assert "solvedCurrentImage ? 'Yeniden Çöz' : 'Soruyu Çöz'" in workspace
+    assert "setSelectedFileKey('')" in workspace

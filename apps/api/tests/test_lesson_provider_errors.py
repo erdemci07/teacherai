@@ -195,6 +195,43 @@ def test_empty_final_answer_expression_can_be_extracted_from_exact_equation() ->
     assert draft.content.final_answer_expressions[0].latex == "k = 3"
 
 
+def test_empty_final_answer_expression_can_be_extracted_from_multiple_choice_number() -> None:
+    payload = lesson_payload()
+    payload["content"]["final_answer"] = "C) 3"
+    payload["content"]["final_answer_expressions"] = []
+
+    draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+    assert draft.content.final_answer == "C) 3"
+    assert draft.content.final_answer_expressions[0].type == "expression"
+    assert draft.content.final_answer_expressions[0].latex == "3"
+
+
+def test_empty_final_answer_expression_can_be_extracted_from_multiple_choice_equation() -> None:
+    payload = lesson_payload()
+    payload["content"]["final_answer"] = "C) k = 3"
+    payload["content"]["final_answer_expressions"] = []
+
+    draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
+
+    assert draft.content.final_answer_expressions[0].type == "equation"
+    assert draft.content.final_answer_expressions[0].latex == "k = 3"
+
+
+@pytest.mark.asyncio
+async def test_multiple_choice_numeric_final_answer_no_longer_becomes_invalid_lesson(monkeypatch) -> None:
+    payload = lesson_payload()
+    payload["content"]["final_answer"] = "C) 3"
+    payload["content"]["final_answer_expressions"] = []
+    output = LessonDraftResponse.model_validate(payload)
+    provider = provider_with_responses(monkeypatch, Responses(output=output))
+
+    result = await provider.generate_lesson_plan(plan().source_analysis)
+
+    assert result.draft.content.final_answer_expressions[0].type == "expression"
+    assert result.draft.content.final_answer_expressions[0].latex == "3"
+
+
 def test_missing_mathematically_essential_content_is_not_invented() -> None:
     payload = lesson_payload()
     payload["content"]["final_answer"] = "Cevap C seçeneğidir."
