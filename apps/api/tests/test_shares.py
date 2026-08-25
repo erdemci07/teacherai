@@ -4,9 +4,36 @@ from fastapi.testclient import TestClient
 
 from apps.api.app.core.settings import Settings
 from apps.api.app.features.shares.repository import InMemoryShareRepository
+from apps.api.app.features.shares.schemas import PublicSolutionSnapshot
 from apps.api.app.features.shares.service import ShareService
 from apps.api.app.main import create_app
 from apps.api.tests.test_feedback import generated_result
+
+
+class SharedDictRepository(InMemoryShareRepository):
+    def __init__(self, items):
+        self.items = items
+
+
+class FailingShareRepository:
+    def get(self, share_id: str):
+        raise RuntimeError("firestore unavailable")
+
+    def find_by_lesson_plan_id(self, lesson_plan_id: str):
+        raise RuntimeError("firestore unavailable")
+
+    def save(self, snapshot: PublicSolutionSnapshot) -> bool:
+        raise RuntimeError("firestore unavailable")
+
+
+class MissingAfterSaveRepository(InMemoryShareRepository):
+    def get(self, share_id: str):
+        return None
+
+
+class SaveFailingRepository(InMemoryShareRepository):
+    def save(self, snapshot: PublicSolutionSnapshot) -> bool:
+        raise RuntimeError("permission denied")
 
 
 def client_with_shares():
@@ -41,6 +68,32 @@ def test_successful_solution_creates_public_share_snapshot():
     assert snapshot.board_snapshot.elements
 
 
+def test_api_does_not_return_url_if_persistence_fails():
+    app = create_app(Settings(environment="test", firebase_enabled=False))
+    service = ShareService(SaveFailingRepository(), Settings(environment="test", firebase_enabled=False))
+    app.state.container = replace(app.state.container, share_service=service)
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post("/api/v1/shares", json=share_payload())
+
+    assert response.status_code == 503
+    assert response.json()["error"] == "share_storage_error"
+    assert "share_url" not in response.text
+
+
+def test_api_confirms_persisted_record_before_returning_url():
+    app = create_app(Settings(environment="test", firebase_enabled=False))
+    repo = MissingAfterSaveRepository()
+    service = ShareService(repo, Settings(environment="test", firebase_enabled=False))
+    app.state.container = replace(app.state.container, share_service=service)
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post("/api/v1/shares", json=share_payload())
+
+    assert response.status_code == 503
+    assert response.json()["error"] == "share_storage_error"
+
+
 def test_repeated_share_for_same_solution_reuses_snapshot():
     client, repo = client_with_shares()
     body = share_payload()
@@ -51,6 +104,25 @@ def test_repeated_share_for_same_solution_reuses_snapshot():
 
     assert first == second == third
     assert len(repo.items) == 1
+
+
+def test_new_repository_service_instance_can_fetch_persisted_share():
+    shared_items = {}
+    creator_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    creator_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    creator_app.state.container = replace(creator_app.state.container, share_service=creator_service)
+    creator = TestClient(creator_app, raise_server_exceptions=False)
+    created = creator.post("/api/v1/shares", json=share_payload()).json()["data"]
+
+    reader_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    reader_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    reader_app.state.container = replace(reader_app.state.container, share_service=reader_service)
+    reader = TestClient(reader_app, raise_server_exceptions=False)
+
+    response = reader.get(f"/api/v1/shares/{created['share_id']}")
+
+    assert response.status_code == 200
+    assert response.json()["data"]["share_id"] == created["share_id"]
 
 
 def test_public_snapshot_excludes_private_feedback_auth_and_image_data():
@@ -123,3 +195,51 @@ def test_missing_public_share_returns_not_found_without_authentication():
 
     assert response.status_code == 404
     assert crawler.status_code == 404
+
+
+def test_repository_infrastructure_error_is_5xx_not_fake_not_found():
+    app = create_app(Settings(environment="test", firebase_enabled=False))
+    service = ShareService(FailingShareRepository(), Settings(environment="test", firebase_enabled=False))
+    app.state.container = replace(app.state.container, share_service=service)
+    client = TestClient(app, raise_server_exceptions=False)
+
+    api_response = client.get("/api/v1/shares/abc123def45")
+    crawler_response = client.get("/s/abc123def45")
+
+    assert api_response.status_code == 503
+    assert api_response.json()["error"] == "share_storage_error"
+    assert crawler_response.status_code == 503
+    assert "not found" not in crawler_response.text.lower()
+
+
+def test_revoked_record_behaves_as_unavailable_without_deleting_data():
+    client, repo = client_with_shares()
+    created = client.post("/api/v1/shares", json=share_payload()).json()["data"]
+    snapshot = repo.items[created["share_id"]]
+    repo.items[created["share_id"]] = snapshot.model_copy(update={"status": "revoked"})
+
+    response = client.get(f"/api/v1/shares/{created['share_id']}")
+
+    assert response.status_code == 404
+    assert created["share_id"] in repo.items
+    assert repo.items[created["share_id"]].expires_at is None
+
+
+def test_latex_survives_snapshot_round_trip():
+    client, _ = client_with_shares()
+    created = client.post("/api/v1/shares", json=share_payload()).json()["data"]
+
+    response = client.get(f"/api/v1/shares/{created['share_id']}")
+
+    text = str(response.json()["data"]["snapshot"])
+    assert "x = 4" in text
+    assert "final_answer_expressions" in text
+
+
+def test_production_share_storage_uses_firestore_not_in_memory() -> None:
+    container_source = __import__("pathlib").Path("apps/api/app/core/container.py").read_text(encoding="utf-8")
+    requirements = __import__("pathlib").Path("apps/api/requirements.txt").read_text(encoding="utf-8")
+
+    assert 'resolved_settings.environment != "test"' in container_source
+    assert "FirestoreShareRepository" in container_source
+    assert "firebase-admin" in requirements

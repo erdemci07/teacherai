@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from html import escape
+import logging
 from secrets import token_urlsafe
 from urllib.parse import quote
 
@@ -8,6 +9,7 @@ from apps.api.app.features.lessons.exceptions import InvalidLessonPlanError
 from apps.api.app.features.lessons.normalization import _contains_placeholder_artifact
 from apps.api.app.features.lessons.service import GeneratedLesson
 
+from .exceptions import ShareStorageError
 from .repository import ShareRepository
 from .schemas import CreateShareResponse, PublicShareResponse, PublicSolutionSnapshot
 
@@ -17,6 +19,7 @@ MAX_EXPRESSIONS_PER_STEP = 8
 
 SHARE_TITLE = "TeacherAI bu matematik sorusunu çözdü"
 SHARE_DESCRIPTION = "Adım adım öğretmen anlatımıyla çözümü incele. Sen de kendi sorunu TeacherAI ile çöz."
+logger = logging.getLogger(__name__)
 
 
 class ShareService:
@@ -25,13 +28,17 @@ class ShareService:
         self.settings = settings
 
     def create_or_reuse(self, result: GeneratedLesson, existing_share_id: str | None = None) -> CreateShareResponse:
+        lesson_plan_id = result.lesson.lesson_plan_id
+        logger.info("share_create_started", extra={"operation": "share_create_started", "lesson_plan_id": lesson_plan_id})
         if existing_share_id:
-            existing = self.repository.get(existing_share_id)
+            existing = self._repo_get(existing_share_id, "share_reuse_existing_id")
             if existing and existing.source_lesson_plan_id == result.lesson.lesson_plan_id and existing.status == "published":
+                logger.info("share_reused", extra={"operation": "share_reused", "share_id": existing.share_id})
                 return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id))
 
-        existing = self.repository.find_by_lesson_plan_id(result.lesson.lesson_plan_id)
+        existing = self._repo_find_by_lesson_plan_id(lesson_plan_id)
         if existing:
+            logger.info("share_reused", extra={"operation": "share_reused", "share_id": existing.share_id})
             return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id))
 
         self._validate_public_result(result)
@@ -51,13 +58,20 @@ class ShareService:
             app_version=self.settings.version,
             source_lesson_plan_id=lesson.lesson_plan_id,
         )
-        self.repository.save(snapshot)
+        self._repo_save(snapshot)
+        persisted = self._repo_get(share_id, "share_create_confirm")
+        if not persisted or persisted.status != "published":
+            logger.error("share_firestore_error", extra={"operation": "share_create_confirm", "share_id": share_id, "exception_type": "MissingPersistedRecord"})
+            raise ShareStorageError
+        logger.info("share_create_persisted", extra={"operation": "share_create_persisted", "share_id": share_id})
         return CreateShareResponse(share_id=share_id, share_url=self.share_url(share_id))
 
     def get_public(self, share_id: str) -> PublicShareResponse | None:
-        snapshot = self.repository.get(share_id)
+        snapshot = self._repo_get(share_id, "share_fetch")
         if not snapshot or snapshot.status != "published" or snapshot.revoked_at:
+            logger.info("share_not_found", extra={"operation": "share_not_found", "share_id": share_id})
             return None
+        logger.info("share_fetch_succeeded", extra={"operation": "share_fetch_succeeded", "share_id": share_id})
         return PublicShareResponse(share_id=share_id, share_url=self.share_url(share_id), snapshot=snapshot)
 
     def share_url(self, share_id: str) -> str:
@@ -126,9 +140,30 @@ class ShareService:
     def _new_share_id(self) -> str:
         for _ in range(8):
             share_id = token_urlsafe(9).replace("_", "").replace("-", "")[:12]
-            if len(share_id) >= 10 and not self.repository.get(share_id):
+            if len(share_id) >= 10 and not self._repo_get(share_id, "share_id_collision_check"):
                 return share_id
         raise RuntimeError("share id generation failed")
+
+    def _repo_get(self, share_id: str, operation: str) -> PublicSolutionSnapshot | None:
+        try:
+            return self.repository.get(share_id)
+        except Exception as exc:
+            logger.exception("share_firestore_error", extra={"operation": operation, "share_id": share_id, "exception_type": type(exc).__name__})
+            raise ShareStorageError from exc
+
+    def _repo_find_by_lesson_plan_id(self, lesson_plan_id: str) -> PublicSolutionSnapshot | None:
+        try:
+            return self.repository.find_by_lesson_plan_id(lesson_plan_id)
+        except Exception as exc:
+            logger.exception("share_firestore_error", extra={"operation": "share_find_by_lesson", "exception_type": type(exc).__name__})
+            raise ShareStorageError from exc
+
+    def _repo_save(self, snapshot: PublicSolutionSnapshot) -> None:
+        try:
+            self.repository.save(snapshot)
+        except Exception as exc:
+            logger.exception("share_firestore_error", extra={"operation": "share_save", "share_id": snapshot.share_id, "exception_type": type(exc).__name__})
+            raise ShareStorageError from exc
 
     def _validate_public_result(self, result: GeneratedLesson) -> None:
         lesson = result.lesson

@@ -10,6 +10,7 @@ from apps.api.app.schemas.responses import ErrorResponse
 from apps.api.app.features.vision.exceptions import VisionError
 from apps.api.app.features.lessons.exceptions import LessonError
 from apps.api.app.features.interactions.exceptions import InteractionError
+from apps.api.app.features.shares.exceptions import ShareError
 from apps.api.app.features.auth.dependencies import AuthenticationRequired
 from apps.api.app.core.usage import UsageLimitExceeded
 
@@ -28,6 +29,11 @@ def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(InteractionError)
     async def interaction_exception_handler(request: Request, exc: InteractionError) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(status_code=exc.status_code, content=ErrorResponse(error=exc.code, detail=exc.public_message, request_id=request_id).model_dump())
+
+    @app.exception_handler(ShareError)
+    async def share_exception_handler(request: Request, exc: ShareError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(status_code=exc.status_code, content=ErrorResponse(error=exc.code, detail=exc.public_message, request_id=request_id).model_dump())
 

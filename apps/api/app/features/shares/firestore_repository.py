@@ -15,12 +15,13 @@ class FirestoreShareRepository:
         query = (
             self.db.collection("shared_solutions")
             .where("source_lesson_plan_id", "==", lesson_plan_id)
-            .where("status", "==", "published")
-            .limit(1)
+            .limit(5)
             .stream()
         )
         for snap in query:
-            return PublicSolutionSnapshot.model_validate(snap.to_dict())
+            item = PublicSolutionSnapshot.model_validate(snap.to_dict())
+            if item.status == "published":
+                return item
         return None
 
     def save(self, snapshot: PublicSolutionSnapshot) -> bool:

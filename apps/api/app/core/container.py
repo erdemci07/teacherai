@@ -54,6 +54,11 @@ def build_container(settings: Settings | None = None) -> Container:
         student_repository = FirestoreStudentRepository()
         feedback_repository = FirestoreFeedbackRepository()
         share_repository = FirestoreShareRepository()
+    elif resolved_settings.environment != "test":
+        from apps.api.app.features.auth.firebase import initialize_firebase
+        from apps.api.app.features.shares.firestore_repository import FirestoreShareRepository
+        initialize_firebase(resolved_settings.firebase_project_id, resolved_settings.firebase_service_account_json)
+        share_repository = FirestoreShareRepository()
     feedback_email_provider = NoopFeedbackEmailProvider()
     if (
         resolved_settings.feedback_email_notifications
