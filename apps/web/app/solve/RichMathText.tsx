@@ -6,14 +6,16 @@ type TextPart = { type: 'text'; value: string };
 type MathPart = { type: 'math'; value: string; display: boolean };
 type Part = TextPart | MathPart;
 
-const RAW_COMMANDS = new Set(['frac', 'sqrt', 'sin', 'cos', 'tan', 'cot', 'log', 'ln', 'circ', 'cdot', 'times', 'le', 'ge', 'neq', 'pm', 'pi', 'theta', 'alpha', 'beta', 'gamma', 'Delta', 'sum', 'int', 'infty']);
-const RAW_COMMAND_PATTERN = /\\(frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b/;
+const RAW_COMMANDS = new Set(['frac', 'sqrt', 'sin', 'cos', 'tan', 'cot', 'log', 'ln', 'left', 'right', 'circ', 'cdot', 'times', 'rightarrow', 'Rightarrow', 'le', 'ge', 'neq', 'pm', 'pi', 'theta', 'alpha', 'beta', 'gamma', 'Delta', 'sum', 'int', 'infty']);
+const RAW_COMMAND_PATTERN = /\\(frac|sqrt|sin|cos|tan|cot|log|ln|left|right|circ|cdot|times|rightarrow|Rightarrow|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b/;
 const MATH_SIGNAL_PATTERN = /(\\[a-zA-Z]+|[=<>^_]|[0-9]\s*[+\-*/]|[+\-*/]\s*[0-9]|[a-zA-Z]\s*[+\-*/=^_])/;
+const RAW_OPERATOR_COMMAND_PATTERN = /\\(?:times|cdot|rightarrow|Rightarrow|le|ge|neq|pm)\b/;
 
 function normalizeLatex(value: string) {
   return value
     .trim()
-    .replace(/\\\\(?=(frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b)/g, '\\')
+    .replace(/\b(?:imes|ightarrow|Rightarrow)\b/g, (match) => (match === 'imes' ? '\\times' : `\\${match}`))
+    .replace(/\\\\(?=(frac|sqrt|sin|cos|tan|cot|log|ln|left|right|circ|cdot|times|rightarrow|Rightarrow|le|ge|neq|pm|pi|theta|alpha|beta|gamma|Delta|sum|int|infty)\b)/g, '\\')
     .replace(/^\${1,2}\s*|\s*\${1,2}$/g, '')
     .replace(/^\\\(\s*|\s*\\\)$/g, '')
     .replace(/^\\\[\s*|\s*\\\]$/g, '')
@@ -36,6 +38,15 @@ function commandAt(input: string, index: number) {
   if (input[index] !== '\\') return null;
   const match = /^\\([A-Za-z]+)/.exec(input.slice(index));
   return match && RAW_COMMANDS.has(match[1]) ? match[1] : null;
+}
+
+function startsMathLikeRawExpression(input: string, index: number) {
+  const rest = input.slice(index);
+  return (
+    commandAt(input, index) ||
+    scanSimpleAtom(input, index) > index ||
+    /^[0-9A-Za-z]+(?:\s*\\(?:times|cdot|rightarrow|Rightarrow|le|ge|neq|pm)\b)/.test(rest)
+  );
 }
 
 function readBalancedGroup(input: string, index: number) {
@@ -62,7 +73,7 @@ function scanCommand(input: string, index: number) {
     const denominatorEnd = readBalancedGroup(input, cursor);
     return denominatorEnd === cursor ? cursor : denominatorEnd;
   }
-  if (command === 'sqrt' && input[cursor] === '{') return readBalancedGroup(input, cursor);
+  if ((command === 'sqrt' || command === 'left' || command === 'right') && input[cursor] === '{') return readBalancedGroup(input, cursor);
   return cursor;
 }
 
@@ -72,7 +83,7 @@ function scanSimpleAtom(input: string, index: number) {
 }
 
 function scanRawMath(input: string, index: number) {
-  if (!commandAt(input, index) && scanSimpleAtom(input, index) === index) return null;
+  if (!startsMathLikeRawExpression(input, index)) return null;
   let cursor = index;
   let sawMath = false;
 
@@ -94,6 +105,10 @@ function scanRawMath(input: string, index: number) {
     }
 
     const char = input[cursor];
+    if (char === '\\' && RAW_OPERATOR_COMMAND_PATTERN.test(input.slice(cursor))) {
+      const operator = RAW_OPERATOR_COMMAND_PATTERN.exec(input.slice(cursor));
+      cursor += operator?.[0].length ?? 1; sawMath = true; continue;
+    }
     if (/[0-9{}()[\]]/.test(char)) {
       cursor += 1; continue;
     }
@@ -102,7 +117,7 @@ function scanRawMath(input: string, index: number) {
     }
     if (/\s/.test(char)) {
       const rest = input.slice(cursor);
-      if (/^\s*(?:[=<>+\-*/^_]|\\(?:frac|sqrt|sin|cos|tan|cot|log|ln|circ|cdot|times|le|ge|neq|pm|pi|theta|alpha|beta)\b|[A-Za-z0-9]+(?:\s*(?:\^|_)))/.test(rest)) {
+      if (/^\s*(?:[=<>+\-*/^_]|\\(?:frac|sqrt|sin|cos|tan|cot|log|ln|left|right|circ|cdot|times|rightarrow|Rightarrow|le|ge|neq|pm|pi|theta|alpha|beta)\b|[A-Za-z0-9]+(?:\s*(?:\^|_)))/.test(rest)) {
         cursor += 1; continue;
       }
     }
@@ -118,6 +133,8 @@ function readableMathFallback(value: string) {
     .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1 / $2')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\(sin|cos|tan|cot|log|ln)\b/g, '$1')
+    .replace(/\\rightarrow\b/g, '→')
+    .replace(/\\Rightarrow\b/g, '⇒')
     .replace(/\\circ\b/g, '°')
     .replace(/\\cdot\b/g, '·')
     .replace(/\\times\b/g, '×')
@@ -129,6 +146,18 @@ function readableMathFallback(value: string) {
     .replace(/\\theta\b/g, 'θ')
     .replace(/\\alpha\b/g, 'α')
     .replace(/\\beta\b/g, 'β');
+}
+
+function normalizeInlineSpacing(parts: Part[]): Part[] {
+  return parts.map((part, index) => {
+    if (part.type !== 'text') return part;
+    let value = part.value;
+    const previous = parts[index - 1];
+    const next = parts[index + 1];
+    if (previous?.type === 'math' && value && /^[\p{L}\p{N}\\]/u.test(value)) value = ` ${value}`;
+    if (next?.type === 'math' && value && /[^\s([{"'“‘]$/u.test(value)) value = `${value} `;
+    return value === part.value ? part : { ...part, value };
+  });
 }
 
 export function parseRichMathText(input: string): Part[] {
@@ -181,7 +210,7 @@ export function parseRichMathText(input: string): Part[] {
     index = end + close.length;
   }
 
-  return parts;
+  return normalizeInlineSpacing(parts);
 }
 
 function RenderMath({ latex, display }: { latex: string; display: boolean }) {

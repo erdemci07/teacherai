@@ -18,6 +18,8 @@ from apps.api.app.features.students.service import StudentService
 from apps.api.app.features.feedback.email import NoopFeedbackEmailProvider, ResendFeedbackEmailProvider
 from apps.api.app.features.feedback.repository import InMemoryFeedbackRepository
 from apps.api.app.features.feedback.service import FeedbackService
+from apps.api.app.features.shares.repository import InMemoryShareRepository
+from apps.api.app.features.shares.service import ShareService
 from apps.api.app.core.usage import UsageTracker
 from apps.api.app.services.health_service import HealthService
 from apps.api.app.services.version_service import VersionService
@@ -34,6 +36,7 @@ class Container:
     token_verifier: FirebaseTokenVerifier
     student_service: StudentService
     feedback_service: FeedbackService
+    share_service: ShareService
     usage_tracker: UsageTracker
 
 
@@ -41,13 +44,16 @@ def build_container(settings: Settings | None = None) -> Container:
     resolved_settings = settings or get_settings()
     student_repository = InMemoryStudentRepository()
     feedback_repository = InMemoryFeedbackRepository()
+    share_repository = InMemoryShareRepository()
     if resolved_settings.firebase_enabled:
         from apps.api.app.features.auth.firebase import initialize_firebase
         from apps.api.app.features.feedback.firestore_repository import FirestoreFeedbackRepository
+        from apps.api.app.features.shares.firestore_repository import FirestoreShareRepository
         from apps.api.app.features.students.firestore_repository import FirestoreStudentRepository
         initialize_firebase(resolved_settings.firebase_project_id, resolved_settings.firebase_service_account_json)
         student_repository = FirestoreStudentRepository()
         feedback_repository = FirestoreFeedbackRepository()
+        share_repository = FirestoreShareRepository()
     feedback_email_provider = NoopFeedbackEmailProvider()
     if (
         resolved_settings.feedback_email_notifications
@@ -70,6 +76,7 @@ def build_container(settings: Settings | None = None) -> Container:
         token_verifier=FirebaseTokenVerifier(resolved_settings.firebase_project_id),
         student_service=StudentService(student_repository, MemoryEngine()),
         feedback_service=FeedbackService(feedback_repository, feedback_email_provider, resolved_settings),
+        share_service=ShareService(share_repository, resolved_settings),
         usage_tracker=UsageTracker(resolved_settings.authenticated_daily_ai_limit),
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),

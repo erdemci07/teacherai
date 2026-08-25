@@ -10,6 +10,13 @@
     "trailingSlash": false,
     "rewrites": [
       {
+        "source": "/s/**",
+        "run": {
+          "serviceId": "teacherai-api",
+          "region": "us-east4"
+        }
+      },
+      {
         "source": "/api/**",
         "run": {
           "serviceId": "teacherai-api",

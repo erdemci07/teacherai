@@ -72,6 +72,8 @@ class Settings(BaseSettings):
     firebase_service_account_json: str | None = None
     firebase_enabled: bool = False
     authenticated_daily_ai_limit: int = 50
+    public_app_url: str = Field(default="https://math-ai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
+    share_og_image_path: str = "/teacherai-share-og.svg"
     feedback_email_notifications: bool = Field(default=False, validation_alias=AliasChoices("FEEDBACK_EMAIL_NOTIFICATIONS", "TEACHERAI_FEEDBACK_EMAIL_NOTIFICATIONS"))
     feedback_notification_email: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_NOTIFICATION_EMAIL", "TEACHERAI_FEEDBACK_NOTIFICATION_EMAIL"))
     feedback_email_sender: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_EMAIL_SENDER", "TEACHERAI_FEEDBACK_EMAIL_SENDER"))

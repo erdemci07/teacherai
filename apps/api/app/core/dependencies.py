@@ -7,6 +7,7 @@ from apps.api.app.features.vision.service import VisionService
 from apps.api.app.features.lessons.service import LessonService
 from apps.api.app.features.interactions.service import InteractionService
 from apps.api.app.features.feedback.service import FeedbackService
+from apps.api.app.features.shares.service import ShareService
 from apps.api.app.features.students.service import StudentService
 from apps.api.app.services.health_service import HealthService
 from apps.api.app.services.version_service import VersionService
@@ -42,3 +43,7 @@ def get_student_service(container: Annotated[Container, Depends(get_container)])
 
 def get_feedback_service(container: Annotated[Container, Depends(get_container)]) -> FeedbackService:
     return container.feedback_service
+
+
+def get_share_service(container: Annotated[Container, Depends(get_container)]) -> ShareService:
+    return container.share_service

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
+from fastapi.responses import HTMLResponse
 from uuid import uuid4
 import logging
 
@@ -56,6 +57,17 @@ def create_app(settings_override=None) -> FastAPI:
 
     register_error_handlers(app)
     app.include_router(api_router, prefix=settings.api_prefix)
+
+    @app.get("/s/{share_id}", response_class=HTMLResponse, include_in_schema=False)
+    async def public_share_page(share_id: str):
+        html = app.state.container.share_service.render_public_html(share_id)
+        if html is None:
+            return HTMLResponse(
+                "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex\"><title>Çözüm bulunamadı</title></head><body><h1>Çözüm bulunamadı</h1><p>Bu paylaşım bağlantısı artık kullanılamıyor olabilir.</p></body></html>",
+                status_code=404,
+                headers={"Cache-Control": "no-store"},
+            )
+        return HTMLResponse(html, headers={"Cache-Control": "public, max-age=300"})
     return app
 
 

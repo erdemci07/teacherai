@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">TeacherAI matematik çözümü</title>
+  <desc id="desc">TeacherAI markalı paylaşım önizleme görseli.</desc>
+  <rect width="1200" height="630" fill="#f7f4ee"/>
+  <rect x="70" y="70" width="1060" height="490" rx="32" fill="#ffffff" stroke="#d9deea" stroke-width="3"/>
+  <text x="120" y="165" fill="#2457ff" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800">TeacherAI</text>
+  <text x="120" y="260" fill="#172033" font-family="Inter, Arial, sans-serif" font-size="70" font-weight="850">Adım adım</text>
+  <text x="120" y="342" fill="#172033" font-family="Inter, Arial, sans-serif" font-size="70" font-weight="850">matematik çözümü</text>
+  <text x="120" y="430" fill="#667085" font-family="Inter, Arial, sans-serif" font-size="34">Öğretmen anlatımıyla çözümü incele.</text>
+  <g transform="translate(820 180)">
+    <rect x="0" y="0" width="230" height="230" rx="24" fill="#eef3ff"/>
+    <text x="42" y="95" fill="#2457ff" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="800">x²</text>
+    <text x="42" y="165" fill="#2457ff" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="800">= ?</text>
+    <path d="M42 196h146" stroke="#2457ff" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
