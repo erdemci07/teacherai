@@ -1,13 +1,8 @@
 $ErrorActionPreference = "Stop"
 
-# ==================================================
-# TeacherAI Production
-# Web     : teacherai-07
-# Backend : math-ai-07
-# ==================================================
-
 $FirebaseProjectId = "teacherai-07"
 $FirebaseSite = "teacherai-07"
+$WebUrl = "https://$FirebaseSite.web.app"
 
 $ApiProjectId = "math-ai-07"
 $Region = "us-east4"
@@ -21,107 +16,141 @@ function Step($message) {
     Write-Host "=================================================="
 }
 
-# --------------------------------------------------
-Step "1/7 - Git kontrolü"
+function Assert-LastExitCode($message) {
+    if ($LASTEXITCODE -ne 0) {
+        throw $message
+    }
+}
+
+function Invoke-Checked($message, [scriptblock]$command) {
+    & $command
+    Assert-LastExitCode $message
+}
+
+Step "1/12 - Git repository kontrolü"
 
 $branch = git branch --show-current
+Assert-LastExitCode "Git branch kontrolü başarısız."
 
 if ($branch -ne "main") {
-    throw "Deploy sadece main branch üzerinden yapılabilir."
+    throw "Deploy sadece main branch üzerinden yapılabilir. Mevcut branch: $branch"
 }
 
 $status = git status --porcelain
+Assert-LastExitCode "Git status kontrolü başarısız."
 
 if ($status) {
+    Write-Host "Working tree temiz değil:"
     Write-Host $status
-    throw "Önce local değişiklikleri commit et."
+    throw "Önce local değişiklikleri commit et. Deploy script local değişiklik yönetimi yapmaz."
 }
 
-# --------------------------------------------------
-Step "2/7 - API container build"
+Step "2/12 - Remote main güncelliği"
 
-gcloud config set project $ApiProjectId
+Invoke-Checked "git fetch origin main başarısız." { git fetch origin main }
 
-gcloud builds submit `
-    --config cloudbuild.api.yaml `
-    --project $ApiProjectId
+$local = git rev-parse HEAD
+Assert-LastExitCode "Local HEAD okunamadı."
+$remote = git rev-parse origin/main
+Assert-LastExitCode "origin/main okunamadı."
 
-if ($LASTEXITCODE -ne 0) {
-    throw "API container build başarısız."
+if ($local -ne $remote) {
+    throw "Local main ile origin/main aynı değil. Önce: git pull --ff-only origin main"
 }
 
-# --------------------------------------------------
-Step "3/7 - Cloud Run deploy"
+Step "3/12 - API testleri"
 
-gcloud run deploy $ServiceName `
-    --image $Image `
-    --region $Region `
-    --project $ApiProjectId `
-    --platform managed `
-    --allow-unauthenticated `
-    --port 8000 `
-    --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Cloud Run deploy başarısız."
+if (Test-Path ".\.venv\Scripts\python.exe") {
+    Invoke-Checked "API testleri başarısız." { .\.venv\Scripts\python.exe -m pytest -q apps/api/tests }
+}
+else {
+    Invoke-Checked "API testleri başarısız." { python -m pytest -q apps/api/tests }
 }
 
-# --------------------------------------------------
-Step "4/7 - API adresi"
+Step "4/12 - Google Cloud API projesi"
+
+Invoke-Checked "gcloud API projesi ayarlanamadı." { gcloud config set project $ApiProjectId }
+
+Step "5/12 - API container build"
+
+Invoke-Checked "Cloud Build başarısız; Cloud Run deploy durduruldu." {
+    gcloud builds submit `
+        --config cloudbuild.api.yaml `
+        --project $ApiProjectId
+}
+
+Step "6/12 - Cloud Run deploy"
+
+Invoke-Checked "Cloud Run deploy başarısız." {
+    gcloud run deploy $ServiceName `
+        --image $Image `
+        --region $Region `
+        --project $ApiProjectId `
+        --platform managed `
+        --allow-unauthenticated `
+        --port 8000
+}
+
+Step "7/12 - Cloud Run URL çözümleme"
 
 $ApiUrl = gcloud run services describe $ServiceName `
     --region $Region `
     --project $ApiProjectId `
     --format="value(status.url)"
+Assert-LastExitCode "Cloud Run URL alınamadı."
 
 if (-not $ApiUrl) {
-    throw "Cloud Run URL alınamadı."
+    throw "Cloud Run URL boş döndü."
 }
 
-Write-Host "API: $ApiUrl"
+$ApiBaseUrl = "$ApiUrl/api/v1"
+Write-Host "API URL: $ApiUrl"
+Write-Host "Frontend API base: $ApiBaseUrl"
 
-# Static web build bu adresi kullanacak
-$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"
+Step "8/12 - Cloud Run public URL env güncelleme"
 
-# --------------------------------------------------
-Step "5/7 - Web build"
+Invoke-Checked "Cloud Run public URL env güncellemesi başarısız." {
+    gcloud run services update $ServiceName `
+        --region $Region `
+        --project $ApiProjectId `
+        --update-env-vars "PUBLIC_APP_URL=$WebUrl,PUBLIC_SHARE_URL_BASE=$ApiUrl"
+}
+
+Step "9/12 - Cloud Run health check"
+
+$health = Invoke-RestMethod -Uri "$ApiBaseUrl/health"
+
+if (-not $health.success) {
+    throw "API health check başarısız."
+}
+
+Write-Host "API health: OK"
+
+Step "10/12 - Web production build"
+
+$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl
 
 Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
 
-npm run build:web
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Web build başarısız."
-}
+Invoke-Checked "Web production build başarısız." { npm run build:web }
 
 if (-not (Test-Path "apps\web\out\index.html")) {
-    throw "apps/web/out/index.html bulunamadı."
+    throw "Static export oluşmadı: apps/web/out/index.html bulunamadı."
 }
 
-Write-Host "Web build: OK"
+Step "11/12 - Firebase Hosting projesi"
 
-# --------------------------------------------------
-Step "6/7 - Firebase Hosting"
+Invoke-Checked "Firebase projesi seçilemedi." { firebase use $FirebaseProjectId }
 
-firebase use $FirebaseProjectId
+Step "12/12 - Firebase Hosting deploy"
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Firebase proje seçimi başarısız."
-}
-
-firebase deploy --only hosting
-
-if ($LASTEXITCODE -ne 0) {
-    throw "Firebase Hosting deploy başarısız."
-}
-
-# --------------------------------------------------
-Step "7/7 - Tamamlandı"
+Invoke-Checked "Firebase Hosting deploy başarısız." { firebase deploy --only hosting --project $FirebaseProjectId }
 
 Write-Host ""
 Write-Host "=================================================="
 Write-Host "DEPLOY BAŞARILI"
-Write-Host "Web: https://$FirebaseSite.web.app"
+Write-Host "Web: $WebUrl"
 Write-Host "API: $ApiUrl"
+Write-Host "Share route: $ApiUrl/s/{share_id}"
 Write-Host "=================================================="

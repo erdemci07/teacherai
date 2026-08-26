@@ -86,7 +86,7 @@ def build_container(settings: Settings | None = None) -> Container:
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
         interaction_service=InteractionService(OpenAIInteractionProvider(resolved_settings.openai_api_key, resolved_settings.openai_interaction_model, resolved_settings.interaction_provider_timeout_seconds), MathAIService(), InMemoryPracticeStore()),
-        lesson_service=LessonService(OpenAILessonProvider(resolved_settings.openai_api_key, resolved_settings.openai_lesson_model, resolved_settings.lesson_provider_timeout_seconds), MathAIService(), BoardPlanner()),
+        lesson_service=LessonService(OpenAILessonProvider(resolved_settings.openai_api_key, resolved_settings.openai_lesson_model, resolved_settings.lesson_provider_timeout_seconds, resolved_settings.lesson_context_max_bytes), MathAIService(), BoardPlanner()),
         vision_service=VisionService(
             provider=vision_provider,
             storage=LocalTemporaryImageStorage(resolved_settings.upload_temp_directory),

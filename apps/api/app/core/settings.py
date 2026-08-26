@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     vision_provider_timeout_seconds: float = 45.0
     openai_lesson_model: str = Field(default="gpt-5.6-terra", validation_alias=AliasChoices("OPENAI_LESSON_MODEL", "TEACHERAI_OPENAI_LESSON_MODEL"))
     lesson_provider_timeout_seconds: float = 60.0
+    lesson_context_max_bytes: int = Field(default=24_000, validation_alias=AliasChoices("LESSON_CONTEXT_MAX_BYTES", "TEACHERAI_LESSON_CONTEXT_MAX_BYTES"))
     openai_interaction_model: str = Field(default="gpt-4.1-mini", validation_alias=AliasChoices("OPENAI_INTERACTION_MODEL", "TEACHERAI_OPENAI_INTERACTION_MODEL"))
     interaction_provider_timeout_seconds: float = 60.0
     firebase_project_id: str | None = "math-ai-07"

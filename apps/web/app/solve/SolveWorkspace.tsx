@@ -31,6 +31,7 @@ const ERRORS: Record<string, string> = {
   lesson_provider_not_configured: 'Öğretmen servisi henüz hazır değil. Biraz sonra tekrar deneyebilirsin.',
   lesson_provider_unavailable: 'Anlatımı şu anda hazırlayamadım. Biraz sonra yeniden deneyebilirsin.',
   invalid_lesson_plan: 'Çözüm taslağı güvenilir biçimde oluşmadı. Aynı soruyu yeniden inceleyebiliriz.',
+  lesson_context_too_large: 'Bu sorunun içeriği oldukça yoğun olduğu için anlatımı hazırlayamadım. Yeniden incelemeyi deneyebilirsin.',
   math_verification_failed: 'Çözümü matematiksel kontrolden geçiremedim. Aynı soruyla yeniden deneyebiliriz.',
   verification_contradiction: 'Bu çözüm matematiksel kontrolden geçmedi. Soruyu yeniden inceleyelim.',
   lesson_timeout: 'İnceleme beklediğimden uzun sürdü. Tekrar deneyebilir misin?',

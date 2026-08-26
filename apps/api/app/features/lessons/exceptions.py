@@ -8,6 +8,8 @@ class LessonProviderTimeoutError(LessonError):
     code = "lesson_timeout"; status_code = 504; public_message = "İnceleme beklediğimden uzun sürdü. Tekrar deneyebilir misin?"
 class InvalidLessonPlanError(LessonError):
     code = "invalid_lesson_plan"; status_code = 502; public_message = "Güvenilir bir anlatım oluşturulamadı."
+class LessonContextTooLargeError(LessonError):
+    code = "lesson_context_too_large"; status_code = 422; public_message = "Bu sorunun içeriği oldukça yoğun olduğu için anlatımı hazırlayamadım. Yeniden incelemeyi deneyebilirsin."
 class MathVerificationError(LessonError):
     code = "math_verification_failed"; status_code = 502; public_message = "Çözüm matematiksel kontrolden geçirilemedi. Lütfen tekrar deneyin."
 class VerificationContradictionError(LessonError):
