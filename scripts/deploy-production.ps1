@@ -58,8 +58,18 @@ else {
 
 Step "4/9 - Web production build"
 
-$env:NEXT_PUBLIC_API_BASE_URL = "/api/v1"
+$ApiUrl = gcloud run services describe $ServiceName `
+    --region $Region `
+    --project $ProjectId `
+    --format="value(status.url)"
 
+if (-not $ApiUrl) {
+    throw "Cloud Run URL alınamadı."
+}
+
+$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"
+
+Write-Host "Frontend API: $env:NEXT_PUBLIC_API_BASE_URL"
 Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
 
