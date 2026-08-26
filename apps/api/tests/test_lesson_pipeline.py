@@ -141,7 +141,7 @@ def test_heic_and_jpeg_complete_same_end_to_end_contract(tmp_path):
     assert jpeg_lesson.status_code==200
     assert heic_lesson.status_code==200
     assert vision_provider.calls[0][0]=="image/jpeg"
-    assert vision_provider.calls[1][0]=="image/png"
+    assert vision_provider.calls[1][0]=="image/jpeg"
     heic_payload=lesson_provider.analysis_payloads[1]
     jpeg_payload=lesson_provider.analysis_payloads[0]
     for payload in (heic_payload,jpeg_payload):

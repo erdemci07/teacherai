@@ -11,6 +11,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from pillow_heif import register_heif_opener
 
 from apps.api.app.features.vision.exceptions import (
+    ImageSanitizationError,
     ImageTooLargeError,
     InvalidImageError,
     MissingImageError,
@@ -47,8 +48,16 @@ class PreparedImage:
     media_type: str
     suffix: str
     source_format: str
+    original_width: int
+    original_height: int
     width: int
     height: int
+    original_byte_size: int
+    sanitized_byte_size: int
+    icc_profile_present: bool
+    orientation_applied: bool
+    sanitization_used: bool
+    sanitization_duration_ms: int
     expires_at: datetime
 
 
@@ -99,10 +108,16 @@ class VisionService:
             extra={
                 "request_id": resolved_request_id,
                 "stage": "normalization",
-                "original_detected_format": prepared.source_format,
+                "detected_format": prepared.source_format,
                 "normalized_vision_format": prepared.media_type,
-                "width": prepared.width,
-                "height": prepared.height,
+                "original_dimensions": f"{prepared.original_width}x{prepared.original_height}",
+                "sanitized_dimensions": f"{prepared.width}x{prepared.height}",
+                "original_byte_size": prepared.original_byte_size,
+                "sanitized_byte_size": prepared.sanitized_byte_size,
+                "icc_profile_present": prepared.icc_profile_present,
+                "orientation_applied": prepared.orientation_applied,
+                "sanitization_used": prepared.sanitization_used,
+                "sanitization_duration_ms": prepared.sanitization_duration_ms,
                 "duration_ms": round((perf_counter() - started) * 1000),
             },
         )
@@ -198,23 +213,30 @@ class VisionService:
                 if source.width * source.height > MAX_IMAGE_PIXELS:
                     raise InvalidImageError
                 source.verify()
+        except UnsupportedImageError:
+            raise
+        except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
+            raise InvalidImageError from exc
+
+        try:
+            sanitize_started = perf_counter()
             with Image.open(io.BytesIO(content)) as source:
                 actual_format = source.format
                 if actual_format not in {"JPEG", "PNG", "WEBP", "HEIF"}:
                     raise UnsupportedImageError
+                original_width, original_height = source.size
+                orientation = source.getexif().get(274, 1) if actual_format == "JPEG" else 1
+                icc_profile_present = bool(source.info.get("icc_profile"))
                 normalized = ImageOps.exif_transpose(source)
                 output = io.BytesIO()
-                if actual_format == "HEIF" or preview:
+                sanitization_used = actual_format in {"JPEG", "HEIF"} or preview
+                if preview and actual_format not in {"JPEG", "HEIF"}:
                     has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
                     normalized.convert("RGBA" if has_alpha else "RGB").save(output, format="PNG", optimize=True)
                     media_type = "image/png"
                     suffix = "png"
-                elif actual_format == "JPEG":
-                    orientation = source.getexif().get(274, 1)
-                    if orientation == 1:
-                        output.write(content)
-                    else:
-                        normalized.convert("RGB").save(output, format="JPEG", quality=95, optimize=True)
+                elif actual_format in {"JPEG", "HEIF"}:
+                    normalized.convert("RGB").save(output, format="JPEG", quality=94, optimize=True)
                     media_type = "image/jpeg"
                     suffix = "jpg"
                 elif actual_format == "PNG":
@@ -225,21 +247,46 @@ class VisionService:
                     output.write(content)
                     media_type = "image/webp"
                     suffix = "webp"
+                sanitized = output.getvalue()
+                VisionService._verify_sanitized_output(sanitized, media_type)
                 width, height = normalized.size
                 return PreparedImage(
                     image_id=f"prepared_{uuid4().hex}",
-                    content=output.getvalue(),
+                    content=sanitized,
                     media_type=media_type,
                     suffix=suffix,
                     source_format=actual_format,
+                    original_width=original_width,
+                    original_height=original_height,
                     width=width,
                     height=height,
+                    original_byte_size=len(content),
+                    sanitized_byte_size=len(sanitized),
+                    icc_profile_present=icc_profile_present,
+                    orientation_applied=orientation != 1,
+                    sanitization_used=sanitization_used,
+                    sanitization_duration_ms=round((perf_counter() - sanitize_started) * 1000),
                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
                 )
         except UnsupportedImageError:
             raise
+        except InvalidImageError:
+            raise
+        except (OSError, ValueError) as exc:
+            raise ImageSanitizationError from exc
+
+    @staticmethod
+    def _verify_sanitized_output(content: bytes, media_type: str) -> None:
+        expected_format = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}.get(media_type)
+        if expected_format is None:
+            raise ImageSanitizationError
+        try:
+            with Image.open(io.BytesIO(content)) as image:
+                if image.format != expected_format:
+                    raise ImageSanitizationError
+                image.verify()
         except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError) as exc:
-            raise InvalidImageError from exc
+            raise ImageSanitizationError from exc
 
     @staticmethod
     def _preview_data_url(content: bytes, media_type: str) -> str | None:
@@ -257,7 +304,8 @@ class VisionService:
             raise InvalidImageError
         return NormalizedImagePreview(
             image_id=prepared.image_id,
-            content_type="image/png",
+            format=prepared.suffix,
+            content_type=prepared.media_type,
             width=prepared.width,
             height=prepared.height,
             preview=preview,

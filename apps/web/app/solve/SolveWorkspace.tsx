@@ -23,6 +23,7 @@ const ERRORS: Record<string, string> = {
   unsupported_image_type: 'Bu dosya türünü okuyamıyorum. JPG, JPEG, PNG, WEBP, HEIC veya HEIF biçiminde bir görsel deneyebilir misin?',
   image_too_large: 'Bu görsel 10 MB sınırını aşıyor. Daha küçük bir fotoğraf seçebilir misin?',
   invalid_image: 'Bu görseli okuyamadım. Sorunun tamamının net göründüğü başka bir fotoğraf deneyebilir misin?',
+  image_sanitization_failed: 'Bu fotoğrafı analiz için güvenli biçime dönüştüremedim. Aynı soruyu yeniden çekip gönderebilir misin?',
   provider_not_configured: 'Öğretmen servisi henüz hazır değil. Biraz sonra tekrar deneyebilirsin.',
   provider_unavailable: 'Şu anda öğretmen servisine ulaşamıyorum. Biraz sonra tekrar deneyebilirsin.',
   provider_timeout: 'Görsel analizi beklediğimden uzun sürdü. Aynı görselle yeniden deneyebiliriz.',

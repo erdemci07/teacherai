@@ -40,6 +40,16 @@ def oriented_jpeg_bytes() -> bytes:
     return output.getvalue()
 
 
+def camera_jpeg_bytes_with_metadata() -> bytes:
+    output = io.BytesIO()
+    image = Image.new("RGB", (64, 48), "white")
+    exif = image.getexif()
+    exif[274] = 1
+    exif[315] = "TeacherAI Camera Fixture"
+    image.save(output, format="JPEG", exif=exif.tobytes(), icc_profile=b"camera-profile")
+    return output.getvalue()
+
+
 class SuccessfulProvider:
     name = "test-provider"
     model = "test-model"
@@ -185,7 +195,7 @@ def test_accepts_supported_image_names_and_media_types(tmp_path, filename, conte
 
 
 @pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
-def test_accepts_heic_and_heif_then_sends_normalized_png_to_provider(tmp_path, filename, content_type) -> None:
+def test_accepts_heic_and_heif_then_sends_sanitized_jpeg_to_provider(tmp_path, filename, content_type) -> None:
     provider = SuccessfulProvider()
     with client_with_provider(tmp_path, provider) as client:
         response = client.post(
@@ -195,16 +205,16 @@ def test_accepts_heic_and_heif_then_sends_normalized_png_to_provider(tmp_path, f
 
     assert response.status_code == 200
     preview_url = response.json()["data"]["normalized_preview_url"]
-    assert preview_url.startswith("data:image/png;base64,")
+    assert preview_url.startswith("data:image/jpeg;base64,")
     with Image.open(io.BytesIO(base64.b64decode(preview_url.split(",", 1)[1]))) as image:
-        assert image.format == "PNG"
+        assert image.format == "JPEG"
     normalized, media_type = provider.calls[0]
-    assert media_type == "image/png"
+    assert media_type == "image/jpeg"
     with Image.open(io.BytesIO(normalized)) as image:
-        assert image.format == "PNG"
+        assert image.format == "JPEG"
 
 
-def test_heif_normalized_preview_uses_same_png_sent_to_provider(tmp_path) -> None:
+def test_heif_normalized_preview_uses_same_jpeg_sent_to_provider(tmp_path) -> None:
     provider = SuccessfulProvider()
     with client_with_provider(tmp_path, provider) as client:
         response = client.post(
@@ -214,7 +224,7 @@ def test_heif_normalized_preview_uses_same_png_sent_to_provider(tmp_path) -> Non
 
     assert response.status_code == 200
     normalized, media_type = provider.calls[0]
-    assert media_type == "image/png"
+    assert media_type == "image/jpeg"
     preview_url = response.json()["data"]["normalized_preview_url"]
     assert base64.b64decode(preview_url.split(",", 1)[1]) == normalized
 
@@ -242,7 +252,7 @@ def test_heic_and_jpeg_analysis_payloads_match_after_normalization(tmp_path) -> 
 
     assert heic_analysis == jpeg_analysis
     assert provider.calls[0][1] == "image/jpeg"
-    assert provider.calls[1][1] == "image/png"
+    assert provider.calls[1][1] == "image/jpeg"
 
 
 @pytest.mark.parametrize(("filename", "content_type"), [("iphone.heic", "image/heic"), ("iphone.heif", "image/heif")])
@@ -259,14 +269,14 @@ def test_preview_endpoint_returns_normalized_png_without_vision_provider(tmp_pat
     assert list(tmp_path.iterdir()) == []
     preview = response.json()["data"]
     assert re.fullmatch(r"prepared_[a-f0-9]{32}", preview["image_id"])
-    assert preview["format"] == "png"
-    assert preview["content_type"] == "image/png"
-    assert preview["preview"].startswith("data:image/png;base64,")
+    assert preview["format"] == "jpg"
+    assert preview["content_type"] == "image/jpeg"
+    assert preview["preview"].startswith("data:image/jpeg;base64,")
     assert "path" not in preview
     assert "/" not in preview["image_id"]
     assert "\\" not in preview["image_id"]
     with Image.open(io.BytesIO(base64.b64decode(preview["preview"].split(",", 1)[1]))) as image:
-        assert image.format == "PNG"
+        assert image.format == "JPEG"
 
 
 @pytest.mark.parametrize(
@@ -291,11 +301,13 @@ def test_prepare_endpoint_normalizes_every_supported_format_to_png(tmp_path, fil
     assert response.status_code == 200
     assert provider.calls == []
     preview = response.json()["data"]
-    assert preview["format"] == "png"
-    assert preview["content_type"] == "image/png"
-    assert preview["preview"].startswith("data:image/png;base64,")
+    expected_type = "image/jpeg" if image_format in {"JPEG", "HEIF"} else "image/png"
+    expected_format = "JPEG" if image_format in {"JPEG", "HEIF"} else "PNG"
+    assert preview["format"] == ("jpg" if expected_type == "image/jpeg" else "png")
+    assert preview["content_type"] == expected_type
+    assert preview["preview"].startswith(f"data:{expected_type};base64,")
     with Image.open(io.BytesIO(base64.b64decode(preview["preview"].split(",", 1)[1]))) as image:
-        assert image.format == "PNG"
+        assert image.format == expected_format
         assert image.size == (32, 24)
 
 
@@ -315,7 +327,7 @@ def test_direct_upload_analyze_succeeds_without_prepared_image(tmp_path, filenam
         )
 
     assert analysis_response.status_code == 200
-    assert provider.calls[0][1] == ("image/png" if image_format == "HEIF" else "image/jpeg")
+    assert provider.calls[0][1] == "image/jpeg"
 
 
 def test_preview_endpoint_applies_orientation_without_provider(tmp_path) -> None:
@@ -375,6 +387,44 @@ def test_supported_mime_and_content_mismatch_uses_actual_decoded_content(tmp_pat
     assert provider.calls[0][1] == "image/jpeg"
 
 
+def test_jpeg_with_icc_profile_and_metadata_is_sanitized_successfully(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("camera.jpeg", camera_jpeg_bytes_with_metadata(), "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/jpeg"
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert image.format == "JPEG"
+        assert image.mode == "RGB"
+        assert image.size == (64, 48)
+        assert "icc_profile" not in image.info
+        assert not image.getexif()
+
+
+def test_ordinary_jpeg_is_reencoded_as_decodeable_metadata_minimal_jpeg(tmp_path) -> None:
+    provider = SuccessfulProvider()
+    original = image_bytes("JPEG")
+    with client_with_provider(tmp_path, provider) as client:
+        response = client.post(
+            "/api/v1/vision/analyze",
+            files={"image": ("question.jpg", original, "image/jpeg")},
+        )
+
+    assert response.status_code == 200
+    normalized, media_type = provider.calls[0]
+    assert media_type == "image/jpeg"
+    assert normalized != original
+    with Image.open(io.BytesIO(normalized)) as image:
+        assert image.format == "JPEG"
+        assert image.size == (32, 24)
+        image.verify()
+
+
 def test_jpeg_filename_with_actual_heif_uses_heif_decoder_fallback(tmp_path) -> None:
     provider = SuccessfulProvider()
     with client_with_provider(tmp_path, provider) as client:
@@ -385,9 +435,9 @@ def test_jpeg_filename_with_actual_heif_uses_heif_decoder_fallback(tmp_path) -> 
 
     assert response.status_code == 200
     normalized, media_type = provider.calls[0]
-    assert media_type == "image/png"
+    assert media_type == "image/jpeg"
     with Image.open(io.BytesIO(normalized)) as image:
-        assert image.format == "PNG"
+        assert image.format == "JPEG"
 
 
 def test_heic_filename_with_actual_jpeg_uses_jpeg_fast_path(tmp_path) -> None:
@@ -414,6 +464,8 @@ def test_applies_exif_orientation_before_provider_analysis(tmp_path) -> None:
     normalized, _ = provider.calls[0]
     with Image.open(io.BytesIO(normalized)) as image:
         assert ImageOps.exif_transpose(image).size == (40, 20)
+        assert image.size == (40, 20)
+        assert not image.getexif()
     preview_url = response.json()["data"]["normalized_preview_url"]
     with Image.open(io.BytesIO(base64.b64decode(preview_url.split(",", 1)[1]))) as image:
         assert image.size == (40, 20)
@@ -426,6 +478,23 @@ def test_preview_generation_failure_does_not_block_analysis(tmp_path, monkeypatc
 
     assert response.status_code == 200
     assert response.json()["data"]["normalized_preview_url"] is None
+
+
+def test_jpeg_sanitization_failure_returns_image_specific_error(tmp_path, monkeypatch) -> None:
+    original_save = Image.Image.save
+    payload = image_bytes("JPEG")
+
+    def fail_jpeg_save(self, fp, format=None, **params):
+        if format == "JPEG":
+            raise OSError("forced sanitize failure")
+        return original_save(self, fp, format=format, **params)
+
+    monkeypatch.setattr(Image.Image, "save", fail_jpeg_save)
+    with client_with_provider(tmp_path, SuccessfulProvider()) as client:
+        response = client.post("/api/v1/vision/analyze", files={"image": ("question.jpg", payload, "image/jpeg")})
+
+    assert response.status_code == 422
+    assert response.json()["error"] == "image_sanitization_failed"
 
 
 def test_no_mandatory_prepared_image_analyze_path_remains() -> None:

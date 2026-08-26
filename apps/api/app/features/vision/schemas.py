@@ -90,8 +90,8 @@ class VisionAnalysis(VisionProviderAnalysis):
 
 class NormalizedImagePreview(BaseModel):
     image_id: str
-    format: Literal["png"] = "png"
-    content_type: Literal["image/png"] = "image/png"
+    format: Literal["jpg", "png"] = "png"
+    content_type: Literal["image/jpeg", "image/png"] = "image/png"
     width: int = Field(gt=0)
     height: int = Field(gt=0)
     preview: str

@@ -28,6 +28,12 @@ class InvalidImageError(VisionError):
     public_message = "Görsel okunamadı. Geçerli bir JPG, PNG, WEBP, HEIC veya HEIF dosyası yükleyin."
 
 
+class ImageSanitizationError(VisionError):
+    code = "image_sanitization_failed"
+    status_code = 422
+    public_message = "Görsel güvenli analiz biçimine dönüştürülemedi. Başka bir fotoğraf deneyin."
+
+
 class ProviderConfigurationError(VisionError):
     code = "provider_not_configured"
     status_code = 503
