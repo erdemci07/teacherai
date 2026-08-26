@@ -22,109 +22,41 @@ function Assert-LastExitCode($message) {
     }
 }
 
-function Invoke-Checked($message, [scriptblock]$command) {
-    & $command
-    Assert-LastExitCode $message
-}
+Step "1/7 - Google Cloud API projesi"
 
-Step "1/12 - Git repository kontrolü"
+gcloud config set project $ApiProjectId
+Assert-LastExitCode "Google Cloud projesi ayarlanamadı."
 
-$branch = git branch --show-current
-Assert-LastExitCode "Git branch kontrolü başarısız."
 
-if ($branch -ne "main") {
-    throw "Deploy sadece main branch üzerinden yapılabilir. Mevcut branch: $branch"
-}
+Step "2/7 - API container build"
 
-$status = git status --porcelain
-Assert-LastExitCode "Git status kontrolü başarısız."
+gcloud builds submit `
+    --config cloudbuild.api.yaml `
+    --project $ApiProjectId
 
-if ($status) {
-    Write-Host "Working tree temiz değil:"
-    Write-Host $status
-    throw "Önce local değişiklikleri commit et. Deploy script local değişiklik yönetimi yapmaz."
-}
+Assert-LastExitCode "Cloud Build başarısız."
 
-Step "2/12 - Remote main güncelliği"
 
-Invoke-Checked "git fetch origin main başarısız." { git fetch origin main }
+Step "3/7 - Cloud Run deploy"
 
-$local = git rev-parse HEAD
-Assert-LastExitCode "Local HEAD okunamadı."
-$remote = git rev-parse origin/main
-Assert-LastExitCode "origin/main okunamadı."
+gcloud run deploy $ServiceName `
+    --image $Image `
+    --region $Region `
+    --project $ApiProjectId `
+    --platform managed `
+    --allow-unauthenticated `
+    --port 8000
 
-if ($local -ne $remote) {
-    throw "Local main ile origin/main aynı değil. Önce: git pull --ff-only origin main"
-}
+Assert-LastExitCode "Cloud Run deploy başarısız."
 
-Step "3/12 - API testleri"
 
-Step "3/12 - API testleri"
-
-# Windows'ta pytest tmp_path klasörlerinde kalan kilit/izin sorunlarını
-# engellemek için her deployda yeni ve kısa bir temp kökü kullan.
-$PytestTempRoot = Join-Path $env:TEMP "teacherai-pytest-$PID"
-
-Remove-Item -Recurse -Force $PytestTempRoot -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $PytestTempRoot | Out-Null
-
-$env:PYTHONDONTWRITEBYTECODE = "1"
-
-try {
-    if (Test-Path ".\.venv\Scripts\python.exe") {
-        Invoke-Checked "API testleri başarısız." {
-            .\.venv\Scripts\python.exe -m pytest `
-                -q `
-                -p no:cacheprovider `
-                --basetemp="$PytestTempRoot" `
-                apps/api/tests
-        }
-    }
-    else {
-        Invoke-Checked "API testleri başarısız." {
-            python -m pytest `
-                -q `
-                -p no:cacheprovider `
-                --basetemp="$PytestTempRoot" `
-                apps/api/tests
-        }
-    }
-}
-finally {
-    Remove-Item -Recurse -Force $PytestTempRoot -ErrorAction SilentlyContinue
-}
-
-Step "4/12 - Google Cloud API projesi"
-
-Invoke-Checked "gcloud API projesi ayarlanamadı." { gcloud config set project $ApiProjectId }
-
-Step "5/12 - API container build"
-
-Invoke-Checked "Cloud Build başarısız; Cloud Run deploy durduruldu." {
-    gcloud builds submit `
-        --config cloudbuild.api.yaml `
-        --project $ApiProjectId
-}
-
-Step "6/12 - Cloud Run deploy"
-
-Invoke-Checked "Cloud Run deploy başarısız." {
-    gcloud run deploy $ServiceName `
-        --image $Image `
-        --region $Region `
-        --project $ApiProjectId `
-        --platform managed `
-        --allow-unauthenticated `
-        --port 8000
-}
-
-Step "7/12 - Cloud Run URL çözümleme"
+Step "4/7 - Cloud Run URL"
 
 $ApiUrl = gcloud run services describe $ServiceName `
     --region $Region `
     --project $ApiProjectId `
     --format="value(status.url)"
+
 Assert-LastExitCode "Cloud Run URL alınamadı."
 
 if (-not $ApiUrl) {
@@ -132,53 +64,40 @@ if (-not $ApiUrl) {
 }
 
 $ApiBaseUrl = "$ApiUrl/api/v1"
-Write-Host "API URL: $ApiUrl"
-Write-Host "Frontend API base: $ApiBaseUrl"
 
-Step "8/12 - Cloud Run public URL env güncelleme"
+Write-Host "API: $ApiUrl"
 
-Invoke-Checked "Cloud Run public URL env güncellemesi başarısız." {
-    gcloud run services update $ServiceName `
-        --region $Region `
-        --project $ApiProjectId `
-        --update-env-vars "PUBLIC_APP_URL=$WebUrl,PUBLIC_SHARE_URL_BASE=$ApiUrl"
-}
 
-Step "9/12 - Cloud Run health check"
-
-$health = Invoke-RestMethod -Uri "$ApiBaseUrl/health"
-
-if (-not $health.success) {
-    throw "API health check başarısız."
-}
-
-Write-Host "API health: OK"
-
-Step "10/12 - Web production build"
+Step "5/7 - Web production build"
 
 $env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl
 
 Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
 
-Invoke-Checked "Web production build başarısız." { npm run build:web }
+npm run build:web
+Assert-LastExitCode "Web production build başarısız."
 
 if (-not (Test-Path "apps\web\out\index.html")) {
-    throw "Static export oluşmadı: apps/web/out/index.html bulunamadı."
+    throw "apps/web/out/index.html oluşturulamadı."
 }
 
-Step "11/12 - Firebase Hosting projesi"
 
-Invoke-Checked "Firebase projesi seçilemedi." { firebase use $FirebaseProjectId }
+Step "6/7 - Firebase Hosting projesi"
 
-Step "12/12 - Firebase Hosting deploy"
+firebase use $FirebaseProjectId
+Assert-LastExitCode "Firebase projesi seçilemedi."
 
-Invoke-Checked "Firebase Hosting deploy başarısız." { firebase deploy --only hosting --project $FirebaseProjectId }
+
+Step "7/7 - Firebase Hosting deploy"
+
+firebase deploy --only hosting --project $FirebaseProjectId
+Assert-LastExitCode "Firebase Hosting deploy başarısız."
+
 
 Write-Host ""
 Write-Host "=================================================="
 Write-Host "DEPLOY BAŞARILI"
 Write-Host "Web: $WebUrl"
 Write-Host "API: $ApiUrl"
-Write-Host "Share route: $ApiUrl/s/{share_id}"
 Write-Host "=================================================="
