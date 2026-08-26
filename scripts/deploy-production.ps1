@@ -90,8 +90,8 @@ gcloud run deploy $ServiceName `
     --project $ProjectId `
     --platform managed `
     --port 8000 `
-    --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
-
+    --set-secrets "OPENAI_API_KEY=openai-api-key:latest" `
+    --async
 Step "8/9 - Cloud Run health check"
 
 $ApiUrl = gcloud run services describe $ServiceName `
@@ -104,17 +104,33 @@ if (-not $ApiUrl) {
 }
 
 Write-Host "API URL: $ApiUrl"
+Write-Host "Yeni revision hazır olması bekleniyor..."
 
-$health = Invoke-RestMethod -Uri "$ApiUrl/api/v1/health"
+$healthOk = $false
 
-if (-not $health.success) {
-    throw "API health check başarısız."
+for ($i = 1; $i -le 30; $i++) {
+    try {
+        $health = Invoke-RestMethod `
+            -Uri "$ApiUrl/api/v1/health" `
+            -TimeoutSec 10
+
+        if ($health.success) {
+            $healthOk = $true
+            break
+        }
+    }
+    catch {
+        Write-Host "API henüz hazır değil... ($i/30)"
+    }
+
+    Start-Sleep -Seconds 5
 }
 
-Write-Host "API health: OK"
+if (-not $healthOk) {
+    throw "Cloud Run yeni revision zamanında hazır olmadı."
+}
 
-
-Step "9/9 - Firebase Hosting deploy"
+Write-Host "API health: OK"Step "9/9 - Firebase Hosting deploy"
 
 firebase use $FirebaseProjectId
 
