@@ -1,10 +1,10 @@
 $ErrorActionPreference = "Stop"
 
-$ProjectId = "math-ai-07"
+$ProjectId = "teacherai-07"
 $Region = "us-east4"
 $ServiceName = "teacherai-api"
 $Image = "us-east4-docker.pkg.dev/$ProjectId/teacherai/teacherai-api:latest"
-$FirebaseSite = "math-ai-07"
+$FirebaseSite = "teacherai-07"
 
 function Step($message) {
     Write-Host ""
