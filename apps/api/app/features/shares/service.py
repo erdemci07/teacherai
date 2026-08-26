@@ -1,21 +1,25 @@
 from datetime import datetime, timezone
 from html import escape
+import json
 import logging
 from secrets import token_urlsafe
 from urllib.parse import quote
 
 from apps.api.app.core.settings import Settings
+from apps.api.app.features.board.schemas import BoardElement, BoardPlan
 from apps.api.app.features.lessons.exceptions import InvalidLessonPlanError
 from apps.api.app.features.lessons.normalization import _contains_placeholder_artifact
 from apps.api.app.features.lessons.service import GeneratedLesson
 
 from .exceptions import ShareStorageError
 from .repository import ShareRepository
-from .schemas import CreateShareResponse, PublicShareResponse, PublicSolutionSnapshot
+from .schemas import CreateShareResponse, PublicLessonSnapshot, PublicShareResponse, PublicSolutionSnapshot
 
 MAX_STEPS = 12
 MAX_BOARD_ELEMENTS = 40
 MAX_EXPRESSIONS_PER_STEP = 8
+MAX_PUBLIC_SNAPSHOT_BYTES = 90000
+MAX_BOARD_TEXT_CHARS = 900
 
 SHARE_TITLE = "TeacherAI bu matematik sorusunu çözdü"
 SHARE_DESCRIPTION = "Adım adım öğretmen anlatımıyla çözümü incele. Sen de kendi sorunu TeacherAI ile çöz."
@@ -45,6 +49,8 @@ class ShareService:
         share_id = self._new_share_id()
         now = datetime.now(timezone.utc)
         lesson = result.lesson
+        lesson_snapshot = self._public_lesson_snapshot(result)
+        board_snapshot = self._public_board_snapshot(result)
         snapshot = PublicSolutionSnapshot(
             share_id=share_id,
             created_at=now,
@@ -53,11 +59,12 @@ class ShareService:
             subtopic=lesson.source_analysis.subtopic,
             question_summary=lesson.source_analysis.question_text,
             final_answer=lesson.content.final_answer,
-            lesson_snapshot=lesson,
-            board_snapshot=result.board,
+            lesson_snapshot=lesson_snapshot,
+            board_snapshot=board_snapshot,
             app_version=self.settings.version,
             source_lesson_plan_id=lesson.lesson_plan_id,
         )
+        snapshot = self._enforce_snapshot_budget(snapshot)
         self._repo_save(snapshot)
         persisted = self._repo_get(share_id, "share_create_confirm")
         if not persisted or persisted.status != "published":
@@ -82,7 +89,7 @@ class ShareService:
         return self.settings.public_app_url.rstrip("/")
 
     def public_share_url_base(self, request_share_url_base: str | None = None) -> str:
-        return (self.settings.public_share_url_base or request_share_url_base or self.public_app_url).rstrip("/")
+        return self.public_app_url
 
     @property
     def og_image_url(self) -> str:
@@ -173,7 +180,7 @@ class ShareService:
     def _validate_public_result(self, result: GeneratedLesson) -> None:
         lesson = result.lesson
         content = lesson.content
-        if len(content.steps) > MAX_STEPS or len(result.board.elements) > MAX_BOARD_ELEMENTS:
+        if len(content.steps) > MAX_STEPS:
             raise InvalidLessonPlanError
         for step in content.steps:
             if len(step.expressions) > MAX_EXPRESSIONS_PER_STEP:
@@ -196,3 +203,68 @@ class ShareService:
         ]
         if any(isinstance(item, str) and _contains_placeholder_artifact(item) for item in public_text):
             raise InvalidLessonPlanError
+
+    def _public_lesson_snapshot(self, result: GeneratedLesson) -> PublicLessonSnapshot:
+        lesson = result.lesson
+        return PublicLessonSnapshot(
+            lesson_plan_id=lesson.lesson_plan_id,
+            learning_objectives=lesson.learning_objectives,
+            concept_id=lesson.concept_id,
+            content=lesson.content,
+        )
+
+    def _public_board_snapshot(self, result: GeneratedLesson, max_elements: int = MAX_BOARD_ELEMENTS) -> BoardPlan:
+        board = result.board
+        elements = [self._public_board_element(item) for item in board.elements[:max_elements]]
+        if not elements:
+            elements = [BoardElement(id=f"{board.board_id}_summary", type="final_answer", text=result.lesson.content.final_answer)]
+        return BoardPlan(
+            schema_version=board.schema_version,
+            board_id=board.board_id,
+            lesson_plan_id=board.lesson_plan_id,
+            title=_compact_text(board.title, 180),
+            elements=elements,
+        )
+
+    def _public_board_element(self, item: BoardElement) -> BoardElement:
+        return BoardElement(
+            id=item.id,
+            type=item.type,
+            text=_compact_text(item.text, MAX_BOARD_TEXT_CHARS) if item.text else None,
+            latex=item.latex,
+            mark=item.mark,
+            source_step_id=item.source_step_id,
+            graph=item.graph,
+            shape=item.shape,
+        )
+
+    def _enforce_snapshot_budget(self, snapshot: PublicSolutionSnapshot) -> PublicSolutionSnapshot:
+        if _snapshot_size(snapshot) <= MAX_PUBLIC_SNAPSHOT_BYTES:
+            return snapshot
+        compact_board = snapshot.board_snapshot.model_copy(update={"elements": snapshot.board_snapshot.elements[:12]})
+        compact = snapshot.model_copy(update={"board_snapshot": compact_board})
+        if _snapshot_size(compact) <= MAX_PUBLIC_SNAPSHOT_BYTES:
+            return compact
+        minimal_board = compact_board.model_copy(
+            update={
+                "elements": [
+                    BoardElement(
+                        id=f"{snapshot.share_id}_final_answer",
+                        type="final_answer",
+                        text=_compact_text(snapshot.final_answer, MAX_BOARD_TEXT_CHARS),
+                    )
+                ]
+            }
+        )
+        return snapshot.model_copy(update={"board_snapshot": minimal_board})
+
+
+def _snapshot_size(snapshot: PublicSolutionSnapshot) -> int:
+    return len(json.dumps(snapshot.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+
+
+def _compact_text(value: str, limit: int) -> str:
+    clean = " ".join(value.split())
+    if len(clean) <= limit:
+        return clean
+    return clean[: max(0, limit - 1)].rstrip() + "…"

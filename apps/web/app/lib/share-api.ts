@@ -1,5 +1,12 @@
 import { currentToken } from '../auth/AuthProvider';
-import type { BoardPlan, GeneratedLesson, LessonPlan } from './lesson-api';
+import type { BoardPlan, GeneratedLesson, LessonContent } from './lesson-api';
+
+export interface PublicLessonSnapshot {
+  lesson_plan_id: string;
+  learning_objectives: string[];
+  concept_id: string;
+  content: LessonContent;
+}
 
 export interface PublicSolutionSnapshot {
   share_id: string;
@@ -12,7 +19,7 @@ export interface PublicSolutionSnapshot {
   subtopic: string | null;
   question_summary: string;
   final_answer: string;
-  lesson_snapshot: LessonPlan;
+  lesson_snapshot: PublicLessonSnapshot;
   board_snapshot: BoardPlan;
   app_version: string;
   source_lesson_plan_id: string;

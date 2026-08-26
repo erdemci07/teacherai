@@ -23,7 +23,6 @@ def test_frontend_api_helpers_use_configured_api_base() -> None:
 def test_deploy_script_resolves_absolute_cloud_run_api_before_static_build() -> None:
     script = Path("scripts/deploy-production.ps1").read_text(encoding="utf-8")
 
-    assert '$ApiBaseUrl = "$ApiUrl/api/v1"' in script
-    assert "$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl" in script
-    assert script.index("gcloud run services describe $ServiceName") < script.index("$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl")
-    assert script.index("$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl") < script.index("npm run build:web")
+    assert '$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"' in script
+    assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"')
+    assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"') < script.index("npm run build:web")

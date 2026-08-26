@@ -34,12 +34,14 @@ def test_public_page_reuses_existing_solution_renderers_and_cta() -> None:
     assert "Sen de soru çöz" in source
 
 
-def test_firebase_hosting_has_no_cross_project_share_or_api_rewrites() -> None:
+def test_firebase_hosting_routes_short_share_urls_without_api_rewrite() -> None:
     firebase = Path("firebase.json").read_text(encoding="utf-8")
 
     assert '"public": "apps/web/out"' in firebase
-    assert '"rewrites"' not in firebase
-    assert '"/s/**"' not in firebase
+    assert '"rewrites"' in firebase
+    assert '"/s/**"' in firebase
+    assert '"serviceId": "teacherai-api"' in firebase
+    assert '"region": "us-east4"' in firebase
     assert '"/api/**"' not in firebase
 
 

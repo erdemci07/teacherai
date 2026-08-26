@@ -3,6 +3,7 @@ from dataclasses import replace
 from fastapi.testclient import TestClient
 
 from apps.api.app.core.settings import Settings
+from apps.api.app.features.board.schemas import BoardElement
 from apps.api.app.features.shares.repository import InMemoryShareRepository
 from apps.api.app.features.shares.schemas import PublicSolutionSnapshot
 from apps.api.app.features.shares.service import ShareService
@@ -57,7 +58,7 @@ def test_successful_solution_creates_public_share_snapshot():
 
     assert response.status_code == 200
     data = response.json()["data"]
-    assert data["share_url"].startswith("https://teacherai-api.example.run.app/s/")
+    assert data["share_url"].startswith("https://teacherai-07.web.app/s/")
     assert len(data["share_id"]) >= 10
     assert data["share_id"].isalnum()
     assert len(repo.items) == 1
@@ -141,6 +142,10 @@ def test_public_snapshot_excludes_private_feedback_auth_and_image_data():
     assert "image_bytes" not in text
     assert "authorization" not in text
     assert "api_key" not in text
+    assert "normalized_preview_url" not in text
+    assert "provider_response_id" not in text
+    assert "source_analysis" not in text
+    assert "provider" not in text
 
 
 def test_placeholder_contaminated_content_cannot_be_published():
@@ -180,7 +185,7 @@ def test_crawler_route_returns_real_open_graph_metadata_without_private_data():
     assert "TeacherAI bu matematik sorusunu çözdü" in html
     assert 'property="og:description"' in html
     assert 'property="og:image"' in html
-    assert 'property="og:url" content="https://teacherai-api.example.run.app/s/' in html
+    assert 'property="og:url" content="https://teacherai-07.web.app/s/' in html
     assert 'meta name="robots" content="noindex, follow"' in html
     assert "https://teacherai-07.web.app/shared/?id=" in html
     assert "https://teacherai-07.web.app/solve" in html
@@ -247,7 +252,7 @@ def test_production_share_storage_uses_firestore_not_in_memory() -> None:
     assert "firebase-admin" in requirements
 
 
-def test_share_url_defaults_to_request_origin_when_public_share_base_missing():
+def test_share_url_uses_public_app_url_instead_of_request_origin_when_public_share_base_missing():
     app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base=None))
     repo = InMemoryShareRepository()
     service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base=None))
@@ -257,4 +262,33 @@ def test_share_url_defaults_to_request_origin_when_public_share_base_missing():
     response = client.post("/api/v1/shares", json=share_payload())
 
     assert response.status_code == 200
-    assert response.json()["data"]["share_url"].startswith("https://api.example.run.app/s/")
+    assert response.json()["data"]["share_url"].startswith("https://teacherai-07.web.app/s/")
+    assert "run.app" not in response.json()["data"]["share_url"]
+
+
+def test_camera_origin_rich_solution_can_create_compact_public_snapshot():
+    result = generated_result()
+    result.lesson.source_analysis.normalized_preview_url = "data:image/jpeg;base64," + ("A" * 20000)
+    result.lesson.source_analysis.debug = {"provider_response_id": "resp_secret"}
+    result.lesson.source_analysis.visual_elements.description = "kamera görsel ayrıntısı " * 400
+    for index in range(80):
+        result.board.elements.append(
+            BoardElement(
+                id=f"extra_{index}",
+                type="teacher_note",
+                text="tekrarlı tahta açıklaması " * 100,
+            )
+        )
+    client, repo = client_with_shares()
+
+    response = client.post("/api/v1/shares", json=share_payload(result))
+
+    assert response.status_code == 200
+    snapshot = next(iter(repo.items.values()))
+    dumped = snapshot.model_dump(mode="json")
+    text = str(dumped)
+    assert snapshot.lesson_snapshot.content.steps
+    assert snapshot.board_snapshot.elements
+    assert "normalized_preview_url" not in text
+    assert "resp_secret" not in text
+    assert len(str(dumped).encode("utf-8")) < 90000

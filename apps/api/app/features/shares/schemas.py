@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.app.features.board.schemas import BoardPlan
-from apps.api.app.features.lessons.schemas import LessonPlan
+from apps.api.app.features.lessons.schemas import LessonContent
 from apps.api.app.features.lessons.service import GeneratedLesson
 
 
@@ -13,6 +13,15 @@ class CreateShareRequest(BaseModel):
 
     result: GeneratedLesson
     existing_share_id: str | None = Field(default=None, min_length=8, max_length=32)
+
+
+class PublicLessonSnapshot(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    lesson_plan_id: str
+    learning_objectives: list[str]
+    concept_id: str
+    content: LessonContent
 
 
 class PublicSolutionSnapshot(BaseModel):
@@ -28,7 +37,7 @@ class PublicSolutionSnapshot(BaseModel):
     subtopic: str | None = None
     question_summary: str
     final_answer: str
-    lesson_snapshot: LessonPlan
+    lesson_snapshot: PublicLessonSnapshot
     board_snapshot: BoardPlan
     app_version: str
     source_lesson_plan_id: str

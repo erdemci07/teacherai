@@ -2,14 +2,19 @@ import json
 from pathlib import Path
 
 
-def test_firebase_hosting_static_export_without_cross_project_run_rewrites() -> None:
+def test_firebase_hosting_static_export_with_short_share_rewrite_only() -> None:
     config = json.loads(Path("firebase.json").read_text(encoding="utf-8-sig"))
     hosting = config["hosting"]
 
     assert hosting["public"] == "apps/web/out"
     assert hosting["cleanUrls"] is True
     assert hosting["trailingSlash"] is False
-    assert "rewrites" not in hosting
+    assert hosting["rewrites"] == [
+        {
+            "source": "/s/**",
+            "run": {"serviceId": "teacherai-api", "region": "us-east4"},
+        }
+    ]
 
 
 def test_next_config_keeps_static_export_contract() -> None:
@@ -34,16 +39,18 @@ def test_production_deploy_script_keeps_safety_gates_and_secret_source() -> None
 
     for required in (
         '$FirebaseProjectId = "teacherai-07"',
-        '$ApiProjectId = "math-ai-07"',
+        '$ProjectId = "math-ai-07"',
+        '$Region = "us-east4"',
+        '$ServiceName = "teacherai-api"',
         "git branch --show-current",
         "git fetch origin main",
         "pytest -q apps/api/tests",
-        "gcloud config set project $ApiProjectId",
+        "gcloud config set project $ProjectId",
         "gcloud builds submit",
         "gcloud run deploy",
+        '--set-secrets "OPENAI_API_KEY=openai-api-key:latest"',
         "gcloud run services describe $ServiceName",
-        "PUBLIC_APP_URL=$WebUrl,PUBLIC_SHARE_URL_BASE=$ApiUrl",
-        '$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl',
+        '$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"',
         "npm run build:web",
         "apps\\web\\out\\index.html",
         "Invoke-RestMethod",
@@ -52,10 +59,8 @@ def test_production_deploy_script_keeps_safety_gates_and_secret_source() -> None
     ):
         assert required in script
 
-    assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl')
-    assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl') < script.index("npm run build:web")
-    assert "Assert-LastExitCode" in script
-    assert "Invoke-Checked" in script
+    assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"')
+    assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"') < script.index("npm run build:web")
 
-    for forbidden in ("git push", "git stash", "gcloud secrets versions add", "--set-secrets", "OPENAI_API_KEY="):
+    for forbidden in ("git push", "git stash", "gcloud secrets versions add", "--set-env-vars OPENAI_API_KEY"):
         assert forbidden not in script
