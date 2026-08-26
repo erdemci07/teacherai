@@ -89,10 +89,8 @@ gcloud run deploy $ServiceName `
     --region $Region `
     --project $ProjectId `
     --platform managed `
-    --allow-unauthenticated `
     --port 8000 `
     --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
-
 
 Step "8/9 - Cloud Run health check"
 
