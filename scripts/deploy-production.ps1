@@ -60,22 +60,39 @@ if ($local -ne $remote) {
 
 Step "3/12 - API testleri"
 
-Remove-Item -Recurse -Force apps\api\.pytest_cache -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force .pytest_cache -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force .tmp -ErrorAction SilentlyContinue
+Step "3/12 - API testleri"
+
+# Windows'ta pytest tmp_path klasörlerinde kalan kilit/izin sorunlarını
+# engellemek için her deployda yeni ve kısa bir temp kökü kullan.
+$PytestTempRoot = Join-Path $env:TEMP "teacherai-pytest-$PID"
+
+Remove-Item -Recurse -Force $PytestTempRoot -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force -Path $PytestTempRoot | Out-Null
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
-$env:PYTEST_ADDOPTS = "-p no:cacheprovider"
 
-if (Test-Path ".\.venv\Scripts\python.exe") {
-    Invoke-Checked "API testleri başarısız." {
-        .\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider apps/api/tests
+try {
+    if (Test-Path ".\.venv\Scripts\python.exe") {
+        Invoke-Checked "API testleri başarısız." {
+            .\.venv\Scripts\python.exe -m pytest `
+                -q `
+                -p no:cacheprovider `
+                --basetemp="$PytestTempRoot" `
+                apps/api/tests
+        }
+    }
+    else {
+        Invoke-Checked "API testleri başarısız." {
+            python -m pytest `
+                -q `
+                -p no:cacheprovider `
+                --basetemp="$PytestTempRoot" `
+                apps/api/tests
+        }
     }
 }
-else {
-    Invoke-Checked "API testleri başarısız." {
-        python -m pytest -q -p no:cacheprovider apps/api/tests
-    }
+finally {
+    Remove-Item -Recurse -Force $PytestTempRoot -ErrorAction SilentlyContinue
 }
 
 Step "4/12 - Google Cloud API projesi"
