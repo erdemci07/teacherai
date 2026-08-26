@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     cors_allowed_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
+            "https://teacherai-07.web.app",
             "https://math-ai-07.web.app",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
@@ -32,7 +33,7 @@ class Settings(BaseSettings):
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: object) -> list[str]:
-        defaults = ["https://math-ai-07.web.app", "http://localhost:3000", "http://127.0.0.1:3000"]
+        defaults = ["https://teacherai-07.web.app", "https://math-ai-07.web.app", "http://localhost:3000", "http://127.0.0.1:3000"]
         if isinstance(value, (list, tuple)):
             candidates = [str(item).strip() for item in value]
         elif isinstance(value, str):
@@ -72,7 +73,8 @@ class Settings(BaseSettings):
     firebase_service_account_json: str | None = None
     firebase_enabled: bool = False
     authenticated_daily_ai_limit: int = 50
-    public_app_url: str = Field(default="https://math-ai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
+    public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
+    public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))
     share_og_image_path: str = "/teacherai-share-og.svg"
     feedback_email_notifications: bool = Field(default=False, validation_alias=AliasChoices("FEEDBACK_EMAIL_NOTIFICATIONS", "TEACHERAI_FEEDBACK_EMAIL_NOTIFICATIONS"))
     feedback_notification_email: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_NOTIFICATION_EMAIL", "TEACHERAI_FEEDBACK_NOTIFICATION_EMAIL"))

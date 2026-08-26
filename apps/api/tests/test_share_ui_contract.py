@@ -34,13 +34,13 @@ def test_public_page_reuses_existing_solution_renderers_and_cta() -> None:
     assert "Sen de soru çöz" in source
 
 
-def test_firebase_rewrites_public_share_route_to_cloud_run_before_api() -> None:
+def test_firebase_hosting_has_no_cross_project_share_or_api_rewrites() -> None:
     firebase = Path("firebase.json").read_text(encoding="utf-8")
 
-    assert '"source": "/s/**"' in firebase
-    assert firebase.index('"source": "/s/**"') < firebase.index('"source": "/api/**"')
-    assert '"serviceId": "teacherai-api"' in firebase
-    assert '"region": "us-east4"' in firebase
+    assert '"public": "apps/web/out"' in firebase
+    assert '"rewrites"' not in firebase
+    assert '"/s/**"' not in firebase
+    assert '"/api/**"' not in firebase
 
 
 def test_static_og_asset_and_public_url_copy_are_present() -> None:
@@ -51,3 +51,28 @@ def test_static_og_asset_and_public_url_copy_are_present() -> None:
     assert "og:image" in service
     assert "SHARE_TITLE" in service
     assert "noindex, follow" in service
+
+
+def test_api_helpers_use_configured_absolute_api_base() -> None:
+    for path in (
+        "apps/web/app/lib/vision-api.ts",
+        "apps/web/app/lib/lesson-api.ts",
+        "apps/web/app/lib/feedback-api.ts",
+        "apps/web/app/lib/share-api.ts",
+        "apps/web/app/lib/interaction-api.ts",
+        "apps/web/app/lib/student-api.ts",
+    ):
+        source = Path(path).read_text(encoding="utf-8")
+        assert "NEXT_PUBLIC_API_BASE_URL" in source
+        assert "localhost:8000/api/v1" in source
+        assert "teacherai-07.web.app/api" not in source
+
+
+def test_share_public_html_links_to_teacherai07_solve() -> None:
+    settings = Path("apps/api/app/core/settings.py").read_text(encoding="utf-8")
+    service = Path("apps/api/app/features/shares/service.py").read_text(encoding="utf-8")
+
+    assert 'https://teacherai-07.web.app' in settings
+    assert "public_share_url_base" in settings
+    assert "PUBLIC_SHARE_URL_BASE" in settings
+    assert "self.public_app_url}/shared/?id=" in service

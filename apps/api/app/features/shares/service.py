@@ -27,19 +27,19 @@ class ShareService:
         self.repository = repository
         self.settings = settings
 
-    def create_or_reuse(self, result: GeneratedLesson, existing_share_id: str | None = None) -> CreateShareResponse:
+    def create_or_reuse(self, result: GeneratedLesson, existing_share_id: str | None = None, request_share_url_base: str | None = None) -> CreateShareResponse:
         lesson_plan_id = result.lesson.lesson_plan_id
         logger.info("share_create_started", extra={"operation": "share_create_started", "lesson_plan_id": lesson_plan_id})
         if existing_share_id:
             existing = self._repo_get(existing_share_id, "share_reuse_existing_id")
             if existing and existing.source_lesson_plan_id == result.lesson.lesson_plan_id and existing.status == "published":
                 logger.info("share_reused", extra={"operation": "share_reused", "share_id": existing.share_id})
-                return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id))
+                return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id, request_share_url_base))
 
         existing = self._repo_find_by_lesson_plan_id(lesson_plan_id)
         if existing:
             logger.info("share_reused", extra={"operation": "share_reused", "share_id": existing.share_id})
-            return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id))
+            return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id, request_share_url_base))
 
         self._validate_public_result(result)
         share_id = self._new_share_id()
@@ -64,22 +64,25 @@ class ShareService:
             logger.error("share_firestore_error", extra={"operation": "share_create_confirm", "share_id": share_id, "exception_type": "MissingPersistedRecord"})
             raise ShareStorageError
         logger.info("share_create_persisted", extra={"operation": "share_create_persisted", "share_id": share_id})
-        return CreateShareResponse(share_id=share_id, share_url=self.share_url(share_id))
+        return CreateShareResponse(share_id=share_id, share_url=self.share_url(share_id, request_share_url_base))
 
-    def get_public(self, share_id: str) -> PublicShareResponse | None:
+    def get_public(self, share_id: str, request_share_url_base: str | None = None) -> PublicShareResponse | None:
         snapshot = self._repo_get(share_id, "share_fetch")
         if not snapshot or snapshot.status != "published" or snapshot.revoked_at:
             logger.info("share_not_found", extra={"operation": "share_not_found", "share_id": share_id})
             return None
         logger.info("share_fetch_succeeded", extra={"operation": "share_fetch_succeeded", "share_id": share_id})
-        return PublicShareResponse(share_id=share_id, share_url=self.share_url(share_id), snapshot=snapshot)
+        return PublicShareResponse(share_id=share_id, share_url=self.share_url(share_id, request_share_url_base), snapshot=snapshot)
 
-    def share_url(self, share_id: str) -> str:
-        return f"{self.public_app_url}/s/{quote(share_id)}"
+    def share_url(self, share_id: str, request_share_url_base: str | None = None) -> str:
+        return f"{self.public_share_url_base(request_share_url_base)}/s/{quote(share_id)}"
 
     @property
     def public_app_url(self) -> str:
         return self.settings.public_app_url.rstrip("/")
+
+    def public_share_url_base(self, request_share_url_base: str | None = None) -> str:
+        return (self.settings.public_share_url_base or request_share_url_base or self.public_app_url).rstrip("/")
 
     @property
     def og_image_url(self) -> str:
@@ -88,8 +91,8 @@ class ShareService:
             return path
         return f"{self.public_app_url}/{path.lstrip('/')}"
 
-    def render_public_html(self, share_id: str) -> str | None:
-        public = self.get_public(share_id)
+    def render_public_html(self, share_id: str, request_share_url_base: str | None = None) -> str | None:
+        public = self.get_public(share_id, request_share_url_base)
         if not public:
             return None
         snapshot = public.snapshot
@@ -97,6 +100,7 @@ class ShareService:
         description = SHARE_DESCRIPTION
         share_url = public.share_url
         app_url = f"{self.public_app_url}/shared/?id={quote(share_id)}"
+        solve_url = f"{self.public_app_url}/solve"
         topic = snapshot.topic if snapshot.subtopic is None else f"{snapshot.topic} · {snapshot.subtopic}"
         question = snapshot.question_summary[:320]
         final = snapshot.final_answer[:180]
@@ -131,6 +135,7 @@ class ShareService:
                 f"<p>{escape(question)}</p>",
                 f"<p><strong>Cevap:</strong> {escape(final)}</p>",
                 f'<p><a href="{escape(app_url)}">Çözümü aç</a></p>',
+                f'<p><a href="{escape(solve_url)}">Sen de soru çöz</a></p>',
                 "</main>",
                 "</body>",
                 "</html>",

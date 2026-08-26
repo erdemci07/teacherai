@@ -59,8 +59,9 @@ def create_app(settings_override=None) -> FastAPI:
     app.include_router(api_router, prefix=settings.api_prefix)
 
     @app.get("/s/{share_id}", response_class=HTMLResponse, include_in_schema=False)
-    async def public_share_page(share_id: str):
-        html = app.state.container.share_service.render_public_html(share_id)
+    async def public_share_page(request: Request, share_id: str):
+        request_origin = f"{request.url.scheme}://{request.url.netloc}"
+        html = app.state.container.share_service.render_public_html(share_id, request_origin)
         if html is None:
             return HTMLResponse(
                 "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex\"><title>Çözüm bulunamadı</title></head><body><h1>Çözüm bulunamadı</h1><p>Bu paylaşım bağlantısı artık kullanılamıyor olabilir.</p></body></html>",

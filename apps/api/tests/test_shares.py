@@ -37,9 +37,9 @@ class SaveFailingRepository(InMemoryShareRepository):
 
 
 def client_with_shares():
-    app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     repo = InMemoryShareRepository()
-    service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     app.state.container = replace(app.state.container, share_service=service)
     return TestClient(app, raise_server_exceptions=False), repo
 
@@ -57,7 +57,7 @@ def test_successful_solution_creates_public_share_snapshot():
 
     assert response.status_code == 200
     data = response.json()["data"]
-    assert data["share_url"].startswith("https://math-ai-07.web.app/s/")
+    assert data["share_url"].startswith("https://teacherai-api.example.run.app/s/")
     assert len(data["share_id"]) >= 10
     assert data["share_id"].isalnum()
     assert len(repo.items) == 1
@@ -108,14 +108,14 @@ def test_repeated_share_for_same_solution_reuses_snapshot():
 
 def test_new_repository_service_instance_can_fetch_persisted_share():
     shared_items = {}
-    creator_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
-    creator_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    creator_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
+    creator_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     creator_app.state.container = replace(creator_app.state.container, share_service=creator_service)
     creator = TestClient(creator_app, raise_server_exceptions=False)
     created = creator.post("/api/v1/shares", json=share_payload()).json()["data"]
 
-    reader_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
-    reader_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://math-ai-07.web.app"))
+    reader_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
+    reader_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     reader_app.state.container = replace(reader_app.state.container, share_service=reader_service)
     reader = TestClient(reader_app, raise_server_exceptions=False)
 
@@ -180,8 +180,10 @@ def test_crawler_route_returns_real_open_graph_metadata_without_private_data():
     assert "TeacherAI bu matematik sorusunu çözdü" in html
     assert 'property="og:description"' in html
     assert 'property="og:image"' in html
+    assert 'property="og:url" content="https://teacherai-api.example.run.app/s/' in html
     assert 'meta name="robots" content="noindex, follow"' in html
-    assert "/shared/?id=" in html
+    assert "https://teacherai-07.web.app/shared/?id=" in html
+    assert "https://teacherai-07.web.app/solve" in html
     assert "user_id" not in html
     assert "feedback" not in html
     assert "api_key" not in html
@@ -243,3 +245,16 @@ def test_production_share_storage_uses_firestore_not_in_memory() -> None:
     assert 'resolved_settings.environment != "test"' in container_source
     assert "FirestoreShareRepository" in container_source
     assert "firebase-admin" in requirements
+
+
+def test_share_url_defaults_to_request_origin_when_public_share_base_missing():
+    app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base=None))
+    repo = InMemoryShareRepository()
+    service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base=None))
+    app.state.container = replace(app.state.container, share_service=service)
+    client = TestClient(app, raise_server_exceptions=False, base_url="https://api.example.run.app")
+
+    response = client.post("/api/v1/shares", json=share_payload())
+
+    assert response.status_code == 200
+    assert response.json()["data"]["share_url"].startswith("https://api.example.run.app/s/")

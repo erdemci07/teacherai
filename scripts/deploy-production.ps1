@@ -1,10 +1,13 @@
 $ErrorActionPreference = "Stop"
 
-$ProjectId = "teacherai-07"
+$FirebaseProjectId = "teacherai-07"
+$FirebaseSite = "teacherai-07"
+$WebUrl = "https://$FirebaseSite.web.app"
+
+$ApiProjectId = "math-ai-07"
 $Region = "us-east4"
 $ServiceName = "teacherai-api"
-$Image = "us-east4-docker.pkg.dev/$ProjectId/teacherai/teacherai-api:latest"
-$FirebaseSite = "teacherai-07"
+$Image = "us-east4-docker.pkg.dev/$ApiProjectId/teacherai/teacherai-api:latest"
 
 function Step($message) {
     Write-Host ""
@@ -13,90 +16,109 @@ function Step($message) {
     Write-Host "=================================================="
 }
 
-Step "1/9 - Git repository kontrolü"
+function Assert-LastExitCode($message) {
+    if ($LASTEXITCODE -ne 0) {
+        throw $message
+    }
+}
+
+function Invoke-Checked($message, [scriptblock]$command) {
+    & $command
+    Assert-LastExitCode $message
+}
+
+Step "1/12 - Git repository kontrolü"
 
 $branch = git branch --show-current
+Assert-LastExitCode "Git branch kontrolü başarısız."
 
 if ($branch -ne "main") {
     throw "Deploy sadece main branch üzerinden yapılabilir. Mevcut branch: $branch"
 }
 
 $status = git status --porcelain
+Assert-LastExitCode "Git status kontrolü başarısız."
 
 if ($status) {
     Write-Host "Working tree temiz değil:"
     Write-Host $status
-    throw "Önce local değişiklikleri commit/stash et."
+    throw "Önce local değişiklikleri commit et. Deploy script local değişiklik yönetimi yapmaz."
 }
 
-Step "2/9 - Remote main güncelliği"
+Step "2/12 - Remote main güncelliği"
 
-git fetch origin main
+Invoke-Checked "git fetch origin main başarısız." { git fetch origin main }
 
 $local = git rev-parse HEAD
+Assert-LastExitCode "Local HEAD okunamadı."
 $remote = git rev-parse origin/main
+Assert-LastExitCode "origin/main okunamadı."
 
 if ($local -ne $remote) {
     throw "Local main ile origin/main aynı değil. Önce: git pull --ff-only origin main"
 }
 
-Step "3/9 - API testleri"
+Step "3/12 - API testleri"
 
 if (Test-Path ".\.venv\Scripts\python.exe") {
-    .\.venv\Scripts\python.exe -m pytest -q apps/api/tests
+    Invoke-Checked "API testleri başarısız." { .\.venv\Scripts\python.exe -m pytest -q apps/api/tests }
 }
 else {
-    python -m pytest -q apps/api/tests
+    Invoke-Checked "API testleri başarısız." { python -m pytest -q apps/api/tests }
 }
 
-Step "4/9 - Web production build"
+Step "4/12 - Google Cloud API projesi"
 
-$env:NEXT_PUBLIC_API_BASE_URL = "/api/v1"
+Invoke-Checked "gcloud API projesi ayarlanamadı." { gcloud config set project $ApiProjectId }
 
-Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
+Step "5/12 - API container build"
 
-npm run build:web
-
-if (-not (Test-Path "apps\web\out\index.html")) {
-    throw "Static export oluşmadı: apps/web/out/index.html bulunamadı."
+Invoke-Checked "Cloud Build başarısız; Cloud Run deploy durduruldu." {
+    gcloud builds submit `
+        --config cloudbuild.api.yaml `
+        --project $ApiProjectId
 }
 
-Step "5/9 - Google Cloud proje kontrolü"
+Step "6/12 - Cloud Run deploy"
 
-gcloud config set project $ProjectId
+Invoke-Checked "Cloud Run deploy başarısız." {
+    gcloud run deploy $ServiceName `
+        --image $Image `
+        --region $Region `
+        --project $ApiProjectId `
+        --platform managed `
+        --allow-unauthenticated `
+        --port 8000
+}
 
-Step "6/9 - API container build"
-
-gcloud builds submit `
-    --config cloudbuild.api.yaml `
-    --project $ProjectId
-
-Step "7/9 - Cloud Run deploy"
-
-gcloud run deploy $ServiceName `
-    --image $Image `
-    --region $Region `
-    --project $ProjectId `
-    --platform managed `
-    --allow-unauthenticated `
-    --port 8000 `
-    --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
-
-Step "8/9 - Cloud Run health check"
+Step "7/12 - Cloud Run URL çözümleme"
 
 $ApiUrl = gcloud run services describe $ServiceName `
     --region $Region `
-    --project $ProjectId `
+    --project $ApiProjectId `
     --format="value(status.url)"
+Assert-LastExitCode "Cloud Run URL alınamadı."
 
 if (-not $ApiUrl) {
-    throw "Cloud Run URL alınamadı."
+    throw "Cloud Run URL boş döndü."
 }
 
+$ApiBaseUrl = "$ApiUrl/api/v1"
 Write-Host "API URL: $ApiUrl"
+Write-Host "Frontend API base: $ApiBaseUrl"
 
-$health = Invoke-RestMethod -Uri "$ApiUrl/api/v1/health"
+Step "8/12 - Cloud Run public URL env güncelleme"
+
+Invoke-Checked "Cloud Run public URL env güncellemesi başarısız." {
+    gcloud run services update $ServiceName `
+        --region $Region `
+        --project $ApiProjectId `
+        --update-env-vars "PUBLIC_APP_URL=$WebUrl,PUBLIC_SHARE_URL_BASE=$ApiUrl"
+}
+
+Step "9/12 - Cloud Run health check"
+
+$health = Invoke-RestMethod -Uri "$ApiBaseUrl/health"
 
 if (-not $health.success) {
     throw "API health check başarısız."
@@ -104,15 +126,31 @@ if (-not $health.success) {
 
 Write-Host "API health: OK"
 
-Step "9/9 - Firebase Hosting deploy"
+Step "10/12 - Web production build"
 
-firebase use $ProjectId
+$env:NEXT_PUBLIC_API_BASE_URL = $ApiBaseUrl
 
-firebase deploy --only hosting
+Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
+
+Invoke-Checked "Web production build başarısız." { npm run build:web }
+
+if (-not (Test-Path "apps\web\out\index.html")) {
+    throw "Static export oluşmadı: apps/web/out/index.html bulunamadı."
+}
+
+Step "11/12 - Firebase Hosting projesi"
+
+Invoke-Checked "Firebase projesi seçilemedi." { firebase use $FirebaseProjectId }
+
+Step "12/12 - Firebase Hosting deploy"
+
+Invoke-Checked "Firebase Hosting deploy başarısız." { firebase deploy --only hosting --project $FirebaseProjectId }
 
 Write-Host ""
 Write-Host "=================================================="
 Write-Host "DEPLOY BAŞARILI"
-Write-Host "Web: https://$FirebaseSite.web.app"
+Write-Host "Web: $WebUrl"
 Write-Host "API: $ApiUrl"
+Write-Host "Share route: $ApiUrl/s/{share_id}"
 Write-Host "=================================================="
