@@ -17,7 +17,7 @@ export default function Home() {
     <main className="mobileHome">
       <section className="homeBrandCard appEntryBrand" aria-label="TeacherAI giriş">
         <BrandMark size="lg" decorative={false} className="entryMascot" />
-        <div>
+        <div className="entryBrandCopy">
           <h1>TeacherAI</h1>
           <p>Senin yapay zekâ öğretmenin</p>
         </div>
@@ -41,7 +41,6 @@ export default function Home() {
 
       <section className="homeHelperCard teacherFlowCard" aria-labelledby="teacherai-after-title">
         <div className="teacherFlowHeader">
-          <BrandMark size="sm" />
           <div>
             <span>TeacherAI sonra ne yapar?</span>
             <h2 id="teacherai-after-title">Cevabı değil, mantığını öğren.</h2>
