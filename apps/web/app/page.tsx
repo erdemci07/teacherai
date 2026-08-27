@@ -25,6 +25,11 @@ export default function Home() {
   return <>
     <section className="hero betaHero">
       <div className="heroContent">
+        <div className="mascotLockup" aria-label="TeacherAI, senin yapay zeka öğretmenin">
+          <img src="/teacherai-mascot.png" alt="" />
+          <strong>TeacherAI</strong>
+          <span>Senin yapay zeka öğretmenin</span>
+        </div>
         <p className="eyebrow">Matematiği gerçekten öğren</p>
         <h1>Matematik sorunu yükle. <span>Cevabı değil, mantığını öğren.</span></h1>
         <p className="heroText">TeacherAI sorunu analiz eder, matematiksel olarak kontrol eder ve gerçek bir öğretmen gibi adım adım anlatır.</p>

@@ -1,8 +1,8 @@
 export function Logo() {
   return (
     <div className="logo" aria-label="TeacherAI home">
-      <span className="logoMark">TA</span>
-      <span className="logoText">TeacherAI</span>
+      <span className="logoMark"><img src="/teacherai-mascot.png" alt="" /></span>
+      <span className="logoCopy"><span className="logoText">TeacherAI</span><span className="logoTagline">Senin yapay zeka öğretmenin</span></span>
     </div>
   );
 }
