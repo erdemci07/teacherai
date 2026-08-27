@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BrandMark } from '../components/BrandMark';
 
 const stages: Record<string, { primary: string; secondary?: string; detail: string; checklist: string }> = {
   uploading: { primary: 'Görsel hazırlanıyor...', secondary: 'Dosya güvenli şekilde yükleniyor...', detail: 'Fotoğrafı incelemeye hazırlıyorum.', checklist: 'Görsel alınıyor' },
@@ -26,7 +27,7 @@ export function AnalysisLoading({ uploading, stage }: { uploading: boolean; stag
   return (
     <div className="analysisLoading teacherThinkingCard" role="status" aria-live="polite">
       <div className="loadingMascotWrap">
-        <img src="/teacherai-mascot.png" alt="" />
+        <BrandMark size="md" />
         <span className="loadingSpinner" aria-hidden="true" />
       </div>
       <div className="thinkingContent">

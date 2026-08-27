@@ -1,4 +1,5 @@
 from dataclasses import replace
+from urllib.parse import urlparse
 
 from fastapi.testclient import TestClient
 
@@ -192,6 +193,23 @@ def test_crawler_route_returns_real_open_graph_metadata_without_private_data():
     assert "user_id" not in html
     assert "feedback" not in html
     assert "api_key" not in html
+
+
+def test_new_share_url_id_resolves_through_public_short_route():
+    client, _ = client_with_shares()
+    created = client.post("/api/v1/shares", json=share_payload()).json()["data"]
+    parsed = urlparse(created["share_url"])
+
+    assert parsed.scheme == "https"
+    assert parsed.netloc == "teacherai-07.web.app"
+    assert parsed.path.startswith("/s/")
+    assert parsed.path.rsplit("/", 1)[-1] == created["share_id"]
+
+    response = client.get(parsed.path)
+
+    assert response.status_code == 200
+    assert "TeacherAI bu matematik sorusunu çözdü" in response.text
+    assert f'https://teacherai-07.web.app/shared/?id={created["share_id"]}' in response.text
 
 
 def test_missing_public_share_returns_not_found_without_authentication():

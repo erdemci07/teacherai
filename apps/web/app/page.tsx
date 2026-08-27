@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandMark } from './components/BrandMark';
 
 const teacherSteps = [
   { step: '01', title: 'Soruyu anlar', text: 'Fotoğraftaki matematik ifadesini ve ne istendiğini çıkarır.' },
@@ -7,15 +8,15 @@ const teacherSteps = [
 ];
 
 const quickCards = [
-  { title: 'Kamerayla çek', text: 'Sorunun fotoğrafını çek', icon: '⌁', primary: true },
-  { title: 'Galeriden seç', text: 'Fotoğraf yükle', icon: '□', primary: false },
+  { title: 'Kamerayla çek', text: 'Sorunun fotoğrafını çek', icon: '📷', primary: true },
+  { title: 'Galeriden seç', text: 'Fotoğraf yükle', icon: '🖼️', primary: false },
 ];
 
 export default function Home() {
   return (
     <main className="mobileHome">
       <section className="homeBrandCard appEntryBrand" aria-label="TeacherAI giriş">
-        <img src="/teacherai-mascot.png" alt="TeacherAI maskotu" className="entryMascot" />
+        <BrandMark size="lg" decorative={false} className="entryMascot" />
         <div>
           <h1>TeacherAI</h1>
           <p>Senin yapay zekâ öğretmenin</p>
@@ -40,7 +41,7 @@ export default function Home() {
 
       <section className="homeHelperCard teacherFlowCard" aria-labelledby="teacherai-after-title">
         <div className="teacherFlowHeader">
-          <img src="/teacherai-mascot.png" alt="" />
+          <BrandMark size="sm" />
           <div>
             <span>TeacherAI sonra ne yapar?</span>
             <h2 id="teacherai-after-title">Cevabı değil, mantığını öğren.</h2>

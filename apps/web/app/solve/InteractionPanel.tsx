@@ -5,6 +5,7 @@ import type { LessonPlan } from '../lib/lesson-api';
 import { interact, InteractionAction, InteractionApiError, InteractionResponse } from '../lib/interaction-api';
 import { AdaptiveBoard } from './AdaptiveBoard';
 import { RichMathText } from './RichMathText';
+import { BrandMark } from '../components/BrandMark';
 
 const actions: { key: InteractionAction; label: string; helper: string; icon: string }[] = [
   { key: 'understood', label: 'Anladım', helper: 'Bu çözüm tamam', icon: '✓' },
@@ -37,7 +38,7 @@ export function InteractionPanel({ lesson }: { lesson: LessonPlan }) {
   return (
     <section className="postSolution teacherInteractionCard">
       <header className="postSolutionHeader">
-        <img src="/teacherai-mascot.png" alt="" />
+        <BrandMark size="sm" />
         <div>
           <h3>Nasıl, burası oturdu mu?</h3>
           <p>İstersen anlatımı hemen değiştirebilirim.</p>

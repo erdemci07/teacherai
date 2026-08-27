@@ -13,6 +13,7 @@ import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
 import { SolutionFeedback } from './SolutionFeedback';
 import { ShareSolution } from './ShareSolution';
+import { BrandMark } from '../components/BrandMark';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -144,7 +145,7 @@ export function SolveWorkspace() {
     <input ref={fileRef} className="visuallyHidden" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={changed} disabled={busy} aria-label="Dosyadan soru görseli seç" />
     <header className="solveAppTop" aria-label="Çözüm ekranı">
       <div className="solveAppIdentity">
-        <img src="/teacherai-mascot.png" alt="" />
+        <BrandMark size="sm" />
         <div>
           <span>TeacherAI</span>
           <strong>{stateLabel}</strong>
@@ -154,7 +155,7 @@ export function SolveWorkspace() {
     </header>
     <header className="solveIntro">
       <div className="mascotLockup" aria-label="TeacherAI, senin yapay zekâ öğretmenin">
-        <img src="/teacherai-mascot.png" alt="" />
+        <BrandMark size="lg" />
         <strong>TeacherAI</strong>
         <span>Senin yapay zekâ öğretmenin</span>
       </div>
@@ -180,7 +181,7 @@ export function SolveWorkspace() {
         {busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}
         {!busy && !result && !error && (
           <div className="resultEmpty solutionPlaceholder">
-            <img src="/teacherai-mascot.png" alt="" />
+            <BrandMark size="lg" />
             <span>Çözüm alanı</span>
             <h2>Çözümün burada görünecek</h2>
             <p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p>

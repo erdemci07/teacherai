@@ -1,4 +1,5 @@
 import { DragEvent, KeyboardEvent } from 'react';
+import { BrandMark } from '../components/BrandMark';
 
 interface UploadCardProps {
   disabled: boolean;
@@ -28,7 +29,7 @@ export function UploadCard({ disabled, dragging, onDraggingChange, onFile, onCam
   return (
     <div className={`uploadCard ${dragging ? 'dragging' : ''}`} role="button" tabIndex={disabled ? -1 : 0} aria-label="Soru fotoğrafını sürükle veya dosya seç" aria-disabled={disabled} onClick={() => !disabled && onFilePicker()} onKeyDown={keyed} onDragEnter={(event) => { event.preventDefault(); onDraggingChange(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => onDraggingChange(false)} onDrop={dropped}>
       <div className="uploadHero">
-        <img className="uploadMascot" src="/teacherai-mascot.png" alt="" />
+        <BrandMark size="lg" className="uploadMascot" />
         <div>
           <span className="uploadPill">TeacherAI hazır</span>
           <h2>Sorunu göster, birlikte çözelim.</h2>
@@ -37,12 +38,12 @@ export function UploadCard({ disabled, dragging, onDraggingChange, onFile, onCam
       </div>
       <div className="uploadChoices uploadActionStack">
         <button type="button" className="cameraChoice uploadActionPrimary" onClick={(event) => { event.stopPropagation(); onCamera(); }} disabled={disabled}>
-          <span aria-hidden="true">⌁</span>
+          <span aria-hidden="true">📷</span>
           <strong>Kamerayla çek</strong>
           <small>Sorunun fotoğrafını çek</small>
         </button>
         <button type="button" className="uploadActionSecondary" onClick={(event) => { event.stopPropagation(); onGallery(); }} disabled={disabled}>
-          <span aria-hidden="true">□</span>
+          <span aria-hidden="true">🖼️</span>
           <strong>Galeriden seç</strong>
           <small>Fotoğraf yükle</small>
         </button>
