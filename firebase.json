@@ -7,15 +7,6 @@
       "**/node_modules/**"
     ],
     "cleanUrls": true,
-    "trailingSlash": false,
-    "rewrites": [
-      {
-        "source": "/s/**",
-        "run": {
-          "serviceId": "teacherai-api",
-          "region": "us-east4"
-        }
-      }
-    ]
+    "trailingSlash": false
   }
 }
