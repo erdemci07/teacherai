@@ -1,50 +1,61 @@
 import Link from 'next/link';
 
 const teacherSteps = [
-  'Soruyu anlar',
-  'Adım adım çözer',
-  'Öğretmen gibi anlatır',
+  { step: '01', title: 'Soruyu anlar', text: 'Fotoğraftaki matematik ifadesini ve ne istendiğini çıkarır.' },
+  { step: '02', title: 'Adım adım çözer', text: 'İşlemleri sıraya koyar, önemli kuralları atlamaz.' },
+  { step: '03', title: 'Öğretmen gibi anlatır', text: 'Cevabın neden öyle olduğunu sade bir dille açıklar.' },
 ];
 
 const quickCards = [
-  { title: 'Kamerayla çek', text: 'Soruyu net kadraja al, TeacherAI incelemeye başlasın.' },
-  { title: 'Galeriden seç', text: 'Hazır fotoğrafını yükleyip çözüm yolunu gör.' },
+  { title: 'Kamerayla çek', text: 'Sorunun fotoğrafını çek', icon: '⌁', primary: true },
+  { title: 'Galeriden seç', text: 'Fotoğraf yükle', icon: '□', primary: false },
 ];
 
 export default function Home() {
   return (
     <main className="mobileHome">
-      <section className="homeBrandCard" aria-label="TeacherAI giriş">
-        <img src="/teacherai-mascot.png" alt="TeacherAI maskotu" />
-        <h1>TeacherAI</h1>
-        <p>Senin yapay zekâ öğretmenin</p>
-      </section>
-
-      <section className="homeSolveCard" aria-labelledby="home-solve-title">
-        <p className="eyebrow">Hemen başlayalım</p>
-        <h2 id="home-solve-title">Matematik sorunu göster</h2>
-        <p>Birlikte adım adım çözelim.</p>
-        <Link className="primaryButton homeSolveButton" href="/solve">Soruyu Çöz</Link>
-        <div className="homeQuickGrid" aria-label="Yükleme seçenekleri">
-          {quickCards.map((card) => (
-            <article key={card.title}>
-              <strong>{card.title}</strong>
-              <span>{card.text}</span>
-            </article>
-          ))}
+      <section className="homeBrandCard appEntryBrand" aria-label="TeacherAI giriş">
+        <img src="/teacherai-mascot.png" alt="TeacherAI maskotu" className="entryMascot" />
+        <div>
+          <h1>TeacherAI</h1>
+          <p>Senin yapay zekâ öğretmenin</p>
         </div>
       </section>
 
-      <section className="homeHelperCard" aria-labelledby="teacherai-after-title">
-        <div>
+      <section className="homeSolveCard appEntryHero" aria-labelledby="home-solve-title">
+        <p className="eyebrow">Matematik öğretmenin yanında</p>
+        <h2 id="home-solve-title">Sorunu göster, birlikte çözelim.</h2>
+        <p>Kamerayla çek veya galeriden seç. TeacherAI önce soruyu anlar, sonra çözümü nedenleriyle anlatır.</p>
+        <div className="homeActionStack" aria-label="Soru yükleme başlangıcı">
+          {quickCards.map((card) => (
+            <Link className={`homeActionCard ${card.primary ? 'homeActionPrimary' : ''}`} href="/solve" key={card.title}>
+              <span aria-hidden="true">{card.icon}</span>
+              <strong>{card.title}</strong>
+              <small>{card.text}</small>
+            </Link>
+          ))}
+        </div>
+        <Link className="primaryButton homeSolveButton" href="/solve">Soru Çözmeye Başla</Link>
+      </section>
+
+      <section className="homeHelperCard teacherFlowCard" aria-labelledby="teacherai-after-title">
+        <div className="teacherFlowHeader">
           <img src="/teacherai-mascot.png" alt="" />
           <div>
             <span>TeacherAI sonra ne yapar?</span>
-            <h2 id="teacherai-after-title">Çözümü sadece vermem, anlatırım.</h2>
+            <h2 id="teacherai-after-title">Cevabı değil, mantığını öğren.</h2>
           </div>
         </div>
         <ol>
-          {teacherSteps.map((step) => <li key={step}>{step}</li>)}
+          {teacherSteps.map((item) => (
+            <li key={item.step}>
+              <span>{item.step}</span>
+              <div>
+                <strong>{item.title}</strong>
+                <small>{item.text}</small>
+              </div>
+            </li>
+          ))}
         </ol>
       </section>
     </main>

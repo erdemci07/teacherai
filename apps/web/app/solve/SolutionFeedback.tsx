@@ -76,14 +76,21 @@ export function SolutionFeedback({ result }: { result: GeneratedLesson }) {
   const options = rating === 'positive' ? POSITIVE_REASONS : NEGATIVE_REASONS;
 
   return (
-    <section className="solutionFeedback" aria-label="Çözüm geri bildirimi">
-      <div>
-        <h3>Bu anlatım nasıldı?</h3>
+    <section className="solutionFeedback feedbackMobileCard" aria-label="Çözüm geri bildirimi">
+      <div className="feedbackPrompt">
+        <span>Bu anlatım nasıldı?</span>
+        <h3>TeacherAI doğru yolda mı?</h3>
         <p>Geri bildirimin TeacherAI'ı geliştirmemize yardımcı olur.</p>
       </div>
       <div className="feedbackQuickActions">
-        <button type="button" aria-label="Olumlu geri bildirim ver" onClick={() => open('positive')}>👍</button>
-        <button type="button" aria-label="Olumsuz geri bildirim ver" onClick={() => open('negative')}>👎</button>
+        <button type="button" aria-label="Olumlu geri bildirim ver" onClick={() => open('positive')}>
+          <span aria-hidden="true">👍</span>
+          <strong>Faydalıydı</strong>
+        </button>
+        <button type="button" aria-label="Olumsuz geri bildirim ver" onClick={() => open('negative')}>
+          <span aria-hidden="true">👎</span>
+          <strong>Geliştirilebilir</strong>
+        </button>
       </div>
 
       {rating && (

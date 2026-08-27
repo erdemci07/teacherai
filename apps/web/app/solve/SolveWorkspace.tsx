@@ -64,6 +64,7 @@ export function SolveWorkspace() {
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
   const solvedCurrentImage = Boolean(file && selectedFileKey && selectedFileKey === solvedFileKey);
+  const stateLabel = result ? 'Çözüldü' : busy ? 'Hazırlanıyor' : file ? 'Soru seçildi' : 'Yeni soru';
 
   const revokeBlobPreview = (url: string) => {
     if (url.startsWith('blob:')) URL.revokeObjectURL(url);
@@ -141,7 +142,31 @@ export function SolveWorkspace() {
     <input ref={cameraRef} className="visuallyHidden" type="file" accept="image/*" capture="environment" onChange={changed} disabled={busy} aria-label="Arka kamerayla soru fotoğrafı çek" />
     <input ref={galleryRef} className="visuallyHidden" type="file" accept="image/*" onChange={changed} disabled={busy} aria-label="Galeriden soru görseli seç" />
     <input ref={fileRef} className="visuallyHidden" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={changed} disabled={busy} aria-label="Dosyadan soru görseli seç" />
-    <header className="solveIntro"><div className="mascotLockup" aria-label="TeacherAI, senin yapay zekâ öğretmenin"><img src="/teacherai-mascot.png" alt="" /><strong>TeacherAI</strong><span>Senin yapay zekâ öğretmenin</span></div><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Matematik sorunu göster</h1><p>Birlikte adım adım çözelim.</p><div className="solveProgressPills" aria-label="Çözüm akışı"><span className={file?'done':''}>Görsel</span><span className={analysis?'done':busy?'active':''}>Analiz</span><span className={result?'done':state==='planning'||state==='rendering'?'active':''}>Çözüm</span></div></header>
+    <header className="solveAppTop" aria-label="Çözüm ekranı">
+      <div className="solveAppIdentity">
+        <img src="/teacherai-mascot.png" alt="" />
+        <div>
+          <span>TeacherAI</span>
+          <strong>{stateLabel}</strong>
+        </div>
+      </div>
+      <button type="button" className="ghostButton solveResetTop" onClick={reset} disabled={!file || busy}>Temizle</button>
+    </header>
+    <header className="solveIntro">
+      <div className="mascotLockup" aria-label="TeacherAI, senin yapay zekâ öğretmenin">
+        <img src="/teacherai-mascot.png" alt="" />
+        <strong>TeacherAI</strong>
+        <span>Senin yapay zekâ öğretmenin</span>
+      </div>
+      <p className="eyebrow">Matematik öğretmenin yanında</p>
+      <h1>Matematik sorunu göster</h1>
+      <p>Birlikte adım adım çözelim.</p>
+      <div className="solveProgressPills" aria-label="Çözüm akışı">
+        <span className={file ? 'done' : ''}>Görsel</span>
+        <span className={analysis ? 'done' : busy ? 'active' : ''}>Analiz</span>
+        <span className={result ? 'done' : state === 'planning' || state === 'rendering' ? 'active' : ''}>Çözüm</span>
+      </div>
+    </header>
     <div className="solveGrid">
       <section className="solveInput" aria-label="Soru görseli">
         {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} onPreviewError={handlePreviewError} />}
@@ -151,7 +176,38 @@ export function SolveWorkspace() {
         <div className="solveActions"><button className="primaryButton analyzeButton" onClick={solve} disabled={!file || busy}>{solvedCurrentImage ? 'Yeniden Çöz' : 'Soruyu Çöz'}</button><button className="secondaryButton" onClick={reset} disabled={!file || busy}>Temizle</button></div>
         <p className="privacyNote">Görsel işlemden sonra geçici depolamadan silinir.</p>
       </section>
-      <aside className="solveOutput" aria-label="TeacherAI anlatımı">{busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}{!busy && !result && !error && <div className="resultEmpty"><img src="/teacherai-mascot.png" alt="" /><h2>Çözümün burada görünecek</h2><p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p></div>}{result && <><section className="solutionOverview"><div><span>{result.lesson.source_analysis.topic}</span>{result.lesson.source_analysis.subtopic&&<span>{result.lesson.source_analysis.subtopic}</span>}</div><h2>Çözüm</h2><p>TeacherAI soruyu okudu, çözüm yolunu kurdu ve matematiksel kontrolü tamamladı.</p></section><TeacherBoard result={result} /><section className="afterSolutionActions" aria-label="Çözüm sonrası işlemler"><InteractionPanel lesson={result.lesson} /><ShareSolution result={result} /><button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>{showText && <LessonText lesson={result.lesson} />}<SolutionFeedback result={result} /></section>{process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}</>}</aside>
+      <aside className="solveOutput" aria-label="TeacherAI anlatımı">
+        {busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}
+        {!busy && !result && !error && (
+          <div className="resultEmpty solutionPlaceholder">
+            <img src="/teacherai-mascot.png" alt="" />
+            <span>Çözüm alanı</span>
+            <h2>Çözümün burada görünecek</h2>
+            <p>TeacherAI sorunu çözdüğünde kullanılan kuralı, çözüm adımlarını ve dikkat etmen gereken noktaları burada anlatacak.</p>
+          </div>
+        )}
+        {result && (
+          <div className="solutionMobileScreen">
+            <section className="solutionOverview">
+              <div>
+                <span>{result.lesson.source_analysis.topic}</span>
+                {result.lesson.source_analysis.subtopic && <span>{result.lesson.source_analysis.subtopic}</span>}
+              </div>
+              <h2>Çözüm</h2>
+              <p>TeacherAI soruyu okudu, çözüm yolunu kurdu ve matematiksel kontrolü tamamladı.</p>
+            </section>
+            <TeacherBoard result={result} />
+            <section className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
+              <InteractionPanel lesson={result.lesson} />
+              <ShareSolution result={result} />
+              <button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>
+              {showText && <LessonText lesson={result.lesson} />}
+              <SolutionFeedback result={result} />
+            </section>
+            {process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}
+          </div>
+        )}
+      </aside>
     </div>
   </div>;
 }
