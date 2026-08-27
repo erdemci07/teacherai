@@ -23,21 +23,24 @@ const faqs = [
 
 export default function Home() {
   return <>
-    <section className="hero betaHero">
+    <section className="appHomeHero">
       <div className="heroContent">
         <div className="mascotLockup" aria-label="TeacherAI, senin yapay zeka öğretmenin">
           <img src="/teacherai-mascot.png" alt="" />
           <strong>TeacherAI</strong>
           <span>Senin yapay zeka öğretmenin</span>
         </div>
-        <p className="eyebrow">Matematiği gerçekten öğren</p>
-        <h1>Matematik sorunu yükle. <span>Cevabı değil, mantığını öğren.</span></h1>
-        <p className="heroText">TeacherAI sorunu analiz eder, matematiksel olarak kontrol eder ve gerçek bir öğretmen gibi adım adım anlatır.</p>
-        <div className="heroActions"><Link className="primaryButton" href="/solve">Sorunu Çöz</Link><a className="secondaryButton" href="#nasil-calisir">Nasıl Çalışır?</a></div>
-        <p className="heroTrust">Fotoğrafını çek veya galeriden seç. İlk sorunu hemen deneyebilirsin.</p>
+        <p className="eyebrow">Mobil matematik öğretmenin</p>
+        <h1>Matematik sorunu göster.</h1>
+        <p className="heroText">TeacherAI soruyu okur, çözüm yolunu kurar ve mantığını adım adım anlatır.</p>
+        <div className="homeActionCard">
+          <span>İlk adım</span>
+          <strong>Fotoğraf çek veya galeriden seç.</strong>
+          <Link className="primaryButton" href="/solve">Soruyu Çöz</Link>
+        </div>
       </div>
-      <div className="teacherPreview" aria-label="TeacherAI örnek anlatım görünümü">
-        <span className="previewBadge">TeacherAI</span><h2>Adım adım, nedenleriyle.</h2>
+      <div className="teacherPreview appPreview" aria-label="TeacherAI örnek anlatım görünümü">
+        <span className="previewBadge">TeacherAI anlatıyor</span><h2>Adım adım, nedenleriyle.</h2>
         <div className="previewNote">Ne arıyoruz?<strong>x'i yalnız bırakmak</strong></div>
         <div className="previewEquation">3x + 7 = 19</div><div className="previewArrow">↓ iki taraftan 7 çıkar</div><div className="previewEquation result">x = 4 <b>✓</b></div>
       </div>

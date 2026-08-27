@@ -28,7 +28,7 @@ export function ImagePreview({ file, previewUrl, previewAvailable, disabled, onR
         </div>
       )}
       <div className="fileMeta">
-        <div><strong>{file.name}</strong><span>{formatBytes(file.size)}</span></div>
+        <div><span className="fileMetaLabel">Seçilen soru</span><strong>{file.name}</strong><span>{formatBytes(file.size)}</span></div>
         <div className="previewActions">
           <button type="button" className="textButton" onClick={onReplace} disabled={disabled}>Değiştir</button>
           <button type="button" className="textButton dangerText" onClick={onRemove} disabled={disabled}>Sil</button>

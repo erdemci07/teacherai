@@ -26,13 +26,16 @@ export function UploadCard({ disabled, dragging, onDraggingChange, onFile, onCam
   };
 
   return <div className={`uploadCard ${dragging ? 'dragging' : ''}`} role="button" tabIndex={disabled ? -1 : 0} aria-label="Soru fotoğrafını sürükle veya dosya seç" aria-disabled={disabled} onClick={() => !disabled && onFilePicker()} onKeyDown={keyed} onDragEnter={(event) => { event.preventDefault(); onDraggingChange(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => onDraggingChange(false)} onDrop={dropped}>
-    <span className="uploadGlyph" aria-hidden="true">＋</span><h2>Soru fotoğrafını ekle</h2>
-    <p className="desktopUploadText">Fotoğrafı buraya sürükle veya aşağıdan bir yöntem seç. Görseli <strong>Ctrl+V / Cmd+V</strong> ile de yapıştırabilirsin.</p>
+    <div className="uploadHero">
+      <img className="uploadMascot" src="/teacherai-mascot.png" alt="" />
+      <div><span className="uploadPill">TeacherAI hazır</span><h2>Matematik sorunu göster</h2><p>Birlikte adım adım çözelim.</p></div>
+    </div>
     <div className="uploadChoices">
       <button type="button" className="cameraChoice" onClick={(event) => { event.stopPropagation(); onCamera(); }} disabled={disabled}><span aria-hidden="true">📷</span>Kamerayla Çek</button>
       <button type="button" onClick={(event) => { event.stopPropagation(); onGallery(); }} disabled={disabled}><span aria-hidden="true">🖼️</span>Galeriden Seç</button>
       <button type="button" className="fileChoice" onClick={(event) => { event.stopPropagation(); onFilePicker(); }} disabled={disabled}><span aria-hidden="true">↥</span>Dosya Yükle</button>
     </div>
-    <p className="uploadGuidance">En iyi sonuç için sorunun tamamı ve varsa şekil veya grafik net görünsün.</p><span className="formatNote">JPG, PNG, WEBP, HEIC, HEIF · En fazla 10 MB</span>
+    <p className="desktopUploadText">Masaüstünde fotoğrafı buraya sürükleyebilir veya görseli <strong>Ctrl+V / Cmd+V</strong> ile yapıştırabilirsin.</p>
+    <p className="uploadGuidance">Sorunun tamamı, seçenekler ve varsa şekil net görünsün.</p><span className="formatNote">JPG, PNG, WEBP, HEIC, HEIF · En fazla 10 MB</span>
   </div>;
 }
