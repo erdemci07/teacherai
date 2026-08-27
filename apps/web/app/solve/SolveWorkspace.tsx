@@ -137,11 +137,11 @@ export function SolveWorkspace() {
     setPreviewAvailable(false);
   };
 
-  return <div className="solvePage" onPaste={pasted}>
+  return <div className={`solvePage solveState-${state}`} onPaste={pasted}>
     <input ref={cameraRef} className="visuallyHidden" type="file" accept="image/*" capture="environment" onChange={changed} disabled={busy} aria-label="Arka kamerayla soru fotoğrafı çek" />
     <input ref={galleryRef} className="visuallyHidden" type="file" accept="image/*" onChange={changed} disabled={busy} aria-label="Galeriden soru görseli seç" />
     <input ref={fileRef} className="visuallyHidden" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={changed} disabled={busy} aria-label="Dosyadan soru görseli seç" />
-    <header className="solveIntro"><div className="mascotLockup" aria-label="TeacherAI, senin yapay zeka öğretmenin"><img src="/teacherai-mascot.png" alt="" /><strong>TeacherAI</strong><span>Senin yapay zeka öğretmenin</span></div><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Sorunu yükle,<br /><span>mantığını birlikte öğrenelim.</span></h1><p>Fotoğrafını çek veya galeriden seç. TeacherAI soruyu inceler, kontrol eder ve adım adım anlatır.</p></header>
+    <header className="solveIntro"><div className="mascotLockup" aria-label="TeacherAI, senin yapay zekâ öğretmenin"><img src="/teacherai-mascot.png" alt="" /><strong>TeacherAI</strong><span>Senin yapay zekâ öğretmenin</span></div><p className="eyebrow">Matematik öğretmenin yanında</p><h1>Matematik sorunu göster</h1><p>Birlikte adım adım çözelim.</p><div className="solveProgressPills" aria-label="Çözüm akışı"><span className={file?'done':''}>Görsel</span><span className={analysis?'done':busy?'active':''}>Analiz</span><span className={result?'done':state==='planning'||state==='rendering'?'active':''}>Çözüm</span></div></header>
     <div className="solveGrid">
       <section className="solveInput" aria-label="Soru görseli">
         {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} onPreviewError={handlePreviewError} />}
