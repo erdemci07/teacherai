@@ -67,6 +67,25 @@ if (-not $ApiUrl) {
     throw "Cloud Run URL alınamadı."
 }
 
+$firebaseConfig = Get-Content "firebase.json" -Raw | ConvertFrom-Json
+$shareRedirect = @($firebaseConfig.hosting.redirects) |
+    Where-Object { $_.source -eq "/s/:shareId" } |
+    Select-Object -First 1
+
+if (-not $shareRedirect) {
+    throw "Firebase Hosting /s/:shareId redirect kuralı bulunamadı."
+}
+
+if ($shareRedirect.destination -ne "$ApiUrl/s/:shareId") {
+    throw "Firebase paylaşım redirect hedefi Cloud Run URL ile eşleşmiyor. Beklenen: $ApiUrl/s/:shareId"
+}
+
+foreach ($rewrite in @($firebaseConfig.hosting.rewrites)) {
+    if ($rewrite.run -and $rewrite.run.serviceId -eq $ServiceName) {
+        throw "Firebase Hosting cross-project Cloud Run rewrite kullanmamalı. /s/:shareId redirect olarak kalmalı."
+    }
+}
+
 $env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"
 
 Write-Host "Frontend API: $env:NEXT_PUBLIC_API_BASE_URL"
@@ -100,8 +119,8 @@ gcloud run deploy $ServiceName `
     --project $ProjectId `
     --platform managed `
     --port 8000 `
-    --set-secrets "OPENAI_API_KEY=openai-api-key:latest" `
-    --async
+    --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
+
 Step "8/9 - Cloud Run health check"
 
 $ApiUrl = gcloud run services describe $ServiceName `
@@ -140,7 +159,9 @@ if (-not $healthOk) {
     throw "Cloud Run yeni revision zamanında hazır olmadı."
 }
 
-Write-Host "API health: OK"Step "9/9 - Firebase Hosting deploy"
+Write-Host "API health: OK"
+
+Step "9/9 - Firebase Hosting deploy"
 
 firebase use $FirebaseProjectId
 

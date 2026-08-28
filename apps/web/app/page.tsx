@@ -32,17 +32,17 @@ export default function Home() {
             <h2 id="teacherai-after-title">Cevabı değil, mantığını öğren.</h2>
           </div>
         </div>
-        <ol>
+        <div className="teacherFlowList" role="list">
           {teacherSteps.map((item) => (
-            <li key={item.step}>
+            <article key={item.step} role="listitem">
               <span>{item.step}</span>
               <div>
                 <strong>{item.title}</strong>
                 <small>{item.text}</small>
               </div>
-            </li>
+            </article>
           ))}
-        </ol>
+        </div>
       </section>
     </main>
   );

@@ -23,9 +23,9 @@ def test_empty_state_uses_teacherai_native_icon_not_sparkle() -> None:
     styles = Path("apps/web/app/globals.css").read_text(encoding="utf-8")
 
     assert "✦" not in workspace
-    assert "emptyBoardIcon" in workspace
-    assert "∑" in workspace
-    assert ".emptyBoardIcon" in styles
+    assert '<div className="resultEmpty solutionPlaceholder">' in workspace
+    assert '<BrandMark size="lg" />' in workspace
+    assert ".solutionPlaceholder .brandMark" in styles
 
 
 def test_vision_and_lesson_errors_remain_distinguishable() -> None:

@@ -8,13 +8,11 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
-    "rewrites": [
+    "redirects": [
       {
-        "source": "/s/**",
-        "run": {
-          "serviceId": "teacherai-api",
-          "region": "us-east4"
-        }
+        "source": "/s/:shareId",
+        "destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId",
+        "type": 302
       }
     ]
   }

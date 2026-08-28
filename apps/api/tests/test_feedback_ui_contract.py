@@ -6,7 +6,8 @@ def test_feedback_ui_appears_only_after_successful_solution_and_is_independent_f
     component = Path("apps/web/app/solve/SolutionFeedback.tsx").read_text(encoding="utf-8")
 
     assert "import { SolutionFeedback }" in workspace
-    assert "{result && <>" in workspace
+    assert "{result && (" in workspace
+    assert '<div className="solutionMobileScreen">' in workspace
     assert "<SolutionFeedback result={result} />" in workspace
     assert "<InteractionPanel lesson={result.lesson} />" in workspace
     assert "Nasıl, burası oturdu mu?" not in component

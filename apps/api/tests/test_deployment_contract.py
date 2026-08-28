@@ -2,17 +2,19 @@ import json
 from pathlib import Path
 
 
-def test_firebase_hosting_static_export_with_short_share_rewrite_only() -> None:
+def test_firebase_hosting_static_export_with_short_share_redirect_only() -> None:
     config = json.loads(Path("firebase.json").read_text(encoding="utf-8-sig"))
     hosting = config["hosting"]
 
     assert hosting["public"] == "apps/web/out"
     assert hosting["cleanUrls"] is True
     assert hosting["trailingSlash"] is False
-    assert hosting["rewrites"] == [
+    assert hosting.get("rewrites") is None
+    assert hosting["redirects"] == [
         {
-            "source": "/s/**",
-            "run": {"serviceId": "teacherai-api", "region": "us-east4"},
+            "source": "/s/:shareId",
+            "destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId",
+            "type": 302,
         }
     ]
 
@@ -49,6 +51,8 @@ def test_production_deploy_script_keeps_safety_gates_and_secret_source() -> None
         "gcloud builds submit",
         "gcloud run deploy",
         '--set-secrets "OPENAI_API_KEY=openai-api-key:latest"',
+        'Where-Object { $_.source -eq "/s/:shareId" }',
+        'throw "Firebase Hosting cross-project Cloud Run rewrite kullanmamalı. /s/:shareId redirect olarak kalmalı."',
         "gcloud run services describe $ServiceName",
         '$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"',
         "npm run build:web",
@@ -61,6 +65,8 @@ def test_production_deploy_script_keeps_safety_gates_and_secret_source() -> None
 
     assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"')
     assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"') < script.index("npm run build:web")
+
+    assert "--async" not in script
 
     for forbidden in ("git push", "git stash", "gcloud secrets versions add", "--set-env-vars OPENAI_API_KEY"):
         assert forbidden not in script

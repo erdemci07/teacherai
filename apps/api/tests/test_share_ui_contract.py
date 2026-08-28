@@ -36,25 +36,27 @@ def test_public_page_reuses_existing_solution_renderers_and_cta() -> None:
     assert "Sen de soru çöz" in source
 
 
-def test_firebase_hosting_routes_short_share_urls_without_api_rewrite() -> None:
+def test_firebase_hosting_routes_short_share_urls_without_cross_project_run_rewrite() -> None:
     firebase = Path("firebase.json").read_text(encoding="utf-8")
 
     assert '"public": "apps/web/out"' in firebase
-    assert '"rewrites"' in firebase
-    assert '"/s/**"' in firebase
-    assert '"serviceId": "teacherai-api"' in firebase
-    assert '"region": "us-east4"' in firebase
+    assert '"redirects"' in firebase
+    assert '"/s/:shareId"' in firebase
+    assert '"destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId"' in firebase
+    assert '"serviceId": "teacherai-api"' not in firebase
     assert '"/api/**"' not in firebase
 
 
-def test_share_rewrite_is_ordered_before_static_fallback_shape() -> None:
+def test_share_redirect_points_to_existing_cloud_run_public_html_route() -> None:
     import json
 
     hosting = json.loads(Path("firebase.json").read_text(encoding="utf-8-sig"))["hosting"]
 
-    assert hosting["rewrites"][0] == {
-        "source": "/s/**",
-        "run": {"serviceId": "teacherai-api", "region": "us-east4"},
+    assert hosting.get("rewrites") is None
+    assert hosting["redirects"][0] == {
+        "source": "/s/:shareId",
+        "destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId",
+        "type": 302,
     }
 
 
@@ -79,16 +81,17 @@ def test_camera_gallery_actions_keep_existing_handlers_with_clear_icons() -> Non
     assert "onFilePicker();" in source
     assert "📷" in source
     assert "🖼️" in source
+    assert "📁" in source
     assert "⌁" not in source
     assert ">□<" not in source
 
 
 def test_teacher_flow_uses_single_number_treatment() -> None:
     home = Path("apps/web/app/page.tsx").read_text(encoding="utf-8")
-    css = Path("apps/web/app/globals.css").read_text(encoding="utf-8")
 
     assert "step: '01'" in home
-    assert "teacherFlowCard li:before{display:none!important}" in css
+    assert "<ol>" not in home
+    assert "teacherFlowList" in home
 
 
 def test_landing_has_single_primary_cta_without_camera_gallery_actions() -> None:

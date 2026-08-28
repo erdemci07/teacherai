@@ -48,7 +48,7 @@ export function UploadCard({ disabled, dragging, onDraggingChange, onFile, onCam
           <small>Fotoğraf yükle</small>
         </button>
         <button type="button" className="fileChoice uploadFileChoice" onClick={(event) => { event.stopPropagation(); onFilePicker(); }} disabled={disabled}>
-          <span aria-hidden="true">↥</span>
+          <span aria-hidden="true">📁</span>
           <strong>Dosyadan yükle</strong>
         </button>
       </div>
