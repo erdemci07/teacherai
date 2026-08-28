@@ -21,8 +21,8 @@ MAX_EXPRESSIONS_PER_STEP = 8
 MAX_PUBLIC_SNAPSHOT_BYTES = 90000
 MAX_BOARD_TEXT_CHARS = 900
 
-SHARE_TITLE = "TeacherAI bu matematik sorusunu çözdü"
-SHARE_DESCRIPTION = "Adım adım öğretmen anlatımıyla çözümü incele. Sen de kendi sorunu TeacherAI ile çöz."
+SHARE_TITLE = "TeacherAI bu matematik sorusunu adım adım çözdü"
+SHARE_DESCRIPTION = "Çözüm yolunu öğretmen anlatımıyla incele. Sen de kendi sorunu TeacherAI ile çöz."
 logger = logging.getLogger(__name__)
 
 

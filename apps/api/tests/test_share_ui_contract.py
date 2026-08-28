@@ -58,12 +58,13 @@ def test_share_rewrite_is_ordered_before_static_fallback_shape() -> None:
     }
 
 
-def test_brand_mark_component_drives_visible_teacherai_identity() -> None:
+def test_brand_mark_component_uses_simple_education_icon_without_mascot() -> None:
     brand = Path("apps/web/app/components/BrandMark.tsx").read_text(encoding="utf-8")
     logo = Path("apps/web/app/components/Logo.tsx").read_text(encoding="utf-8")
     home = Path("apps/web/app/page.tsx").read_text(encoding="utf-8")
 
-    assert 'src="/teacherai-mascot.png"' in brand
+    assert "<svg" in brand
+    assert "teacherai-mascot.png" not in brand
     assert "BrandMark" in logo
     assert "BrandMark" in home
     assert "Senin yapay zekâ öğretmenin" in logo
@@ -88,6 +89,34 @@ def test_teacher_flow_uses_single_number_treatment() -> None:
 
     assert "step: '01'" in home
     assert "teacherFlowCard li:before{display:none!important}" in css
+
+
+def test_landing_has_single_primary_cta_without_camera_gallery_actions() -> None:
+    home = Path("apps/web/app/page.tsx").read_text(encoding="utf-8")
+
+    assert "Soru Çözmeye Başla" in home
+    assert 'href="/solve"' in home
+    assert "Kamerayla çek" not in home
+    assert "Galeriden seç" not in home
+
+
+def test_solve_keeps_camera_gallery_controls_and_success_autoscroll() -> None:
+    workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    upload = Path("apps/web/app/solve/UploadCard.tsx").read_text(encoding="utf-8")
+    css = Path("apps/web/app/globals.css").read_text(encoding="utf-8")
+
+    assert 'capture="environment"' in workspace
+    assert "onCamera();" in upload
+    assert "onGallery();" in upload
+    assert "scrollIntoView({ behavior: 'smooth', block: 'start' })" in workspace
+    assert "setLessonScrollSignal((current) => current + 1)" in workspace
+    assert "lessonScrollTarget" in workspace
+    assert "scroll-margin-top" in css
+
+
+def test_mascot_asset_is_not_rendered_in_product_ui() -> None:
+    for path in Path("apps/web/app").rglob("*.tsx"):
+        assert "teacherai-mascot.png" not in path.read_text(encoding="utf-8")
 
 
 def test_static_og_asset_and_public_url_copy_are_present() -> None:

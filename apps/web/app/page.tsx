@@ -7,11 +7,6 @@ const teacherSteps = [
   { step: '03', title: 'Öğretmen gibi anlatır', text: 'Cevabın neden öyle olduğunu sade bir dille açıklar.' },
 ];
 
-const quickCards = [
-  { title: 'Kamerayla çek', text: 'Sorunun fotoğrafını çek', icon: '📷', primary: true },
-  { title: 'Galeriden seç', text: 'Fotoğraf yükle', icon: '🖼️', primary: false },
-];
-
 export default function Home() {
   return (
     <main className="mobileHome">
@@ -26,16 +21,7 @@ export default function Home() {
       <section className="homeSolveCard appEntryHero" aria-labelledby="home-solve-title">
         <p className="eyebrow">Matematik öğretmenin yanında</p>
         <h2 id="home-solve-title">Sorunu göster, birlikte çözelim.</h2>
-        <p>Kamerayla çek veya galeriden seç. TeacherAI önce soruyu anlar, sonra çözümü nedenleriyle anlatır.</p>
-        <div className="homeActionStack" aria-label="Soru yükleme başlangıcı">
-          {quickCards.map((card) => (
-            <Link className={`homeActionCard ${card.primary ? 'homeActionPrimary' : ''}`} href="/solve" key={card.title}>
-              <span aria-hidden="true">{card.icon}</span>
-              <strong>{card.title}</strong>
-              <small>{card.text}</small>
-            </Link>
-          ))}
-        </div>
+        <p>TeacherAI önce soruyu anlar, sonra çözümü adım adım ve nedenleriyle anlatır.</p>
         <Link className="primaryButton homeSolveButton" href="/solve">Soru Çözmeye Başla</Link>
       </section>
 

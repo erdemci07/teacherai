@@ -1,4 +1,5 @@
 from dataclasses import replace
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from fastapi.testclient import TestClient
@@ -183,13 +184,21 @@ def test_crawler_route_returns_real_open_graph_metadata_without_private_data():
     assert response.status_code == 200
     html = response.text
     assert 'property="og:title"' in html
-    assert "TeacherAI bu matematik sorusunu çözdü" in html
+    assert "TeacherAI bu matematik sorusunu adım adım çözdü" in html
+    assert "Çözüm yolunu öğretmen anlatımıyla incele." in html
     assert 'property="og:description"' in html
     assert 'property="og:image"' in html
+    assert 'property="og:type" content="article"' in html
+    assert 'name="twitter:card"' in html
+    assert 'name="twitter:title"' in html
+    assert 'name="twitter:description"' in html
+    assert 'name="twitter:image"' in html
     assert 'property="og:url" content="https://teacherai-07.web.app/s/' in html
     assert 'meta name="robots" content="noindex, follow"' in html
     assert "https://teacherai-07.web.app/shared/?id=" in html
     assert "https://teacherai-07.web.app/solve" in html
+    assert "Page not found" not in html
+    assert "<script" not in html
     assert "user_id" not in html
     assert "feedback" not in html
     assert "api_key" not in html
@@ -208,8 +217,39 @@ def test_new_share_url_id_resolves_through_public_short_route():
     response = client.get(parsed.path)
 
     assert response.status_code == 200
-    assert "TeacherAI bu matematik sorusunu çözdü" in response.text
+    assert "TeacherAI bu matematik sorusunu adım adım çözdü" in response.text
     assert f'https://teacherai-07.web.app/shared/?id={created["share_id"]}' in response.text
+
+
+def test_legacy_persisted_share_id_remains_resolvable_through_short_route():
+    shared_items = {}
+    repo = SharedDictRepository(shared_items)
+    service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app"))
+    snapshot = service._enforce_snapshot_budget(
+        PublicSolutionSnapshot(
+            share_id="legacy12345",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            topic="Denklemler",
+            subtopic=None,
+            question_summary="x + 2 = 5",
+            final_answer="x = 3",
+            lesson_snapshot=service._public_lesson_snapshot(generated_result()),
+            board_snapshot=service._public_board_snapshot(generated_result()),
+            app_version="0.1.0",
+            source_lesson_plan_id="legacy_lesson",
+        )
+    )
+    repo.save(snapshot)
+    app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app"))
+    app.state.container = replace(app.state.container, share_service=service)
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.get("/s/legacy12345")
+
+    assert response.status_code == 200
+    assert 'property="og:url" content="https://teacherai-07.web.app/s/legacy12345"' in response.text
+    assert "x + 2 = 5" in response.text
 
 
 def test_missing_public_share_returns_not_found_without_authentication():

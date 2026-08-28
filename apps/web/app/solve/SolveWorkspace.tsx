@@ -58,9 +58,11 @@ export function SolveWorkspace() {
   const [showText, setShowText] = useState(false);
   const [selectedFileKey, setSelectedFileKey] = useState('');
   const [solvedFileKey, setSolvedFileKey] = useState('');
+  const [lessonScrollSignal, setLessonScrollSignal] = useState(0);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const lessonStartRef = useRef<HTMLDivElement>(null);
   const selectedFileKeyRef = useRef('');
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
@@ -72,6 +74,11 @@ export function SolveWorkspace() {
   };
 
   useEffect(() => () => { if (preview) revokeBlobPreview(preview); }, [preview]);
+
+  useEffect(() => {
+    if (!lessonScrollSignal) return;
+    lessonStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [lessonScrollSignal]);
 
   const select = (selected: File) => {
     const mediaType = selected.type.toLowerCase();
@@ -104,6 +111,7 @@ export function SolveWorkspace() {
       const generated = await generateLesson(value);
       setState('rendering'); setResult(generated); void saveLesson(generated).catch(() => undefined); setState('success');
       if (solveFileKey && selectedFileKeyRef.current === solveFileKey) setSolvedFileKey(solveFileKey);
+      setLessonScrollSignal((current) => current + 1);
       return true;
     } catch (caught) {
       const code = caught instanceof LessonApiError ? caught.code : 'lesson_error';
@@ -197,6 +205,7 @@ export function SolveWorkspace() {
               <h2>Çözüm</h2>
               <p>TeacherAI soruyu okudu, çözüm yolunu kurdu ve matematiksel kontrolü tamamladı.</p>
             </section>
+            <div ref={lessonStartRef} className="lessonScrollTarget" aria-hidden="true" />
             <TeacherBoard result={result} />
             <section className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
               <InteractionPanel lesson={result.lesson} />
