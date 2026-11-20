@@ -47,3 +47,37 @@ def test_new_records_have_timestamps(databases, collection):
     if collection in {ANALYSES, PRACTICE}:
         ref.update({"expires_at": datetime.now(UTC) - timedelta(seconds=1)})
         assert (repo.analysis(uid, uid) if collection == ANALYSES else store.get(uid, uid)) is None
+
+
+def test_global_usage_record_has_timestamps(databases):
+    from apps.api.app.core.retention import GLOBAL
+
+    db = databases[0]
+    UsageTracker(Settings(), db).record(uuid4().hex, "generate")
+    doc = db.collection(GLOBAL).document(datetime.now(UTC).date().isoformat()).get().to_dict()
+    assert isinstance(doc["expires_at"], datetime) and doc["created_at"].tzinfo
+    assert abs(doc["expires_at"] - doc["created_at"] - timedelta(days=TTL_DAYS[GLOBAL])) < timedelta(minutes=1)
+
+
+def test_only_completed_deletion_record_expires(databases):
+    from apps.api.app.core.retention import DELETIONS
+    from apps.api.app.features.account.service import AccountDeletionService
+    from apps.api.app.features.auth.schemas import AuthenticatedUser
+
+    class Identity:
+        def revoke(self, uid): ...
+        def delete(self, uid): ...
+        def exists(self, uid): return False
+
+    db = databases[0]
+    uid = uuid4().hex
+    settings = Settings(account_deletion_time_budget_seconds=0)
+    service = AccountDeletionService(settings, db, Identity())
+    user = AuthenticatedUser(uid=uid, auth_time=int(datetime.now(UTC).timestamp()))
+    assert service.start_or_resume(user)[0] == 202
+    assert "expires_at" not in db.collection(DELETIONS).document(uid).get().to_dict()
+    service.settings = Settings()
+    assert service.start_or_resume(user)[0] == 200
+    doc = db.collection(DELETIONS).document(uid).get().to_dict()
+    assert isinstance(doc["expires_at"], datetime)
+    assert abs(doc["expires_at"] - doc["completed_at"] - timedelta(days=TTL_DAYS[DELETIONS])) < timedelta(minutes=1)
