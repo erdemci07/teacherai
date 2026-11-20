@@ -50,7 +50,8 @@ def test_selection_preserves_original_file_and_direct_solve_upload() -> None:
     api = Path("apps/web/app/lib/vision-api.ts").read_text(encoding="utf-8")
 
     assert "setFile(selected)" in workspace
-    assert "analyzeQuestionImage(file, () => setState('analyzing'))" in workspace
+    # TA-001B §6: tekrar anahtarı ek bağımsız değişken olarak verilir.
+    assert "analyzeQuestionImage(file, () => setState('analyzing')" in workspace
     assert "form.append('image', image)" in api
     assert "prepared_image_id" not in api
     assert "prepared_image_data_url" not in api

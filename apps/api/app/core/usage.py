@@ -41,6 +41,17 @@ class UsageLimitExceeded(Exception):
     pass
 
 
+class DuplicateRequest(HTTPException):
+    """Aynı kullanıcı, işlem ve UTC günü içinde tekrar gelen Idempotency-Key (409 / duplicate_request).
+
+    Ücretli işlem ikinci kez çalıştırılmaz. Önceki yanıt saklanmadığından bu bir
+    "en fazla bir kez çalıştırma" güvencesidir, "tam olarak bir kez yanıt" değildir.
+    """
+
+    def __init__(self):
+        super().__init__(409, "Request already admitted.")
+
+
 class GlobalBudgetExhausted(UsageLimitExceeded):
     """Günlük küresel bütçe doldu; 503 / ai_global_budget_exhausted."""
 
@@ -104,7 +115,7 @@ class UsageTracker:
             keys = data.get("keys", [])
             total = data.get("total", 0)
             if fingerprint and fingerprint in keys:
-                raise HTTPException(409, "Request already admitted.")
+                raise DuplicateRequest
             if (paid and total >= self.settings.authenticated_daily_ai_limit) or counts.get(
                 operation, 0
             ) >= self.settings.operation_limits.get(operation, 0):

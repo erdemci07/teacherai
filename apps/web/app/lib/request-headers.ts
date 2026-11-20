@@ -3,8 +3,9 @@ import { firebaseConfigured, getFirebaseAuth } from './firebase';
 
 let attestation: AppCheck | undefined;
 
-export async function requestHeaders(): Promise<Record<string, string>> {
-  const headers: Record<string, string> = { 'Idempotency-Key': crypto.randomUUID() };
+// Anahtar verilmezse her çağrı bağımsız yeni bir işlemdir (bkz. idempotency.ts).
+export async function requestHeaders(idempotencyKey?: string): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { 'Idempotency-Key': idempotencyKey ?? crypto.randomUUID() };
   if (!firebaseConfigured) return headers;
   const auth = getFirebaseAuth();
   await auth.authStateReady();

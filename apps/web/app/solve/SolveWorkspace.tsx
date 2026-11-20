@@ -16,6 +16,7 @@ import { SolutionFeedback } from './SolutionFeedback';
 import { ShareSolution } from './ShareSolution';
 import { BrandMark } from '../components/BrandMark';
 import { ERROR_MESSAGES } from '../lib/error-messages';
+import { IdempotencyKeys, outcomeOf } from '../lib/idempotency';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -48,6 +49,7 @@ export function SolveWorkspace() {
   const fileRef = useRef<HTMLInputElement>(null);
   const lessonStartRef = useRef<HTMLDivElement>(null);
   const selectedFileKeyRef = useRef('');
+  const idempotency = useRef(new IdempotencyKeys());
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
   const solvedCurrentImage = Boolean(file && selectedFileKey && selectedFileKey === solvedFileKey);
@@ -92,7 +94,9 @@ export function SolveWorkspace() {
   const createLesson = async (value: VisionAnalysis, solveFileKey = selectedFileKeyRef.current) => {
     setState('planning');
     try {
-      const generated = await generateLesson(value);
+      const action = `generate:${value.request_id}`;
+      const generated = await generateLesson(value, idempotency.current.keyFor(action));
+      idempotency.current.settle(action, 'answered');
       if (generated.verification.status === 'failed') throw new LessonApiError('math_verification_failed');
       setState('rendering'); setResult(generated); setState('success');
       if (solveFileKey && selectedFileKeyRef.current === solveFileKey) setSolvedFileKey(solveFileKey);
@@ -100,6 +104,7 @@ export function SolveWorkspace() {
       return true;
     } catch (caught) {
       const code = caught instanceof LessonApiError ? caught.code : 'lesson_error';
+      idempotency.current.settle(`generate:${value.request_id}`, outcomeOf(code));
       setError(ERRORS[code] ?? ERRORS.lesson_error); setState('error');
       return false;
     }
@@ -109,7 +114,8 @@ export function SolveWorkspace() {
     const solveFileKey = selectedFileKeyRef.current;
     setError(''); setAnalysis(null); setResult(null); setState('uploading');
     try {
-      const value = await analyzeQuestionImage(file, () => setState('analyzing'));
+      const value = await analyzeQuestionImage(file, () => setState('analyzing'), undefined, idempotency.current.keyFor(`analyze:${solveFileKey}`));
+      idempotency.current.settle(`analyze:${solveFileKey}`, 'answered');
       setAnalysis(value);
       if (!previewAvailable && value.normalized_preview_url) { setPreview(value.normalized_preview_url); setPreviewAvailable(true); }
       if (!value.is_valid_question || value.image_status !== 'valid_math_question') {
@@ -119,6 +125,7 @@ export function SolveWorkspace() {
       await createLesson(value, solveFileKey);
     } catch (caught) {
       const code = caught instanceof VisionApiError ? caught.code : 'network_error';
+      idempotency.current.settle(`analyze:${solveFileKey}`, outcomeOf(code));
       setError(ERRORS[code] ?? ERRORS.network_error); setState('error');
     }
   };

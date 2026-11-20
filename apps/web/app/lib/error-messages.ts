@@ -30,6 +30,9 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   ai_invalid_output: 'Güvenilir bir yanıt oluşturamadım. Aynı soruyu yeniden deneyebiliriz.',
   ai_timeout: 'Yanıt beklediğimden uzun sürdü. Biraz sonra yeniden deneyebilirsin.',
   ai_provider_error: 'Öğretmen servisi yanıt veremedi. Biraz sonra yeniden deneyebilirsin.',
+  // Aynı Idempotency-Key ile tekrar: ücretli işlem ikinci kez çalıştırılmadı.
+  duplicate_request: 'Bu istek zaten alındı. Sonuç geçmişinde görünüyorsa oradan açabilirsin; yoksa yeniden deneyebilirsin.',
+  account_deletion_in_progress: 'Hesabın silinme sürecinde olduğu için bu işlem yapılamıyor.',
   // C paketi: günlük küresel AI kapasitesi doldu.
   ai_global_budget_exhausted: 'Öğretmen servisi bugünlük kapasitesine ulaştı. Yarın yeniden deneyebilirsin.',
 };

@@ -269,3 +269,25 @@ def _png():
     buffer = io.BytesIO()
     Image.new("RGB", (16, 16), "white").save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def test_retry_with_same_idempotency_key_never_reruns_paid_call(monkeypatch):
+    """Ek §6: yanıtı kaybolan istek aynı anahtarla tekrarlanınca sağlayıcı ikinci kez çağrılmaz."""
+    settings = Settings()
+    tracker = UsageTracker(settings, None, Clock())
+    app, calls = lesson_app(monkeypatch, settings, tracker, [lesson_body(), lesson_body()])
+    uid = "u_" + uuid4().hex
+    analysis = generated_result().lesson.source_analysis.model_copy(update={"request_id": "analysis_" + uuid4().hex})
+    app.state.container.student_service.save_analysis(AuthenticatedUser(uid=uid), analysis)
+    client = TestClient(app)
+
+    def send(key):
+        return client.post(PREFIX + "/lessons/generate", json={"analysis_id": analysis.request_id},
+                           headers={"Authorization": f"Bearer {uid}", "Idempotency-Key": key})
+
+    assert send("logical-1").status_code == 200  # istemci bu yanıtı ağ hatasıyla kaybetmiş olsun
+    retry = send("logical-1")
+    assert (retry.status_code, retry.json()["error"]) == (409, "duplicate_request")
+    assert len(calls) == 1
+    assert send("logical-2").status_code == 200, "yeni bağımsız işlem yeni anahtarla kabul edilir"
+    assert len(calls) == 2
