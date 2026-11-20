@@ -1,3 +1,4 @@
+import type { LessonView } from './education.generated';
 import { requestHeaders } from './request-headers';import type{GeneratedLesson}from'./lesson-api';
 const BASE=process.env.NEXT_PUBLIC_API_BASE_URL??process.env.NEXT_PUBLIC_TEACHERAI_API_BASE_URL??'http://localhost:8000/api/v1';
 async function request<T>(path:string,init:RequestInit={}):Promise<T>{const headers = await requestHeaders();if(!headers.Authorization)throw new Error('authentication_required');const response=await fetch(`${BASE}${path}`,{...init,headers:{'Content-Type':'application/json',...headers,...init.headers}});if(!response.ok)throw new Error('student_api_error');if(response.status===204)return undefined as T;return(await response.json()).data}
@@ -7,3 +8,5 @@ export interface Memory{student_id:string;exam_goal:string|null;topic_counts:Rec
 export const saveProfile=(display_name:string,exam_goal:string|null)=>request('/students/me/profile',{method:'PUT',body:JSON.stringify({display_name,exam_goal})});
 export const saveLesson=(result:GeneratedLesson)=>request('/students/me/lessons',{method:'POST',body:JSON.stringify({lesson_id:result.lesson.lesson_plan_id})});
 export const getHistory=()=>request<LessonHistory[]>('/students/me/history');export const getDashboard=()=>request<Dashboard>('/students/me/dashboard');export const getMemory=()=>request<Memory>('/students/me/memory');export const resetMemory=()=>request<void>('/students/me/memory',{method:'DELETE'});
+
+export const getLessonView = (id: string) => request<LessonView>('/lessons/' + encodeURIComponent(id) + '/v2', {cache: 'no-store'});

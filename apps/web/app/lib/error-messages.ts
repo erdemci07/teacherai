@@ -18,6 +18,7 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   invalid_lesson_plan: 'Çözüm taslağı güvenilir biçimde oluşmadı. Aynı soruyu yeniden inceleyebiliriz.',
   lesson_context_too_large: 'Bu sorunun içeriği oldukça yoğun olduğu için anlatımı hazırlayamadım. Yeniden incelemeyi deneyebilirsin.',
   math_verification_failed: 'Çözümü matematiksel kontrolden geçiremedim. Aynı soruyla yeniden deneyebiliriz.',
+  subject_generation_unavailable: 'Bu soruyu tanıdım ama bu alanda ders anlatımı henüz hazır değil. Şimdilik matematik ve geometri sorularında yardımcı olabilirim.',
   verification_contradiction: 'Bu çözüm matematiksel kontrolden geçmedi. Soruyu yeniden inceleyelim.',
   lesson_timeout: 'İnceleme beklediğimden uzun sürdü. Tekrar deneyebilir misin?',
   network_error: 'Şu anda TeacherAI’a ulaşamıyorum. İnternet bağlantını kontrol edip yeniden deneyebilirsin.',
