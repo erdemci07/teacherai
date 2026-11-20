@@ -43,6 +43,12 @@ class Accounting:
     tracker: object
     uid: str
     calls: int = 0
+    # TA-003: mantıksal istek başına çağrı tavanı (None: sınırsız değil, eski çağıranlar için tanımsız).
+    max_calls: int | None = None
+
+
+class ProviderCallBudgetExhausted(Exception):
+    """İstek başına sağlayıcı çağrısı tavanı doldu; yeni ücretli çağrı yapılmaz (503 / ai_call_budget_exhausted)."""
 
 
 @dataclass
@@ -59,8 +65,16 @@ class ProviderReply:
 _current = ContextVar("provider_accounting", default=None)
 
 
-def begin_accounting(request_id, settings, tracker, uid):
-    return _current.set(Accounting(request_id, settings, tracker, uid))
+def begin_accounting(request_id, settings, tracker, uid, max_calls=None):
+    return _current.set(Accounting(request_id, settings, tracker, uid, max_calls=max_calls))
+
+
+def calls_remaining() -> int | None:
+    """Bu istekte kalan sağlayıcı çağrısı hakkı; kapsam veya tavan yoksa None."""
+    scope = _current.get()
+    if scope is None or scope.max_calls is None:
+        return None
+    return max(0, scope.max_calls - scope.calls)
 
 
 def end_accounting(token):
@@ -122,10 +136,16 @@ def _price(event, settings):
     event["pricing_version"] = settings.pricing_version
 
 
-async def parse_response(client, operation, *, timeout: float | None = None, validate: Callable | None = None, **params):
+async def parse_response(client, operation, *, timeout: float | None = None, validate: Callable | None = None,
+                         purpose: str = "primary", **params):
     scope = _current.get()
     settings = scope.settings if scope else get_settings()
     operation = Operation(operation)
+    if scope and scope.max_calls is not None and scope.calls >= scope.max_calls:
+        logger.info(json.dumps({"event": "ai_call_budget_exhausted", "request_id": scope.request_id,
+                                "operation": operation, "purpose": purpose, "calls": scope.calls,
+                                "max_calls": scope.max_calls}, separators=(",", ":"), default=str))
+        raise ProviderCallBudgetExhausted
     limit = settings.max_output_tokens_by_operation[operation]
     effort = settings.reasoning_effort_by_operation.get(operation)
     if effort:
@@ -142,6 +162,7 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
         "event": "ai_usage",
         "request_id": scope.request_id if scope else None,
         "operation": operation,
+        "purpose": purpose,
         "provider": "openai",
         "model": params["model"],
         "retry_count": attempt,

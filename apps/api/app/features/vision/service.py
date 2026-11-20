@@ -1,16 +1,30 @@
-from starlette.concurrency import run_in_threadpool
-import io
 import base64
+import io
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from time import perf_counter
 from uuid import uuid4
 
-from fastapi import UploadFile
-from PIL import Image, ImageOps, UnidentifiedImageError
-from pillow_heif import register_heif_opener
-
+from apps.api.app.core.ai_outcomes import AIOutcomeError
+from apps.api.app.core.gateway import ProviderCallBudgetExhausted, calls_remaining
+from apps.api.app.core.usage import UsageLimitExceeded
+from apps.api.app.features.integrity.engine import (
+    EvaluationState,
+    apply_recheck,
+    evaluate,
+    mark_recheck_unavailable,
+    recheck_items,
+)
+from apps.api.app.features.integrity.image_quality import (
+    assess,
+    contrast_view,
+    region_crop,
+)
+from apps.api.app.features.integrity.observability import (
+    integrity_metrics,
+    recheck_prompt_items,
+)
 from apps.api.app.features.vision.exceptions import (
     ImageSanitizationError,
     ImageTooLargeError,
@@ -20,9 +34,17 @@ from apps.api.app.features.vision.exceptions import (
     VisionError,
 )
 from apps.api.app.features.vision.provider import VisionProvider
-from apps.api.app.features.vision.schemas import NormalizedImagePreview, VisionAnalysis, VisionProviderDiagnostics
+from apps.api.app.features.vision.schemas import (
+    NormalizedImagePreview,
+    VisionAnalysis,
+    VisionProviderDiagnostics,
+)
 from apps.api.app.features.vision.storage import TemporaryImageStorage
 from apps.api.app.features.vision.topic_normalization import normalize_topic_name
+from fastapi import UploadFile
+from PIL import Image, ImageOps, UnidentifiedImageError
+from pillow_heif import register_heif_opener
+from starlette.concurrency import run_in_threadpool
 
 logger = logging.getLogger(__name__)
 SUPPORTED_MEDIA_TYPES = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
@@ -37,6 +59,7 @@ SUPPORTED_EXTENSIONS = {
     ".heif": "image/heif",
 }
 MAX_IMAGE_PIXELS = 40_000_000
+MAX_VISION_SIDE = 2048
 PREPARED_IMAGE_TTL_MINUTES = 15
 
 register_heif_opener()
@@ -60,6 +83,7 @@ class PreparedImage:
     sanitization_used: bool
     sanitization_duration_ms: int
     expires_at: datetime
+    advisories: tuple[str, ...] = ()
 
 
 class VisionService:
@@ -69,11 +93,13 @@ class VisionService:
         storage: TemporaryImageStorage,
         max_upload_size_bytes: int,
         debug: bool,
+        recheck_limit: int = 0,
     ) -> None:
         self._provider = provider
         self._storage = storage
         self._max_upload_size_bytes = max_upload_size_bytes
         self._debug = debug
+        self._recheck_limit = max(0, min(2, recheck_limit))
 
     def diagnostics(self) -> VisionProviderDiagnostics:
         return VisionProviderDiagnostics.model_validate(self._provider.diagnostics())
@@ -134,13 +160,14 @@ class VisionService:
                 },
             )
             provider_result = await self._provider.analyze_image(prepared.content, prepared.media_type, resolved_request_id)
-            duration = round((perf_counter() - started) * 1000)
             analysis = provider_result.analysis.model_copy(
                 update={
                     "topic": normalize_topic_name(provider_result.analysis.topic) or "",
                     "subtopic": normalize_topic_name(provider_result.analysis.subtopic),
                 }
             )
+            integrity = await self._integrity(analysis, prepared, resolved_request_id)
+            duration = round((perf_counter() - started) * 1000)
             logger.info(
                 "Vision processing succeeded",
                 extra={
@@ -152,6 +179,7 @@ class VisionService:
                     "visual_relevance": analysis.visual_elements.visual_relevance,
                     "visual_relationship_count": len(analysis.visual_elements.relationships),
                     "uncertainty_count": len(analysis.ocr_uncertainties),
+                    **integrity_metrics(integrity),
                 },
             )
             return VisionAnalysis(
@@ -162,6 +190,8 @@ class VisionService:
                 processing_time_ms=duration,
                 normalized_preview_url=self._preview_data_url(prepared.content, prepared.media_type),
                 debug={"provider_response_id": provider_result.response_id} if self._debug and provider_result.response_id else None,
+                revision=1,
+                integrity=integrity,
             )
         except VisionError:
             logger.warning(
@@ -179,6 +209,45 @@ class VisionService:
             await self._storage.delete(temporary_path)
             if upload is not None:
                 await upload.close()
+
+    async def _integrity(self, analysis, prepared: PreparedImage, request_id: str):
+        """Belirlenimci karar; yalnızca kritik ve görsel olarak çözülebilir belirsizlikte tek yeniden okuma.
+
+        Görsel yalnızca bu istek kapsamında bellekte bulunur; yeniden okuma aynı istekte yapılır ve
+        kalıcı görsel saklanmaz. Her gerçek çağrı gateway, kota ve küresel bütçeden geçer.
+        """
+        limit = self._recheck_limit if analysis.is_valid_question else 0
+        state = EvaluationState(recheck_limit=limit, image=prepared.advisories)
+        report = evaluate(analysis, state)
+        if report.decision != "targeted_recheck":
+            return report
+        items = recheck_items(report)
+        remaining = calls_remaining()
+        if remaining is not None and remaining <= 0:
+            return mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
+        recheck = getattr(self._provider, "recheck", None)
+        if recheck is None or not items:
+            return mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
+        images = [(prepared.content, prepared.media_type)]
+        regions = [item.region for item in items if item.region is not None]
+        try:
+            if len(items) == 1 and regions:
+                images = [(region_crop(prepared.content, regions[0]), "image/png")]
+            if {"low_contrast", "underexposed", "possible_glare", "uneven_lighting"} & set(prepared.advisories):
+                images.append((contrast_view(images[0][0]), "image/png"))
+        except (OSError, ValueError):
+            images = [(prepared.content, prepared.media_type)]
+        try:
+            result = await recheck(images, recheck_prompt_items(items), request_id)
+        except (ProviderCallBudgetExhausted, UsageLimitExceeded):
+            return mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
+        except (AIOutcomeError, VisionError):
+            return mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
+        readings: dict[int, tuple[bool, str]] = {}
+        for reading in result.readings[: len(items)]:
+            if 1 <= reading.item <= len(items) and reading.item not in readings:
+                readings[reading.item] = (reading.legible, reading.reading)
+        return apply_recheck(analysis, report, items, readings, state)
 
     async def _read_limited(self, upload: UploadFile) -> bytes:
         content = bytearray()
@@ -228,11 +297,31 @@ class VisionService:
                 original_width, original_height = source.size
                 orientation = source.getexif().get(274, 1) if actual_format == "JPEG" else 1
                 icc_profile_present = bool(source.info.get("icc_profile"))
+                metadata_present = icc_profile_present or any(
+                    source.info.get(key) for key in ("exif", "xmp", "XML:com.adobe.xmp", "comment")
+                ) or bool(getattr(source, "text", None))
                 normalized = ImageOps.exif_transpose(source)
+                advisories: list[str] = ["orientation_corrected"] if orientation != 1 else []
+                # TA-003: sağlayıcının yüksek ayrıntı modu görüntüyü zaten 2048 px'e sığdırır; daha büyük
+                # gönderim yalnızca aktarım maliyeti ekler. Küçültme oranı korur ve LANCZOS kullanır.
+                if max(normalized.size) > MAX_VISION_SIDE:
+                    normalized = normalized.copy()
+                    # İnce kök/eksi/kesir çizgileri için LANCZOS korunur (test edildi). reducing_gap yalnızca çok
+                    # büyük görüntülerde (≥3 kat) önce hızlı tam sayılı azaltma yapar.
+                    normalized.thumbnail((MAX_VISION_SIDE, MAX_VISION_SIDE), Image.Resampling.LANCZOS, reducing_gap=3.0)
+                    advisories.append("downscaled")
+                has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
+                if has_alpha and not preview:
+                    # Saydam arka plandaki koyu yazı sağlayıcıda siyah zemine düşebilir; beyaza düzleştirilir.
+                    flattened = Image.new("RGB", normalized.size, "white")
+                    rgba = normalized.convert("RGBA")
+                    flattened.paste(rgba, mask=rgba.getchannel("A"))
+                    normalized = flattened
+                    advisories.append("transparency_flattened")
+                reencode = metadata_present or bool({"downscaled", "transparency_flattened"} & set(advisories))
                 output = io.BytesIO()
-                sanitization_used = actual_format in {"JPEG", "HEIF"} or preview
+                sanitization_used = actual_format in {"JPEG", "HEIF"} or preview or reencode
                 if preview and actual_format not in {"JPEG", "HEIF"}:
-                    has_alpha = normalized.mode in {"RGBA", "LA"} or (normalized.mode == "P" and "transparency" in normalized.info)
                     normalized.convert("RGBA" if has_alpha else "RGB").save(output, format="PNG", optimize=True)
                     media_type = "image/png"
                     suffix = "png"
@@ -241,16 +330,26 @@ class VisionService:
                     media_type = "image/jpeg"
                     suffix = "jpg"
                 elif actual_format == "PNG":
-                    output.write(content)
+                    if reencode:
+                        normalized.save(output, format="PNG")
+                    else:
+                        output.write(content)
                     media_type = "image/png"
                     suffix = "png"
                 else:
-                    output.write(content)
+                    if reencode:
+                        normalized.save(output, format="WEBP", lossless=True)
+                    else:
+                        output.write(content)
                     media_type = "image/webp"
                     suffix = "webp"
+                if metadata_present:
+                    advisories.append("metadata_removed")
                 sanitized = output.getvalue()
                 VisionService._verify_sanitized_output(sanitized, media_type)
                 width, height = normalized.size
+                if not preview:
+                    advisories.extend(assess(normalized))
                 return PreparedImage(
                     image_id=f"prepared_{uuid4().hex}",
                     content=sanitized,
@@ -268,6 +367,7 @@ class VisionService:
                     sanitization_used=sanitization_used,
                     sanitization_duration_ms=round((perf_counter() - sanitize_started) * 1000),
                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=PREPARED_IMAGE_TTL_MINUTES),
+                    advisories=tuple(dict.fromkeys(advisories)),
                 )
         except UnsupportedImageError:
             raise

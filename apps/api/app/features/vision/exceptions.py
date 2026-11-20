@@ -68,3 +68,27 @@ class InvalidProviderResponseError(VisionError):
     code = "invalid_provider_response"
     status_code = 502
     public_message = "Görsel analizi tamamlanamadı. Lütfen daha net bir görselle tekrar deneyin."
+
+
+class AnalysisUnavailableError(VisionError):
+    code = "analysis_unavailable"
+    status_code = 404
+    public_message = "Bu soru analizi bulunamadı veya süresi doldu. Görseli yeniden gönderebilirsin."
+
+
+class StaleQuestionRevisionError(VisionError):
+    code = "stale_question_revision"
+    status_code = 409
+    public_message = "Soru bu arada güncellendi. Güncel hâliyle devam edelim."
+
+
+class ClarificationNotPendingError(VisionError):
+    code = "question_not_pending"
+    status_code = 409
+    public_message = "Bu soru için bekleyen bir netleştirme yok."
+
+
+class InvalidClarificationError(VisionError):
+    code = "invalid_clarification"
+    status_code = 422
+    public_message = "Bu seçim bu soru için geçerli değil."

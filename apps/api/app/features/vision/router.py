@@ -1,17 +1,20 @@
-from starlette.concurrency import run_in_threadpool
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Request, UploadFile
-
-from apps.api.app.core.dependencies import get_vision_service
-from apps.api.app.features.vision.schemas import NormalizedImagePreview, VisionAnalysis, VisionProviderDiagnostics
+from apps.api.app.core.admission import admitted
+from apps.api.app.core.dependencies import get_student_service, get_vision_service
+from apps.api.app.features.account.dependencies import active_user
+from apps.api.app.features.auth.schemas import AuthenticatedUser
+from apps.api.app.features.education.source import ClarificationRequest
+from apps.api.app.features.students.service import StudentService
+from apps.api.app.features.vision.schemas import (
+    NormalizedImagePreview,
+    VisionAnalysis,
+    VisionProviderDiagnostics,
+)
 from apps.api.app.features.vision.service import VisionService
 from apps.api.app.schemas.responses import ApiResponse
-
-from apps.api.app.core.admission import admitted
-from apps.api.app.features.auth.schemas import AuthenticatedUser
-from apps.api.app.features.students.service import StudentService
-from apps.api.app.core.dependencies import get_student_service
+from fastapi import APIRouter, Depends, File, Request, Response, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 router = APIRouter(prefix="/vision", tags=["vision"])
 
@@ -34,6 +37,24 @@ async def analyze_question_image(
     analysis = await service.analyze(image, request.state.request_id)
     if analysis.is_valid_question:
         await run_in_threadpool(students.save_analysis, user, analysis)
+    return ApiResponse(data=analysis)
+
+
+@router.post("/analyses/{analysis_id}/clarification", response_model=ApiResponse[VisionAnalysis])
+async def clarify_question(
+    analysis_id: str,
+    body: ClarificationRequest,
+    response: Response,
+    user: Annotated[AuthenticatedUser, Depends(active_user)],
+    students: Annotated[StudentService, Depends(get_student_service)],
+) -> ApiResponse[VisionAnalysis]:
+    """Öğrencinin tek bir belirsizlik için seçimi; yalnızca belirlenimci denetim yeniden çalışır.
+
+    Sağlayıcı çağrılmaz; bu nedenle ücretli kabul/kota gerekmez. Yazma, sahiplik, beklenen revizyon ve
+    hesap silme işaretini aynı Firestore işleminde denetler.
+    """
+    analysis = await run_in_threadpool(students.clarify, user, analysis_id, body)
+    response.headers["Cache-Control"] = "private, no-store"
     return ApiResponse(data=analysis)
 
 

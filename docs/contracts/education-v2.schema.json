@@ -1,5 +1,161 @@
 {
   "$defs": {
+    "Alternative": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "latex": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latex"
+        },
+        "origin": {
+          "enum": [
+            "vision",
+            "vision_recheck",
+            "deterministic"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "origin"
+      ],
+      "title": "Alternative",
+      "type": "object"
+    },
+    "AnswerChoice": {
+      "additionalProperties": false,
+      "description": "Etiket ile içerik arasındaki ilişki kaynak verisidir; sıraya göre yeniden etiketlenmez.",
+      "properties": {
+        "canonical": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "expression",
+            "number",
+            "text",
+            "statement_combination",
+            "visual",
+            "empty"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "label_origin": {
+          "enum": [
+            "printed",
+            "none"
+          ],
+          "title": "Label Origin",
+          "type": "string"
+        },
+        "latex": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latex"
+        },
+        "order": {
+          "maximum": 11,
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "statement_refs": {
+          "items": {
+            "pattern": "^[IVX]{1,4}$",
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Statement Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "order",
+        "label_origin",
+        "kind"
+      ],
+      "title": "AnswerChoice",
+      "type": "object"
+    },
     "BoardPanel": {
       "additionalProperties": false,
       "properties": {
@@ -176,6 +332,125 @@
       "title": "ChoiceAnswer",
       "type": "object"
     },
+    "ChoiceMatch": {
+      "additionalProperties": false,
+      "description": "Seçenek uzlaştırmasının açık kaydı. En yakın değer seçilmez; eşleşme yalnızca kesin eşdeğerliktir.",
+      "properties": {
+        "matched_labels": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Matched Labels",
+          "type": "array"
+        },
+        "provider_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Label"
+        },
+        "status": {
+          "enum": [
+            "matched",
+            "multiple_equivalent",
+            "no_match",
+            "choice_dependent",
+            "unsupported"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "value_origin": {
+          "enum": [
+            "independent",
+            "provider",
+            "none"
+          ],
+          "title": "Value Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "value_origin"
+      ],
+      "title": "ChoiceMatch",
+      "type": "object"
+    },
+    "ClarificationRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "from_revision": {
+          "minimum": 1,
+          "title": "From Revision",
+          "type": "integer"
+        },
+        "selection": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Selection",
+          "type": "string"
+        },
+        "uncertainty_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Uncertainty Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uncertainty_id",
+        "selection",
+        "from_revision"
+      ],
+      "title": "ClarificationRecord",
+      "type": "object"
+    },
+    "ClarificationRequest": {
+      "additionalProperties": false,
+      "description": "Öğrencinin tek bir belirsizlik için seçimi.\n\n``selection``: bir alternatifin kimliği, ilk okumayı onaylamak için ``recognized`` veya hiçbirinin\ndoğru olmadığını söylemek için ``none``. İstemci analiz içeriği veya doğrulama durumu gönderemez.",
+      "properties": {
+        "expected_revision": {
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Expected Revision",
+          "type": "integer"
+        },
+        "selection": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Selection",
+          "type": "string"
+        },
+        "uncertainty_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Uncertainty Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expected_revision",
+        "uncertainty_id",
+        "selection"
+      ],
+      "title": "ClarificationRequest",
+      "type": "object"
+    },
     "ContextValue": {
       "additionalProperties": false,
       "properties": {
@@ -202,8 +477,51 @@
       "title": "ContextValue",
       "type": "object"
     },
+    "Correction": {
+      "additionalProperties": false,
+      "description": "Öğrencinin onayladığı düzeltme. Bağımsız doğrulama değildir.",
+      "properties": {
+        "corrected": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Corrected",
+          "type": "string"
+        },
+        "element": {
+          "pattern": "^(stem|visual|expression:[0-9]{1,2}|choice:[A-Za-z0-9]{1,4}|statement:[IVX]{1,4})$",
+          "title": "Element",
+          "type": "string"
+        },
+        "from_revision": {
+          "minimum": 1,
+          "title": "From Revision",
+          "type": "integer"
+        },
+        "original": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Original",
+          "type": "string"
+        },
+        "uncertainty_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Uncertainty Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element",
+        "original",
+        "corrected",
+        "uncertainty_id",
+        "from_revision"
+      ],
+      "title": "Correction",
+      "type": "object"
+    },
     "EducationContext": {
       "additionalProperties": false,
+      "description": "Tek çözümlenmiş çalışma zamanı bağlamı; her alan kökenini taşır.",
       "properties": {
         "academic_year": {
           "anyOf": [
@@ -251,6 +569,17 @@
           "maxItems": 64,
           "title": "References",
           "type": "array"
+        },
+        "source_exam": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "stage": {
           "anyOf": [
@@ -580,6 +909,278 @@
       "title": "Grade",
       "type": "object"
     },
+    "IntegrityCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "clean",
+            "normalized_notation",
+            "decimal_comma_resolved",
+            "mixed_number_convention",
+            "unsupported_notation",
+            "invalid_structure",
+            "latex_exponent_scope",
+            "decimal_ambiguity",
+            "duplicate_expression",
+            "duplicate_choice_labels",
+            "missing_choice_label",
+            "unlabeled_choices",
+            "equivalent_choice_values",
+            "single_choice",
+            "missing_statements",
+            "duplicate_statement_labels",
+            "polarity_conflict",
+            "negation_present",
+            "missing_question_text",
+            "provider_uncertainty_material",
+            "provider_uncertainty_noncritical",
+            "equivalent_alternatives",
+            "alternative_not_applicable",
+            "legacy_uncertainty",
+            "multiple_questions",
+            "target_question_unclear",
+            "invalid_region_omitted",
+            "essential_visual_without_facts",
+            "recheck_confirmed",
+            "recheck_equivalent",
+            "recheck_disagreement",
+            "recheck_illegible",
+            "recheck_unavailable",
+            "recheck_budget_exhausted",
+            "student_selected",
+            "student_rejected",
+            "unsupported_subject",
+            "not_a_question",
+            "unreadable_source",
+            "incomplete_source"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "element": {
+          "anyOf": [
+            {
+              "pattern": "^(stem|visual|expression:[0-9]{1,2}|choice:[A-Za-z0-9]{1,4}|statement:[IVX]{1,4})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Element"
+        },
+        "impact": {
+          "enum": [
+            "noncritical",
+            "material",
+            "fatal"
+          ],
+          "title": "Impact",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "impact"
+      ],
+      "title": "IntegrityCheck",
+      "type": "object"
+    },
+    "IntegrityReport": {
+      "additionalProperties": false,
+      "description": "Sunucunun soru anlama kararı. Kaynak görselin doğru okunduğunu kanıtlamaz.",
+      "properties": {
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/IntegrityCheck"
+          },
+          "maxItems": 96,
+          "title": "Checks",
+          "type": "array"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/AnswerChoice"
+          },
+          "maxItems": 12,
+          "title": "Choices",
+          "type": "array"
+        },
+        "clarifications": {
+          "items": {
+            "$ref": "#/$defs/ClarificationRecord"
+          },
+          "maxItems": 16,
+          "title": "Clarifications",
+          "type": "array"
+        },
+        "corrections": {
+          "items": {
+            "$ref": "#/$defs/Correction"
+          },
+          "maxItems": 16,
+          "title": "Corrections",
+          "type": "array"
+        },
+        "decision": {
+          "enum": [
+            "ready",
+            "ready_with_noncritical_uncertainty",
+            "targeted_recheck",
+            "clarification_required",
+            "retake_required",
+            "incomplete",
+            "unreadable",
+            "no_question",
+            "unsupported_subject"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "expressions": {
+          "items": {
+            "$ref": "#/$defs/SourceExpression"
+          },
+          "maxItems": 64,
+          "title": "Expressions",
+          "type": "array"
+        },
+        "image": {
+          "items": {
+            "enum": [
+              "small_image",
+              "downscaled",
+              "low_contrast",
+              "underexposed",
+              "overexposed",
+              "possible_glare",
+              "possible_blur",
+              "possible_clipping",
+              "uneven_lighting",
+              "transparency_flattened",
+              "orientation_corrected",
+              "metadata_removed"
+            ],
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Image",
+          "type": "array"
+        },
+        "intent": {
+          "$ref": "#/$defs/QuestionIntent"
+        },
+        "recheck_limit": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Recheck Limit",
+          "type": "integer"
+        },
+        "rechecks_used": {
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Rechecks Used",
+          "type": "integer"
+        },
+        "recovery": {
+          "enum": [
+            "none",
+            "choose_alternative",
+            "retake",
+            "crop"
+          ],
+          "title": "Recovery",
+          "type": "string"
+        },
+        "revision": {
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "revision_origin": {
+          "enum": [
+            "vision",
+            "vision_recheck",
+            "student_clarification",
+            "legacy"
+          ],
+          "title": "Revision Origin",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        },
+        "subject_origin": {
+          "enum": [
+            "canonical_label",
+            "vision_math_gate",
+            "unknown"
+          ],
+          "title": "Subject Origin",
+          "type": "string"
+        },
+        "uncertainties": {
+          "items": {
+            "$ref": "#/$defs/SourceUncertainty"
+          },
+          "maxItems": 16,
+          "title": "Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "revision",
+        "revision_origin",
+        "decision",
+        "recovery",
+        "subject",
+        "subject_origin",
+        "intent",
+        "rechecks_used",
+        "recheck_limit"
+      ],
+      "title": "IntegrityReport",
+      "type": "object"
+    },
+    "IntentMarker": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "negation",
+            "polarity",
+            "extremum",
+            "quantifier",
+            "possibility",
+            "count",
+            "operation"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "marker": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Marker",
+          "type": "string"
+        }
+      },
+      "required": [
+        "marker",
+        "category"
+      ],
+      "title": "IntentMarker",
+      "type": "object"
+    },
     "LessonPlanV2": {
       "additionalProperties": false,
       "properties": {
@@ -600,11 +1201,48 @@
         "schema": {
           "$ref": "#/$defs/SchemaIdentity"
         },
+        "source_decision": {
+          "anyOf": [
+            {
+              "enum": [
+                "ready",
+                "ready_with_noncritical_uncertainty",
+                "targeted_recheck",
+                "clarification_required",
+                "retake_required",
+                "incomplete",
+                "unreadable",
+                "no_question",
+                "unsupported_subject"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Decision"
+        },
         "source_id": {
           "maxLength": 256,
           "minLength": 1,
           "title": "Source Id",
           "type": "string"
+        },
+        "source_revision": {
+          "anyOf": [
+            {
+              "maximum": 64,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Revision"
         },
         "verification": {
           "$ref": "#/$defs/VerificationReport"
@@ -683,6 +1321,49 @@
         "description"
       ],
       "title": "MathAnswer",
+      "type": "object"
+    },
+    "NormalizationNote": {
+      "additionalProperties": false,
+      "description": "Anlamı değiştirmeyen belirlenimci dönüşüm. Özgün okuma ayrıca saklanır.",
+      "properties": {
+        "normalized": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Normalized",
+          "type": "string"
+        },
+        "original": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Original",
+          "type": "string"
+        },
+        "rule": {
+          "enum": [
+            "unicode_minus",
+            "dash_as_minus",
+            "multiplication_sign",
+            "division_sign",
+            "superscript_digit",
+            "latex_spacing",
+            "latex_fraction_variant",
+            "decimal_comma",
+            "whitespace",
+            "unicode_relation",
+            "unicode_root",
+            "unicode_constant"
+          ],
+          "title": "Rule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "original",
+        "normalized"
+      ],
+      "title": "NormalizationNote",
       "type": "object"
     },
     "NumberAnswer": {
@@ -849,6 +1530,72 @@
       "title": "QuantityAnswer",
       "type": "object"
     },
+    "QuestionIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_strategy": {
+          "enum": [
+            "solve_first_hidden",
+            "derive_then_select",
+            "choice_dependent",
+            "open"
+          ],
+          "title": "Answer Strategy",
+          "type": "string"
+        },
+        "choice_dependent": {
+          "title": "Choice Dependent",
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "find_value",
+            "find_variable",
+            "simplify",
+            "compare",
+            "identify_true",
+            "identify_false",
+            "find_all_valid",
+            "interpret_graph",
+            "interpret_table",
+            "identify_shape",
+            "determine_range",
+            "find_minimum",
+            "find_maximum",
+            "determine_possible",
+            "determine_impossible",
+            "count",
+            "unknown"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "markers": {
+          "items": {
+            "$ref": "#/$defs/IntentMarker"
+          },
+          "maxItems": 24,
+          "title": "Markers",
+          "type": "array"
+        },
+        "statement_labels": {
+          "items": {
+            "pattern": "^[IVX]{1,4}$",
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Statement Labels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "choice_dependent",
+        "answer_strategy"
+      ],
+      "title": "QuestionIntent",
+      "type": "object"
+    },
     "QuestionUnderstanding": {
       "additionalProperties": false,
       "properties": {
@@ -885,6 +1632,17 @@
           "title": "Facts",
           "type": "array"
         },
+        "integrity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegrityReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "quantities": {
           "items": {
             "$ref": "#/$defs/Quantity"
@@ -920,6 +1678,20 @@
           ],
           "default": null,
           "title": "Requested"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "maximum": 64,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
         },
         "secondary_subjects": {
           "items": {
@@ -1021,6 +1793,7 @@
     },
     "SchemaIdentity": {
       "additionalProperties": false,
+      "description": "2.1.0 (TA-003) yalnızca isteğe bağlı kaynak revizyonu alanlarını ekler; 2.0.0 belgeleri geçerlidir.",
       "properties": {
         "name": {
           "const": "teacherai.lesson_plan",
@@ -1028,7 +1801,10 @@
           "type": "string"
         },
         "version": {
-          "const": "2.0.0",
+          "enum": [
+            "2.0.0",
+            "2.1.0"
+          ],
           "title": "Version",
           "type": "string"
         }
@@ -1038,6 +1814,343 @@
         "version"
       ],
       "title": "SchemaIdentity",
+      "type": "object"
+    },
+    "SourceExpression": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "index": {
+          "maximum": 63,
+          "minimum": 0,
+          "title": "Index",
+          "type": "integer"
+        },
+        "latex": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latex"
+        },
+        "normalizations": {
+          "items": {
+            "$ref": "#/$defs/NormalizationNote"
+          },
+          "maxItems": 16,
+          "title": "Normalizations",
+          "type": "array"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "role": {
+          "enum": [
+            "given",
+            "requested",
+            "answer_choice",
+            "premise",
+            "unknown"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "parsed",
+            "unsupported",
+            "invalid"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "index",
+        "role",
+        "source",
+        "status"
+      ],
+      "title": "SourceExpression",
+      "type": "object"
+    },
+    "SourceRegion": {
+      "additionalProperties": false,
+      "description": "Görsel üzerinde 0–1 aralığında normalleştirilmiş bölge. Sağlayıcı önerisidir, doğrulanmış gerçek değildir.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "question",
+            "expression",
+            "choices",
+            "diagram",
+            "graph",
+            "table",
+            "annotation",
+            "other_question"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "x0": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X0",
+          "type": "number"
+        },
+        "x1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X1",
+          "type": "number"
+        },
+        "y0": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y0",
+          "type": "number"
+        },
+        "y1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y1",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "x0",
+        "y0",
+        "x1",
+        "y1"
+      ],
+      "title": "SourceRegion",
+      "type": "object"
+    },
+    "SourceUncertainty": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/Alternative"
+          },
+          "maxItems": 4,
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "category": {
+          "enum": [
+            "symbol",
+            "sign",
+            "grouping",
+            "radical_scope",
+            "fraction_scope",
+            "exponent_scope",
+            "subscript",
+            "decimal",
+            "text",
+            "negation",
+            "answer_choice",
+            "diagram",
+            "graph",
+            "table",
+            "quantity",
+            "unit",
+            "source_selection"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "element": {
+          "anyOf": [
+            {
+              "pattern": "^(stem|visual|expression:[0-9]{1,2}|choice:[A-Za-z0-9]{1,4}|statement:[IVX]{1,4})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Element"
+        },
+        "evidence": {
+          "items": {
+            "enum": [
+              "clean",
+              "normalized_notation",
+              "decimal_comma_resolved",
+              "mixed_number_convention",
+              "unsupported_notation",
+              "invalid_structure",
+              "latex_exponent_scope",
+              "decimal_ambiguity",
+              "duplicate_expression",
+              "duplicate_choice_labels",
+              "missing_choice_label",
+              "unlabeled_choices",
+              "equivalent_choice_values",
+              "single_choice",
+              "missing_statements",
+              "duplicate_statement_labels",
+              "polarity_conflict",
+              "negation_present",
+              "missing_question_text",
+              "provider_uncertainty_material",
+              "provider_uncertainty_noncritical",
+              "equivalent_alternatives",
+              "alternative_not_applicable",
+              "legacy_uncertainty",
+              "multiple_questions",
+              "target_question_unclear",
+              "invalid_region_omitted",
+              "essential_visual_without_facts",
+              "recheck_confirmed",
+              "recheck_equivalent",
+              "recheck_disagreement",
+              "recheck_illegible",
+              "recheck_unavailable",
+              "recheck_budget_exhausted",
+              "student_selected",
+              "student_rejected",
+              "unsupported_subject",
+              "not_a_question",
+              "unreadable_source",
+              "incomplete_source"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "impact": {
+          "enum": [
+            "noncritical",
+            "material",
+            "fatal"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "origin": {
+          "enum": [
+            "vision",
+            "vision_recheck",
+            "deterministic",
+            "legacy_text",
+            "student"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "recognized": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recognized"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRegion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "resolution": {
+          "enum": [
+            "unresolved",
+            "resolved_locally",
+            "confirmed_by_recheck",
+            "resolved_by_student",
+            "rejected_by_student"
+          ],
+          "title": "Resolution",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "impact",
+        "resolution",
+        "origin"
+      ],
+      "title": "SourceUncertainty",
       "type": "object"
     },
     "Subject": {

@@ -1,8 +1,10 @@
-from apps.api.app.features.interactions.schemas import InteractionEvent
 from uuid import uuid4
+
+from apps.api.app.features.interactions.schemas import InteractionEvent
 from apps.api.app.features.memory.engine import MemoryEngine
+
 from .repository import StudentRepository
-from .schemas import StudentProfile, LessonRecord, DashboardSummary
+from .schemas import DashboardSummary, LessonRecord, StudentProfile
 
 
 class StudentService:
@@ -63,6 +65,53 @@ class StudentService:
             update={"normalized_preview_url": None, "debug": None}
         )
         self.repository.save_analysis(user.uid, clean)
+
+    def clarify(self, user, analysis_id, request):
+        """Öğrenci seçimini yeni revizyon olarak işler. Sağlayıcı çağrısı yapmaz.
+
+        Aynı isteğin ağ yeniden denemesi güncel revizyonu değiştirmeden döndürür; farklı bir seçimle
+        gelen eski revizyon 409 alır.
+        """
+        from apps.api.app.features.integrity.engine import (
+            ClarificationError,
+            apply_clarification,
+        )
+        from apps.api.app.features.vision.exceptions import (
+            AnalysisUnavailableError,
+            ClarificationNotPendingError,
+            InvalidClarificationError,
+            StaleQuestionRevisionError,
+        )
+
+        if not analysis_id or len(analysis_id) > 128 or "/" in analysis_id:
+            raise AnalysisUnavailableError
+
+        def mutate(current):
+            report = current.integrity
+            if report is None:
+                raise ClarificationNotPendingError
+            last = report.clarifications[-1] if report.clarifications else None
+            if (
+                last is not None
+                and current.revision == request.expected_revision + 1
+                and last.from_revision == request.expected_revision
+                and last.uncertainty_id == request.uncertainty_id
+                and last.selection == request.selection
+            ):
+                return None
+            if current.revision != request.expected_revision:
+                raise StaleQuestionRevisionError
+            try:
+                return apply_clarification(current, request.uncertainty_id, request.selection)
+            except ClarificationError as exc:
+                if str(exc) == "not_pending":
+                    raise ClarificationNotPendingError from exc
+                raise InvalidClarificationError from exc
+
+        updated = self.repository.update_analysis(user.uid, analysis_id, mutate)
+        if updated is None:
+            raise AnalysisUnavailableError
+        return updated
 
     def source_analysis(self, user, analysis_id):
         from fastapi import HTTPException

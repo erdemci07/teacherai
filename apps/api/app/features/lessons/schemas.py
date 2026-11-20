@@ -1,6 +1,8 @@
-from typing import Literal, Annotated
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Annotated, Literal
+
 from apps.api.app.features.vision.schemas import VisionAnalysis
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
 
 class Expression(BaseModel):
     model_config=ConfigDict(extra="forbid")
@@ -86,3 +88,5 @@ class LessonPlan(BaseModel):
 class GenerateLessonRequest(BaseModel):
     analysis: VisionAnalysis | None = None
     analysis_id: str | None = Field(None, min_length=1, max_length=128)
+    # TA-003: istemcinin gördüğü soru revizyonu. Verilirse sunucudaki güncel revizyonla eşleşmelidir.
+    expected_revision: int | None = Field(None, ge=1, le=64)

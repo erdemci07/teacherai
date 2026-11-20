@@ -4,6 +4,10 @@ Bu dizin, mevcut modeller (`gpt-4.1-mini`) ile aday model (`gpt-6-luna`) arasın
 
 > **Durum (20 Kasım 2026):** 100 soruluk özgün öğretmen veri seti **henüz yoktur**. `datasets/original-100.jsonl` boş bir şablondur. 10 öğelik `datasets/smoke.jsonl` tamamen sentetiktir ve yalnızca hattın çalıştığını sınar. Model kalitesini ölçmez. Bu görevde ücretli koşu yapılmadı. Tam set ve insan değerlendirmesi olmadan model geçişi onaylanmaz.
 
+## Soru bütünlüğü matrisi (TA-003)
+
+`python -m scripts.integrity_matrix --check` 49 sentetik Vision yanıt senaryosunu ve 10 seçenek uzlaştırma vakasını gerçek `VisionService`, `OpenAIVisionProvider`, gateway ve çağrı tavanından geçirir. OpenAI istemcisi ağsız bir sahtedir. Matris; yanlış engelleme, geçirilen kritik belirsizlik, otomatik kaynak değişikliği, yanlış seçenek uzlaştırması ve çağrı sınırı için fikstür kabul ölçütlerini denetler. Gerçek model tanıma doğruluğunu ölçmez. Fikstürler `apps/api/tests/fixtures/integrity/scenarios.json` içindedir ve model değerlendirme veri setlerinden ayrıdır.
+
 ## Komutlar
 
 ```sh

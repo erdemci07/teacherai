@@ -1,20 +1,26 @@
-from fastapi import HTTPException
-from starlette.concurrency import run_in_threadpool
 import logging
 from time import perf_counter
 from uuid import uuid4
 
+from fastapi import HTTPException
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
-from ..education.math_adapter import require_math_question, validated_math_lesson
-from .exceptions import MathVerificationError, VerificationContradictionError
-from .provider import LessonProvider
-from .schemas import LessonPlan
 from ..board.planner import BoardPlanner
 from ..board.schemas import BoardPlan
+from ..education.domain import EducationContext
+from ..education.math_adapter import (
+    require_math_question,
+    resolved_context,
+    validated_math_lesson,
+    with_integrity,
+)
 from ..mathai.schemas import VerificationResult
 from ..mathai.service import MathAIService
 from ..vision.schemas import VisionAnalysis
+from .exceptions import MathVerificationError, VerificationContradictionError
+from .provider import LessonProvider
+from .schemas import LessonPlan
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +31,9 @@ class GeneratedLesson(BaseModel):
     board: BoardPlan
     correction_attempted: bool = False
     total_processing_ms: int
+    # TA-003: üretim anındaki tek çözümlenmiş eğitim bağlamı. Eski kayıtlarda yoktur ve geriye dönük
+    # olarak öğrencinin bugünkü profilinden doldurulmaz.
+    education_context: EducationContext | None = None
 
 
 class LessonService:
@@ -35,7 +44,9 @@ class LessonService:
 
     async def generate(self, analysis: VisionAnalysis, teaching_context=None, request_id: str | None = None) -> GeneratedLesson:
         resolved_request_id = request_id or analysis.request_id
-        require_math_question(analysis)
+        analysis = with_integrity(analysis)
+        question = require_math_question(analysis)
+        education_context = resolved_context(question, teaching_context)
 
         started = perf_counter()
         correction = False
@@ -73,7 +84,7 @@ class LessonService:
                 raise VerificationContradictionError
 
         board_started = perf_counter()
-        artifact = validated_math_lesson(plan, verification)
+        artifact = validated_math_lesson(plan, verification, education_context)
         board = self.board_planner.create(plan, verification, artifact)
         logger.info(
             "Lesson board created",
@@ -101,6 +112,7 @@ class LessonService:
             board=board,
             correction_attempted=correction,
             total_processing_ms=analysis.processing_time_ms + duration,
+            education_context=education_context,
         )
 
     async def _plan(self, analysis, feedback, teaching_context=None, request_id: str | None = None):

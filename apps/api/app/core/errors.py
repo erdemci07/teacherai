@@ -1,29 +1,36 @@
 import logging
 from uuid import uuid4
 
+from apps.api.app.core.ai_outcomes import AIOutcomeError
+from apps.api.app.core.gateway import ProviderCallBudgetExhausted
+from apps.api.app.core.usage import (
+    DuplicateRequest,
+    GlobalBudgetExhausted,
+    UsageLimitExceeded,
+)
+from apps.api.app.features.account.guard import AccountDeletionInProgress
+from apps.api.app.features.account.service import (
+    DeletionUnavailable,
+    ReauthenticationRequired,
+)
+from apps.api.app.features.auth.dependencies import AuthenticationRequired
+from apps.api.app.features.interactions.exceptions import InteractionError
+from apps.api.app.features.lessons.exceptions import LessonError
+from apps.api.app.features.shares.exceptions import ShareError
+from apps.api.app.features.vision.exceptions import VisionError
+from apps.api.app.schemas.responses import ErrorResponse
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from apps.api.app.schemas.responses import ErrorResponse
-from apps.api.app.features.vision.exceptions import VisionError
-from apps.api.app.features.lessons.exceptions import LessonError
-from apps.api.app.features.interactions.exceptions import InteractionError
-from apps.api.app.features.shares.exceptions import ShareError
-from apps.api.app.features.auth.dependencies import AuthenticationRequired
-from apps.api.app.core.usage import DuplicateRequest, GlobalBudgetExhausted, UsageLimitExceeded
-from apps.api.app.core.ai_outcomes import AIOutcomeError
-from apps.api.app.features.account.guard import AccountDeletionInProgress
-from apps.api.app.features.account.service import DeletionUnavailable, ReauthenticationRequired
-
 logger = logging.getLogger(__name__)
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    from fastapi.exceptions import RequestValidationError
     from google.api_core.exceptions import GoogleAPICallError, RetryError
     from google.auth.exceptions import GoogleAuthError
-    from fastapi.exceptions import RequestValidationError
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request, exc):
@@ -42,6 +49,10 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(GlobalBudgetExhausted)
     async def global_budget_handler(request: Request, exc: GlobalBudgetExhausted) -> JSONResponse:
         return JSONResponse(status_code=503, content=ErrorResponse(error="ai_global_budget_exhausted", detail="Öğretmen servisi bugünlük kapasitesine ulaştı. Lütfen daha sonra tekrar dene.", request_id=getattr(request.state, "request_id", None)).model_dump())
+
+    @app.exception_handler(ProviderCallBudgetExhausted)
+    async def call_budget_handler(request: Request, exc: ProviderCallBudgetExhausted) -> JSONResponse:
+        return JSONResponse(status_code=503, content=ErrorResponse(error="ai_call_budget_exhausted", detail="Bu istek için ek inceleme hakkı doldu; yeni ücretli çağrı yapılmadı.", request_id=getattr(request.state, "request_id", None)).model_dump())
 
     @app.exception_handler(UsageLimitExceeded)
     async def usage_handler(request: Request, exc: UsageLimitExceeded) -> JSONResponse:

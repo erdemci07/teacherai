@@ -40,6 +40,7 @@ jobs:
       - run: python -m ruff check apps/api scripts
       - run: python -m scripts.evaluate_models validate
       - run: python -m scripts.education_contracts --check
+      - run: python -m scripts.integrity_matrix --check
       - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0 (node24)
         with:
           distribution: temurin

@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from apps.api.app.features.vision.schemas import VisionAnalysis
+
 from ..education.policy import TeachingPolicy
+from ..integrity.engine import symbols_of
 from ..memory.schemas import TeachingContext
 
 CompactionLevel = Literal["normal", "emergency"]
 
-CORE_TEXT_LIMIT = 3500
 VISUAL_TEXT_LIMIT = 700
 TEACHING_TEXT_LIMIT = 180
 
@@ -47,6 +48,7 @@ def build_lesson_generation_context(
         _limit_text(analysis.exam_context, TEACHING_TEXT_LIMIT),
     )
     visual = analysis.visual_elements
+    essential = visual.visual_relevance == "essential"
     original_visual_count = len(visual.relevant_visual_facts) + len(visual.relationships)
     visual_fact_limit = 8 if level == "normal" else 3
     relationship_limit = 10 if level == "normal" else 5
@@ -65,24 +67,33 @@ def build_lesson_generation_context(
                 )
                 if present
             ],
-            "relevant_visual_facts": _bounded_items(visual.relevant_visual_facts, visual_fact_limit, VISUAL_TEXT_LIMIT),
-            "relationships": _bounded_items(visual.relationships, relationship_limit, VISUAL_TEXT_LIMIT),
+            # TA-003: Görsel çözüm için zorunluysa olgu ve ilişkiler cevabı belirler; sayıları veya metinleri
+            # kırpılmaz. Sığmazsa sağlayıcı bütçesi kontrollü bir kurtarma hatası üretir.
+            "relevant_visual_facts": list(visual.relevant_visual_facts) if essential else _bounded_items(visual.relevant_visual_facts, visual_fact_limit, VISUAL_TEXT_LIMIT),
+            "relationships": list(visual.relationships) if essential else _bounded_items(visual.relationships, relationship_limit, VISUAL_TEXT_LIMIT),
             "description": _limit_text(visual.description, VISUAL_TEXT_LIMIT) if level == "normal" and visual.visual_relevance == "essential" and not visual.relationships else None,
         }
     )
 
+    strategy = answer_strategy(analysis)
+    hidden = strategy == "solve_first_hidden"
+    # TA-003: Soru metni, ifadeler, seçenekler ve öncüller karakter dilimlemeyle kısaltılmaz; yalnızca
+    # boşluk normalleşir. İsteğe bağlı açıklamalar (belirsizlik notları, görsel betimleme) sıkıştırılabilir.
     problem = _without_empty(
         {
-            "question_text": _limit_text(analysis.question_text, CORE_TEXT_LIMIT if level == "normal" else 2400),
+            "question_text": " ".join((analysis.question_text or "").split()),
             "topic": analysis.topic,
             "subtopic": analysis.subtopic,
             "exam_context": analysis.exam_context,
             "question_type": analysis.question_type,
             "difficulty": analysis.difficulty,
-            "answer_choices": _bounded_items(analysis.answer_choices, 8, 240),
-            "mathematical_expressions": _bounded_items(analysis.mathematical_expressions, 32, 300),
+            "answer_choices": None if hidden else list(analysis.answer_choices),
+            "answer_choice_count": len(analysis.answer_choices) if hidden else None,
+            "statements": list(getattr(getattr(analysis, "source", None), "statements", []) or []),
+            "mathematical_expressions": list(analysis.mathematical_expressions),
             "ocr_uncertainties": _bounded_items(analysis.ocr_uncertainties, uncertainty_limit, 240),
             "visual_context": visual_payload,
+            "question_integrity": _integrity_payload(analysis, strategy),
         }
     )
 
@@ -110,6 +121,45 @@ def build_lesson_generation_context(
             teaching_context_included="teaching_context" in payload,
         ),
     )
+
+
+def answer_strategy(analysis: VisionAnalysis) -> str | None:
+    """Seçeneklerin ders bağlamına nasıl gireceği.
+
+    ``solve_first_hidden`` yalnızca amaç bir değer bulmaksa, seçenekler sayı/ifadeyse ve kaynakta tek
+    değişkenli tek bir denklem varsa uygulanır; böylece MathAI sonucu bağımsız hesaplayıp etiketi
+    sonradan belirleyebilir. Diğer durumlarda seçenekler korunur.
+    """
+    integrity = analysis.integrity
+    if integrity is None:
+        return None
+    strategy = integrity.intent.answer_strategy
+    if strategy != "solve_first_hidden":
+        return strategy
+    equations = [
+        item for item in integrity.expressions
+        if item.role == "given" and item.status == "parsed" and item.canonical and item.canonical.count(" = ") == 1
+        and not any(op in item.canonical for op in ("<", ">", "!="))
+    ]
+    if len(equations) == 1 and len(symbols_of(equations[0])) == 1:
+        return strategy
+    return "derive_then_select"
+
+
+def _integrity_payload(analysis: VisionAnalysis, strategy: str | None) -> dict[str, Any] | None:
+    integrity = analysis.integrity
+    if integrity is None:
+        return None
+    return _without_empty({
+        "source_revision": analysis.revision,
+        "intent": integrity.intent.kind,
+        "answer_strategy": strategy,
+        "intent_markers": [marker.marker for marker in integrity.intent.markers],
+        "statement_labels": list(integrity.intent.statement_labels),
+        "confirmed_corrections": [
+            {"element": item.element, "original": item.original, "corrected": item.corrected} for item in integrity.corrections
+        ],
+    })
 
 
 def _compact_teaching_context(teaching_context: Any, level: CompactionLevel) -> dict[str, Any] | None:

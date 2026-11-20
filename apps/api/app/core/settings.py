@@ -1,16 +1,14 @@
-from functools import lru_cache
-from typing import Annotated, Literal
 import json
 import logging
-from urllib.parse import urlsplit
-
+from functools import lru_cache
 from pathlib import Path
+from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 from .operations import DEFAULT_LIMITS, Operation, validate_effort
-
 
 Price = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 
@@ -88,6 +86,12 @@ class Settings(BaseSettings):
     global_daily_paid_operations: int = Field(2000, ge=0)
     global_daily_provider_calls: int = Field(4000, ge=0)
     global_daily_output_tokens: int = Field(20_000_000, ge=0)
+    # TA-003: mantıksal istek başına gerçek sağlayıcı çağrısı tavanı. Yeniden denemeler çarpılmaz.
+    # analyze = 1 ilk okuma + vision_max_rechecks hedefli yeniden okuma; 0 ek okumayı kapatır.
+    vision_max_rechecks: int = Field(1, ge=0, le=2)
+    # generate = ilk ders + en çok bir düzeltme + en çok bir bağlam yeniden denemesi, toplamda.
+    lesson_max_provider_calls: int = Field(3, ge=1, le=4)
+    interaction_max_provider_calls: int = Field(1, ge=1, le=2)
     usage_timeout_seconds: float = Field(5, gt=0, le=30)
     usage_transaction_attempts: int = Field(5, ge=1, le=10)
     ai_enabled: bool = True
@@ -112,6 +116,14 @@ class Settings(BaseSettings):
         for op, effort in self.reasoning_effort_by_operation.items():
             validate_effort(models[op], effort)
         return self
+
+    def provider_call_budget(self, activity: str) -> int | None:
+        """Kabul edilen HTTP işleminin en çok kaç gerçek sağlayıcı çağrısı yapabileceği."""
+        return {
+            "analyze": 1 + self.vision_max_rechecks,
+            "generate": self.lesson_max_provider_calls,
+            "interact": self.interaction_max_provider_calls,
+        }.get(activity)
 
     app_check_mode: Literal["off", "monitor", "enforce"] = "off"
     pricing_version: str | None = None

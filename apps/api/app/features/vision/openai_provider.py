@@ -1,14 +1,24 @@
-from fastapi import HTTPException
-from apps.api.app.core.usage import UsageLimitExceeded
-from apps.api.app.core.ai_outcomes import AIOutcomeError
-from apps.api.app.features.account.guard import AccountDeletionInProgress
-from apps.api.app.core.gateway import parse_response
 import asyncio
 import base64
 import logging
 from pathlib import Path
 from time import perf_counter
 
+from apps.api.app.core.ai_outcomes import AIOutcomeError
+from apps.api.app.core.gateway import ProviderCallBudgetExhausted, parse_response
+from apps.api.app.core.usage import UsageLimitExceeded
+from apps.api.app.features.account.guard import AccountDeletionInProgress
+from apps.api.app.features.vision.exceptions import (
+    InvalidProviderResponseError,
+    ProviderAuthenticationError,
+    ProviderConfigurationError,
+    ProviderRateLimitError,
+    ProviderTimeoutError,
+    ProviderUnavailableError,
+)
+from apps.api.app.features.vision.provider import ProviderResult
+from apps.api.app.features.vision.schemas import RecheckResponse, VisionProviderAnalysis
+from fastapi import HTTPException
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -19,17 +29,6 @@ from openai import (
     RateLimitError,
 )
 from pydantic import ValidationError
-
-from apps.api.app.features.vision.exceptions import (
-    InvalidProviderResponseError,
-    ProviderAuthenticationError,
-    ProviderConfigurationError,
-    ProviderRateLimitError,
-    ProviderTimeoutError,
-    ProviderUnavailableError,
-)
-from apps.api.app.features.vision.provider import ProviderResult
-from apps.api.app.features.vision.schemas import VisionProviderAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -45,32 +44,44 @@ class OpenAIVisionProvider:
         self.model = model
         self._timeout_seconds = timeout_seconds
         self._prompt = (Path(__file__).parent / "prompts" / "question_analysis.txt").read_text(encoding="utf-8")
+        self._recheck_prompt = (Path(__file__).parent / "prompts" / "targeted_recheck.txt").read_text(encoding="utf-8")
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
+        content = [
+            {"type": "input_text", "text": self._prompt},
+            {"type": "input_image", "image_url": self._data_url(image, media_type), "detail": "high"},
+        ]
+        response = await self._call(content, VisionProviderAnalysis, "vision.initial", request_id)
+        # Şema doğrulaması gateway'de yapılır; burada yalnız doğrulanmış çıktı vardır.
+        return ProviderResult(analysis=response.output_parsed, provider=self.name, model=self._model, response_id=response.id)
+
+    async def recheck(self, images: list[tuple[bytes, str]], items: str, request_id: str | None = None) -> RecheckResponse:
+        """Belirsiz parçaları hedefli olarak yeniden okur. Aynı gateway, kota ve bütçe sınırından geçer."""
+        content = [{"type": "input_text", "text": f"{self._recheck_prompt}\n\n{items}"}]
+        content.extend({"type": "input_image", "image_url": self._data_url(data, kind), "detail": "high"} for data, kind in images[:2])
+        response = await self._call(content, RecheckResponse, "vision.recheck", request_id)
+        return response.output_parsed
+
+    @staticmethod
+    def _data_url(image: bytes, media_type: str) -> str:
+        return f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
+
+    async def _call(self, content, text_format, purpose: str, request_id: str | None):
         started = perf_counter()
         if not self._api_key:
             error = ProviderConfigurationError()
             self._log_failure(error, request_id, started)
             raise error
-
-        image_url = f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
         client = (self._client_factory or AsyncOpenAI)(api_key=self._api_key, timeout=self._timeout_seconds, max_retries=0)
         try:
-            response = await parse_response(
+            return await parse_response(
                 client,
                 "vision",
                 timeout=self._timeout_seconds + 2,
+                purpose=purpose,
                 model=self._model,
-                input=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "input_text", "text": self._prompt},
-                            {"type": "input_image", "image_url": image_url, "detail": "high"},
-                        ],
-                    }
-                ],
-                text_format=VisionProviderAnalysis,
+                input=[{"role": "user", "content": content}],
+                text_format=text_format,
             )
         except AuthenticationError as exc:
             self._log_failure(exc, request_id, started)
@@ -99,18 +110,13 @@ class OpenAIVisionProvider:
         except ValidationError as exc:
             self._log_failure(exc, request_id, started)
             raise InvalidProviderResponseError from exc
-        except (UsageLimitExceeded, HTTPException, AIOutcomeError, AccountDeletionInProgress):
+        except (UsageLimitExceeded, HTTPException, AIOutcomeError, AccountDeletionInProgress, ProviderCallBudgetExhausted):
             raise
         except Exception as exc:
             self._log_failure(exc, request_id, started)
             raise ProviderUnavailableError from exc
-
         finally:
             await client.close()
-
-        # Şema doğrulaması gateway'de yapılır; burada yalnız doğrulanmış çıktı vardır.
-        analysis = response.output_parsed
-        return ProviderResult(analysis=analysis, provider=self.name, model=self._model, response_id=response.id)
 
     def diagnostics(self) -> dict[str, str | bool]:
         return {"provider": self.name, "configured": bool(self._api_key), "model": self._model}
