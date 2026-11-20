@@ -1,0 +1,1339 @@
+{
+  "$defs": {
+    "BoardPanel": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "title": "Blocks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocks"
+      ],
+      "title": "BoardPanel",
+      "type": "object"
+    },
+    "CalculationBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "expression": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Expression",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "calculation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        },
+        "result": {
+          "discriminator": {
+            "mapping": {
+              "choice": "#/$defs/ChoiceAnswer",
+              "math": "#/$defs/MathAnswer",
+              "number": "#/$defs/NumberAnswer",
+              "quantity": "#/$defs/QuantityAnswer",
+              "table": "#/$defs/TableAnswer",
+              "text": "#/$defs/TextAnswer"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MathAnswer"
+            },
+            {
+              "$ref": "#/$defs/NumberAnswer"
+            },
+            {
+              "$ref": "#/$defs/QuantityAnswer"
+            },
+            {
+              "$ref": "#/$defs/ChoiceAnswer"
+            },
+            {
+              "$ref": "#/$defs/TextAnswer"
+            },
+            {
+              "$ref": "#/$defs/TableAnswer"
+            }
+          ],
+          "title": "Result"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "expression",
+        "result"
+      ],
+      "title": "CalculationBlock",
+      "type": "object"
+    },
+    "Capabilities": {
+      "additionalProperties": false,
+      "properties": {
+        "generation": {
+          "title": "Generation",
+          "type": "boolean"
+        },
+        "practice": {
+          "title": "Practice",
+          "type": "boolean"
+        },
+        "recognition": {
+          "title": "Recognition",
+          "type": "boolean"
+        },
+        "rendering": {
+          "title": "Rendering",
+          "type": "boolean"
+        },
+        "representable": {
+          "title": "Representable",
+          "type": "boolean"
+        },
+        "verification": {
+          "enum": [
+            "bounded_math",
+            "unsupported"
+          ],
+          "title": "Verification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "representable",
+        "recognition",
+        "generation",
+        "verification",
+        "practice",
+        "rendering"
+      ],
+      "title": "Capabilities",
+      "type": "object"
+    },
+    "ChoiceAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 2,
+          "title": "Choices",
+          "type": "array"
+        },
+        "kind": {
+          "const": "choice",
+          "title": "Kind",
+          "type": "string"
+        },
+        "selected": {
+          "minimum": 0,
+          "title": "Selected",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "choices",
+        "selected"
+      ],
+      "title": "ChoiceAnswer",
+      "type": "object"
+    },
+    "ContextValue": {
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "enum": [
+            "declared",
+            "profile",
+            "inferred"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "origin"
+      ],
+      "title": "ContextValue",
+      "type": "object"
+    },
+    "EducationContext": {
+      "additionalProperties": false,
+      "properties": {
+        "academic_year": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "exam": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "grade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Grade"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "language": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Language",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 64,
+          "title": "References",
+          "type": "array"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        },
+        "system": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContextValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "subject",
+        "language"
+      ],
+      "title": "EducationContext",
+      "type": "object"
+    },
+    "EducationalDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "activity": {
+          "enum": [
+            "question_solution",
+            "topic_lesson",
+            "worked_example",
+            "guided_practice",
+            "independent_practice",
+            "diagnostic_question",
+            "review"
+          ],
+          "title": "Activity",
+          "type": "string"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "choice": "#/$defs/ChoiceAnswer",
+                  "math": "#/$defs/MathAnswer",
+                  "number": "#/$defs/NumberAnswer",
+                  "quantity": "#/$defs/QuantityAnswer",
+                  "table": "#/$defs/TableAnswer",
+                  "text": "#/$defs/TextAnswer"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/MathAnswer"
+                },
+                {
+                  "$ref": "#/$defs/NumberAnswer"
+                },
+                {
+                  "$ref": "#/$defs/QuantityAnswer"
+                },
+                {
+                  "$ref": "#/$defs/ChoiceAnswer"
+                },
+                {
+                  "$ref": "#/$defs/TextAnswer"
+                },
+                {
+                  "$ref": "#/$defs/TableAnswer"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        },
+        "blocks": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "calculation": "#/$defs/CalculationBlock",
+                "checkpoint": "#/$defs/ProseBlock",
+                "definition": "#/$defs/ProseBlock",
+                "explanation": "#/$defs/ProseBlock",
+                "expression": "#/$defs/ExpressionBlock",
+                "hint": "#/$defs/ProseBlock",
+                "result": "#/$defs/ProseBlock",
+                "summary": "#/$defs/ProseBlock",
+                "table": "#/$defs/TableBlock",
+                "visual": "#/$defs/VisualBlock",
+                "warning": "#/$defs/ProseBlock",
+                "worked_example": "#/$defs/ExampleBlock"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ProseBlock"
+              },
+              {
+                "$ref": "#/$defs/ExpressionBlock"
+              },
+              {
+                "$ref": "#/$defs/CalculationBlock"
+              },
+              {
+                "$ref": "#/$defs/ExampleBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              },
+              {
+                "$ref": "#/$defs/VisualBlock"
+              }
+            ]
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "title": "Blocks",
+          "type": "array"
+        },
+        "objectives": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Objectives",
+          "type": "array"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 64,
+          "title": "References",
+          "type": "array"
+        },
+        "takeaway": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Takeaway",
+          "type": "string"
+        }
+      },
+      "required": [
+        "activity",
+        "objectives",
+        "blocks",
+        "takeaway"
+      ],
+      "title": "EducationalDraft",
+      "type": "object"
+    },
+    "ExampleBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "answer": {
+          "discriminator": {
+            "mapping": {
+              "choice": "#/$defs/ChoiceAnswer",
+              "math": "#/$defs/MathAnswer",
+              "number": "#/$defs/NumberAnswer",
+              "quantity": "#/$defs/QuantityAnswer",
+              "table": "#/$defs/TableAnswer",
+              "text": "#/$defs/TextAnswer"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MathAnswer"
+            },
+            {
+              "$ref": "#/$defs/NumberAnswer"
+            },
+            {
+              "$ref": "#/$defs/QuantityAnswer"
+            },
+            {
+              "$ref": "#/$defs/ChoiceAnswer"
+            },
+            {
+              "$ref": "#/$defs/TextAnswer"
+            },
+            {
+              "$ref": "#/$defs/TableAnswer"
+            }
+          ],
+          "title": "Answer"
+        },
+        "explanation": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "worked_example",
+          "title": "Kind",
+          "type": "string"
+        },
+        "prompt": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "prompt",
+        "explanation",
+        "answer"
+      ],
+      "title": "ExampleBlock",
+      "type": "object"
+    },
+    "ExpressionBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expression",
+          "title": "Kind",
+          "type": "string"
+        },
+        "latex": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Latex",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "latex"
+      ],
+      "title": "ExpressionBlock",
+      "type": "object"
+    },
+    "Grade": {
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "enum": [
+            "declared",
+            "profile"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "value": {
+          "maximum": 12,
+          "minimum": 5,
+          "title": "Value",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "value",
+        "origin"
+      ],
+      "title": "Grade",
+      "type": "object"
+    },
+    "LessonPlanV2": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/EducationalDraft"
+        },
+        "context": {
+          "$ref": "#/$defs/EducationContext"
+        },
+        "lesson_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Lesson Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "schema": {
+          "$ref": "#/$defs/SchemaIdentity"
+        },
+        "source_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "verification": {
+          "$ref": "#/$defs/VerificationReport"
+        }
+      },
+      "required": [
+        "schema",
+        "lesson_id",
+        "source_id",
+        "context",
+        "content",
+        "provenance",
+        "verification"
+      ],
+      "title": "LessonPlanV2",
+      "type": "object"
+    },
+    "LessonView": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "lesson": {
+          "$ref": "#/$defs/LessonPlanV2"
+        },
+        "panels": {
+          "items": {
+            "$ref": "#/$defs/BoardPanel"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "title": "Panels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "lesson",
+        "panels",
+        "created_at"
+      ],
+      "title": "LessonView",
+      "type": "object"
+    },
+    "MathAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "expressions": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Expressions",
+          "type": "array"
+        },
+        "kind": {
+          "const": "math",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "expressions",
+        "description"
+      ],
+      "title": "MathAnswer",
+      "type": "object"
+    },
+    "NumberAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "number",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "NumberAnswer",
+      "type": "object"
+    },
+    "ProseBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "explanation",
+            "definition",
+            "warning",
+            "hint",
+            "checkpoint",
+            "result",
+            "summary"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        },
+        "text": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "text"
+      ],
+      "title": "ProseBlock",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "provider": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "unit": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "QuantityAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "quantity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "kind",
+        "quantity"
+      ],
+      "title": "QuantityAnswer",
+      "type": "object"
+    },
+    "QuestionUnderstanding": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Choices",
+          "type": "array"
+        },
+        "context": {
+          "$ref": "#/$defs/EducationContext"
+        },
+        "expressions": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 128,
+          "title": "Expressions",
+          "type": "array"
+        },
+        "facts": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 128,
+          "title": "Facts",
+          "type": "array"
+        },
+        "quantities": {
+          "items": {
+            "$ref": "#/$defs/Quantity"
+          },
+          "maxItems": 64,
+          "title": "Quantities",
+          "type": "array"
+        },
+        "question": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question"
+        },
+        "requested": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested"
+        },
+        "secondary_subjects": {
+          "items": {
+            "$ref": "#/$defs/Subject"
+          },
+          "maxItems": 5,
+          "title": "Secondary Subjects",
+          "type": "array"
+        },
+        "source_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "educational",
+            "unreadable",
+            "incomplete",
+            "non_educational",
+            "unsupported_subject",
+            "unresolved_subject"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/Table"
+          },
+          "maxItems": 8,
+          "title": "Tables",
+          "type": "array"
+        },
+        "uncertainties": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 128,
+          "title": "Uncertainties",
+          "type": "array"
+        },
+        "visuals": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Visuals",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_id",
+        "status",
+        "context"
+      ],
+      "title": "QuestionUnderstanding",
+      "type": "object"
+    },
+    "Reference": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "concept",
+            "outcome",
+            "method",
+            "prerequisite",
+            "curriculum",
+            "source",
+            "learner"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "review": {
+          "const": "unreviewed",
+          "default": "unreviewed",
+          "title": "Review",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "key"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
+    "SchemaIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "const": "teacherai.lesson_plan",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "const": "2.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "SchemaIdentity",
+      "type": "object"
+    },
+    "Subject": {
+      "enum": [
+        "mathematics",
+        "geometry",
+        "physics",
+        "chemistry",
+        "biology",
+        "science",
+        "unknown"
+      ],
+      "title": "Subject",
+      "type": "string"
+    },
+    "Table": {
+      "additionalProperties": false,
+      "properties": {
+        "headers": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Headers",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxItems": 40,
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "headers",
+        "rows"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
+    "TableAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "table",
+          "title": "Kind",
+          "type": "string"
+        },
+        "table": {
+          "$ref": "#/$defs/Table"
+        }
+      },
+      "required": [
+        "kind",
+        "table"
+      ],
+      "title": "TableAnswer",
+      "type": "object"
+    },
+    "TableBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "table",
+          "title": "Kind",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        },
+        "table": {
+          "$ref": "#/$defs/Table"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "table"
+      ],
+      "title": "TableBlock",
+      "type": "object"
+    },
+    "TextAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "TextAnswer",
+      "type": "object"
+    },
+    "VerificationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "calculation": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "unsupported",
+            "not_checked",
+            "not_applicable"
+          ],
+          "title": "Calculation",
+          "type": "string"
+        },
+        "checked_claims": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Checked Claims",
+          "type": "array"
+        },
+        "curriculum": {
+          "const": "not_checked",
+          "title": "Curriculum",
+          "type": "string"
+        },
+        "engine": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Engine"
+        },
+        "method": {
+          "const": "not_checked",
+          "title": "Method",
+          "type": "string"
+        },
+        "pedagogy": {
+          "const": "not_checked",
+          "title": "Pedagogy",
+          "type": "string"
+        },
+        "scientific": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "unsupported",
+            "not_checked",
+            "not_applicable"
+          ],
+          "title": "Scientific",
+          "type": "string"
+        },
+        "source_consistency": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "unsupported",
+            "not_checked",
+            "not_applicable"
+          ],
+          "title": "Source Consistency",
+          "type": "string"
+        },
+        "structural": {
+          "const": "passed",
+          "title": "Structural",
+          "type": "string"
+        }
+      },
+      "required": [
+        "structural",
+        "scientific",
+        "calculation",
+        "source_consistency",
+        "curriculum",
+        "method",
+        "pedagogy"
+      ],
+      "title": "VerificationReport",
+      "type": "object"
+    },
+    "VisualBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "visual",
+          "title": "Kind",
+          "type": "string"
+        },
+        "positions": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 16,
+          "title": "Positions",
+          "type": "array"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        },
+        "visual_type": {
+          "enum": [
+            "number_line",
+            "source_figure",
+            "unsupported"
+          ],
+          "title": "Visual Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "visual_type",
+        "description"
+      ],
+      "title": "VisualBlock",
+      "type": "object"
+    }
+  },
+  "$ref": "#/$defs/LessonView",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

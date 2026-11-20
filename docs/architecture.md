@@ -2,6 +2,8 @@
 
 These documents describe the design roadmap. The [project context](PROJECT_CONTEXT.md) identifies the deployed-stack code, runtime contract and validation gates.
 
+- [`architecture/adr-ta-002-education-core.md`](architecture/adr-ta-002-education-core.md) records the implemented TA-002 decisions: canonical education domain, LessonPlan v2, subject capabilities, verification semantics, v1/v2 compatibility and contract generation. Unlike the drafts below, it describes running code.
+
 - [`architecture/system-architecture.md`](architecture/system-architecture.md) explains the scalable backend, frontend, module, abstraction, dependency, and portal architecture.
 - [`architecture/folder-structure.md`](architecture/folder-structure.md) defines the future repository layout and why each top-level area exists.
 - [`architecture/data-flow.md`](architecture/data-flow.md) explains student learning, interaction, teacher review, dataset, training, analytics, and recovery flows.

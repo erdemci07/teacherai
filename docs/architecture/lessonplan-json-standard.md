@@ -1,6 +1,6 @@
 # LessonPlan JSON Standard
 
-**Architecture draft.** The executable contract is the Pydantic LessonPlan in apps/api/app/features/lessons/schemas.py. This document describes a proposed interchange format. See [project context](../PROJECT_CONTEXT.md).
+**Architecture draft.** The executable contracts are the Pydantic LessonPlan v1 in apps/api/app/features/lessons/schemas.py and LessonPlan v2 in apps/api/app/features/education/lesson.py (generated schema: docs/contracts/education-v2.schema.json, decisions: [ADR TA-002](adr-ta-002-education-core.md)). This document describes a proposed interchange format; voice, video, teacher review and dataset fields here are not implemented. See [project context](../PROJECT_CONTEXT.md).
 
 ## 1. Purpose
 

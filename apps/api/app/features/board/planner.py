@@ -1,9 +1,10 @@
 from uuid import uuid4
+from ..education.lesson import LessonPlanV2, MathAnswer
 from .schemas import BoardElement,BoardPlan
 from ..lessons.schemas import LessonPlan
 from ..mathai.schemas import VerificationResult
 class BoardPlanner:
-    def create(self,lesson:LessonPlan,verification:VerificationResult)->BoardPlan:
+    def create(self,lesson:LessonPlan,verification:VerificationResult, artifact:LessonPlanV2 | None = None)->BoardPlan:
         c=lesson.content; elements=[]
         def add(kind,**values): elements.append(BoardElement(id=f"board_{len(elements)+1}",type=kind,**values))
         add("title",text=lesson.source_analysis.topic)
@@ -18,5 +19,6 @@ class BoardPlanner:
         if c.common_mistake: add("warning",text=c.common_mistake,mark="cross")
         if c.shortcut: add("tip",text=f"Pratik yol: {c.shortcut}")
         if verification.graph: add("graph",graph=verification.graph)
-        add("final_answer",text=c.final_answer,latex=c.final_answer_expressions[0].latex,mark="check" if verification.final_answer_verified else "warning")
+        answer = artifact.content.answer if artifact else None
+        add("final_answer",text=answer.description if isinstance(answer, MathAnswer) else c.final_answer,latex=answer.expressions[0] if isinstance(answer, MathAnswer) else c.final_answer_expressions[0].latex,mark="check" if verification.final_answer_verified else "warning")
         return BoardPlan(board_id=f"board_{uuid4().hex}",lesson_plan_id=lesson.lesson_plan_id,title=lesson.source_analysis.topic,elements=elements)

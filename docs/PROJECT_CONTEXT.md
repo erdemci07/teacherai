@@ -5,16 +5,27 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Durum | Kapsam |
 | --- | --- |
 | Uygulandı | Next.js/React/TypeScript öğrenci arayüzü, FastAPI/Pydantic modüler monoliti, Firebase Auth, Firestore, matematik görseli analizi, yapılandırılmış ders, BoardPlanner, KaTeX, ders sonrası etkileşim, geçmiş ve bağlantıyla paylaşım. TA-001 değişiklikleri yerel dalda doğrulanır. |
+| Uygulandı (TA-002) | Ortak eğitim çekirdeği (`features/education`): kanonik alan kimlikleri, kökenli eğitim bağlamı, soru anlama sözleşmesi, LessonPlan v2, alan yetenek tablosu, boyut bazında doğrulama raporu. Matematik üretim hattı v2 projeksiyonunu her derste kurar. Sahibine özel salt okunur `GET /api/v1/lessons/{id}/v2` ve geçmişte v2 anlatım görünümü. Pydantic’ten üretilen JSON Schema ve TypeScript tipleri, CI eskime denetimi. |
+| Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
-| Ertelendi | Yeni bilim alanları, ek AI sağlayıcıları, Öğretmen Stüdyosu, canlı ses ve cihaz entegrasyonu sonraki fazlarda ele alınacak. |
+| Ertelendi | Bilim alanı motorları (TA-002 yalnızca sözleşmeyi kurdu), ek AI sağlayıcıları (TA-003), Öğretmen Stüdyosu, canlı ses ve cihaz entegrasyonu sonraki fazlarda ele alınacak. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
 
 ## Mimari ve sözleşme
 
 Sağlayıcı → yapılandırılmış LessonPlan → doğrulama → renderer → öğrenci. Sağlayıcı değiştirilebilir. Tahta elemanlarını oluşturmak BoardPlanner’ın sorumluluğudur. Güvenlik, bilimsel doğruluk, maliyet ölçümü ve testler her modülde geliştirme koşuludur. Fiziksel dizinler çalışan modüller ihtiyaç duydukça gelişir.
 
-Çalışan sözleşme Python modellerinde ve FastAPI OpenAPI çıktısındadır. LessonPlan v1, kaynak analizi, kavram, öğrenme hedefleri ve içeriği taşır. GeneratedLesson zarfı doğrulama sonucu, tahta ve süreleri taşır. Mimari taslaktaki ses, video, öğretmen değerlendirmesi ve veri kümesi alanları geleceğe aittir. Kök src/ ve tests/ altındaki TypeScript örneği ayrı bir mimari prototiptir. Gelecekte web tiplerini FastAPI OpenAPI bileşenlerinden üreterek CI’da şema farkları incelenmelidir. Uyumsuz bir sözleşme ayrı bir sürüm ve geçiş planı gerektirir.
+Çalışan sözleşme Python modellerinde ve FastAPI OpenAPI çıktısındadır. LessonPlan v1, kaynak analizi, kavram, öğrenme hedefleri ve içeriği taşır. GeneratedLesson zarfı doğrulama sonucu, tahta ve süreleri taşır. v1 kayıt Firestore’daki yetkili kayıttır ve değişmedi. Mimari taslaktaki ses, video, öğretmen değerlendirmesi ve veri kümesi alanları geleceğe aittir. Kök src/ altındaki TypeScript örneği ayrı bir mimari prototiptir. Uyumsuz bir sözleşme ayrı bir sürüm ve geçiş planı gerektirir.
+
+## Ortak eğitim çekirdeği (TA-002)
+
+Ayrıntılı kararlar [ADR TA-002](architecture/adr-ta-002-education-core.md), sonuçlar [TA-002 raporu](phase-reports/TA-002.md) içindedir.
+
+- LessonPlan v2 (`teacherai.lesson_plan` / `2.0.0`) sağlayıcı taslağı (`EducationalDraft`), sunucu kimliği ve kökeni, doğrulama raporu ve sunumu (`LessonView`) ayrı tiplerde tutar. Cevap LaTeX’e bağlı değildir (matematik, sayı, birimli nicelik, seçenek, metin, tablo). Konu dersi cevapsız geçerlidir.
+- v2 saklanmaz. Her istekte v1 kayıttan belirlenimci olarak üretilir. Eski doğrulanmamış kayıtlar v2 görünümüne yükseltilmez.
+- Doğrulama raporunda `scientific: passed` bu sürümde hiçbir derste oluşamaz. MathAI yalnızca `calculation` boyutunu kanıtlar. `curriculum`, `method`, `pedagogy` her zaman `not_checked`’tir. Referanslar `unreviewed`’dır ve resmî müfredat onayı ifade etmez.
+- Sözleşme kaynağı Pydantic’tir: `python -m scripts.education_contracts` (`--check` CI’da). v1 web tipleri hâlâ elle yazılıdır.
 
 ## Kalıcı veri ve dağıtım
 
@@ -32,7 +43,7 @@ Kabul sonuçları, istemci geçişi, yapılandırma ve açık konular [TA-001](p
 ## Hesap silme ve veri yaşam döngüsü (TA-001B)
 
 - `POST /api/v1/account/deletion` (`{"confirm": true}`, son 300 sn içinde giriş gerekir), `GET /api/v1/account/deletion` ve oturumsuz `POST /api/v1/account/deletion/receipt` (silme makbuzuyla sonuç sorgusu). Silme sürerken veya tamamlandıktan sonra kullanıcıya bağlı tüm yazmalar 409 `account_deletion_in_progress` alır.
-- TTL (`expires_at`): analiz 24 saat, pratik sorusu 7 gün (yanıt süresi 1 saat), günlük ve küresel sayaçlar 30 gün, tamamlanmış silme kaydı 30 gün. Dersler, profiller, hafızalar, olaylar, pratik yanıtları, paylaşımlar ve geri bildirimler otomatik silinmez. Süresi geçen analiz ve pratik kaydı backend’de hemen reddedilir. TTL tanımı `firestore.indexes.json` içindedir ve `core/retention.py` ile bir testle senkron tutulur.
+- TTL (`expires_at`, altı koleksiyon): analiz 24 saat, pratik sorusu 7 gün (yanıt süresi 1 saat), günlük ve küresel sayaçlar 30 gün, tamamlanmış silme kaydı 30 gün. Dersler, profiller, hafızalar, olaylar, pratik yanıtları, paylaşımlar ve geri bildirimler otomatik silinmez. Süresi geçen analiz ve pratik kaydı backend’de hemen reddedilir. TTL tanımı `firestore.indexes.json` içindedir ve `core/retention.py` ile bir testle senkron tutulur.
 - Eski paylaşımlar için `scripts/legacy_shares.py` vardır: varsayılan mod salt okunur `audit`, `unpublish` ise yalnızca açık bayraklarla çalışır.
 - Gizlilik metninin hukuki onaysız taslağı `docs/privacy/gizlilik-metni-taslak.md` dosyasındadır.
 

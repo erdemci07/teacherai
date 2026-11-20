@@ -1,0 +1,649 @@
+[
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "denklem",
+      "source_id": "sentetik-denklem",
+      "context": {
+        "subject": "mathematics",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "question_solution",
+        "objectives": [
+          "Hangi sayının üç katı 12 eder?"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Her iki tarafı üçe böl."
+          },
+          {
+            "id": "detail0",
+            "kind": "expression",
+            "latex": "3x=12"
+          }
+        ],
+        "answer": {
+          "kind": "math",
+          "description": "x = 4",
+          "expressions": [
+            "x=4"
+          ]
+        },
+        "takeaway": "Bölme eşitliği korur."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "not_checked",
+        "calculation": "not_checked",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "dikdortgen",
+      "source_id": "sentetik-dikdortgen",
+      "context": {
+        "subject": "geometry",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "question_solution",
+        "objectives": [
+          "Kenarları 3 ve 5 cm olan dikdörtgenin çevresi kaçtır?"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Karşılıklı kenarlar eşittir."
+          },
+          {
+            "id": "detail0",
+            "kind": "calculation",
+            "expression": "2(3+5)",
+            "result": {
+              "kind": "number",
+              "value": 16
+            }
+          }
+        ],
+        "answer": {
+          "kind": "quantity",
+          "quantity": {
+            "value": 16,
+            "unit": "cm"
+          }
+        },
+        "takeaway": "Çevre tüm kenarların toplamıdır."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "not_checked",
+        "calculation": "not_checked",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "surat",
+      "source_id": "sentetik-surat",
+      "context": {
+        "subject": "physics",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "question_solution",
+        "objectives": [
+          "60 metreyi 5 saniyede alan cismin ortalama sürati nedir?"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Toplam yolu geçen zamana böl."
+          }
+        ],
+        "answer": {
+          "kind": "quantity",
+          "quantity": {
+            "value": 12,
+            "unit": "m/s"
+          }
+        },
+        "takeaway": "Sürat yolun zamana oranıdır."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "unsupported",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "eylemsizlik",
+      "source_id": "sentetik-eylemsizlik",
+      "context": {
+        "subject": "physics",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "topic_lesson",
+        "objectives": [
+          "Eylemsizlik"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Net kuvvet sıfırken hız sabit kalır."
+          },
+          {
+            "id": "detail0",
+            "kind": "checkpoint",
+            "text": "Duran bir cisim için bu koşul ne öngörür?"
+          }
+        ],
+        "answer": null,
+        "takeaway": "Sabit hız sıfır da olabilir."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "not_applicable",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "tepkime",
+      "source_id": "sentetik-tepkime",
+      "context": {
+        "subject": "chemistry",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "question_solution",
+        "objectives": [
+          "Hidrojen ve oksijenden su oluşumunu atom sayısını koruyarak göster."
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Her iki taraftaki H ve O atomlarını say."
+          }
+        ],
+        "answer": {
+          "kind": "text",
+          "text": "2H₂ + O₂ → 2H₂O"
+        },
+        "takeaway": "Atom türü ve sayısı korunur."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "unsupported",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "mol",
+      "source_id": "sentetik-mol",
+      "context": {
+        "subject": "chemistry",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "worked_example",
+        "objectives": [
+          "Mol kütlesi ve madde miktarı"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Madde miktarı için kütleyi mol kütlesine böl."
+          },
+          {
+            "id": "detail0",
+            "kind": "worked_example",
+            "prompt": "Molar kütlesi 18 g/mol kabul edilen 36 g su kaç moldür?",
+            "explanation": "36 g değerini 18 g/mol değerine böleriz.",
+            "answer": {
+              "kind": "quantity",
+              "quantity": {
+                "value": 2,
+                "unit": "mol"
+              }
+            }
+          }
+        ],
+        "answer": null,
+        "takeaway": "Birimleri hesaba kat."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "unsupported",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "biyoloji",
+      "source_id": "sentetik-biyoloji",
+      "context": {
+        "subject": "biology",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "question_solution",
+        "objectives": [
+          "Bir kaktüsün küçük yaprak yüzeyi kurak ortamda nasıl bir yarar sağlayabilir?"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Yaprak yüzeyi terlemeyle su kaybını etkiler."
+          }
+        ],
+        "answer": {
+          "kind": "text",
+          "text": "Daha küçük yüzey, terlemeyle su kaybını azaltabilir."
+        },
+        "takeaway": "Bir özellik çevre koşullarıyla birlikte değerlendirilir."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "not_applicable",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "secilim",
+      "source_id": "sentetik-secilim",
+      "context": {
+        "subject": "biology",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "topic_lesson",
+        "objectives": [
+          "Doğal seçilim"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Kalıtsal farklılıklar bireylerin belirli bir ortamda bıraktığı yavru sayısını etkileyebilir."
+          },
+          {
+            "id": "detail0",
+            "kind": "warning",
+            "text": "Tek bir bireyin yaşamındaki değişim, kuşaklar boyunca seçilimle aynı süreç değildir."
+          }
+        ],
+        "answer": null,
+        "takeaway": "Popülasyonun özellik dağılımı kuşaklar içinde değişebilir."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "not_applicable",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "madde",
+      "source_id": "sentetik-madde",
+      "context": {
+        "subject": "science",
+        "language": "tr",
+        "stage": {
+          "value": "ortaokul",
+          "origin": "declared"
+        }
+      },
+      "content": {
+        "activity": "topic_lesson",
+        "objectives": [
+          "Sıvılarla katıları karşılaştırma"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Aynı koşullarda şekil ve hacim özelliklerini karşılaştır."
+          },
+          {
+            "id": "detail0",
+            "kind": "table",
+            "table": {
+              "headers": [
+                "Hâl",
+                "Şekil",
+                "Hacim"
+              ],
+              "rows": [
+                [
+                  "Katı",
+                  "Kendine özgü",
+                  "Belirli"
+                ],
+                [
+                  "Sıvı",
+                  "Kabına bağlı",
+                  "Belirli"
+                ]
+              ]
+            }
+          }
+        ],
+        "answer": null,
+        "takeaway": "Sıvı kabın şeklini alır."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "not_applicable",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  },
+  {
+    "lesson": {
+      "schema": {
+        "name": "teacherai.lesson_plan",
+        "version": "2.0.0"
+      },
+      "lesson_id": "gozlem",
+      "source_id": "sentetik-gozlem",
+      "context": {
+        "subject": "science",
+        "language": "tr"
+      },
+      "content": {
+        "activity": "topic_lesson",
+        "objectives": [
+          "Gözlem ve çıkarım"
+        ],
+        "blocks": [
+          {
+            "id": "introduction",
+            "kind": "explanation",
+            "text": "Gözlem duyu ya da ölçüm verisini, çıkarım ise yorumunu bildirir."
+          },
+          {
+            "id": "detail0",
+            "kind": "checkpoint",
+            "text": "Termometre 20 °C gösteriyor ifadesi hangi türdendir?"
+          },
+          {
+            "id": "detail1",
+            "kind": "worked_example",
+            "prompt": "Termometrenin gösterdiği değer hangisidir?",
+            "answer": {
+              "kind": "choice",
+              "choices": [
+                "Gözlem",
+                "Çıkarım"
+              ],
+              "selected": 0
+            },
+            "explanation": "Değer doğrudan okunmuştur."
+          }
+        ],
+        "answer": null,
+        "takeaway": "Yorumu ölçümden ayır."
+      },
+      "provenance": {
+        "provider": "synthetic",
+        "model": "offline"
+      },
+      "verification": {
+        "structural": "passed",
+        "scientific": "unsupported",
+        "calculation": "not_applicable",
+        "source_consistency": "not_checked",
+        "curriculum": "not_checked",
+        "method": "not_checked",
+        "pedagogy": "not_checked"
+      }
+    },
+    "panels": [
+      {
+        "blocks": [
+          "introduction"
+        ]
+      },
+      {
+        "blocks": [
+          "detail0"
+        ]
+      },
+      {
+        "blocks": [
+          "detail1"
+        ]
+      }
+    ],
+    "created_at": "2026-11-20T00:00:00Z"
+  }
+]

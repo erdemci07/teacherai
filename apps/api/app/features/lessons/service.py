@@ -6,7 +6,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 
-from .exceptions import InvalidQuestionAnalysisError, MathVerificationError, VerificationContradictionError
+from ..education.math_adapter import require_math_question, validated_math_lesson
+from .exceptions import MathVerificationError, VerificationContradictionError
 from .provider import LessonProvider
 from .schemas import LessonPlan
 from ..board.planner import BoardPlanner
@@ -34,8 +35,7 @@ class LessonService:
 
     async def generate(self, analysis: VisionAnalysis, teaching_context=None, request_id: str | None = None) -> GeneratedLesson:
         resolved_request_id = request_id or analysis.request_id
-        if not analysis.is_valid_question or analysis.image_status != "valid_math_question":
-            raise InvalidQuestionAnalysisError
+        require_math_question(analysis)
 
         started = perf_counter()
         correction = False
@@ -73,7 +73,8 @@ class LessonService:
                 raise VerificationContradictionError
 
         board_started = perf_counter()
-        board = self.board_planner.create(plan, verification)
+        artifact = validated_math_lesson(plan, verification)
+        board = self.board_planner.create(plan, verification, artifact)
         logger.info(
             "Lesson board created",
             extra={

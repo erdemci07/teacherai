@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from apps.api.app.features.vision.schemas import VisionAnalysis
+from ..education.policy import TeachingPolicy
+from ..memory.schemas import TeachingContext
 
 CompactionLevel = Literal["normal", "emergency"]
 
@@ -34,6 +36,16 @@ def build_lesson_generation_context(
     teaching_context: Any = None,
     level: CompactionLevel = "normal",
 ) -> BuiltLessonContext:
+    policy = teaching_context if isinstance(teaching_context, TeachingPolicy) else TeachingPolicy(
+        learner=teaching_context if isinstance(teaching_context, TeachingContext) else None
+    )
+    if isinstance(teaching_context, TeachingPolicy):
+        teaching_context = policy.learner
+    learner_summary = _compact_teaching_context(teaching_context, level)
+    exam = policy.exam_context(
+        learner_summary.get("exam_goal") if learner_summary else None,
+        _limit_text(analysis.exam_context, TEACHING_TEXT_LIMIT),
+    )
     visual = analysis.visual_elements
     original_visual_count = len(visual.relevant_visual_facts) + len(visual.relationships)
     visual_fact_limit = 8 if level == "normal" else 3
@@ -78,7 +90,10 @@ def build_lesson_generation_context(
         {
             "problem": problem,
             "verification_feedback": _limit_text(verification_feedback, 1200 if level == "normal" else 600),
-            "teaching_context": _compact_teaching_context(teaching_context, level),
+            "teaching_context": learner_summary,
+            "student_exam": exam.model_dump() if exam and exam.origin == "profile" else None,
+            "required_teaching_rules": [rule.model_dump() for rule in policy.rules] or None,
+            "student_grade": policy.grade.model_dump() if policy.grade else None,
         }
     )
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
