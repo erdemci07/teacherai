@@ -15,7 +15,7 @@ from apps.api.app.features.lessons.service import GeneratedLesson
 
 from apps.api.app.features.account.guard import AccountDeletionInProgress
 
-from .exceptions import ShareStorageError
+from .exceptions import ShareStorageError, ShareUnpublishedError
 from .legacy import CURRENT_OBJECTIVES, CURRENT_SUMMARY, CURRENT_UNDERSTANDING
 from .repository import ShareRepository
 from .schemas import CreateShareResponse, PublicLessonSnapshot, PublicShareResponse, PublicSolutionSnapshot
@@ -41,7 +41,7 @@ class ShareService:
         logger.info("share_create_started", extra={"operation": "share_create_started", "lesson_plan_id": lesson_plan_id})
         if existing_share_id:
             existing = self._repo_get(existing_share_id, "share_reuse_existing_id")
-            if existing and existing.source_lesson_plan_id == result.lesson.lesson_plan_id and existing.status == "published":
+            if existing and existing.source_lesson_plan_id == result.lesson.lesson_plan_id and existing.status == "published" and not existing.unpublished_at:
                 logger.info("share_reused", extra={"operation": "share_reused", "share_id": existing.share_id})
                 return CreateShareResponse(share_id=existing.share_id, share_url=self.share_url(existing.share_id, request_share_url_base))
 
@@ -80,6 +80,9 @@ class ShareService:
 
     def get_public(self, share_id: str, request_share_url_base: str | None = None) -> PublicShareResponse | None:
         snapshot = self._repo_get(share_id, "share_fetch")
+        if snapshot and snapshot.unpublished_at:
+            logger.info("share_unpublished", extra={"operation": "share_unpublished", "share_id": share_id})
+            raise ShareUnpublishedError
         if not snapshot or snapshot.status != "published" or snapshot.revoked_at:
             logger.info("share_not_found", extra={"operation": "share_not_found", "share_id": share_id})
             return None

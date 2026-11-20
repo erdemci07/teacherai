@@ -33,6 +33,8 @@ class PublicSolutionSnapshot(BaseModel):
     status: Literal["published", "revoked"] = "published"
     expires_at: datetime | None = None
     revoked_at: datetime | None = None
+    # İşletmeci betiğiyle yayından kaldırma (TA-001B, G); genel rotalar 410 döndürür.
+    unpublished_at: datetime | None = None
     topic: str
     subtopic: str | None = None
     question_summary: str

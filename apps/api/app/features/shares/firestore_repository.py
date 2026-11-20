@@ -31,7 +31,7 @@ class FirestoreShareRepository:
         )
         for snap in query:
             item = public_snapshot(snap.to_dict())
-            if item.status == "published":
+            if item.status == "published" and not item.unpublished_at:
                 return item
         return None
 

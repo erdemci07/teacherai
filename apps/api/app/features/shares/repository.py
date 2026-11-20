@@ -18,7 +18,7 @@ class InMemoryShareRepository:
 
     def find_by_lesson_plan_id(self, lesson_plan_id: str) -> PublicSolutionSnapshot | None:
         for item in self.items.values():
-            if item.source_lesson_plan_id == lesson_plan_id and item.status == "published":
+            if item.source_lesson_plan_id == lesson_plan_id and item.status == "published" and not item.unpublished_at:
                 return item
         return None
 
