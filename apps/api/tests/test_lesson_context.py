@@ -1,18 +1,17 @@
 import json
 
+import apps.api.app.features.lessons.openai_provider as provider_module
 import httpx
 import pytest
-from openai import BadRequestError
-
-import apps.api.app.features.lessons.openai_provider as provider_module
 from apps.api.app.features.lessons.context import build_lesson_generation_context
 from apps.api.app.features.lessons.exceptions import LessonContextTooLargeError
 from apps.api.app.features.lessons.openai_provider import OpenAILessonProvider
 from apps.api.app.features.lessons.schemas import LessonDraftResponse
 from apps.api.app.features.memory.schemas import EvidenceSignal, TeachingContext
+from apps.api.tests.fake_openai import raw_responses
 from apps.api.tests.test_lesson_provider_errors import lesson_payload
 from apps.api.tests.test_mathai import plan
-from apps.api.tests.fake_openai import raw_responses
+from openai import BadRequestError
 
 
 class ParsedResponse:
@@ -106,8 +105,9 @@ def test_compact_lesson_context_retains_essential_math_and_visual_information():
     assert problem["mathematical_expressions"] == analysis.mathematical_expressions
     assert problem["visual_context"]["visual_relevance"] == "essential"
     assert problem["visual_context"]["relationships"]
-    assert len(problem["visual_context"]["relationships"]) == 10
-    assert len(problem["visual_context"]["relevant_visual_facts"]) == 8
+    # TA-003 §21: görsel çözüm için zorunluysa ilişki ve olgular cevabı belirler; sayıları kırpılmaz.
+    assert problem["visual_context"]["relationships"] == analysis.visual_elements.relationships
+    assert problem["visual_context"]["relevant_visual_facts"] == analysis.visual_elements.relevant_visual_facts
 
 
 def test_teaching_context_is_bounded_and_emergency_is_smaller():

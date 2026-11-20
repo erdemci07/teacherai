@@ -4,7 +4,18 @@ from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
 
-from .domain import Activity, Contract, EducationContext, Identifier, Label, Quantity, Reference, Table, Text
+from .domain import (
+    Activity,
+    Contract,
+    EducationContext,
+    Identifier,
+    Label,
+    Quantity,
+    Reference,
+    Table,
+    Text,
+)
+from .source import SOLVABLE_DECISIONS, Decision
 
 
 class MathAnswer(Contract):
@@ -141,8 +152,10 @@ class VerificationReport(Contract):
 
 
 class SchemaIdentity(Contract):
+    """2.1.0 (TA-003) yalnızca isteğe bağlı kaynak revizyonu alanlarını ekler; 2.0.0 belgeleri geçerlidir."""
+
     name: Literal["teacherai.lesson_plan"]
-    version: Literal["2.0.0"]
+    version: Literal["2.0.0", "2.1.0"]
 
 
 class Provenance(Contract):
@@ -155,12 +168,19 @@ class LessonPlanV2(Contract):
     lesson_id: Identifier
     source_id: Label
     context: EducationContext
+    # TA-003: dersin dayandığı kabul edilmiş soru revizyonu ve bütünlük kararı (2.1.0).
+    source_revision: int | None = Field(default=None, ge=1, le=64)
+    source_decision: Decision | None = None
     content: EducationalDraft
     provenance: Provenance
     verification: VerificationReport
 
     @model_validator(mode="after")
     def valid_evidence(self):
+        if self.schema_identity.version == "2.0.0" and (self.source_revision is not None or self.source_decision is not None):
+            raise ValueError("Kaynak revizyonu alanları 2.1.0 gerektirir.")
+        if self.source_decision is not None and self.source_decision not in SOLVABLE_DECISIONS:
+            raise ValueError("Ders yalnızca çözülebilir kabul edilmiş bir soruya dayanabilir.")
         from .domain import capabilities
         if not capabilities(self.context.subject).representable:
             raise ValueError("Dersin alanı belirlenemedi.")

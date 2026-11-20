@@ -16,3 +16,7 @@ class VerificationContradictionError(LessonError):
     code = "verification_contradiction"; status_code = 422; public_message = "Bu çözüm matematiksel kontrolden geçemedi. Yeniden inceleyelim."
 class InvalidQuestionAnalysisError(LessonError):
     code = "invalid_question_analysis"; status_code = 422; public_message = "Bu görsel geçerli ve okunabilir bir matematik sorusu içermiyor."
+class QuestionClarificationRequiredError(LessonError):
+    code = "question_clarification_required"; status_code = 409; public_message = "Soruyu çözmeden önce okunamayan bir kısmı netleştirmemiz gerekiyor."
+class StaleQuestionRevisionError(LessonError):
+    code = "stale_question_revision"; status_code = 409; public_message = "Soru bu arada güncellendi. Güncel hâliyle devam edelim."

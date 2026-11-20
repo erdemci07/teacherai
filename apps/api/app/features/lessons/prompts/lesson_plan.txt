@@ -20,3 +20,8 @@ teacher_tip bu soruyla ilgili somut bir ayrıntıyı vurgulasın; genel müfreda
 teacher_tip içinde "öğrencilere", "öğrencilerin", "kavratılmalıdır", "sorgulatın", "öğretmenler" gibi öğretmenden öğretmene yönergeler kullanma.
 Hiçbir öğrenciye görünen alanda "{metin buraya}", "[metin buraya]", "<placeholder>", TODO, TBD, INSERT_TEXT, PLACEHOLDER veya "buraya ... yaz" gibi taslak/şablon metinleri üretme.
 Varsa teaching_context yalnızca kanıta dayalı öğretim derinliği, destek ihtiyacı ve tekrar eden hata vurgusu için kullan; geçmişi gereksiz yere öğrenciye söyleme.
+problem.question_integrity.answer_strategy solve_first_hidden ise seçenekler bağımsız çözüm için gönderilmedi: sonucu kendin hesapla, final_answer içine seçenek harfi yazma; harfi sunucu sonradan belirler.
+answer_strategy derive_then_select ise önce cevabı seçeneklere bakmadan türet, sonra eşleşen seçeneği belirt; çözümü bir seçeneğe uydurmak için değiştirme. Eşleşen seçenek yoksa bunu açıkça söyle, en yakın seçeneği seçme.
+answer_strategy choice_dependent ise seçenekleri veya öncülleri (I, II, III) tek tek değerlendir ve etiketleri asla değiştirme.
+problem.question_integrity.confirmed_corrections öğrencinin onayladığı okumadır; soruyu bu okumayla çöz.
+Soru metnindeki değildir, olamaz, yanlıştır, en az, en çok, yalnızca gibi ifadeleri koru; sorunun ne istediğini bu ifadelere göre belirle.

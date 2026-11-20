@@ -3,13 +3,20 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
-from pydantic import ValidationError
-
+from apps.api.app.features.auth.schemas import AuthenticatedUser
 from apps.api.app.features.board.planner import BoardPlanner
-from apps.api.app.features.education.domain import Grade, Subject, canonical_subject, capabilities
+from apps.api.app.features.education.domain import (
+    Grade,
+    Subject,
+    canonical_subject,
+    capabilities,
+)
 from apps.api.app.features.education.lesson import EducationalDraft, LessonPlanV2
-from apps.api.app.features.education.math_adapter import UnsupportedSubjectError, understand, validated_math_lesson
+from apps.api.app.features.education.math_adapter import (
+    UnsupportedSubjectError,
+    understand,
+    validated_math_lesson,
+)
 from apps.api.app.features.education.policy import TeachingPolicy, TeachingRule
 from apps.api.app.features.education.presentation import LessonView, plan_panels
 from apps.api.app.features.lessons.context import build_lesson_generation_context
@@ -17,12 +24,12 @@ from apps.api.app.features.lessons.exceptions import VerificationContradictionEr
 from apps.api.app.features.lessons.service import LessonService
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.features.memory.schemas import TeachingContext
-from apps.api.app.features.auth.schemas import AuthenticatedUser
 from apps.api.app.main import create_app
 from apps.api.tests.client import authenticated_client
 from apps.api.tests.test_lesson_pipeline import AlgebraLessonProvider
 from apps.api.tests.test_mathai import plan
-
+from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 FIXTURES = json.loads((Path(__file__).parent / "fixtures/education/synthetic.json").read_text(encoding="utf-8"))
 
@@ -89,7 +96,7 @@ async def test_recognition_does_not_authorize_generation(subject):
     analysis = plan().source_analysis.model_copy(update={"subject": subject, "exam_context": None})
     question = understand(analysis)
     assert question.status == "unsupported_subject" and question.question
-    assert question.context.exam is None and question.context.grade is None
+    assert question.context.exam is None and question.context.source_exam is None and question.context.grade is None
     provider = AlgebraLessonProvider()
     with pytest.raises(UnsupportedSubjectError):
         await LessonService(provider, None, BoardPlanner()).generate(analysis)
@@ -103,7 +110,8 @@ async def test_free_text_math_labels_keep_the_working_pipeline(label):
     analysis = plan().source_analysis.model_copy(update={"subject": label})
     question = understand(analysis)
     assert question.status == "educational" and question.context.subject == Subject.MATHEMATICS
-    assert question.context.exam.origin == "inferred"
+    # TA-003: sorunun benzediği sınav türü AI çıkarımıdır ve öğrencinin hedefinden ayrı alanda durur.
+    assert question.context.source_exam.origin == "inferred" and question.context.exam is None
     provider = AlgebraLessonProvider()
     result = await LessonService(provider, MathAIService(), BoardPlanner()).generate(analysis)
     assert len(provider.analysis_payloads) == 1
@@ -152,7 +160,9 @@ def test_version_and_verification_authority():
     bio = FIXTURES[7]["lesson"]
     assert bio["content"]["answer"] is None
     for changes in [
-        {"schema": {"name": "teacherai.lesson_plan", "version": "2.1.0"}},
+        # 2.1.0 (TA-003) yalnızca isteğe bağlı kaynak revizyonu alanlarını ekler; bilinmeyen sürüm reddedilir.
+        {"schema": {"name": "teacherai.lesson_plan", "version": "2.2.0"}},
+        {"source_revision": 1},
         {"context": {"subject": "unknown", "language": "tr"}},
         {"verification": bio["verification"] | {"calculation": "passed"}},
         {"verification": bio["verification"] | {"method": "passed"}},

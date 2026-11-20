@@ -2,12 +2,36 @@
 
 from pydantic import ValidationError
 
-from ..lessons.exceptions import InvalidLessonPlanError, InvalidQuestionAnalysisError, LessonError, VerificationContradictionError
+from ..integrity.engine import EvaluationState, evaluate
+from ..lessons.exceptions import (
+    InvalidLessonPlanError,
+    InvalidQuestionAnalysisError,
+    LessonError,
+    QuestionClarificationRequiredError,
+    VerificationContradictionError,
+)
 from ..lessons.schemas import LessonPlan
 from ..mathai.schemas import VerificationResult
 from ..vision.schemas import VisionAnalysis
-from .domain import ContextValue, EducationContext, QuestionUnderstanding, Reference, Subject, canonical_subject, capabilities
-from .lesson import EducationalDraft, ExpressionBlock, LessonPlanV2, MathAnswer, ProseBlock, Provenance, VerificationReport, VisualBlock
+from .domain import (
+    ContextValue,
+    EducationContext,
+    QuestionUnderstanding,
+    Reference,
+    Subject,
+    canonical_subject,
+    capabilities,
+)
+from .lesson import (
+    EducationalDraft,
+    ExpressionBlock,
+    LessonPlanV2,
+    MathAnswer,
+    ProseBlock,
+    Provenance,
+    VerificationReport,
+    VisualBlock,
+)
 
 
 class UnsupportedSubjectError(LessonError):
@@ -36,10 +60,22 @@ def understand(analysis: VisionAnalysis) -> QuestionUnderstanding:
     return QuestionUnderstanding(
         source_id=analysis.request_id, status=status, question=analysis.question_text or None,
         context=EducationContext(subject=subject, language=analysis.language or "und",
-            exam=ContextValue(value=analysis.exam_context, origin="inferred") if analysis.exam_context else None),
+            source_exam=ContextValue(value=analysis.exam_context, origin="inferred") if analysis.exam_context else None),
         facts=visual.relevant_visual_facts + visual.relationships, choices=analysis.answer_choices,
         expressions=analysis.mathematical_expressions, visuals=descriptions, uncertainties=analysis.ocr_uncertainties,
+        revision=analysis.revision if analysis.integrity is not None else None, integrity=analysis.integrity,
     )
+
+
+def with_integrity(analysis: VisionAnalysis) -> VisionAnalysis:
+    """TA-003 öncesi kaydedilmiş analizlere bütünlük kararını sağlayıcı çağırmadan ekler.
+
+    Eski serbest metin belirsizlikleri önemsiz sayılır; böylece eski kayıtlar yeni engellere takılmaz.
+    """
+    if analysis.integrity is not None:
+        return analysis
+    report = evaluate(analysis, EvaluationState(revision=analysis.revision, origin="legacy"))
+    return analysis.model_copy(update={"integrity": report})
 
 
 def require_math_question(analysis: VisionAnalysis) -> QuestionUnderstanding:
@@ -48,22 +84,26 @@ def require_math_question(analysis: VisionAnalysis) -> QuestionUnderstanding:
     question = understand(analysis)
     if question.status != "educational":
         raise UnsupportedSubjectError
+    if analysis.integrity is not None and not analysis.integrity.solvable:
+        raise QuestionClarificationRequiredError
     return question
 
 
-def verification_report(result: VerificationResult) -> VerificationReport:
+def verification_report(result: VerificationResult, integrity=None) -> VerificationReport:
     if result.status == "failed" or result.contradiction:
         raise VerificationContradictionError
     state = {"verified": "passed", "partially_verified": "partially_checked", "unsupported": "unsupported"}[result.status]
     return VerificationReport(
         structural="passed", scientific="partially_checked" if state != "unsupported" else "unsupported",
-        calculation=state, source_consistency="not_checked", curriculum="not_checked", method="not_checked",
+        calculation=state,
+        # TA-003: yapısal kaynak tutarlılığı denetlendi; görselin doğru okunduğu kanıtlanmadı.
+        source_consistency="partially_checked" if integrity is not None and integrity.solvable else "not_checked", curriculum="not_checked", method="not_checked",
         pedagogy="not_checked", engine=result.engine,
         checked_claims=[check.statement for check in result.checks if check.status == "passed"],
     )
 
 
-def project_math(plan: LessonPlan, result: VerificationResult) -> LessonPlanV2:
+def project_math(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None) -> LessonPlanV2:
     if plan.schema_.get("version") != "1.0.0" or plan.schema_.get("name") != "teacherai.lesson_plan":
         raise InvalidLessonPlanError
     question = require_math_question(plan.source_analysis)
@@ -94,19 +134,31 @@ def project_math(plan: LessonPlan, result: VerificationResult) -> LessonPlanV2:
     prose("shortcut", "hint", c.shortcut)
     prose("teacher_tip", "hint", c.teacher_tip)
     return LessonPlanV2(
-        schema={"name": "teacherai.lesson_plan", "version": "2.0.0"},
-        lesson_id=plan.lesson_plan_id, source_id=question.source_id, context=question.context,
+        schema={"name": "teacherai.lesson_plan", "version": "2.1.0"},
+        lesson_id=plan.lesson_plan_id, source_id=question.source_id, context=education_context or question.context,
+        source_revision=plan.source_analysis.revision if plan.source_analysis.integrity is not None else None,
+        source_decision=plan.source_analysis.integrity.decision if plan.source_analysis.integrity is not None else None,
         content=EducationalDraft(activity="question_solution",
             objectives=[objective for objective in plan.learning_objectives if objective.strip()],
             references=[Reference(kind="concept", key=plan.concept_id), Reference(kind="method", key=c.strategy_id)],
             blocks=blocks, answer=MathAnswer(kind="math", description=c.final_answer,
                 expressions=[expr.latex for expr in c.final_answer_expressions]), takeaway=c.takeaway),
-        provenance=Provenance(provider=plan.provider, model=plan.model), verification=verification_report(result),
+        provenance=Provenance(provider=plan.provider, model=plan.model),
+        verification=verification_report(result, plan.source_analysis.integrity),
     )
 
 
-def validated_math_lesson(plan: LessonPlan, result: VerificationResult) -> LessonPlanV2:
+def resolved_context(question: QuestionUnderstanding, teaching_context=None) -> EducationContext:
+    """Ders için tek bağlam: sorudan çıkarılan sınav türü ile öğrencinin profil hedefi ayrı alanlarda kalır."""
+    goal = getattr(teaching_context, "exam_goal", None)
+    if goal is None and teaching_context is not None and hasattr(teaching_context, "learner"):
+        goal = getattr(teaching_context.learner, "exam_goal", None)
+    exam = ContextValue(value=goal.strip()[:256], origin="profile") if isinstance(goal, str) and goal.strip() else None
+    return question.context.model_copy(update={"exam": exam})
+
+
+def validated_math_lesson(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None) -> LessonPlanV2:
     try:
-        return project_math(plan, result)
+        return project_math(plan, result, education_context)
     except ValidationError as exc:
         raise InvalidLessonPlanError from exc

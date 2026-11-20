@@ -1,9 +1,9 @@
-from apps.api.app.core.gateway import parse_response
 import asyncio
 import logging
 from pathlib import Path
 from time import perf_counter
 
+from apps.api.app.core.gateway import parse_response
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -15,6 +15,8 @@ from openai import (
 )
 from pydantic import ValidationError
 
+from ..vision.schemas import VisionAnalysis
+from .context import BuiltLessonContext, build_lesson_generation_context
 from .exceptions import (
     InvalidLessonPlanError,
     LessonContextTooLargeError,
@@ -22,11 +24,9 @@ from .exceptions import (
     LessonProviderTimeoutError,
     LessonProviderUnavailableError,
 )
-from .context import BuiltLessonContext, build_lesson_generation_context
 from .normalization import normalize_lesson_draft_response
 from .provider import LessonProviderResult
 from .schemas import LessonDraftResponse
-from ..vision.schemas import VisionAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class OpenAILessonProvider:
         context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
         client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
         try:
-            response = await self._request_lesson(client, context)
+            response = await self._request_lesson(client, context, "lessons.correction" if correction_feedback else "lessons.initial")
         except AuthenticationError as exc:
             self._log_failure(exc, started, request_id)
             raise LessonProviderConfigurationError from exc
@@ -75,7 +75,7 @@ class OpenAILessonProvider:
                     emergency.metrics.size_bytes,
                 )
                 try:
-                    response = await self._request_lesson(client, emergency)
+                    response = await self._request_lesson(client, emergency, "lessons.context_retry")
                 except BadRequestError as retry_exc:
                     self._log_failure(retry_exc, started, request_id)
                     if self._is_context_length_error(retry_exc):
@@ -119,7 +119,7 @@ class OpenAILessonProvider:
         # Normalizasyon gateway içinde çalışır; başarısızlığı invalid_output olarak sınıflanır.
         return LessonProviderResult(response.output_parsed, self.name, self.model)
 
-    async def _request_lesson(self, client: AsyncOpenAI, context: BuiltLessonContext):
+    async def _request_lesson(self, client: AsyncOpenAI, context: BuiltLessonContext, purpose: str = "lessons.initial"):
         logger.info(
             "Lesson compact context prepared",
             extra={
@@ -134,6 +134,7 @@ class OpenAILessonProvider:
             client,
             "lessons",
             timeout=self.timeout + 2,
+            purpose=purpose,
             validate=normalize_lesson_draft_response,
             model=self.model,
             input=[
