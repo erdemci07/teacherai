@@ -1,29 +1,13 @@
 """Ders alanındaki kimlikler, bağlam kaynakları ve sunucunun sunduğu yetenekler."""
 
-from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from pydantic import Field, model_validator
 
+from .base import Contract, Identifier, Label, Labels, Subject, Text
+from .source import IntegrityReport
 
-class Contract(BaseModel):
-    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
-
-
-Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=8192)]
-Label = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=256)]
-Identifier = Annotated[str, Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$")]
-Labels = Annotated[list[Label], Field(max_length=64)]
-
-
-class Subject(StrEnum):
-    MATHEMATICS = "mathematics"
-    GEOMETRY = "geometry"
-    PHYSICS = "physics"
-    CHEMISTRY = "chemistry"
-    BIOLOGY = "biology"
-    SCIENCE = "science"
-    UNKNOWN = "unknown"
+__all__ = ["Contract", "Identifier", "Label", "Labels", "Subject", "Text"]
 
 
 # Belgelenmiş etiket eşlemesi. Listede olmayan etiket "unknown" kalır; hiçbir etiket sessizce
@@ -77,13 +61,18 @@ class Grade(Contract):
 
 
 class EducationContext(Contract):
+    """Tek çözümlenmiş çalışma zamanı bağlamı; her alan kökenini taşır."""
+
     subject: Subject
     language: Label
     system: ContextValue | None = None
     stage: ContextValue | None = None
     grade: Grade | None = None
     academic_year: ContextValue | None = None
+    # Öğrencinin sınav hedefi (beyan veya profil). Sorudan çıkarılmaz.
     exam: ContextValue | None = None
+    # TA-003: sorunun benzediği sınav türü (AI çıkarımı). Öğrencinin hedefinin yerine geçmez.
+    source_exam: ContextValue | None = None
     references: list[Reference] = Field(default_factory=list, max_length=64)
 
 
@@ -123,6 +112,10 @@ class QuestionUnderstanding(Contract):
     visuals: list[Text] = Field(default_factory=list, max_length=64)
     tables: list[Table] = Field(default_factory=list, max_length=8)
     uncertainties: list[Text] = Field(default_factory=list, max_length=128)
+    # TA-003: kabul edilmiş kaynak revizyonu ve sunucunun bütünlük kararı (yapılandırılmış seçenekler,
+    # ifade kimlikleri, amaç, belirsizlikler, düzeltmeler). Kaynak gözlemi ile yorum ayrı tutulur.
+    revision: int | None = Field(default=None, ge=1, le=64)
+    integrity: IntegrityReport | None = None
 
 
     @model_validator(mode="after")
