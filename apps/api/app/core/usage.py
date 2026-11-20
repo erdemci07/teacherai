@@ -11,6 +11,15 @@ from firebase_admin import firestore
 PAID_OPERATIONS = {"analyze", "generate", "interact"}
 
 
+# Aynı süreçte aynı günlük belge için yarışan işlemleri sıraya alır.
+# Farklı süreçler arasındaki tutarlılığı Firestore işlemi sağlar.
+_local_locks = [Lock() for _ in range(64)]
+
+
+def usage_lock(key):
+    return _local_locks[hash(key) % len(_local_locks)]
+
+
 class UsageLimitExceeded(Exception):
     pass
 
@@ -57,7 +66,8 @@ class UsageTracker:
         def update(tx):
             tx.set(ref, {**reserve(ref.get(transaction=tx).to_dict() or {}), **retention(DAILY, day)})
 
-        commit_transaction(self.db, update)
+        with usage_lock(doc_id):
+            commit_transaction(self.db, update)
 
     def reserve_output(self, uid, limit):
         key = (
@@ -73,7 +83,7 @@ class UsageTracker:
 
     def _adjust_output(self, key, delta):
         def adjust(amount):
-            total = amount + delta
+            total = max(0, amount + delta)
             if delta > 0 and total > self.settings.daily_output_tokens:
                 raise UsageLimitExceeded
             return total
@@ -90,7 +100,8 @@ class UsageTracker:
             tx.set(ref, {"output_tokens": adjust(current.get("output_tokens", 0)), **retention(OUTPUT, key[:10])})
 
         try:
-            commit_transaction(self.db, update)
+            with usage_lock(key):
+                commit_transaction(self.db, update)
         except UsageLimitExceeded:
             raise
         except Exception:

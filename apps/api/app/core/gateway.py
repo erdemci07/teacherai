@@ -8,6 +8,7 @@ from time import perf_counter
 
 from starlette.concurrency import run_in_threadpool
 
+from .operations import Operation, validate_effort
 from .settings import get_settings
 
 
@@ -34,7 +35,12 @@ def end_accounting(token):
 async def parse_response(client, operation, **params):
     scope = _current.get()
     settings = scope.settings if scope else get_settings()
-    limit = settings.max_output_tokens
+    operation = Operation(operation)
+    limit = settings.max_output_tokens_by_operation[operation]
+    effort = settings.reasoning_effort_by_operation.get(operation)
+    if effort:
+        validate_effort(params["model"], effort)
+        params["reasoning"] = {"effort": effort}
     started = perf_counter()
     attempt = scope.calls if scope else 0
     reservation = None

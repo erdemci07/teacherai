@@ -100,7 +100,7 @@ class OpenAIInteractionProvider:
         r = await asyncio.wait_for(
             parse_response(
                 client,
-                "interactions",
+                "interaction",
                 model=self.model,
                 input=[
                     {"role": "system", "content": self.prompt},
