@@ -1,4 +1,5 @@
 from apps.api.app.core.transactions import commit as commit_transaction
+from apps.api.app.core.retention import PRACTICE, expired, retention, timestamp
 from dataclasses import asdict
 from firebase_admin import firestore
 from fastapi import HTTPException
@@ -65,31 +66,35 @@ class FirestorePracticeStore:
         self.db = db
 
     def save(self, item):
-        self.db.collection("practice_questions").document(item.practice_id).create(
-            asdict(item)
+        self.db.collection(PRACTICE).document(item.practice_id).create(
+            {**asdict(item), **retention(PRACTICE, item.created_at)}
         )
 
     def get(self, practice_id, lesson_id):
         if len(practice_id) > 128 or "/" in practice_id:
             return None
         data = (
-            self.db.collection("practice_questions")
+            self.db.collection(PRACTICE)
             .document(practice_id)
             .get()
             .to_dict()
         )
         if not data or data["lesson_id"] != lesson_id:
             return None
-        if datetime.now(timezone.utc) - data["created_at"] > timedelta(minutes=60):
+        data["created_at"] = timestamp(data["created_at"])
+        if expired(data) or datetime.now(timezone.utc) - data["created_at"] > timedelta(minutes=60):
             return None
+        data.pop("expires_at", None)
         return PracticeRecord(**data)
 
     def answer(self, item, key, make_feedback):
-        ref = self.db.collection("practice_questions").document(item.practice_id)
+        ref = self.db.collection(PRACTICE).document(item.practice_id)
 
         @firestore.transactional
         def commit(tx):
             data = ref.get(transaction=tx).to_dict()
+            if not data or expired(data) or datetime.now(timezone.utc) - timestamp(data["created_at"]) >= timedelta(hours=1):
+                raise HTTPException(404, "Pratik sorusunun süresi doldu.")
             if key in data["answers"]:
                 return PracticeFeedback.model_validate(data["answers"][key])
             if data["closed"] or data["attempts"] >= 3:

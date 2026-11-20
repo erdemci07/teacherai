@@ -1,4 +1,5 @@
 from apps.api.app.core.transactions import commit as commit_transaction
+from apps.api.app.core.retention import ANALYSES, expired, retention
 import json
 from google.cloud.firestore_v1.base_query import FieldFilter
 from apps.api.app.features.vision.schemas import VisionAnalysis
@@ -115,9 +116,10 @@ class FirestoreStudentRepository:
         commit_transaction(self.db, update)
 
     def save_analysis(self, uid, analysis):
-        self.db.collection("lesson_analyses").document(analysis.request_id).create(
+        self.db.collection(ANALYSES).document(analysis.request_id).create(
             {
                 "owner": uid,
+                **retention(ANALYSES),
                 "analysis": analysis.model_dump_json(
                     exclude={"debug", "normalized_preview_url"}
                 ),
@@ -126,8 +128,8 @@ class FirestoreStudentRepository:
 
     def analysis(self, uid, analysis_id):
         data = (
-            self.db.collection("lesson_analyses").document(analysis_id).get().to_dict()
+            self.db.collection(ANALYSES).document(analysis_id).get().to_dict()
         )
-        if data and data["owner"] == uid:
+        if data and data["owner"] == uid and not expired(data):
             return VisionAnalysis.model_validate_json(data["analysis"])
         return None

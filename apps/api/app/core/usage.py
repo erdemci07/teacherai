@@ -1,6 +1,7 @@
 """UTC daily admission. Firestore retries conflicting transactions before a provider is called."""
 from apps.api.app.core.transactions import commit as commit_transaction
 from datetime import datetime, timezone
+from .retention import DAILY, OUTPUT, retention
 from hashlib import sha256
 from threading import Lock
 from fastapi import HTTPException
@@ -50,11 +51,11 @@ class UsageTracker:
             with self.lock:
                 self.days[doc_id] = reserve(self.days.get(doc_id, {}))
             return
-        ref = self.db.collection("ai_daily_usage").document(doc_id)
+        ref = self.db.collection(DAILY).document(doc_id)
 
         @firestore.transactional
         def update(tx):
-            tx.set(ref, reserve(ref.get(transaction=tx).to_dict() or {}))
+            tx.set(ref, {**reserve(ref.get(transaction=tx).to_dict() or {}), **retention(DAILY, day)})
 
         commit_transaction(self.db, update)
 
@@ -81,12 +82,12 @@ class UsageTracker:
             with self.lock:
                 self.output[key] = adjust(self.output.get(key, 0))
             return
-        ref = self.db.collection("ai_output_usage").document(key)
+        ref = self.db.collection(OUTPUT).document(key)
 
         @firestore.transactional
         def update(tx):
             current = ref.get(transaction=tx).to_dict() or {}
-            tx.set(ref, {"output_tokens": adjust(current.get("output_tokens", 0))})
+            tx.set(ref, {"output_tokens": adjust(current.get("output_tokens", 0)), **retention(OUTPUT, key[:10])})
 
         try:
             commit_transaction(self.db, update)

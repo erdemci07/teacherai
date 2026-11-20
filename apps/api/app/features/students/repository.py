@@ -1,4 +1,5 @@
 from threading import Lock
+from apps.api.app.core.retention import ANALYSES, expired, retention
 from typing import Protocol
 from apps.api.app.features.interactions.schemas import InteractionEvent
 from apps.api.app.features.memory.schemas import StudentMemory
@@ -90,8 +91,8 @@ class InMemoryStudentRepository:
             self.save_memory(engine.apply(memory, event))
 
     def save_analysis(self, uid, analysis):
-        self.analyses[analysis.request_id] = (uid, analysis)
+        self.analyses[analysis.request_id] = (uid, analysis, retention(ANALYSES))
 
     def analysis(self, uid, analysis_id):
         item = self.analyses.get(analysis_id)
-        return item[1] if item and item[0] == uid else None
+        return item[1] if item and item[0] == uid and not expired(item[2]) else None
