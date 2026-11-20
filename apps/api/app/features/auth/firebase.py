@@ -18,6 +18,14 @@ class FirestoreConnection:
         from firebase_admin import firestore
         return firestore.client().collection(name)
 
-    def transaction(self):
+    def transaction(self, **kwargs):
         from firebase_admin import firestore
-        return firestore.client().transaction()
+        return firestore.client().transaction(**kwargs)
+
+    def batch(self):
+        from firebase_admin import firestore
+        return firestore.client().batch()
+
+    def get_all(self, refs):
+        from firebase_admin import firestore
+        return firestore.client().get_all(refs)

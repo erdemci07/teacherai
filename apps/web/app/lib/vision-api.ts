@@ -65,8 +65,9 @@ export async function analyzeQuestionImage(
   image: File,
   onUploadComplete: () => void,
   timeoutMs = 60_000,
+  idempotencyKey?: string,
 ): Promise<VisionAnalysis> {
-  const headers = await requestHeaders();
+  const headers = await requestHeaders(idempotencyKey);
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('POST', `${API_BASE_URL}/vision/analyze`);

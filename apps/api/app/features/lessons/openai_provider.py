@@ -116,16 +116,8 @@ class OpenAILessonProvider:
         finally:
             await client.close()
 
-        parsed = response.output_parsed
-        if parsed is None:
-            self._log_failure(InvalidLessonPlanError(), started, request_id)
-            raise InvalidLessonPlanError
-        try:
-            draft = normalize_lesson_draft_response(parsed)
-        except InvalidLessonPlanError as exc:
-            self._log_failure(exc, started, request_id)
-            raise
-        return LessonProviderResult(draft, self.name, self.model)
+        # Normalizasyon gateway içinde çalışır; başarısızlığı invalid_output olarak sınıflanır.
+        return LessonProviderResult(response.output_parsed, self.name, self.model)
 
     async def _request_lesson(self, client: AsyncOpenAI, context: BuiltLessonContext):
         logger.info(
@@ -138,16 +130,17 @@ class OpenAILessonProvider:
                 "context_compaction_level": context.metrics.context_compaction_level,
             },
         )
-        return await asyncio.wait_for(
-            parse_response(client, "lessons",
-                model=self.model,
-                input=[
-                    {"role": "system", "content": self.prompt},
-                    {"role": "user", "content": context.serialized},
-                ],
-                text_format=LessonDraftResponse,
-            ),
+        return await parse_response(
+            client,
+            "lessons",
             timeout=self.timeout + 2,
+            validate=normalize_lesson_draft_response,
+            model=self.model,
+            input=[
+                {"role": "system", "content": self.prompt},
+                {"role": "user", "content": context.serialized},
+            ],
+            text_format=LessonDraftResponse,
         )
 
     def _build_budgeted_context(self, analysis: VisionAnalysis, correction_feedback: str | None, teaching_context, level: str) -> BuiltLessonContext:

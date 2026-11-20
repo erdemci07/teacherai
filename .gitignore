@@ -16,3 +16,6 @@ tmp/
 .ruff_cache/
 firebase-debug.log
 firestore-debug.log
+
+# Model değerlendirme ham sonuçları (TA-001B, D)
+eval-results/

@@ -12,6 +12,7 @@ from apps.api.app.features.lessons.schemas import LessonDraftResponse
 from apps.api.app.features.memory.schemas import EvidenceSignal, TeachingContext
 from apps.api.tests.test_lesson_provider_errors import lesson_payload
 from apps.api.tests.test_mathai import plan
+from apps.api.tests.fake_openai import raw_responses
 
 
 class ParsedResponse:
@@ -38,7 +39,7 @@ class CapturingResponses:
 class Client:
     async def close(self): pass
     def __init__(self, responses):
-        self.responses = responses
+        self.responses = raw_responses(responses.parse)
 
 
 def context_length_error():

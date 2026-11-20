@@ -1,4 +1,6 @@
 from apps.api.app.core.transactions import commit as commit_transaction
+from apps.api.app.core.retention import PRACTICE, expired, retention, timestamp
+from apps.api.app.features.account.guard import ensure_active
 from dataclasses import asdict
 from firebase_admin import firestore
 from fastapi import HTTPException
@@ -24,6 +26,8 @@ class PracticeRecord:
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     answers: dict = field(default_factory=dict)
     closed: bool = False
+    # Hesap silme için sahip alanı (TA-001B, F). Eski belgelerde yoktur; ders kimliğinden bulunur.
+    student_id: str | None = None
 
 
 class InMemoryPracticeStore:
@@ -46,7 +50,7 @@ class InMemoryPracticeStore:
                 return None
             return item
 
-    def answer(self, item, key, make_feedback):
+    def answer(self, item, key, make_feedback, uid=None):
         with self._lock:
             saved = item.answers
             if key in saved:
@@ -65,31 +69,41 @@ class FirestorePracticeStore:
         self.db = db
 
     def save(self, item):
-        self.db.collection("practice_questions").document(item.practice_id).create(
-            asdict(item)
-        )
+        ref = self.db.collection(PRACTICE).document(item.practice_id)
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, item.student_id)
+            tx.create(ref, {**asdict(item), **retention(PRACTICE, item.created_at)})
+
+        commit_transaction(self.db, update)
 
     def get(self, practice_id, lesson_id):
         if len(practice_id) > 128 or "/" in practice_id:
             return None
         data = (
-            self.db.collection("practice_questions")
+            self.db.collection(PRACTICE)
             .document(practice_id)
             .get()
             .to_dict()
         )
         if not data or data["lesson_id"] != lesson_id:
             return None
-        if datetime.now(timezone.utc) - data["created_at"] > timedelta(minutes=60):
+        data["created_at"] = timestamp(data["created_at"])
+        if expired(data) or datetime.now(timezone.utc) - data["created_at"] > timedelta(minutes=60):
             return None
+        data.pop("expires_at", None)
         return PracticeRecord(**data)
 
-    def answer(self, item, key, make_feedback):
-        ref = self.db.collection("practice_questions").document(item.practice_id)
+    def answer(self, item, key, make_feedback, uid=None):
+        ref = self.db.collection(PRACTICE).document(item.practice_id)
 
         @firestore.transactional
         def commit(tx):
+            ensure_active(self.db, tx, uid or item.student_id)
             data = ref.get(transaction=tx).to_dict()
+            if not data or expired(data) or datetime.now(timezone.utc) - timestamp(data["created_at"]) >= timedelta(hours=1):
+                raise HTTPException(404, "Pratik sorusunun süresi doldu.")
             if key in data["answers"]:
                 return PracticeFeedback.model_validate(data["answers"][key])
             if data["closed"] or data["attempts"] >= 3:

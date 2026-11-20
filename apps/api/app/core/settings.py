@@ -1,12 +1,15 @@
 from functools import lru_cache
 from typing import Annotated, Literal
 import json
+import logging
 from urllib.parse import urlsplit
 
 from pathlib import Path
 
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+from .operations import DEFAULT_LIMITS, Operation, validate_effort
 
 
 Price = Annotated[float, Field(ge=0, allow_inf_nan=False)]
@@ -80,11 +83,36 @@ class Settings(BaseSettings):
     firebase_enabled: bool = False
     authenticated_daily_ai_limit: int = Field(50, ge=0, le=10000)
     operation_limits: dict[str, int] = {"analyze": 20, "generate": 20, "interact": 40, "preview": 30, "answer": 80, "feedback": 20, "understood": 80}
-    daily_output_tokens: int = Field(100000, ge=0)
+    daily_output_tokens: int = Field(200000, ge=0)
+    # Küresel günlük bütçe; tek UTC gün belgesinde atomik ayrılır. 0 ilgili ücretli yolu kapatır.
+    global_daily_paid_operations: int = Field(2000, ge=0)
+    global_daily_provider_calls: int = Field(4000, ge=0)
+    global_daily_output_tokens: int = Field(20_000_000, ge=0)
+    usage_timeout_seconds: float = Field(5, gt=0, le=30)
+    usage_transaction_attempts: int = Field(5, ge=1, le=10)
     ai_enabled: bool = True
+    account_deletion_max_auth_age_seconds: int = Field(300, ge=30, le=3600)
+    account_deletion_time_budget_seconds: float = Field(20, ge=0, le=120)
     ai_concurrency: int = Field(4, ge=1, le=64)
     max_json_bytes: int = Field(750000, ge=1024, le=8000000)
-    max_output_tokens: int = Field(4096, ge=128, le=32000)
+    max_output_tokens: int | None = Field(None, ge=128, le=32000)
+    max_output_tokens_by_operation: dict[Operation, Annotated[int, Field(ge=128, le=32000, strict=True)]] = Field(default_factory=dict)
+    reasoning_effort_by_operation: dict[Operation, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def configure_operations(self):
+        if self.max_output_tokens is not None:
+            logging.getLogger(__name__).warning("TEACHERAI_MAX_OUTPUT_TOKENS kullanımdan kaldırılıyor; işleme özel ayarı kullanın.")
+        self.max_output_tokens_by_operation = {
+            op: self.max_output_tokens_by_operation.get(op, self.max_output_tokens or limit)
+            for op, limit in DEFAULT_LIMITS.items()
+        }
+        models = {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
+                  Operation.INTERACTION: self.openai_interaction_model}
+        for op, effort in self.reasoning_effort_by_operation.items():
+            validate_effort(models[op], effort)
+        return self
+
     app_check_mode: Literal["off", "monitor", "enforce"] = "off"
     pricing_version: str | None = None
     # Verified USD per million tokens: input, cached input, output.

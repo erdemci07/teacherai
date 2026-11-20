@@ -12,8 +12,8 @@ export interface BoardPlan { schema_version:string;board_id:string;lesson_plan_i
 export interface GeneratedLesson { lesson:LessonPlan;verification:VerificationResult;board:BoardPlan;correction_attempted:boolean;total_processing_ms:number }
 export class LessonApiError extends Error { constructor(public code:string){super(code)} }
 const BASE=process.env.NEXT_PUBLIC_API_BASE_URL??process.env.NEXT_PUBLIC_TEACHERAI_API_BASE_URL??'http://localhost:8000/api/v1';
-export async function generateLesson(analysis:VisionAnalysis):Promise<GeneratedLesson>{
+export async function generateLesson(analysis:VisionAnalysis,idempotencyKey?:string):Promise<GeneratedLesson>{
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),90000);
- try{const headers = await requestHeaders();const response=await fetch(`${BASE}/lessons/generate`,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify({analysis_id:analysis.request_id}),signal:controller.signal});const body=await response.json();if(!response.ok)throw new LessonApiError(body.error??'lesson_error');return body.data}
+ try{const headers = await requestHeaders(idempotencyKey);const response=await fetch(`${BASE}/lessons/generate`,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify({analysis_id:analysis.request_id}),signal:controller.signal});const body=await response.json();if(!response.ok)throw new LessonApiError(body.error??'lesson_error');return body.data}
  catch(error){if(error instanceof LessonApiError)throw error;if(error instanceof DOMException&&error.name==='AbortError')throw new LessonApiError('lesson_timeout');throw new LessonApiError('network_error')}finally{clearTimeout(timer)}
 }

@@ -26,7 +26,9 @@ class OpenAIInteractionProvider:
         model: str,
         timeout: float,
         context_budget_bytes: int = 12000,
+        client_factory=None,
     ):
+        self._client_factory = client_factory
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
@@ -40,7 +42,7 @@ class OpenAIInteractionProvider:
     ) -> AdaptiveDraft:
         if not self.api_key:
             raise InteractionProviderError
-        client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
+        client = (self._client_factory or AsyncOpenAI)(api_key=self.api_key, timeout=self.timeout, max_retries=0)
         try:
             return await self._adapt_with_context(
                 client, action, lesson, hint_level, teaching_context, "normal"
@@ -97,27 +99,21 @@ class OpenAIInteractionProvider:
             }
         if not fits_context_budget(payload, self.context_budget_bytes):
             raise InteractionContextTooLargeError
-        r = await asyncio.wait_for(
-            parse_response(
-                client,
-                "interactions",
-                model=self.model,
-                input=[
-                    {"role": "system", "content": self.prompt},
-                    {
-                        "role": "user",
-                        "content": json.dumps(
-                            payload, ensure_ascii=False, separators=(",", ":")
-                        ),
-                    },
-                ],
-                text_format=AdaptiveDraft,
-            ),
-            self.timeout + 2,
+        r = await parse_response(
+            client,
+            "interaction",
+            timeout=self.timeout + 2,
+            model=self.model,
+            input=[
+                {"role": "system", "content": self.prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+                },
+            ],
+            text_format=AdaptiveDraft,
         )
-        if r.output_parsed is None:
-            raise InvalidInteractionResponseError
-        return AdaptiveDraft.model_validate(r.output_parsed)
+        return r.output_parsed
 
 
 def _is_context_limit(exc: Exception) -> bool:

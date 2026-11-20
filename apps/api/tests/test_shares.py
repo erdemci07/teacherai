@@ -26,7 +26,7 @@ class FailingShareRepository:
     def find_by_lesson_plan_id(self, lesson_plan_id: str):
         raise RuntimeError("firestore unavailable")
 
-    def save(self, snapshot: PublicSolutionSnapshot) -> bool:
+    def save(self, snapshot: PublicSolutionSnapshot, owner_id=None) -> bool:
         raise RuntimeError("firestore unavailable")
 
 
@@ -36,7 +36,7 @@ class MissingAfterSaveRepository(InMemoryShareRepository):
 
 
 class SaveFailingRepository(InMemoryShareRepository):
-    def save(self, snapshot: PublicSolutionSnapshot) -> bool:
+    def save(self, snapshot: PublicSolutionSnapshot, owner_id=None) -> bool:
         raise RuntimeError("permission denied")
 
 

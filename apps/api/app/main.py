@@ -10,6 +10,7 @@ from apps.api.app.core.container import build_container
 from apps.api.app.core.errors import register_error_handlers
 from apps.api.app.core.logging import configure_logging
 from apps.api.app.core.settings import get_settings
+from apps.api.app.features.shares.exceptions import ShareUnpublishedError
 
 
 def create_app(settings_override=None) -> FastAPI:
@@ -49,7 +50,14 @@ def create_app(settings_override=None) -> FastAPI:
     @app.get("/s/{share_id}", response_class=HTMLResponse, include_in_schema=False)
     def public_share_page(request: Request, share_id: str):
         request_origin = f"{request.url.scheme}://{request.url.netloc}"
-        html = app.state.container.share_service.render_public_html(share_id, request_origin)
+        try:
+            html = app.state.container.share_service.render_public_html(share_id, request_origin)
+        except ShareUnpublishedError:
+            return HTMLResponse(
+                "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex\"><title>Paylaşım kaldırıldı</title></head><body><h1>Paylaşım kaldırıldı</h1><p>Bu paylaşım bağlantısı yayından kaldırıldı.</p></body></html>",
+                status_code=410,
+                headers={"Cache-Control": "no-store"},
+            )
         if html is None:
             return HTMLResponse(
                 "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex\"><title>Çözüm bulunamadı</title></head><body><h1>Çözüm bulunamadı</h1><p>Bu paylaşım bağlantısı artık kullanılamıyor olabilir.</p></body></html>",

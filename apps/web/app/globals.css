@@ -55,7 +55,7 @@ main { min-height: 70vh; }
 .navLinks, .navActions { display: flex; align-items: center; gap: 18px; }
 .navLinks a { color: var(--muted); font-weight: 650; }
 .navLinks a:hover { color: var(--ink); }
-.primaryButton, .secondaryButton, .ghostButton {
+.primaryButton, .secondaryButton, .ghostButton, .dangerButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -69,6 +69,10 @@ main { min-height: 70vh; }
 .primaryButton:hover { background: var(--brand-dark); }
 .secondaryButton { background: var(--surface-strong); border-color: var(--line); }
 .ghostButton { color: var(--muted); }
+.dangerButton { color: white; background: #b42318; cursor: pointer; }
+.dangerButton:hover { background: #8f1d14; }
+.dangerButton:disabled { opacity: 0.5; cursor: not-allowed; }
+.errorText { color: #8b2828; font-weight: 700; }
 
 .hero {
   display: grid;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { LessonPlan } from '../lib/lesson-api';
 import { interact, submitPractice, PracticeFeedback, InteractionAction, InteractionApiError, InteractionResponse } from '../lib/interaction-api';
+import { errorMessage } from '../lib/error-messages';
 import { AdaptiveBoard } from './AdaptiveBoard';
 import { RichMathText } from './RichMathText';
 import { BrandMark } from '../components/BrandMark';
@@ -49,7 +50,7 @@ export function InteractionPanel({ lesson }: { lesson: LessonPlan }) {
       setResponse(result);
       if (action === 'hint' && result.next_hint_level) setHintLevel(result.next_hint_level);
     } catch (e) {
-      setError(e instanceof InteractionApiError && e.code === 'interaction_provider_unavailable' ? 'Öğretmen yanıtı şu anda hazırlanamadı. Tekrar deneyelim.' : e instanceof InteractionApiError && e.code === 'interaction_context_too_large' ? 'Bu çözüm çok ayrıntılı olduğu için ek anlatım şu anda hazırlanamadı.' : 'Bu etkileşim tamamlanamadı.');
+      setError(e instanceof InteractionApiError && e.code.startsWith('ai_') ? errorMessage(e.code) : e instanceof InteractionApiError && e.code === 'interaction_provider_unavailable' ? 'Öğretmen yanıtı şu anda hazırlanamadı. Tekrar deneyelim.' : e instanceof InteractionApiError && e.code === 'interaction_context_too_large' ? 'Bu çözüm çok ayrıntılı olduğu için ek anlatım şu anda hazırlanamadı.' : 'Bu etkileşim tamamlanamadı.');
     } finally {
       setLoading(null);
     }

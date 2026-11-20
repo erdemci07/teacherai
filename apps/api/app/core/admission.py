@@ -6,6 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from apps.api.app.core.usage import PAID_OPERATIONS, UsageLimitExceeded
 from apps.api.app.features.auth.dependencies import require_user
 from apps.api.app.features.auth.schemas import AuthenticatedUser
+from apps.api.app.features.account.guard import AccountDeletionInProgress, deletion_started
 from .gateway import begin_accounting, end_accounting
 
 
@@ -16,6 +17,8 @@ def admitted(operation: str):
         idempotency_key: Annotated[str | None, Header(max_length=128)] = None,
     ):
         container = request.app.state.container
+        if await run_in_threadpool(deletion_started, container.account_deletion.db, user.uid):
+            raise AccountDeletionInProgress
         activity = operation
         if operation == "interact":
             try:
@@ -37,7 +40,7 @@ def admitted(operation: str):
                 await run_in_threadpool(
                     container.usage_tracker.record, user.uid, activity, idempotency_key
                 )
-            except (UsageLimitExceeded, HTTPException):
+            except (UsageLimitExceeded, HTTPException, AccountDeletionInProgress):
                 raise
             except Exception:
                 raise HTTPException(503, "Usage service unavailable.") from None
