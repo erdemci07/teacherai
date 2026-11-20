@@ -12,7 +12,7 @@ from apps.api.app.features.lessons.exceptions import LessonError
 from apps.api.app.features.interactions.exceptions import InteractionError
 from apps.api.app.features.shares.exceptions import ShareError
 from apps.api.app.features.auth.dependencies import AuthenticationRequired
-from apps.api.app.core.usage import UsageLimitExceeded
+from apps.api.app.core.usage import GlobalBudgetExhausted, UsageLimitExceeded
 from apps.api.app.core.ai_outcomes import AIOutcomeError
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,10 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(RetryError)
     async def unavailable(request, exc):
         return JSONResponse(status_code=503, content={"error":"storage_unavailable", "detail":"Service temporarily unavailable."})
+
+    @app.exception_handler(GlobalBudgetExhausted)
+    async def global_budget_handler(request: Request, exc: GlobalBudgetExhausted) -> JSONResponse:
+        return JSONResponse(status_code=503, content=ErrorResponse(error="ai_global_budget_exhausted", detail="Öğretmen servisi bugünlük kapasitesine ulaştı. Lütfen daha sonra tekrar dene.", request_id=getattr(request.state, "request_id", None)).model_dump())
 
     @app.exception_handler(UsageLimitExceeded)
     async def usage_handler(request: Request, exc: UsageLimitExceeded) -> JSONResponse:

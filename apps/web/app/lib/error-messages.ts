@@ -30,6 +30,8 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   ai_invalid_output: 'Güvenilir bir yanıt oluşturamadım. Aynı soruyu yeniden deneyebiliriz.',
   ai_timeout: 'Yanıt beklediğimden uzun sürdü. Biraz sonra yeniden deneyebilirsin.',
   ai_provider_error: 'Öğretmen servisi yanıt veremedi. Biraz sonra yeniden deneyebilirsin.',
+  // C paketi: günlük küresel AI kapasitesi doldu.
+  ai_global_budget_exhausted: 'Öğretmen servisi bugünlük kapasitesine ulaştı. Yarın yeniden deneyebilirsin.',
 };
 
 export const DEFAULT_ERROR_MESSAGE = 'Bir sorun oluştu. Biraz sonra yeniden deneyebilirsin.';

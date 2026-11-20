@@ -114,7 +114,7 @@ def test_release_never_drops_counter_below_zero():
     tracker = UsageTracker(Settings(daily_output_tokens=1000))
     key = tracker.reserve_output("uid", 300)
     tracker.release_output(key, 5000)
-    assert tracker.output[key] == 0
+    assert tracker.output[key.key] == 0
 
 
 @pytest.mark.asyncio

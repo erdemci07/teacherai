@@ -197,7 +197,8 @@ async def _settle(scope, reservation, limit, outcome, usage, event, strict=False
         event["reservation"] = "kept" if reservation else "none"
         return
     try:
-        await run_in_threadpool(scope.tracker.release_output, reservation, max(0, limit - min(output, limit)))
+        unused = max(0, limit - min(output, limit))
+        await run_in_threadpool(scope.tracker.release_output, reservation, unused, event.get("estimated_usd"))
         event["reservation"] = "released"
     except Exception:
         event["reservation"] = "release_failed"

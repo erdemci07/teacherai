@@ -84,6 +84,12 @@ class Settings(BaseSettings):
     authenticated_daily_ai_limit: int = Field(50, ge=0, le=10000)
     operation_limits: dict[str, int] = {"analyze": 20, "generate": 20, "interact": 40, "preview": 30, "answer": 80, "feedback": 20, "understood": 80}
     daily_output_tokens: int = Field(200000, ge=0)
+    # Küresel günlük bütçe; tek UTC gün belgesinde atomik ayrılır. 0 ilgili ücretli yolu kapatır.
+    global_daily_paid_operations: int = Field(2000, ge=0)
+    global_daily_provider_calls: int = Field(4000, ge=0)
+    global_daily_output_tokens: int = Field(20_000_000, ge=0)
+    usage_timeout_seconds: float = Field(5, gt=0, le=30)
+    usage_transaction_attempts: int = Field(5, ge=1, le=10)
     ai_enabled: bool = True
     ai_concurrency: int = Field(4, ge=1, le=64)
     max_json_bytes: int = Field(750000, ge=1024, le=8000000)

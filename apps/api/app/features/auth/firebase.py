@@ -18,6 +18,6 @@ class FirestoreConnection:
         from firebase_admin import firestore
         return firestore.client().collection(name)
 
-    def transaction(self):
+    def transaction(self, **kwargs):
         from firebase_admin import firestore
-        return firestore.client().transaction()
+        return firestore.client().transaction(**kwargs)

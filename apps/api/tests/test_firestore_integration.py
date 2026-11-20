@@ -66,7 +66,8 @@ def test_atomic_quota_across_clients(databases):
     with pytest.raises(UsageLimitExceeded):
         trackers[1].reserve_output(uid, 60)
     trackers[1].release_output(key, 50)
-    assert trackers[0].reserve_output(uid, 100) == key
+    # Rezervasyon nesnesi kullanıcı ve küresel payı taşır (TA-001B, C); anahtar aynı kalır.
+    assert trackers[0].reserve_output(uid, 100).key == key.key
 
 
 @pytest.mark.asyncio
