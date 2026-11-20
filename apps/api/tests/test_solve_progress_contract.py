@@ -29,7 +29,9 @@ def test_empty_state_uses_teacherai_native_icon_not_sparkle() -> None:
 
 
 def test_vision_and_lesson_errors_remain_distinguishable() -> None:
+    # Hata metinleri TS testinden sınanabilmesi için ayrı modüle taşındı (TA-001B, B).
     workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    workspace += Path("apps/web/app/lib/error-messages.ts").read_text(encoding="utf-8")
 
     assert "caught instanceof VisionApiError" in workspace
     assert "caught instanceof LessonApiError" in workspace

@@ -97,27 +97,21 @@ class OpenAIInteractionProvider:
             }
         if not fits_context_budget(payload, self.context_budget_bytes):
             raise InteractionContextTooLargeError
-        r = await asyncio.wait_for(
-            parse_response(
-                client,
-                "interaction",
-                model=self.model,
-                input=[
-                    {"role": "system", "content": self.prompt},
-                    {
-                        "role": "user",
-                        "content": json.dumps(
-                            payload, ensure_ascii=False, separators=(",", ":")
-                        ),
-                    },
-                ],
-                text_format=AdaptiveDraft,
-            ),
-            self.timeout + 2,
+        r = await parse_response(
+            client,
+            "interaction",
+            timeout=self.timeout + 2,
+            model=self.model,
+            input=[
+                {"role": "system", "content": self.prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+                },
+            ],
+            text_format=AdaptiveDraft,
         )
-        if r.output_parsed is None:
-            raise InvalidInteractionResponseError
-        return AdaptiveDraft.model_validate(r.output_parsed)
+        return r.output_parsed
 
 
 def _is_context_limit(exc: Exception) -> bool:

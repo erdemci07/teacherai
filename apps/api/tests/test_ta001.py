@@ -25,6 +25,7 @@ from apps.api.tests.test_feedback import generated_result
 from apps.api.tests.test_interactions import service as interaction_service
 from apps.api.tests.test_lesson_pipeline import AlgebraLessonProvider
 from apps.api.tests.test_mathai import plan
+from apps.api.tests.fake_openai import raw_responses
 
 PREFIX = "/api/v1"
 OTHER = {"Authorization": "Bearer student-b"}
@@ -276,7 +277,7 @@ async def test_provider_accounting_and_budget(monkeypatch):
         output_tokens_details=SimpleNamespace(reasoning_tokens=3),
     )
     parse = AsyncMock(
-        return_value=SimpleNamespace(usage=usage, status="completed", model="model")
+        return_value=SimpleNamespace(usage=usage, status="completed", model="model", output_parsed={"ok": True})
     )
     logs = []
     monkeypatch.setattr(
@@ -285,7 +286,7 @@ async def test_provider_accounting_and_budget(monkeypatch):
     )
     scope = begin_accounting("request", settings, tracker, "student")
     try:
-        client = SimpleNamespace(responses=SimpleNamespace(parse=parse))
+        client = SimpleNamespace(responses=raw_responses(parse))
         await parse_response(client, "vision", model="model", input=["private"])
         with pytest.raises(UsageLimitExceeded):
             await parse_response(client, "vision", model="model", input=["private"])
@@ -317,7 +318,7 @@ async def test_interaction_compaction_preserves_teaching_policy():
         )
     )
     await provider._adapt_with_context(
-        SimpleNamespace(responses=SimpleNamespace(parse=parse)),
+        SimpleNamespace(responses=raw_responses(parse)),
         "hint",
         lesson,
         1,

@@ -11,6 +11,7 @@ from apps.api.app.features.vision.exceptions import (
     ProviderUnavailableError,
 )
 from apps.api.app.features.vision.openai_provider import OpenAIVisionProvider
+from apps.api.tests.fake_openai import raw_responses
 
 
 class RaisingResponses:
@@ -24,7 +25,7 @@ class RaisingResponses:
 class RaisingClient:
     async def close(self): pass
     def __init__(self, error: Exception) -> None:
-        self.responses = RaisingResponses(error)
+        self.responses = raw_responses(RaisingResponses(error).parse)
 
 
 def status_error(error_class, status: int, body: dict):

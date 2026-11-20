@@ -15,33 +15,13 @@ import { LessonText } from './LessonText';
 import { SolutionFeedback } from './SolutionFeedback';
 import { ShareSolution } from './ShareSolution';
 import { BrandMark } from '../components/BrandMark';
+import { ERROR_MESSAGES } from '../lib/error-messages';
 
 type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const ERRORS: Record<string, string> = {
-  authentication_required: 'Soru çözmek için oturum aç.',
-  usage_limit_exceeded: 'Günlük kullanım sınırına ulaştın.',
-  image_required: 'Lütfen bir soru görseli seç.',
-  unsupported_image_type: 'Bu dosya türünü okuyamıyorum. JPG, JPEG, PNG, WEBP, HEIC veya HEIF biçiminde bir görsel deneyebilir misin?',
-  image_too_large: 'Bu görsel 10 MB sınırını aşıyor. Daha küçük bir fotoğraf seçebilir misin?',
-  invalid_image: 'Bu görseli okuyamadım. Sorunun tamamının net göründüğü başka bir fotoğraf deneyebilir misin?',
-  image_sanitization_failed: 'Bu fotoğrafı analiz için güvenli biçime dönüştüremedim. Aynı soruyu yeniden çekip gönderebilir misin?',
-  provider_not_configured: 'Öğretmen servisi henüz hazır değil. Biraz sonra tekrar deneyebilirsin.',
-  provider_unavailable: 'Şu anda öğretmen servisine ulaşamıyorum. Biraz sonra tekrar deneyebilirsin.',
-  provider_timeout: 'Görsel analizi beklediğimden uzun sürdü. Aynı görselle yeniden deneyebiliriz.',
-  invalid_provider_response: 'Görseldeki soruyu güvenilir biçimde çıkaramadım. Daha net bir fotoğraf deneyebilir misin?',
-  lesson_provider_not_configured: 'Öğretmen servisi henüz hazır değil. Biraz sonra tekrar deneyebilirsin.',
-  lesson_provider_unavailable: 'Anlatımı şu anda hazırlayamadım. Biraz sonra yeniden deneyebilirsin.',
-  invalid_lesson_plan: 'Çözüm taslağı güvenilir biçimde oluşmadı. Aynı soruyu yeniden inceleyebiliriz.',
-  lesson_context_too_large: 'Bu sorunun içeriği oldukça yoğun olduğu için anlatımı hazırlayamadım. Yeniden incelemeyi deneyebilirsin.',
-  math_verification_failed: 'Çözümü matematiksel kontrolden geçiremedim. Aynı soruyla yeniden deneyebiliriz.',
-  verification_contradiction: 'Bu çözüm matematiksel kontrolden geçmedi. Soruyu yeniden inceleyelim.',
-  lesson_timeout: 'İnceleme beklediğimden uzun sürdü. Tekrar deneyebilir misin?',
-  network_error: 'Şu anda TeacherAI’a ulaşamıyorum. İnternet bağlantını kontrol edip yeniden deneyebilirsin.',
-  lesson_error: 'Çözümü şu anda hazırlayamadım. Biraz sonra yeniden deneyebilirsin.',
-};
+const ERRORS = ERROR_MESSAGES;
 const INVALID_QUESTION_MESSAGES: Record<Exclude<ImageStatus, 'valid_math_question'>, string> = {
   not_math_question: 'Bu görselde çözebileceğim bir matematik sorusu göremedim 🙂 Sorunun bulunduğu kısmı tekrar çekip gönderebilirsin.',
   unreadable: 'Fotoğraf biraz bulanık görünüyor. Soruyu net okuyabilmem için biraz daha yakından ve sabit şekilde tekrar çekebilir misin? 🙂',

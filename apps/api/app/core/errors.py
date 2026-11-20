@@ -13,6 +13,7 @@ from apps.api.app.features.interactions.exceptions import InteractionError
 from apps.api.app.features.shares.exceptions import ShareError
 from apps.api.app.features.auth.dependencies import AuthenticationRequired
 from apps.api.app.core.usage import UsageLimitExceeded
+from apps.api.app.core.ai_outcomes import AIOutcomeError
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,11 @@ def register_error_handlers(app: FastAPI) -> None:
     async def authentication_handler(request: Request, exc: AuthenticationRequired) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(status_code=401, content=ErrorResponse(error="authentication_required", detail="Geçerli bir oturum gerekli.", request_id=request_id).model_dump())
+
+    @app.exception_handler(AIOutcomeError)
+    async def ai_outcome_handler(request: Request, exc: AIOutcomeError) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(status_code=exc.status_code, content=ErrorResponse(error=exc.code, detail=exc.public_message, request_id=request_id).model_dump())
 
     @app.exception_handler(InteractionError)
     async def interaction_exception_handler(request: Request, exc: InteractionError) -> JSONResponse:

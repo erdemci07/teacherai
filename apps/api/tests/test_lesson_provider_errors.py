@@ -7,13 +7,14 @@ from openai import APIConnectionError, APIStatusError, APITimeoutError, BadReque
 import apps.api.app.features.lessons.openai_provider as provider_module
 from apps.api.app.features.lessons.exceptions import (
     InvalidLessonPlanError,
-    LessonProviderTimeoutError,
     LessonProviderUnavailableError,
 )
 from apps.api.app.features.lessons.openai_provider import OpenAILessonProvider
 from apps.api.app.features.lessons.normalization import normalize_lesson_draft_response
 from apps.api.app.features.lessons.schemas import LessonDraft, LessonDraftResponse
 from apps.api.tests.test_mathai import plan
+from apps.api.tests.fake_openai import raw_responses
+from apps.api.app.core.ai_outcomes import AITimeoutError
 
 
 class ParsedResponse:
@@ -38,7 +39,7 @@ class Responses:
 class Client:
     async def close(self): pass
     def __init__(self, responses: Responses) -> None:
-        self.responses = responses
+        self.responses = raw_responses(responses.parse)
 
 
 def lesson_payload(step_ids: list[str] | None = None) -> dict:
@@ -322,11 +323,12 @@ async def test_api_connection_error_maps_to_provider_unavailable(monkeypatch) ->
 
 
 @pytest.mark.asyncio
-async def test_timeout_maps_to_lesson_timeout(monkeypatch) -> None:
+async def test_timeout_maps_to_ai_timeout(monkeypatch) -> None:
+    # TA-001B B: zaman aşımı gateway'de sınıflanır ve üç işlemde de ai_timeout (504) olur.
     upstream = APITimeoutError(request=httpx.Request("POST", "https://api.openai.com/v1/responses"))
     provider = provider_with_responses(monkeypatch, Responses(error=upstream))
 
-    with pytest.raises(LessonProviderTimeoutError):
+    with pytest.raises(AITimeoutError):
         await provider.generate_lesson_plan(plan().source_analysis)
 
 

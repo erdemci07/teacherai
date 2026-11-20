@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from apps.api.app.core.usage import UsageLimitExceeded
+from apps.api.app.core.ai_outcomes import AIOutcomeError
 from apps.api.app.core.gateway import parse_response
 import asyncio
 import base64
@@ -52,21 +53,21 @@ class OpenAIVisionProvider:
         image_url = f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
         client = AsyncOpenAI(api_key=self._api_key, timeout=self._timeout_seconds, max_retries=0)
         try:
-            response = await asyncio.wait_for(
-                parse_response(client, "vision",
-                    model=self._model,
-                    input=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "input_text", "text": self._prompt},
-                                {"type": "input_image", "image_url": image_url, "detail": "high"},
-                            ],
-                        }
-                    ],
-                    text_format=VisionProviderAnalysis,
-                ),
+            response = await parse_response(
+                client,
+                "vision",
                 timeout=self._timeout_seconds + 2,
+                model=self._model,
+                input=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "input_text", "text": self._prompt},
+                            {"type": "input_image", "image_url": image_url, "detail": "high"},
+                        ],
+                    }
+                ],
+                text_format=VisionProviderAnalysis,
             )
         except AuthenticationError as exc:
             self._log_failure(exc, request_id, started)
@@ -95,7 +96,7 @@ class OpenAIVisionProvider:
         except ValidationError as exc:
             self._log_failure(exc, request_id, started)
             raise InvalidProviderResponseError from exc
-        except (UsageLimitExceeded, HTTPException):
+        except (UsageLimitExceeded, HTTPException, AIOutcomeError):
             raise
         except Exception as exc:
             self._log_failure(exc, request_id, started)
@@ -104,15 +105,8 @@ class OpenAIVisionProvider:
         finally:
             await client.close()
 
-        parsed = response.output_parsed
-        if parsed is None:
-            self._log_failure(InvalidProviderResponseError(), request_id, started)
-            raise InvalidProviderResponseError
-        try:
-            analysis = VisionProviderAnalysis.model_validate(parsed)
-        except (ValidationError, ValueError) as exc:
-            self._log_failure(exc, request_id, started)
-            raise InvalidProviderResponseError from exc
+        # Şema doğrulaması gateway'de yapılır; burada yalnız doğrulanmış çıktı vardır.
+        analysis = response.output_parsed
         return ProviderResult(analysis=analysis, provider=self.name, model=self._model, response_id=response.id)
 
     def diagnostics(self) -> dict[str, str | bool]:

@@ -11,6 +11,7 @@ from apps.api.app.features.lessons.schemas import Expression
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.main import create_app
 from apps.api.tests.test_mathai import plan
+from apps.api.tests.fake_openai import raw_responses
 
 class Provider:
     def __init__(self,fail=False,bad_practice=False):self.actions=[];self.fail=fail;self.bad=bad_practice
@@ -80,7 +81,7 @@ async def test_openai_interaction_provider_uses_compact_payload(monkeypatch):
 
     class FakeClient:
         async def close(self): pass
-        def __init__(self,**kwargs):self.responses=Responses()
+        def __init__(self,**kwargs):self.responses=raw_responses(Responses().parse)
 
     monkeypatch.setattr("apps.api.app.features.interactions.openai_provider.AsyncOpenAI",FakeClient)
     provider=OpenAIInteractionProvider("key","model",1)

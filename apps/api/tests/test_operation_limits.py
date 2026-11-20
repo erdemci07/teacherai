@@ -18,12 +18,13 @@ from apps.api.app.core.operations import DEFAULT_LIMITS, Operation
 from apps.api.app.core.settings import Settings
 from apps.api.app.core.usage import UsageLimitExceeded, UsageTracker
 from apps.api.tests.test_firestore_integration import databases as databases_fixture
+from apps.api.tests.fake_openai import raw_responses
 
 databases = databases_fixture
 
 
 def _client(parse):
-    return SimpleNamespace(responses=SimpleNamespace(parse=parse))
+    return SimpleNamespace(responses=raw_responses(parse))
 
 
 @pytest.mark.parametrize("operation", DEFAULT_LIMITS)
@@ -34,7 +35,7 @@ async def test_operation_reserves_exact_provider_limit(monkeypatch, operation, c
         monkeypatch.setenv("TEACHERAI_MAX_OUTPUT_TOKENS_BY_OPERATION", json.dumps({operation: 1800}))
     settings = Settings()
     tracker = Mock()
-    parse = AsyncMock(return_value=SimpleNamespace(status="completed", usage=None))
+    parse = AsyncMock(return_value=SimpleNamespace(status="completed", usage=None, output_parsed={"ok": True}))
     token = begin_accounting("req", settings, tracker, "uid")
     try:
         await parse_response(_client(parse), operation, model="fixture")
@@ -77,7 +78,7 @@ def test_unsupported_effort_rejected(value):
 @pytest.mark.asyncio
 async def test_reasoning_effort_reaches_provider_only_when_configured():
     settings = Settings(reasoning_effort_by_operation={"lessons": "low"})
-    parse = AsyncMock(return_value=SimpleNamespace(status="completed", usage=None))
+    parse = AsyncMock(return_value=SimpleNamespace(status="completed", usage=None, output_parsed={"ok": True}))
     token = begin_accounting("req", settings, Mock(), "uid")
     try:
         await parse_response(_client(parse), "lessons", model=settings.openai_lesson_model)
@@ -141,7 +142,7 @@ async def test_parallel_lesson_requests_never_exceed_daily_output(databases):
     async def provider(**params):
         waiting.append(params["max_output_tokens"])
         await release.wait()
-        return SimpleNamespace(status="completed", usage=SimpleNamespace(output_tokens=1000))
+        return SimpleNamespace(status="completed", usage=SimpleNamespace(output_tokens=1000), output_parsed={"ok": True})
 
     async def lesson_request(index):
         token = begin_accounting(f"req-{index}", settings, trackers[index % 2], uid)
@@ -154,16 +155,19 @@ async def test_parallel_lesson_requests_never_exceed_daily_output(databases):
         finally:
             end_accounting(token)
 
-    tasks = [asyncio.create_task(lesson_request(i)) for i in range(10)]
-    for _ in range(600):
-        if len(waiting) + len(rejected) == 10:
-            break
-        await asyncio.sleep(0.05)
-    peak = ref.get().get("output_tokens")
-    release.set()
-    accepted = sum(await asyncio.gather(*tasks))
-    stop.set()
-    watcher.join()
+    try:
+        tasks = [asyncio.create_task(lesson_request(i)) for i in range(10)]
+        for _ in range(600):
+            if len(waiting) + len(rejected) == 10:
+                break
+            await asyncio.sleep(0.05)
+        peak = ref.get().get("output_tokens")
+        release.set()
+        accepted = sum(await asyncio.wait_for(asyncio.gather(*tasks), 30))
+    finally:
+        release.set()
+        stop.set()
+        watcher.join()
 
     assert accepted == 3 and len(rejected) == 7
     assert peak == settings.daily_output_tokens

@@ -24,7 +24,9 @@ def test_existing_desktop_and_retry_upload_paths_remain_available() -> None:
 
 
 def test_frontend_accepts_jpeg_extensions_and_supported_mime_types() -> None:
+    # Hata metinleri apps/web/app/lib/error-messages.ts modülüne taşındı (TA-001B, B).
     workspace = Path("apps/web/app/solve/SolveWorkspace.tsx").read_text(encoding="utf-8")
+    workspace += Path("apps/web/app/lib/error-messages.ts").read_text(encoding="utf-8")
 
     for media_type in ("image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"):
         assert media_type in workspace
