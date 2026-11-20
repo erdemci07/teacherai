@@ -1,12 +1,15 @@
 from typing import Annotated
 
+from apps.api.app.core.usage import PAID_OPERATIONS, UsageLimitExceeded
+from apps.api.app.features.account.guard import (
+    AccountDeletionInProgress,
+    deletion_started,
+)
+from apps.api.app.features.auth.dependencies import require_user
+from apps.api.app.features.auth.schemas import AuthenticatedUser
 from fastapi import Depends, Header, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-from apps.api.app.core.usage import PAID_OPERATIONS, UsageLimitExceeded
-from apps.api.app.features.auth.dependencies import require_user
-from apps.api.app.features.auth.schemas import AuthenticatedUser
-from apps.api.app.features.account.guard import AccountDeletionInProgress, deletion_started
 from .gateway import begin_accounting, end_accounting
 
 
@@ -34,6 +37,7 @@ def admitted(operation: str):
             container.settings,
             container.usage_tracker,
             user.uid,
+            max_calls=container.settings.provider_call_budget(activity),
         )
         try:
             try:

@@ -18,4 +18,13 @@ When useful, put compact facts in visual_elements.relevant_visual_facts and rela
 Do not infer exact measurements or equal spacing from image geometry unless explicitly stated or clearly marked. If a relationship is unclear, record uncertainty instead of inventing it.
 For story problems, describe meaningful maps, objects, measurements, number lines, coordinate planes,
 graphs, tables, geometry, and real-life scenes in visual_elements.description when they affect the question.
+Transcribe answer choices with their printed labels exactly as printed, for example "B) 8". Never reorder, relabel, complete or invent choices.
+Keep answer-affecting words in question_text exactly, including değildir, olamaz, yanlıştır, doğrudur, en az, en çok, yalnızca, kesinlikle and statement labels such as I, II, III.
+Fill source for every image. question_count is the number of distinct questions visible. Set target_question_clear to false only when several questions are visible and it is unclear which one should be solved.
+In source.statements copy numbered premises such as "I. ..." or "II. ..." exactly, with their labels.
+In source.uncertainties list only readings that could change the answer: where a radical bar ends, an exponent base or scope, numerator or denominator extent, a faint minus sign, a decimal position, an unclear inequality, a negation word, an answer choice label or value, or an essential diagram measurement.
+For each uncertainty give category; element as "stem", "visual", "expression:<0-based index in mathematical_expressions>", "choice:<printed label>" or "statement:<Roman numeral>"; recognized as the exact fragment you wrote inside that element; up to three alternatives that are other plausible readings of the same fragment; affects_answer; and region_index into source.regions or null.
+Do not list harmless issues such as spelling, decorative images, question numbers or formatting in source.uncertainties; mention them in ocr_uncertainties if useful. Never resolve an uncertainty by guessing.
+source.regions are optional normalized boxes with 0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1 for the question, expressions, choices, diagram, graph, table or another question. Omit a region rather than guessing coordinates.
+For invalid images use question_count 0 or 1, target_question_clear true and empty statements, regions and uncertainties.
 Return only the requested structured result.
