@@ -22,6 +22,7 @@ from apps.api.app.features.feedback.service import FeedbackService
 from apps.api.app.features.shares.repository import InMemoryShareRepository
 from apps.api.app.features.shares.service import ShareService
 from apps.api.app.core.usage import UsageTracker
+from apps.api.app.features.account.service import AccountDeletionService, FirebaseIdentity
 from apps.api.app.services.health_service import HealthService
 from apps.api.app.services.version_service import VersionService
 
@@ -40,6 +41,7 @@ class Container:
     share_service: ShareService
     slots: BoundedSemaphore
     usage_tracker: UsageTracker
+    account_deletion: AccountDeletionService
 
 
 def build_container(settings: Settings | None = None) -> Container:
@@ -92,6 +94,7 @@ def build_container(settings: Settings | None = None) -> Container:
         share_service=ShareService(share_repository, resolved_settings),
         slots=BoundedSemaphore(resolved_settings.ai_concurrency),
         usage_tracker=UsageTracker(resolved_settings, db),
+        account_deletion=AccountDeletionService(resolved_settings, db, FirebaseIdentity(identity_app)),
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
         interaction_service=InteractionService(OpenAIInteractionProvider(resolved_settings.openai_api_key, resolved_settings.openai_interaction_model, resolved_settings.interaction_provider_timeout_seconds), IsolatedMathAI(), practice_store),

@@ -22,7 +22,7 @@ from firebase_admin import firestore
 
 from apps.api.app.core.transactions import commit as commit_transaction
 
-from .retention import DAILY, GLOBAL, OUTPUT, retention
+from .retention import DAILY, DELETIONS, GLOBAL, OUTPUT, retention
 
 PAID_OPERATIONS = {"analyze", "generate", "interact"}
 
@@ -50,8 +50,21 @@ class Reservation:
     key: str
     day: str
     amount: int
+    uid: str | None = None
     released: bool = False
     _lock: Lock = field(default_factory=Lock, repr=False, compare=False)
+
+
+def owner_hash(uid):
+    return sha256(uid.encode()).hexdigest()
+
+
+def _ensure_active(db, tx, uid, timeout):
+    # account.guard ile aynı kural; döngüsel içe aktarmayı önlemek için burada okunur.
+    from apps.api.app.features.account.guard import AccountDeletionInProgress
+
+    if db.collection(DELETIONS).document(uid).get(transaction=tx, timeout=timeout).exists:
+        raise AccountDeletionInProgress
 
 
 def _utc_now():
@@ -82,7 +95,7 @@ class UsageTracker:
 
     def record(self, uid, operation, key=None):
         day = self._day()
-        doc_id = f"{day}_{sha256(uid.encode()).hexdigest()}"
+        doc_id = f"{day}_{owner_hash(uid)}"
         fingerprint = sha256(f"{operation}:{key}".encode()).hexdigest() if key else None
         paid = operation in PAID_OPERATIONS
 
@@ -121,11 +134,12 @@ class UsageTracker:
 
         @firestore.transactional
         def update(tx):
+            _ensure_active(self.db, tx, uid, self.settings.usage_timeout_seconds)
             user = reserve(self._get(ref, tx))
             if paid:
                 shared = admit_global(self._get(global_ref, tx))
                 tx.set(global_ref, {**shared, **retention(GLOBAL, day)})
-            tx.set(ref, {**user, **retention(DAILY, day)})
+            tx.set(ref, {**user, "owner_hash": owner_hash(uid), **retention(DAILY, day)})
 
         self._commit(f"global:{day}" if paid else doc_id, update)
 
@@ -134,7 +148,7 @@ class UsageTracker:
     def reserve_output(self, uid, limit):
         """Her gerçek sağlayıcı çağrısından önce kullanıcı ve küresel bütçeyi birlikte ayırır."""
         day = self._day()
-        key = f"{day}_{sha256(uid.encode()).hexdigest()}"
+        key = f"{day}_{owner_hash(uid)}"
 
         def user_reserve(data):
             total = data.get("output_tokens", 0) + limit
@@ -154,7 +168,7 @@ class UsageTracker:
                 user = user_reserve({"output_tokens": self.output.get(key, 0)})
                 self.globals[day] = global_reserve(self.globals.get(day, {}))
                 self.output[key] = user["output_tokens"]
-            return Reservation(key, day, limit)
+            return Reservation(key, day, limit, uid=uid)
 
         def build():
             ref = self.db.collection(OUTPUT).document(key)
@@ -162,15 +176,16 @@ class UsageTracker:
 
             @firestore.transactional
             def update(tx):
+                _ensure_active(self.db, tx, uid, self.settings.usage_timeout_seconds)
                 user = user_reserve(self._get(ref, tx))
                 shared = global_reserve(self._get(global_ref, tx))
-                tx.set(ref, {"output_tokens": user["output_tokens"], **retention(OUTPUT, day)})
+                tx.set(ref, {"output_tokens": user["output_tokens"], "owner_hash": owner_hash(uid), **retention(OUTPUT, day)})
                 tx.set(global_ref, {**shared, **retention(GLOBAL, day)})
 
             return update
 
         self._guarded(f"global:{day}", build)
-        return Reservation(key, day, limit)
+        return Reservation(key, day, limit, uid=uid)
 
     def release_output(self, reservation, unused, usd=None):
         """Kullanılmayan kısmı bir kez iade eder; sayaçlar sıfırın altına inmez."""
@@ -197,9 +212,14 @@ class UsageTracker:
 
                     @firestore.transactional
                     def update(tx):
+                        deleting = bool(reservation.uid) and self.db.collection(DELETIONS).document(reservation.uid).get(
+                            transaction=tx, timeout=self.settings.usage_timeout_seconds
+                        ).exists
                         user = self._get(ref, tx)
                         shared = self._get(global_ref, tx)
-                        tx.set(ref, {"output_tokens": shrink(user.get("output_tokens", 0)), **retention(OUTPUT, reservation.day)})
+                        # Silinen hesabın sayaç belgesi yeniden oluşturulmaz; yalnız küresel pay iade edilir.
+                        if not deleting:
+                            tx.set(ref, {"output_tokens": shrink(user.get("output_tokens", 0)), **retention(OUTPUT, reservation.day)}, merge=True)
                         shared["reserved_output_tokens"] = shrink(shared.get("reserved_output_tokens", 0))
                         if usd is not None:
                             shared["estimated_usd"] = shared.get("estimated_usd", 0) + usd
@@ -215,7 +235,11 @@ class UsageTracker:
         """Firestore hatası 503'e dönüşür; sınır hatası olduğu gibi yükselir."""
         try:
             self._commit(lock_key, build())
-        except UsageLimitExceeded:
+        except (UsageLimitExceeded, HTTPException):
             raise
-        except Exception:
+        except Exception as exc:
+            from apps.api.app.features.account.guard import AccountDeletionInProgress
+
+            if isinstance(exc, AccountDeletionInProgress):
+                raise
             raise HTTPException(503, "Usage service unavailable.") from None

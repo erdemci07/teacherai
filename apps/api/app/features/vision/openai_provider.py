@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from apps.api.app.core.usage import UsageLimitExceeded
 from apps.api.app.core.ai_outcomes import AIOutcomeError
+from apps.api.app.features.account.guard import AccountDeletionInProgress
 from apps.api.app.core.gateway import parse_response
 import asyncio
 import base64
@@ -96,7 +97,7 @@ class OpenAIVisionProvider:
         except ValidationError as exc:
             self._log_failure(exc, request_id, started)
             raise InvalidProviderResponseError from exc
-        except (UsageLimitExceeded, HTTPException, AIOutcomeError):
+        except (UsageLimitExceeded, HTTPException, AIOutcomeError, AccountDeletionInProgress):
             raise
         except Exception as exc:
             self._log_failure(exc, request_id, started)

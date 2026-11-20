@@ -1,1 +1,16 @@
-import Link from 'next/link';export const metadata={title:'Ayarlar | TeacherAI'};export default function Page(){return <div className="pageShell narrow"><div className="panel"><p className="eyebrow">Ayarlar</p><h1>Hesap ve öğrenme tercihleri</h1><p>Öğrenme hafızanı görüntülemek veya sıfırlamak için öğrenci panelini kullanabilirsin.</p><div className="placeholderActions"><Link className="primaryButton" href="/dashboard">Panelime git</Link></div></div></div>}
+import Link from 'next/link';
+import { AccountDeletion } from './AccountDeletion';
+
+export const metadata = { title: 'Ayarlar | TeacherAI' };
+
+export default function Page() {
+  return <div className="pageShell narrow">
+    <div className="panel">
+      <p className="eyebrow">Ayarlar</p>
+      <h1>Hesap ve öğrenme tercihleri</h1>
+      <p>Öğrenme hafızanı görüntülemek veya sıfırlamak için öğrenci panelini kullanabilirsin.</p>
+      <div className="placeholderActions"><Link className="primaryButton" href="/dashboard">Panelime git</Link></div>
+    </div>
+    <AccountDeletion />
+  </div>;
+}

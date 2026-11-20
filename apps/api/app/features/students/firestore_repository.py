@@ -1,5 +1,6 @@
 from apps.api.app.core.transactions import commit as commit_transaction
 from apps.api.app.core.retention import ANALYSES, expired, retention
+from apps.api.app.features.account.guard import ensure_active
 import json
 from google.cloud.firestore_v1.base_query import FieldFilter
 from apps.api.app.features.vision.schemas import VisionAnalysis
@@ -13,12 +14,16 @@ class FirestoreStudentRepository:
         self.db = db if db is not None else firestore.client()
 
     def save_profile(self, p):
-        self.db.collection("student_profiles").document(p.student_id).set(
-            p.model_dump(mode="json"), merge=True
-        )
-        self.db.collection("users").document(p.student_id).set(
-            {"student_id": p.student_id, "email": p.email}, merge=True
-        )
+        profile = self.db.collection("student_profiles").document(p.student_id)
+        user = self.db.collection("users").document(p.student_id)
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, p.student_id)
+            tx.set(profile, p.model_dump(mode="json"), merge=True)
+            tx.set(user, {"student_id": p.student_id, "email": p.email}, merge=True)
+
+        commit_transaction(self.db, update)
 
     def get_profile(self, uid):
         snap = self.db.collection("student_profiles").document(uid).get()
@@ -57,19 +62,22 @@ class FirestoreStudentRepository:
             .stream()
         ]
 
+    def _guarded_set(self, uid, ref, payload):
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, uid)
+            tx.set(ref, payload)
+
+        commit_transaction(self.db, update)
+
     def save_event(self, uid, event):
-        self.db.collection("interaction_events").document(event.event_id).set(
-            {**event.model_dump(mode="json"), "student_id": uid}
-        )
+        ref = self.db.collection("interaction_events").document(event.event_id)
+        self._guarded_set(uid, ref, {**event.model_dump(mode="json"), "student_id": uid})
 
     def save_attempt(self, uid, event, practice_id):
-        self.db.collection("practice_attempts").document(event.event_id).set(
-            {
-                **event.model_dump(mode="json"),
-                "student_id": uid,
-                "practice_question_id": practice_id,
-            }
-        )
+        ref = self.db.collection("practice_attempts").document(event.event_id)
+        payload = {**event.model_dump(mode="json"), "student_id": uid, "practice_question_id": practice_id}
+        self._guarded_set(uid, ref, payload)
 
     def get_memory(self, uid):
         snap = self.db.collection("student_memories").document(uid).get()
@@ -80,9 +88,14 @@ class FirestoreStudentRepository:
         )
 
     def save_memory(self, memory):
-        self.db.collection("student_memories").document(memory.student_id).set(
-            memory.model_dump(mode="json")
-        )
+        ref = self.db.collection("student_memories").document(memory.student_id)
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, memory.student_id)
+            tx.set(ref, memory.model_dump(mode="json"))
+
+        commit_transaction(self.db, update)
 
     def reset_memory(self, uid):
         self.db.collection("student_memories").document(uid).delete()
@@ -94,6 +107,7 @@ class FirestoreStudentRepository:
 
         @firestore.transactional
         def update(tx):
+            ensure_active(self.db, tx, uid)
             if events.get(transaction=tx).exists:
                 return
             data = memory_ref.get(transaction=tx).to_dict() or {"student_id": uid}
@@ -116,15 +130,19 @@ class FirestoreStudentRepository:
         commit_transaction(self.db, update)
 
     def save_analysis(self, uid, analysis):
-        self.db.collection(ANALYSES).document(analysis.request_id).create(
-            {
-                "owner": uid,
-                **retention(ANALYSES),
-                "analysis": analysis.model_dump_json(
-                    exclude={"debug", "normalized_preview_url"}
-                ),
-            }
-        )
+        ref = self.db.collection(ANALYSES).document(analysis.request_id)
+        payload = {
+            "owner": uid,
+            **retention(ANALYSES),
+            "analysis": analysis.model_dump_json(exclude={"debug", "normalized_preview_url"}),
+        }
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, uid)
+            tx.create(ref, payload)
+
+        commit_transaction(self.db, update)
 
     def analysis(self, uid, analysis_id):
         data = (

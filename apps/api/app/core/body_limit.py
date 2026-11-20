@@ -6,6 +6,11 @@ from starlette.responses import JSONResponse
 from ..features.auth.dependencies import AuthenticationRequired, require_user
 
 
+# Oturum gerektirmeyen tek yazma yolu: Auth hesabı silindikten sonra sonucu makbuzla
+# sorgulamak içindir (TA-001B, F). Gövdesi küçük sınırla okunur.
+PUBLIC_POSTS = {"/account/deletion/receipt": 2048}
+
+
 class BodyLimit:
     """Count streamed bytes before multipart or JSON deserialization."""
 
@@ -18,6 +23,9 @@ class BodyLimit:
             return await self.app(scope, receive, send)
         request = Request(scope)
         container = request.app.state.container
+        public = scope["path"].removeprefix(self.settings.api_prefix) if scope["method"] == "POST" else None
+        if public in PUBLIC_POSTS:
+            return await self._read(scope, receive, send, PUBLIC_POSTS[public])
         try:
             await run_in_threadpool(
                 require_user, request, request.headers.get("authorization"), container
@@ -37,9 +45,9 @@ class BodyLimit:
         finally:
             container.slots.release()
 
-    async def _read(self, scope, receive, send):
+    async def _read(self, scope, receive, send, limit=None):
         upload = scope["path"].endswith(("/vision/analyze", "/vision/preview"))
-        limit = (
+        limit = limit or (
             self.settings.max_upload_size_bytes + 65536
             if upload
             else self.settings.max_json_bytes

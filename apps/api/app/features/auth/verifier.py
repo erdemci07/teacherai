@@ -15,4 +15,4 @@ class FirebaseTokenVerifier:
         if decoded.get("firebase", {}).get("sign_in_provider") == "anonymous":
             from fastapi import HTTPException
             raise HTTPException(403, "Registered account required.")
-        return AuthenticatedUser(uid=decoded["uid"],email=decoded.get("email"),name=decoded.get("name"))
+        return AuthenticatedUser(uid=decoded["uid"],email=decoded.get("email"),name=decoded.get("name"),auth_time=decoded.get("auth_time"))

@@ -35,6 +35,7 @@ async def interact(
         lesson_id,
         body.model_copy(update={"lesson": lesson}),
         await run_in_threadpool(students.context, user, record.topic),
+        user.uid,
     )
     await run_in_threadpool(students.record_event, user, result.event)
     return ApiResponse(data=result)
@@ -53,6 +54,6 @@ def answer(
     user: Annotated[AuthenticatedUser, Depends(admitted("answer"))],
 ):
     students.owned(user, lesson_id)
-    result = service.submit(lesson_id, practice_id, body)
+    result = service.submit(lesson_id, practice_id, body, user.uid)
     students.record_event(user, result.event, practice_id)
     return ApiResponse(data=result)

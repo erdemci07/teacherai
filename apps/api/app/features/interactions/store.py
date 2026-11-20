@@ -1,5 +1,6 @@
 from apps.api.app.core.transactions import commit as commit_transaction
 from apps.api.app.core.retention import PRACTICE, expired, retention, timestamp
+from apps.api.app.features.account.guard import ensure_active
 from dataclasses import asdict
 from firebase_admin import firestore
 from fastapi import HTTPException
@@ -25,6 +26,8 @@ class PracticeRecord:
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     answers: dict = field(default_factory=dict)
     closed: bool = False
+    # Hesap silme için sahip alanı (TA-001B, F). Eski belgelerde yoktur; ders kimliğinden bulunur.
+    student_id: str | None = None
 
 
 class InMemoryPracticeStore:
@@ -47,7 +50,7 @@ class InMemoryPracticeStore:
                 return None
             return item
 
-    def answer(self, item, key, make_feedback):
+    def answer(self, item, key, make_feedback, uid=None):
         with self._lock:
             saved = item.answers
             if key in saved:
@@ -66,9 +69,14 @@ class FirestorePracticeStore:
         self.db = db
 
     def save(self, item):
-        self.db.collection(PRACTICE).document(item.practice_id).create(
-            {**asdict(item), **retention(PRACTICE, item.created_at)}
-        )
+        ref = self.db.collection(PRACTICE).document(item.practice_id)
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, item.student_id)
+            tx.create(ref, {**asdict(item), **retention(PRACTICE, item.created_at)})
+
+        commit_transaction(self.db, update)
 
     def get(self, practice_id, lesson_id):
         if len(practice_id) > 128 or "/" in practice_id:
@@ -87,11 +95,12 @@ class FirestorePracticeStore:
         data.pop("expires_at", None)
         return PracticeRecord(**data)
 
-    def answer(self, item, key, make_feedback):
+    def answer(self, item, key, make_feedback, uid=None):
         ref = self.db.collection(PRACTICE).document(item.practice_id)
 
         @firestore.transactional
         def commit(tx):
+            ensure_active(self.db, tx, uid or item.student_id)
             data = ref.get(transaction=tx).to_dict()
             if not data or expired(data) or datetime.now(timezone.utc) - timestamp(data["created_at"]) >= timedelta(hours=1):
                 raise HTTPException(404, "Pratik sorusunun süresi doldu.")

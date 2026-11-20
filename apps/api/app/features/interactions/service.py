@@ -42,7 +42,7 @@ class InteractionService:
         self.store = store
 
     async def interact(
-        self, lesson_id: str, request: InteractionRequest, teaching_context=None
+        self, lesson_id: str, request: InteractionRequest, teaching_context=None, uid: str | None = None
     ) -> InteractionResponse:
         lesson = request.lesson
         if lesson.lesson_plan_id != lesson_id:
@@ -118,6 +118,7 @@ class InteractionService:
                     source.subtopic,
                     lesson.concept_id,
                     source.difficulty,
+                    student_id=uid,
                 ),
             )
             practice = PracticePublic(
@@ -150,7 +151,7 @@ class InteractionService:
         )
 
     def submit(
-        self, lesson_id: str, practice_id: str, request: PracticeAnswerRequest
+        self, lesson_id: str, practice_id: str, request: PracticeAnswerRequest, uid: str | None = None
     ) -> PracticeFeedback:
         item = self.store.get(practice_id, lesson_id)
         if not item:
@@ -198,7 +199,7 @@ class InteractionService:
             )
 
         key = sha256(request.answer.strip().encode()).hexdigest()
-        return self.store.answer(item, key, feedback)
+        return self.store.answer(item, key, feedback, uid)
 
     def _board(self, lesson_id, interaction_id, draft, action):
         elements = [

@@ -13,7 +13,10 @@ from apps.api.app.features.lessons.exceptions import InvalidLessonPlanError
 from apps.api.app.features.lessons.normalization import _contains_placeholder_artifact
 from apps.api.app.features.lessons.service import GeneratedLesson
 
+from apps.api.app.features.account.guard import AccountDeletionInProgress
+
 from .exceptions import ShareStorageError
+from .legacy import CURRENT_OBJECTIVES, CURRENT_SUMMARY, CURRENT_UNDERSTANDING
 from .repository import ShareRepository
 from .schemas import CreateShareResponse, PublicLessonSnapshot, PublicShareResponse, PublicSolutionSnapshot
 
@@ -33,7 +36,7 @@ class ShareService:
         self.repository = repository
         self.settings = settings
 
-    def create_or_reuse(self, result: GeneratedLesson, existing_share_id: str | None = None, request_share_url_base: str | None = None) -> CreateShareResponse:
+    def create_or_reuse(self, result: GeneratedLesson, existing_share_id: str | None = None, request_share_url_base: str | None = None, owner_id: str | None = None) -> CreateShareResponse:
         lesson_plan_id = result.lesson.lesson_plan_id
         logger.info("share_create_started", extra={"operation": "share_create_started", "lesson_plan_id": lesson_plan_id})
         if existing_share_id:
@@ -59,7 +62,7 @@ class ShareService:
             updated_at=now,
             topic="Matematik",
             subtopic=None,
-            question_summary="Paylaşılan çözümün işlem adımları",
+            question_summary=CURRENT_SUMMARY,
             final_answer=lesson_snapshot.content.final_answer,
             lesson_snapshot=lesson_snapshot,
             board_snapshot=board_snapshot,
@@ -67,7 +70,7 @@ class ShareService:
             source_lesson_plan_id=lesson.lesson_plan_id,
         )
         snapshot = self._enforce_snapshot_budget(snapshot)
-        self._repo_save(snapshot)
+        self._repo_save(snapshot, owner_id)
         persisted = self._repo_get(share_id, "share_create_confirm")
         if not persisted or persisted.status != "published":
             logger.error("share_firestore_error", extra={"operation": "share_create_confirm", "share_id": share_id, "exception_type": "MissingPersistedRecord"})
@@ -172,9 +175,11 @@ class ShareService:
             logger.error("share_firestore_error", extra={"operation": "share_find_by_lesson", "exception_type": type(exc).__name__})
             raise ShareStorageError from exc
 
-    def _repo_save(self, snapshot: PublicSolutionSnapshot) -> None:
+    def _repo_save(self, snapshot: PublicSolutionSnapshot, owner_id: str | None = None) -> None:
         try:
-            self.repository.save(snapshot)
+            self.repository.save(snapshot, owner_id)
+        except AccountDeletionInProgress:
+            raise
         except Exception as exc:
             logger.error("share_firestore_error", extra={"operation": "share_save", "share_id": snapshot.share_id, "exception_type": type(exc).__name__})
             raise ShareStorageError from exc
@@ -227,10 +232,10 @@ class ShareService:
                                   explanation="Matematiksel işlem", expressions=items))
         if not steps:
             steps.append(Step(id="step_1",type="result",title="Sonuç",explanation="Sonuç ifadesi",expressions=final))
-        content = LessonContent(question_understanding="İşlem adımlarını incele.", strategy="Dönüşümleri sırayla izle.",
+        content = LessonContent(question_understanding=CURRENT_UNDERSTANDING, strategy="Dönüşümleri sırayla izle.",
                                 strategy_id="strategy_steps", steps=steps, final_answer=" veya ".join(x.latex for x in final),
                                 final_answer_expressions=final, takeaway="Sonucu ilk ifadeyle kontrol et.")
-        return PublicLessonSnapshot(lesson_plan_id=lesson.lesson_plan_id, learning_objectives=["İşlem adımlarını takip et."],
+        return PublicLessonSnapshot(lesson_plan_id=lesson.lesson_plan_id, learning_objectives=list(CURRENT_OBJECTIVES),
                                     concept_id="concept_math", content=content)
 
     def _public_board_snapshot(self, result, content=None):

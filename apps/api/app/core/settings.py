@@ -91,6 +91,8 @@ class Settings(BaseSettings):
     usage_timeout_seconds: float = Field(5, gt=0, le=30)
     usage_transaction_attempts: int = Field(5, ge=1, le=10)
     ai_enabled: bool = True
+    account_deletion_max_auth_age_seconds: int = Field(300, ge=30, le=3600)
+    account_deletion_time_budget_seconds: float = Field(20, ge=0, le=120)
     ai_concurrency: int = Field(4, ge=1, le=64)
     max_json_bytes: int = Field(750000, ge=1024, le=8000000)
     max_output_tokens: int | None = Field(None, ge=128, le=32000)

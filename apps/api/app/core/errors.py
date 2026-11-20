@@ -14,6 +14,8 @@ from apps.api.app.features.shares.exceptions import ShareError
 from apps.api.app.features.auth.dependencies import AuthenticationRequired
 from apps.api.app.core.usage import GlobalBudgetExhausted, UsageLimitExceeded
 from apps.api.app.core.ai_outcomes import AIOutcomeError
+from apps.api.app.features.account.guard import AccountDeletionInProgress
+from apps.api.app.features.account.service import DeletionUnavailable, ReauthenticationRequired
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,18 @@ def register_error_handlers(app: FastAPI) -> None:
     async def authentication_handler(request: Request, exc: AuthenticationRequired) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(status_code=401, content=ErrorResponse(error="authentication_required", detail="Geçerli bir oturum gerekli.", request_id=request_id).model_dump())
+
+    @app.exception_handler(AccountDeletionInProgress)
+    async def deletion_in_progress(request: Request, exc: AccountDeletionInProgress) -> JSONResponse:
+        return JSONResponse(status_code=409, content=ErrorResponse(error="account_deletion_in_progress", detail="Hesabın silinme sürecinde; yeni kayıt oluşturulamaz.", request_id=getattr(request.state, "request_id", None)).model_dump())
+
+    @app.exception_handler(ReauthenticationRequired)
+    async def reauthentication_required(request: Request, exc: ReauthenticationRequired) -> JSONResponse:
+        return JSONResponse(status_code=401, content=ErrorResponse(error="reauthentication_required", detail="Hesabını silmek için yeniden giriş yapmalısın.", request_id=getattr(request.state, "request_id", None)).model_dump())
+
+    @app.exception_handler(DeletionUnavailable)
+    async def deletion_unavailable(request: Request, exc: DeletionUnavailable) -> JSONResponse:
+        return JSONResponse(status_code=503, content=ErrorResponse(error="account_deletion_unavailable", detail="Hesap silme şu anda kullanılamıyor.", request_id=getattr(request.state, "request_id", None)).model_dump())
 
     @app.exception_handler(AIOutcomeError)
     async def ai_outcome_handler(request: Request, exc: AIOutcomeError) -> JSONResponse:
