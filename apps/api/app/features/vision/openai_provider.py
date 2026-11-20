@@ -37,7 +37,9 @@ logger = logging.getLogger(__name__)
 class OpenAIVisionProvider:
     name = "openai"
 
-    def __init__(self, api_key: str | None, model: str, timeout_seconds: float) -> None:
+    def __init__(self, api_key: str | None, model: str, timeout_seconds: float, client_factory=None) -> None:
+        # Değerlendirme betiği sahte istemci verebilir; varsayılan çağrı anında AsyncOpenAI'dir.
+        self._client_factory = client_factory
         self._api_key = api_key
         self._model = model
         self.model = model
@@ -52,7 +54,7 @@ class OpenAIVisionProvider:
             raise error
 
         image_url = f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
-        client = AsyncOpenAI(api_key=self._api_key, timeout=self._timeout_seconds, max_retries=0)
+        client = (self._client_factory or AsyncOpenAI)(api_key=self._api_key, timeout=self._timeout_seconds, max_retries=0)
         try:
             response = await parse_response(
                 client,

@@ -26,7 +26,9 @@ class OpenAIInteractionProvider:
         model: str,
         timeout: float,
         context_budget_bytes: int = 12000,
+        client_factory=None,
     ):
+        self._client_factory = client_factory
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
@@ -40,7 +42,7 @@ class OpenAIInteractionProvider:
     ) -> AdaptiveDraft:
         if not self.api_key:
             raise InteractionProviderError
-        client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
+        client = (self._client_factory or AsyncOpenAI)(api_key=self.api_key, timeout=self.timeout, max_retries=0)
         try:
             return await self._adapt_with_context(
                 client, action, lesson, hint_level, teaching_context, "normal"

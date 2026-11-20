@@ -1,0 +1,118 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "synthetic",
+        "original_author",
+        "teacher_contributed"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "license": {
+      "minLength": 1,
+      "title": "License",
+      "type": "string"
+    },
+    "author": {
+      "minLength": 1,
+      "title": "Author",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date",
+      "title": "Created At",
+      "type": "string"
+    },
+    "image": {
+      "description": "Veri seti dosyasına göre göreli görsel yolu",
+      "minLength": 1,
+      "title": "Image",
+      "type": "string"
+    },
+    "is_valid_math_question": {
+      "title": "Is Valid Math Question",
+      "type": "boolean"
+    },
+    "question_text": {
+      "description": "Interaction değerlendirmesi için referans soru metni",
+      "title": "Question Text",
+      "type": "string"
+    },
+    "topic": {
+      "title": "Topic",
+      "type": "string"
+    },
+    "variable": {
+      "default": "x",
+      "title": "Variable",
+      "type": "string"
+    },
+    "expected_expressions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Expressions",
+      "type": "array"
+    },
+    "expected_solutions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Solutions",
+      "type": "array"
+    },
+    "forbidden_in_hint": {
+      "description": "İpucunda geçmemesi gereken değerler",
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden In Hint",
+      "type": "array"
+    },
+    "variant": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ör. blur, rotate",
+      "title": "Variant"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "id",
+    "source",
+    "license",
+    "author",
+    "created_at",
+    "image",
+    "is_valid_math_question",
+    "question_text",
+    "topic"
+  ],
+  "title": "EvalItem",
+  "type": "object"
+}
