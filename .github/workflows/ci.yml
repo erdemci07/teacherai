@@ -1,0 +1,61 @@
+name: Validate TeacherAI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      FIRESTORE_EMULATOR_HOST: 127.0.0.1:8789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: apps/api/requirements-dev.lock
+      - run: python -m pip install -r apps/api/requirements-dev.lock
+      - run: python -m ruff check apps/api scripts/evaluate_models.py
+      - run: python -m scripts.evaluate_models
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Run offline provider tests with local Firestore
+        shell: bash
+        run: |
+          set -euo pipefail
+          jar="$RUNNER_TEMP/firestore.jar"
+          curl -fsSL --retry 3 https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar -o "$jar"
+          echo "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c  $jar" | sha256sum -c -
+          java -jar "$jar" --host 127.0.0.1 --port 8789 --project_id demo-teacherai > "$RUNNER_TEMP/firestore.log" 2>&1 &
+          emulator_pid=$!
+          trap 'kill "$emulator_pid" || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8789/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8789/ >/dev/null
+          python -m pytest -q apps/api/tests

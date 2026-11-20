@@ -104,7 +104,7 @@ def _compact_teaching_context(teaching_context: Any, level: CompactionLevel) -> 
     mistake_limit = 3 if level == "normal" else 1
     recent_limit = 3 if level == "normal" else 0
     compact = {
-        "exam_goal": _limit_text(data.get("exam_goal"), TEACHING_TEXT_LIMIT) if level == "normal" else None,
+        "exam_goal": _limit_text(data.get("exam_goal"), TEACHING_TEXT_LIMIT),
         "topic_experience": data.get("topic_experience"),
         "recurring_mistakes": data.get("recurring_mistakes", [])[:mistake_limit],
         "support_need": data.get("support_need"),

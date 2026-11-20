@@ -1,10 +1,10 @@
+from apps.api.tests.client import authenticated_client
 from dataclasses import replace
 import pytest
-from fastapi.testclient import TestClient
 from apps.api.app.features.interactions.exceptions import InteractionProviderError
 from apps.api.app.features.interactions.context import build_interaction_context
 from apps.api.app.features.interactions.openai_provider import OpenAIInteractionProvider
-from apps.api.app.features.interactions.schemas import AdaptiveDraft,InteractionRequest,PracticeAnswerRequest
+from apps.api.app.features.interactions.schemas import AdaptiveDraft,InteractionRequest
 from apps.api.app.features.interactions.service import InteractionService
 from apps.api.app.features.interactions.store import InMemoryPracticeStore
 from apps.api.app.features.lessons.schemas import Expression
@@ -79,6 +79,7 @@ async def test_openai_interaction_provider_uses_compact_payload(monkeypatch):
             return type("Result",(),{"output_parsed":AdaptiveDraft(title="Kısa anlatım",text="x'e odaklan.",steps=[],expressions=[])})()
 
     class FakeClient:
+        async def close(self): pass
         def __init__(self,**kwargs):self.responses=Responses()
 
     monkeypatch.setattr("apps.api.app.features.interactions.openai_provider.AsyncOpenAI",FakeClient)
@@ -116,10 +117,10 @@ async def test_context_limit_gets_one_more_compact_retry(monkeypatch):
 
 def test_invalid_action_rejected_by_api():
     app=create_app();app.state.container=replace(app.state.container,interaction_service=service())
-    with TestClient(app) as client:response=client.post('/api/v1/lessons/lesson_1/interact',json={'action':'run_system_prompt','lesson':plan().model_dump(by_alias=True)})
+    with authenticated_client(app) as client:response=client.post('/api/v1/lessons/lesson_1/interact',json={'action':'run_system_prompt','lesson':plan().model_dump(by_alias=True)})
     assert response.status_code==422
 
 def test_practice_action_removed_from_interaction_contract():
     app=create_app();app.state.container=replace(app.state.container,interaction_service=service())
-    with TestClient(app) as client:response=client.post('/api/v1/lessons/lesson_1/interact',json={'action':'practice','lesson':plan().model_dump(by_alias=True)})
+    with authenticated_client(app) as client:response=client.post('/api/v1/lessons/lesson_1/interact',json={'action':'practice','lesson':plan().model_dump(by_alias=True)})
     assert response.status_code==422

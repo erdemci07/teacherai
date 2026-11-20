@@ -1,4 +1,3 @@
-import pytest
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.features.lessons.schemas import Expression,LessonContent,LessonPlan,Step
 from apps.api.app.features.vision.schemas import VisionAnalysis,VisualElements

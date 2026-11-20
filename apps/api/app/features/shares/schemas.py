@@ -5,13 +5,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.app.features.board.schemas import BoardPlan
 from apps.api.app.features.lessons.schemas import LessonContent
-from apps.api.app.features.lessons.service import GeneratedLesson
 
 
-class CreateShareRequest(BaseModel):
+from apps.api.app.features.students.schemas import LessonReference
+
+class CreateShareRequest(LessonReference):
     model_config = ConfigDict(extra="forbid")
 
-    result: GeneratedLesson
     existing_share_id: str | None = Field(default=None, min_length=8, max_length=32)
 
 

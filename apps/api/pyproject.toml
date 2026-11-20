@@ -2,13 +2,14 @@
 name = "teacherai-api"
 version = "0.1.0"
 description = "TeacherAI FastAPI backend"
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 dependencies = [
   "fastapi>=0.116,<1.0",
   "uvicorn[standard]>=0.35,<1.0",
   "pydantic-settings>=2.10,<3.0",
   "openai>=1.99,<3.0",
   "pillow>=11.3,<13.0",
+  "pillow-heif>=1.1,<2.0",
   "python-multipart>=0.0.20,<1.0",
   "sympy>=1.13,<2.0",
   "firebase-admin>=7.0,<8.0",
@@ -17,6 +18,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "httpx>=0.28,<1.0",
+  "ruff==0.17.6",
+  "httpx2>=2,<3",
   "pytest>=8.4,<9.0",
   "pytest-asyncio>=1.1,<2.0",
 ]
@@ -24,3 +27,6 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["../.."]
+
+[tool.ruff.lint]
+select = ["E9", "F"]

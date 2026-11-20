@@ -3,7 +3,8 @@
 import { ChangeEvent, ClipboardEvent, useEffect, useRef, useState } from 'react';
 import { analyzeQuestionImage, ImageStatus, VisionAnalysis, VisionApiError } from '../lib/vision-api';
 import { generateLesson, GeneratedLesson, LessonApiError } from '../lib/lesson-api';
-import { saveLesson } from '../lib/student-api';
+import Link from 'next/link';
+import { useAuth } from '../auth/AuthProvider';
 import { InteractionPanel } from './InteractionPanel';
 import { AnalysisLoading } from './AnalysisLoading';
 import { ErrorBanner } from './ErrorBanner';
@@ -20,6 +21,8 @@ const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', '
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ERRORS: Record<string, string> = {
+  authentication_required: 'Soru çözmek için oturum aç.',
+  usage_limit_exceeded: 'Günlük kullanım sınırına ulaştın.',
   image_required: 'Lütfen bir soru görseli seç.',
   unsupported_image_type: 'Bu dosya türünü okuyamıyorum. JPG, JPEG, PNG, WEBP, HEIC veya HEIF biçiminde bir görsel deneyebilir misin?',
   image_too_large: 'Bu görsel 10 MB sınırını aşıyor. Daha küçük bir fotoğraf seçebilir misin?',
@@ -48,6 +51,7 @@ const fileKey = (value: File) => `${value.name}:${value.size}:${value.lastModifi
 
 export function SolveWorkspace() {
   const [state, setState] = useState<SolveState>('idle');
+  const {user, loading} = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
   const [previewAvailable, setPreviewAvailable] = useState(false);
@@ -109,7 +113,8 @@ export function SolveWorkspace() {
     setState('planning');
     try {
       const generated = await generateLesson(value);
-      setState('rendering'); setResult(generated); void saveLesson(generated).catch(() => undefined); setState('success');
+      if (generated.verification.status === 'failed') throw new LessonApiError('math_verification_failed');
+      setState('rendering'); setResult(generated); setState('success');
       if (solveFileKey && selectedFileKeyRef.current === solveFileKey) setSolvedFileKey(solveFileKey);
       setLessonScrollSignal((current) => current + 1);
       return true;
@@ -147,6 +152,8 @@ export function SolveWorkspace() {
     setPreviewAvailable(false);
   };
 
+  if (loading) return <p role="status">Oturum kontrol ediliyor…</p>;
+  if (!user) return <main><p>Soru çözmek için oturum aç.</p><Link href="/login">Oturum aç</Link></main>;
   return <div className={`solvePage solveState-${state}`} onPaste={pasted}>
     <input ref={cameraRef} className="visuallyHidden" type="file" accept="image/*" capture="environment" onChange={changed} disabled={busy} aria-label="Arka kamerayla soru fotoğrafı çek" />
     <input ref={galleryRef} className="visuallyHidden" type="file" accept="image/*" onChange={changed} disabled={busy} aria-label="Galeriden soru görseli seç" />
@@ -186,7 +193,7 @@ export function SolveWorkspace() {
         <p className="privacyNote">Görsel işlemden sonra geçici depolamadan silinir.</p>
       </section>
       <aside className="solveOutput" aria-label="TeacherAI anlatımı">
-        {busy && <AnalysisLoading uploading={state === 'uploading'} stage={state} />}
+        {busy && <AnalysisLoading key={state} uploading={state === 'uploading'} stage={state} />}
         {!busy && !result && !error && (
           <div className="resultEmpty solutionPlaceholder">
             <BrandMark size="lg" />
@@ -203,11 +210,11 @@ export function SolveWorkspace() {
                 {result.lesson.source_analysis.subtopic && <span>{result.lesson.source_analysis.subtopic}</span>}
               </div>
               <h2>Çözüm</h2>
-              <p>TeacherAI soruyu okudu, çözüm yolunu kurdu ve matematiksel kontrolü tamamladı.</p>
+              <p>Matematiksel kontrolün sonucunu ve çözüm adımlarını aşağıda inceleyebilirsin.</p>
             </section>
             <div ref={lessonStartRef} className="lessonScrollTarget" aria-hidden="true" />
             <TeacherBoard result={result} />
-            <section className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
+            <section key={result.lesson.lesson_plan_id} className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
               <InteractionPanel lesson={result.lesson} />
               <ShareSolution result={result} />
               <button className="textToggle" onClick={() => setShowText(!showText)} aria-expanded={showText}>{showText ? 'Metin anlatımını gizle' : 'Metin olarak göster'}</button>

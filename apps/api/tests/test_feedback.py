@@ -1,6 +1,6 @@
+from apps.api.tests.client import authenticated_client
 from dataclasses import replace
 
-from fastapi.testclient import TestClient
 
 from apps.api.app.core.settings import Settings
 from apps.api.app.core.container import build_container
@@ -38,7 +38,7 @@ def client_with_feedback(email_provider=None):
     provider = email_provider or RecordingEmailProvider()
     service = FeedbackService(repo, provider, Settings(environment="test", firebase_enabled=False))
     app.state.container = replace(app.state.container, feedback_service=service)
-    return TestClient(app, raise_server_exceptions=False), repo, provider
+    return authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False), repo, provider
 
 
 def payload(**overrides):

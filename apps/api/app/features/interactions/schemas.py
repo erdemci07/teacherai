@@ -12,7 +12,7 @@ class InteractionEvent(BaseModel):
     mistake_type:MistakeType|None=None;correctness:bool|None=None;attempt_count:int|None=None;explanation_mode:str|None=None
 class InteractionRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
-    action:Action;lesson:LessonPlan;hint_level:int=Field(default=1,ge=1,le=3)
+    action:Action;lesson:LessonPlan|None=None;hint_level:int=Field(default=1,ge=1,le=3)
 class AdaptiveDraft(BaseModel):
     model_config=ConfigDict(extra="forbid")
     title:str;text:str

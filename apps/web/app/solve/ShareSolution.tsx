@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createShare, SHARE_COPY } from '../lib/share-api';
 import type { GeneratedLesson } from '../lib/lesson-api';
 
@@ -11,20 +11,13 @@ export function ShareSolution({ result }: { result: GeneratedLesson }) {
   const [fallbackUrl, setFallbackUrl] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    setShareId(undefined);
-    setShareUrl('');
-    setStatus('');
-    setFallbackUrl('');
-  }, [result.lesson.lesson_plan_id]);
-
   const copyFallback = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
       setStatus(SHARE_COPY.copied);
       setFallbackUrl('');
     } catch {
-      setStatus(SHARE_COPY.copied);
+      setStatus('Bağlantıyı aşağıdaki alandan kopyalayabilirsin.');
       setFallbackUrl(url);
     }
   };
@@ -60,7 +53,7 @@ export function ShareSolution({ result }: { result: GeneratedLesson }) {
     <section className="shareSolution" aria-labelledby="share-solution-title">
       <div>
         <h3 id="share-solution-title">Bu çözümü paylaş</h3>
-        <p>Çözüm yolunu bağlantı olarak gönderebilirsin.</p>
+        <p>Paylaşım bağlantısında işlem adımları ve sonuç görünür.</p>
       </div>
       <button type="button" className="secondaryButton shareButton" onClick={share} disabled={busy} aria-label="Bu çözümü paylaş">
         {busy ? 'Hazırlanıyor...' : 'Bu çözümü paylaş ↗'}

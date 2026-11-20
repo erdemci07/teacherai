@@ -12,3 +12,7 @@ __pycache__/
 *.pyc
 tmp/
 !.env.example
+
+.ruff_cache/
+firebase-debug.log
+firestore-debug.log

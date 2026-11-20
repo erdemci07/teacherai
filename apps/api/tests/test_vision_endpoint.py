@@ -1,3 +1,4 @@
+from apps.api.tests.client import authenticated_client
 import io
 import base64
 import re
@@ -121,7 +122,7 @@ def client_with_provider(tmp_path, provider, max_bytes: int = 10 * 1024 * 1024) 
         debug=False,
     )
     app.state.container = replace(app.state.container, vision_service=service)
-    return TestClient(app, raise_server_exceptions=False)
+    return authenticated_client(app, raise_server_exceptions=False)
 
 
 def test_successful_upload_uses_injected_provider_and_cleans_file(tmp_path) -> None:

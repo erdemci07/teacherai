@@ -22,6 +22,7 @@ class RaisingResponses:
 
 
 class RaisingClient:
+    async def close(self): pass
     def __init__(self, error: Exception) -> None:
         self.responses = RaisingResponses(error)
 

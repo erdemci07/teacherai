@@ -3,7 +3,6 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from apps.api.app.features.lessons.service import GeneratedLesson
 
 FeedbackRating = Literal["positive", "negative"]
 PositiveFeedbackReason = Literal["clear", "correct_solution", "good_explanation", "useful", "other"]
@@ -16,13 +15,14 @@ CRITICAL_REASONS = {"wrong_solution", "misread_question", "step_error", "formula
 MAX_COMMENT_LENGTH = 1000
 
 
-class SubmitFeedbackRequest(BaseModel):
+from apps.api.app.features.students.schemas import LessonReference
+
+class SubmitFeedbackRequest(LessonReference):
     model_config = ConfigDict(extra="forbid")
 
     rating: FeedbackRating
     reasons: list[FeedbackReason] = Field(default_factory=list, max_length=8)
     comment: str | None = Field(default=None, max_length=MAX_COMMENT_LENGTH)
-    result: GeneratedLesson
 
     @field_validator("reasons")
     @classmethod

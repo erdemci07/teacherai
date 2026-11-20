@@ -1,3 +1,4 @@
+from starlette.concurrency import run_in_threadpool
 import io
 import base64
 import logging
@@ -81,7 +82,7 @@ class VisionService:
         if upload is None:
             raise MissingImageError
         try:
-            prepared = self._prepare_bytes(
+            prepared = await run_in_threadpool(self._prepare_bytes,
                 await self._read_limited(upload),
                 upload.content_type,
                 upload.filename,
@@ -102,7 +103,7 @@ class VisionService:
         logger.info("Vision processing started", extra={"request_id": resolved_request_id, "stage": "validation"})
         if upload is None:
             raise MissingImageError
-        prepared = self._prepare_bytes(await self._read_limited(upload), upload.content_type, upload.filename)
+        prepared = await run_in_threadpool(self._prepare_bytes,await self._read_limited(upload), upload.content_type, upload.filename)
         logger.info(
             "Vision image normalized",
             extra={

@@ -56,6 +56,8 @@ else {
 }
 
 
+if ($LASTEXITCODE -ne 0) { throw "API testleri başarısız." }
+
 Step "4/9 - Web production build"
 
 $ApiUrl = gcloud run services describe $ServiceName `
@@ -88,11 +90,16 @@ foreach ($rewrite in @($firebaseConfig.hosting.rewrites)) {
 
 $env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"
 
+# Load the same production .env files as Next before building a static, auth-required client.
+node -e "require('@next/env').loadEnvConfig('apps/web', false); for (const key of ['API_KEY','AUTH_DOMAIN','PROJECT_ID','APP_ID']) { if (!process.env['NEXT_PUBLIC_FIREBASE_' + key]) { console.error('Missing Firebase web setting: ' + key); process.exitCode = 1 } }"
+if ($LASTEXITCODE -ne 0) { throw "Firebase web yapılandırması eksik." }
+
 Write-Host "Frontend API: $env:NEXT_PUBLIC_API_BASE_URL"
 Remove-Item -Recurse -Force apps\web\out -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
 
 npm run build:web
+if ($LASTEXITCODE -ne 0) { throw "Web derlemesi başarısız." }
 
 if (-not (Test-Path "apps\web\out\index.html")) {
     throw "Static export oluşmadı: apps/web/out/index.html bulunamadı."

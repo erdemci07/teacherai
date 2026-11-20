@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from starlette.concurrency import run_in_threadpool
 import logging
 from time import perf_counter
 from uuid import uuid4
@@ -52,9 +54,9 @@ class LessonService:
         )
 
         plan = await self._plan(analysis, None, teaching_context, resolved_request_id)
-        plan = self.mathai.reconcile_answer_choice(plan)
-        verification = self._verify(plan, resolved_request_id, "math_verification")
-        if verification.contradiction:
+        plan = await self._reconcile(plan)
+        verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification")
+        if verification.status == "failed":
             correction = True
             feedback = "MathAI çelişki buldu: " + "; ".join(
                 check.detail or check.statement for check in verification.checks if check.status == "failed"
@@ -64,9 +66,9 @@ class LessonService:
                 extra={"request_id": resolved_request_id, "stage": "correction", "failed_checks": len([x for x in verification.checks if x.status == "failed"])},
             )
             plan = await self._plan(analysis, feedback, teaching_context, resolved_request_id)
-            plan = self.mathai.reconcile_answer_choice(plan)
-            verification = self._verify(plan, resolved_request_id, "math_verification_retry")
-            if verification.contradiction:
+            plan = await self._reconcile(plan)
+            verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification_retry")
+            if verification.status == "failed" or not verification.final_answer_verified:
                 logger.warning("Lesson verification contradiction remained", extra={"request_id": resolved_request_id, "stage": "math_verification_retry"})
                 raise VerificationContradictionError
 
@@ -135,13 +137,23 @@ class LessonService:
             lesson_generation_ms=duration,
         )
 
+    async def _reconcile(self, plan):
+        try:
+            return await run_in_threadpool(self.mathai.reconcile_answer_choice, plan)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise MathVerificationError from exc
+
     def _verify(self, plan: LessonPlan, request_id: str | None, stage: str) -> VerificationResult:
         started = perf_counter()
         logger.info("MathAI verification started", extra={"request_id": request_id, "stage": stage, "expression_count": len(plan.source_analysis.mathematical_expressions)})
         try:
             verification = self.mathai.verify(plan)
+        except HTTPException:
+            raise
         except Exception as exc:
-            logger.exception(
+            logger.error(
                 "MathAI verification failed",
                 extra={"request_id": request_id, "stage": stage, "exception_type": type(exc).__name__},
             )

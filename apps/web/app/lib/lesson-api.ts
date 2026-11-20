@@ -1,4 +1,4 @@
-import {currentToken} from '../auth/AuthProvider';
+import { requestHeaders } from './request-headers';
 import type { VisionAnalysis } from './vision-api';
 export interface Expression { type:string; latex:string }
 export interface Step { id:string;type:string;title:string;explanation:string;expressions:Expression[];visual_reference:string|null }
@@ -14,6 +14,6 @@ export class LessonApiError extends Error { constructor(public code:string){supe
 const BASE=process.env.NEXT_PUBLIC_API_BASE_URL??process.env.NEXT_PUBLIC_TEACHERAI_API_BASE_URL??'http://localhost:8000/api/v1';
 export async function generateLesson(analysis:VisionAnalysis):Promise<GeneratedLesson>{
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),90000);
- try{const token=await currentToken();const response=await fetch(`${BASE}/lessons/generate`,{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify({analysis}),signal:controller.signal});const body=await response.json();if(!response.ok)throw new LessonApiError(body.error??'lesson_error');return body.data}
+ try{const headers = await requestHeaders();const response=await fetch(`${BASE}/lessons/generate`,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify({analysis_id:analysis.request_id}),signal:controller.signal});const body=await response.json();if(!response.ok)throw new LessonApiError(body.error??'lesson_error');return body.data}
  catch(error){if(error instanceof LessonApiError)throw error;if(error instanceof DOMException&&error.name==='AbortError')throw new LessonApiError('lesson_timeout');throw new LessonApiError('network_error')}finally{clearTimeout(timer)}
 }

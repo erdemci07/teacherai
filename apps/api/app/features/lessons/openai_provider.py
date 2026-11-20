@@ -1,3 +1,4 @@
+from apps.api.app.core.gateway import parse_response
 import asyncio
 import logging
 from pathlib import Path
@@ -54,7 +55,7 @@ class OpenAILessonProvider:
             raise error
 
         context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
-        client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=1)
+        client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
         try:
             response = await self._request_lesson(client, context)
         except AuthenticationError as exc:
@@ -112,6 +113,9 @@ class OpenAILessonProvider:
             self._log_failure(exc, started, request_id)
             raise InvalidLessonPlanError from exc
 
+        finally:
+            await client.close()
+
         parsed = response.output_parsed
         if parsed is None:
             self._log_failure(InvalidLessonPlanError(), started, request_id)
@@ -135,7 +139,7 @@ class OpenAILessonProvider:
             },
         )
         return await asyncio.wait_for(
-            client.responses.parse(
+            parse_response(client, "lessons",
                 model=self.model,
                 input=[
                     {"role": "system", "content": self.prompt},

@@ -9,6 +9,9 @@ from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
+Price = Annotated[float, Field(ge=0, allow_inf_nan=False)]
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(".env", ".env.local"),
@@ -53,7 +56,8 @@ class Settings(BaseSettings):
         return list(dict.fromkeys(origins)) or defaults
 
     debug: bool = False
-    max_upload_size_bytes: int = 10 * 1024 * 1024
+    max_upload_size_bytes: int = Field(10 * 1024 * 1024, ge=1, le=25 * 1024 * 1024)
+    upload_timeout_seconds: int = Field(60, ge=1, le=180)
     upload_temp_directory: Path = Path("tmp/uploads")
     vision_provider: str = "openai"
     openai_api_key: str | None = Field(
@@ -64,16 +68,27 @@ class Settings(BaseSettings):
         default="gpt-4.1-mini",
         validation_alias=AliasChoices("OPENAI_VISION_MODEL", "TEACHERAI_OPENAI_VISION_MODEL"),
     )
-    vision_provider_timeout_seconds: float = 45.0
+    vision_provider_timeout_seconds: float = Field(45, gt=0, le=180)
     openai_lesson_model: str = Field(default="gpt-5.6-terra", validation_alias=AliasChoices("OPENAI_LESSON_MODEL", "TEACHERAI_OPENAI_LESSON_MODEL"))
-    lesson_provider_timeout_seconds: float = 60.0
+    lesson_provider_timeout_seconds: float = Field(60, gt=0, le=180)
     lesson_context_max_bytes: int = Field(default=24_000, validation_alias=AliasChoices("LESSON_CONTEXT_MAX_BYTES", "TEACHERAI_LESSON_CONTEXT_MAX_BYTES"))
     openai_interaction_model: str = Field(default="gpt-4.1-mini", validation_alias=AliasChoices("OPENAI_INTERACTION_MODEL", "TEACHERAI_OPENAI_INTERACTION_MODEL"))
-    interaction_provider_timeout_seconds: float = 60.0
+    interaction_provider_timeout_seconds: float = Field(60, gt=0, le=180)
     firebase_project_id: str | None = "math-ai-07"
+    firebase_auth_project_id: str | None = None
     firebase_service_account_json: str | None = None
     firebase_enabled: bool = False
-    authenticated_daily_ai_limit: int = 50
+    authenticated_daily_ai_limit: int = Field(50, ge=0, le=10000)
+    operation_limits: dict[str, int] = {"analyze": 20, "generate": 20, "interact": 40, "preview": 30, "answer": 80, "feedback": 20, "understood": 80}
+    daily_output_tokens: int = Field(100000, ge=0)
+    ai_enabled: bool = True
+    ai_concurrency: int = Field(4, ge=1, le=64)
+    max_json_bytes: int = Field(750000, ge=1024, le=8000000)
+    max_output_tokens: int = Field(4096, ge=128, le=32000)
+    app_check_mode: Literal["off", "monitor", "enforce"] = "off"
+    pricing_version: str | None = None
+    # Verified USD per million tokens: input, cached input, output.
+    model_prices: dict[str, tuple[Price, Price, Price]] = {}
     public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
     public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))
     share_og_image_path: str = "/teacherai-share-og.svg"

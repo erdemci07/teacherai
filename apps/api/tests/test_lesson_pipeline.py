@@ -1,6 +1,6 @@
+from apps.api.tests.client import authenticated_client
 import pytest
 from dataclasses import replace
-from fastapi.testclient import TestClient
 from apps.api.app.features.board.planner import BoardPlanner
 from apps.api.app.features.lessons.exceptions import InvalidQuestionAnalysisError, LessonProviderUnavailableError, MathVerificationError, VerificationContradictionError
 from apps.api.app.features.lessons.provider import LessonProviderResult
@@ -121,7 +121,9 @@ async def test_lesson_provider_network_errors_remain_provider_errors():
         await LessonService(UnavailableProvider(),MathAIService(),BoardPlanner()).generate(plan().source_analysis)
 def test_generate_endpoint_returns_verified_board():
     app=create_app();app.state.container=replace(app.state.container,lesson_service=LessonService(CorrectingProvider(),MathAIService(),BoardPlanner()))
-    with TestClient(app) as client: response=client.post('/api/v1/lessons/generate',json={'analysis':plan().source_analysis.model_dump()})
+    from apps.api.app.features.auth.schemas import AuthenticatedUser
+    app.state.container.student_service.save_analysis(AuthenticatedUser(uid="student-a"), plan().source_analysis)
+    with authenticated_client(app) as client: response=client.post('/api/v1/lessons/generate',json={'analysis':plan().source_analysis.model_dump()})
     assert response.status_code==200
     assert response.json()['data']['verification']['status']=='verified'
     assert response.json()['data']['board']['elements'][-1]['type']=='final_answer'
@@ -132,7 +134,7 @@ def test_heic_and_jpeg_complete_same_end_to_end_contract(tmp_path):
     vision_provider=AlgebraVisionProvider()
     lesson_provider=AlgebraLessonProvider()
     app.state.container=replace(app.state.container,vision_service=VisionService(vision_provider,LocalTemporaryImageStorage(tmp_path),10*1024*1024,False),lesson_service=LessonService(lesson_provider,MathAIService(),BoardPlanner()))
-    with TestClient(app,raise_server_exceptions=False) as client:
+    with authenticated_client(app,raise_server_exceptions=False) as client:
         jpeg_analysis=client.post("/api/v1/vision/analyze",files={"image":("question.jpeg",image_bytes("JPEG"),"image/jpeg")}).json()["data"]
         heic_analysis=client.post("/api/v1/vision/analyze",files={"image":("question.heic",image_bytes("HEIF"),"image/heic")}).json()["data"]
         jpeg_lesson=client.post("/api/v1/lessons/generate",json={"analysis":jpeg_analysis})
@@ -163,7 +165,9 @@ async def test_mathai_failure_is_classified_by_actual_stage():
 def test_mathai_endpoint_failure_returns_stage_error_code():
     app=create_app()
     app.state.container=replace(app.state.container,lesson_service=LessonService(CorrectingProvider(),BrokenMathAI(),BoardPlanner()))
-    with TestClient(app,raise_server_exceptions=False) as client:
+    from apps.api.app.features.auth.schemas import AuthenticatedUser
+    app.state.container.student_service.save_analysis(AuthenticatedUser(uid="student-a"), plan().source_analysis)
+    with authenticated_client(app,raise_server_exceptions=False) as client:
         response=client.post("/api/v1/lessons/generate",json={"analysis":plan().source_analysis.model_dump()})
 
     assert response.status_code==502

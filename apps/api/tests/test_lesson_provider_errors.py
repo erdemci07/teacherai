@@ -36,6 +36,7 @@ class Responses:
 
 
 class Client:
+    async def close(self): pass
     def __init__(self, responses: Responses) -> None:
         self.responses = responses
 

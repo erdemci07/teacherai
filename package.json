@@ -12,13 +12,26 @@
     "lint": "npm run lint --workspace @teacherai/web",
     "dev:api": "./scripts/dev-api.sh",
     "dev:web": "npm run dev --workspace @teacherai/web",
-    "build:web": "npm run build --workspace @teacherai/web"
+    "build:web": "npm run build --workspace @teacherai/web",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace @teacherai/web",
+    "test": "tsc --outDir dist && node --test dist/tests/*.test.js"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
   },
   "overrides": {
-    "postcss": "latest",
-    "sharp": "latest"
+    "postcss": "8.5.23",
+    "sharp": "0.35.5",
+    "@grpc/grpc-js": "1.13.6",
+    "source-map-js": "1.2.2",
+    "re2js": "2.8.7",
+    "shell-quote": "1.12.0"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "allowScripts": {
+    "@firebase/util": false,
+    "protobufjs": false
   }
 }

@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from html import escape
 import json
 import logging
+import re
+from apps.api.app.features.lessons.schemas import LessonContent, Step
 from secrets import token_urlsafe
 from urllib.parse import quote
 
@@ -50,15 +52,15 @@ class ShareService:
         now = datetime.now(timezone.utc)
         lesson = result.lesson
         lesson_snapshot = self._public_lesson_snapshot(result)
-        board_snapshot = self._public_board_snapshot(result)
+        board_snapshot = self._public_board_snapshot(result, lesson_snapshot.content)
         snapshot = PublicSolutionSnapshot(
             share_id=share_id,
             created_at=now,
             updated_at=now,
-            topic=lesson.source_analysis.topic,
-            subtopic=lesson.source_analysis.subtopic,
-            question_summary=lesson.source_analysis.question_text,
-            final_answer=lesson.content.final_answer,
+            topic="Matematik",
+            subtopic=None,
+            question_summary="Paylaşılan çözümün işlem adımları",
+            final_answer=lesson_snapshot.content.final_answer,
             lesson_snapshot=lesson_snapshot,
             board_snapshot=board_snapshot,
             app_version=self.settings.version,
@@ -160,21 +162,21 @@ class ShareService:
         try:
             return self.repository.get(share_id)
         except Exception as exc:
-            logger.exception("share_firestore_error", extra={"operation": operation, "share_id": share_id, "exception_type": type(exc).__name__})
+            logger.error("share_firestore_error", extra={"operation": operation, "share_id": share_id, "exception_type": type(exc).__name__})
             raise ShareStorageError from exc
 
     def _repo_find_by_lesson_plan_id(self, lesson_plan_id: str) -> PublicSolutionSnapshot | None:
         try:
             return self.repository.find_by_lesson_plan_id(lesson_plan_id)
         except Exception as exc:
-            logger.exception("share_firestore_error", extra={"operation": "share_find_by_lesson", "exception_type": type(exc).__name__})
+            logger.error("share_firestore_error", extra={"operation": "share_find_by_lesson", "exception_type": type(exc).__name__})
             raise ShareStorageError from exc
 
     def _repo_save(self, snapshot: PublicSolutionSnapshot) -> None:
         try:
             self.repository.save(snapshot)
         except Exception as exc:
-            logger.exception("share_firestore_error", extra={"operation": "share_save", "share_id": snapshot.share_id, "exception_type": type(exc).__name__})
+            logger.error("share_firestore_error", extra={"operation": "share_save", "share_id": snapshot.share_id, "exception_type": type(exc).__name__})
             raise ShareStorageError from exc
 
     def _validate_public_result(self, result: GeneratedLesson) -> None:
@@ -206,37 +208,37 @@ class ShareService:
 
     def _public_lesson_snapshot(self, result: GeneratedLesson) -> PublicLessonSnapshot:
         lesson = result.lesson
-        return PublicLessonSnapshot(
-            lesson_plan_id=lesson.lesson_plan_id,
-            learning_objectives=lesson.learning_objectives,
-            concept_id=lesson.concept_id,
-            content=lesson.content,
-        )
+        # Public projections contain mathematical notation and fixed labels only.
+        def safe(items):
+            return [item for item in items if len(item.latex) <= 200 and
+                    re.fullmatch(r"(?:\\(?:frac|sqrt|pm|cdot|times|in)|[xyzabckntm0-9+*/±^()={}\[\]|., \-])+", item.latex)
+                    and not re.search(r"[a-z]{3}|\d{7}", re.sub(r"\\[a-z]+", "", item.latex))]
 
-    def _public_board_snapshot(self, result: GeneratedLesson, max_elements: int = MAX_BOARD_ELEMENTS) -> BoardPlan:
-        board = result.board
-        elements = [self._public_board_element(item) for item in board.elements[:max_elements]]
-        if not elements:
-            elements = [BoardElement(id=f"{board.board_id}_summary", type="final_answer", text=result.lesson.content.final_answer)]
-        return BoardPlan(
-            schema_version=board.schema_version,
-            board_id=board.board_id,
-            lesson_plan_id=board.lesson_plan_id,
-            title=_compact_text(board.title, 180),
-            elements=elements,
-        )
+        final = safe(lesson.content.final_answer_expressions)
+        if not final:
+            from fastapi import HTTPException
+            raise HTTPException(422, "Bu çözümün paylaşılabilir matematiksel sonucu yok.")
+        steps = []
+        for step in lesson.content.steps:
+            items = safe(step.expressions)
+            if items:
+                index = len(steps) + 1
+                steps.append(Step(id=f"step_{index}", type="equation", title=f"Adım {index}",
+                                  explanation="Matematiksel işlem", expressions=items))
+        if not steps:
+            steps.append(Step(id="step_1",type="result",title="Sonuç",explanation="Sonuç ifadesi",expressions=final))
+        content = LessonContent(question_understanding="İşlem adımlarını incele.", strategy="Dönüşümleri sırayla izle.",
+                                strategy_id="strategy_steps", steps=steps, final_answer=" veya ".join(x.latex for x in final),
+                                final_answer_expressions=final, takeaway="Sonucu ilk ifadeyle kontrol et.")
+        return PublicLessonSnapshot(lesson_plan_id=lesson.lesson_plan_id, learning_objectives=["İşlem adımlarını takip et."],
+                                    concept_id="concept_math", content=content)
 
-    def _public_board_element(self, item: BoardElement) -> BoardElement:
-        return BoardElement(
-            id=item.id,
-            type=item.type,
-            text=_compact_text(item.text, MAX_BOARD_TEXT_CHARS) if item.text else None,
-            latex=item.latex,
-            mark=item.mark,
-            source_step_id=item.source_step_id,
-            graph=item.graph,
-            shape=item.shape,
-        )
+    def _public_board_snapshot(self, result, content=None):
+        content = content or self._public_lesson_snapshot(result).content
+        items = [BoardElement(id=f"{step.id}_{i}", type="equation", latex=item.latex)
+                 for step in content.steps for i,item in enumerate(step.expressions)]
+        items = items[:MAX_BOARD_ELEMENTS-1] + [BoardElement(id="answer",type="final_answer",text=content.final_answer)]
+        return BoardPlan(board_id=result.board.board_id,lesson_plan_id=result.lesson.lesson_plan_id,title="İşlem adımları",elements=items)
 
     def _enforce_snapshot_budget(self, snapshot: PublicSolutionSnapshot) -> PublicSolutionSnapshot:
         if _snapshot_size(snapshot) <= MAX_PUBLIC_SNAPSHOT_BYTES:

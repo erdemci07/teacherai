@@ -1,6 +1,6 @@
 # TeacherAI Architecture Index
 
-TeacherAI architecture is documented as a complete system blueprint instead of application code.
+These documents describe the design roadmap. The [project context](PROJECT_CONTEXT.md) identifies the deployed-stack code, runtime contract and validation gates.
 
 - [`architecture/system-architecture.md`](architecture/system-architecture.md) explains the scalable backend, frontend, module, abstraction, dependency, and portal architecture.
 - [`architecture/folder-structure.md`](architecture/folder-structure.md) defines the future repository layout and why each top-level area exists.

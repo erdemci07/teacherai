@@ -18,6 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    from google.api_core.exceptions import GoogleAPICallError, RetryError
+    from google.auth.exceptions import GoogleAuthError
+    from fastapi.exceptions import RequestValidationError
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request, exc):
+        return JSONResponse(status_code=422, content={"error":"validation_error", "detail":"Invalid request."})
+
+    @app.exception_handler(GoogleAuthError)
+    @app.exception_handler(GoogleAPICallError)
+    @app.exception_handler(RetryError)
+    async def unavailable(request, exc):
+        return JSONResponse(status_code=503, content={"error":"storage_unavailable", "detail":"Service temporarily unavailable."})
+
     @app.exception_handler(UsageLimitExceeded)
     async def usage_handler(request: Request, exc: UsageLimitExceeded) -> JSONResponse:
         return JSONResponse(status_code=429, content=ErrorResponse(error="usage_limit_exceeded", detail="Günlük kullanım sınırına ulaşıldı.", request_id=getattr(request.state, "request_id", None)).model_dump())
@@ -57,12 +71,12 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ValidationError)
     async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", request.headers.get("x-request-id", str(uuid4())))
-        payload = ErrorResponse(error="validation_error", detail=str(exc), request_id=request_id)
+        payload = ErrorResponse(error="validation_error", detail="Invalid data.", request_id=request_id)
         return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=payload.model_dump())
 
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         request_id = getattr(request.state, "request_id", request.headers.get("x-request-id", str(uuid4())))
-        logger.exception("Unhandled API error", extra={"request_id": request_id})
+        logger.error("Unhandled API error type=%s request_id=%s", type(exc).__name__, request_id)
         payload = ErrorResponse(error="internal_server_error", detail="An unexpected error occurred.", request_id=request_id)
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=payload.model_dump())

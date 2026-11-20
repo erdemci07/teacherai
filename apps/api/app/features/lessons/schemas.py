@@ -84,4 +84,5 @@ class LessonPlan(BaseModel):
     provider: str; model: str; lesson_generation_ms: int
     model_config=ConfigDict(populate_by_name=True)
 class GenerateLessonRequest(BaseModel):
-    analysis: VisionAnalysis
+    analysis: VisionAnalysis | None = None
+    analysis_id: str | None = Field(None, min_length=1, max_length=128)

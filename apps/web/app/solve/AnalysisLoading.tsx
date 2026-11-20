@@ -18,7 +18,6 @@ export function AnalysisLoading({ uploading, stage }: { uploading: boolean; stag
   const activeIndex = Math.max(0, order.indexOf(key));
 
   useEffect(() => {
-    setShowSecondary(false);
     if (!current.secondary) return;
     const timer = window.setTimeout(() => setShowSecondary(true), 7000);
     return () => window.clearTimeout(timer);

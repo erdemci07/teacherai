@@ -1,5 +1,4 @@
 from dataclasses import replace
-from datetime import datetime,timezone
 from fastapi.testclient import TestClient
 from apps.api.app.features.auth.schemas import AuthenticatedUser
 from apps.api.app.features.interactions.schemas import InteractionEvent
@@ -43,6 +42,7 @@ def test_protected_history_and_ownership_boundary():
     with TestClient(app) as client:
         assert client.get('/api/v1/students/me/history').status_code==401
         result=asyncio.run(LessonService(CorrectingProvider(),MathAIService(),BoardPlanner()).generate(plan().source_analysis))
+        students.save_lesson(Verifier().verify('student-a'), result)
         saved=client.post('/api/v1/students/me/lessons',headers={'Authorization':'Bearer student-a'},json={'result':result.model_dump(mode='json',by_alias=True)})
         assert saved.status_code==200
         assert len(client.get('/api/v1/students/me/history',headers={'Authorization':'Bearer student-a'}).json()['data'])==1

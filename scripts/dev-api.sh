@@ -8,5 +8,5 @@ if [ ! -x "$VENV_DIR/bin/python" ]; then
   "$PYTHON_BIN" -m venv "$VENV_DIR"
 fi
 
-"$VENV_DIR/bin/python" -m pip install -q -r apps/api/requirements.txt
+"$VENV_DIR/bin/python" -m pip install -q -r apps/api/requirements.lock
 exec "$VENV_DIR/bin/python" -m uvicorn apps.api.app.main:app --reload --host 0.0.0.0 --port 8000

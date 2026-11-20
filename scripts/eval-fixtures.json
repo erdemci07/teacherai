@@ -1,0 +1,4 @@
+[
+  {"id":"linear","question":"3x + 7 = 19","answer":"4","topic":"Birinci dereceden denklem"},
+  {"id":"branches","question":"|x - 1| = 2","answer":"1 ± 2","topic":"Mutlak değer"}
+]

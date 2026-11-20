@@ -214,17 +214,13 @@ export function parseRichMathText(input: string): Part[] {
 }
 
 function RenderMath({ latex, display }: { latex: string; display: boolean }) {
+  let html: string;
   try {
-    return (
-      <span
-        className={display ? 'richMath richMathDisplay' : 'richMath'}
-        data-math-boundary="true"
-        dangerouslySetInnerHTML={{ __html: katex.renderToString(latex, { displayMode: display, throwOnError: true }) }}
-      />
-    );
+    html = katex.renderToString(latex, { displayMode: display, throwOnError: true });
   } catch {
     return <code className="richMathFallback">{readableMathFallback(latex)}</code>;
   }
+  return <span className={display ? 'richMath richMathDisplay' : 'richMath'} data-math-boundary="true" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export function RichMathText({ text }: { text: string | null | undefined }) {

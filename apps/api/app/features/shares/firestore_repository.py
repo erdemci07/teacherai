@@ -1,11 +1,12 @@
+from google.cloud.firestore_v1.base_query import FieldFilter
 from firebase_admin import firestore
 
 from .schemas import PublicSolutionSnapshot
 
 
 class FirestoreShareRepository:
-    def __init__(self):
-        self.db = firestore.client()
+    def __init__(self, db=None):
+        self.db = db if db is not None else firestore.client()
 
     def get(self, share_id: str) -> PublicSolutionSnapshot | None:
         snap = self.db.collection("shared_solutions").document(share_id).get()
@@ -14,7 +15,7 @@ class FirestoreShareRepository:
     def find_by_lesson_plan_id(self, lesson_plan_id: str) -> PublicSolutionSnapshot | None:
         query = (
             self.db.collection("shared_solutions")
-            .where("source_lesson_plan_id", "==", lesson_plan_id)
+            .where(filter=FieldFilter("source_lesson_plan_id", "==", lesson_plan_id))
             .limit(5)
             .stream()
         )

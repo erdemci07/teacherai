@@ -1,3 +1,4 @@
+from apps.api.tests.client import authenticated_client
 from dataclasses import replace
 from datetime import datetime, timezone
 from urllib.parse import urlparse
@@ -39,12 +40,12 @@ class SaveFailingRepository(InMemoryShareRepository):
         raise RuntimeError("permission denied")
 
 
-def client_with_shares():
+def client_with_shares(result=None):
     app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     repo = InMemoryShareRepository()
     service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     app.state.container = replace(app.state.container, share_service=service)
-    return TestClient(app, raise_server_exceptions=False), repo
+    return authenticated_client(app, lesson=result or generated_result(), raise_server_exceptions=False), repo
 
 
 def share_payload(result=None, **extra):
@@ -75,7 +76,7 @@ def test_api_does_not_return_url_if_persistence_fails():
     app = create_app(Settings(environment="test", firebase_enabled=False))
     service = ShareService(SaveFailingRepository(), Settings(environment="test", firebase_enabled=False))
     app.state.container = replace(app.state.container, share_service=service)
-    client = TestClient(app, raise_server_exceptions=False)
+    client = authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False)
 
     response = client.post("/api/v1/shares", json=share_payload())
 
@@ -89,7 +90,7 @@ def test_api_confirms_persisted_record_before_returning_url():
     repo = MissingAfterSaveRepository()
     service = ShareService(repo, Settings(environment="test", firebase_enabled=False))
     app.state.container = replace(app.state.container, share_service=service)
-    client = TestClient(app, raise_server_exceptions=False)
+    client = authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False)
 
     response = client.post("/api/v1/shares", json=share_payload())
 
@@ -114,7 +115,7 @@ def test_new_repository_service_instance_can_fetch_persisted_share():
     creator_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     creator_service = ShareService(SharedDictRepository(shared_items), Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
     creator_app.state.container = replace(creator_app.state.container, share_service=creator_service)
-    creator = TestClient(creator_app, raise_server_exceptions=False)
+    creator = authenticated_client(creator_app, lesson=generated_result(), raise_server_exceptions=False)
     created = creator.post("/api/v1/shares", json=share_payload()).json()["data"]
 
     reader_app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base="https://teacherai-api.example.run.app"))
@@ -153,7 +154,7 @@ def test_public_snapshot_excludes_private_feedback_auth_and_image_data():
 def test_placeholder_contaminated_content_cannot_be_published():
     result = generated_result()
     result.lesson.content.steps[0].explanation = "Önce {metin buraya} sonra işlemi yap."
-    client, repo = client_with_shares()
+    client, repo = client_with_shares(result)
 
     response = client.post("/api/v1/shares", json=share_payload(result))
 
@@ -243,7 +244,7 @@ def test_legacy_persisted_share_id_remains_resolvable_through_short_route():
     repo.save(snapshot)
     app = create_app(Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app"))
     app.state.container = replace(app.state.container, share_service=service)
-    client = TestClient(app, raise_server_exceptions=False)
+    client = authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False)
 
     response = client.get("/s/legacy12345")
 
@@ -266,7 +267,7 @@ def test_repository_infrastructure_error_is_5xx_not_fake_not_found():
     app = create_app(Settings(environment="test", firebase_enabled=False))
     service = ShareService(FailingShareRepository(), Settings(environment="test", firebase_enabled=False))
     app.state.container = replace(app.state.container, share_service=service)
-    client = TestClient(app, raise_server_exceptions=False)
+    client = authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False)
 
     api_response = client.get("/api/v1/shares/abc123def45")
     crawler_response = client.get("/s/abc123def45")
@@ -315,7 +316,7 @@ def test_share_url_uses_public_app_url_instead_of_request_origin_when_public_sha
     repo = InMemoryShareRepository()
     service = ShareService(repo, Settings(environment="test", firebase_enabled=False, public_app_url="https://teacherai-07.web.app", public_share_url_base=None))
     app.state.container = replace(app.state.container, share_service=service)
-    client = TestClient(app, raise_server_exceptions=False, base_url="https://api.example.run.app")
+    client = authenticated_client(app, lesson=generated_result(), raise_server_exceptions=False, base_url="https://api.example.run.app")
 
     response = client.post("/api/v1/shares", json=share_payload())
 
@@ -337,7 +338,7 @@ def test_camera_origin_rich_solution_can_create_compact_public_snapshot():
                 text="tekrarlı tahta açıklaması " * 100,
             )
         )
-    client, repo = client_with_shares()
+    client, repo = client_with_shares(result)
 
     response = client.post("/api/v1/shares", json=share_payload(result))
 

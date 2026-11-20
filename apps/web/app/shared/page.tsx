@@ -13,8 +13,8 @@ export default function SharedSolutionPage() {
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('id');
-    if (!id) { setError(true); return; }
-    getPublicShare(id).then(setShare).catch(() => setError(true));
+    const pending = id ? getPublicShare(id) : Promise.reject(new Error('missing_id'));
+    pending.then(setShare).catch(() => setError(true));
   }, []);
 
   if (error) {
@@ -31,7 +31,7 @@ export default function SharedSolutionPage() {
       <section className="publicSolutionHero">
         <p className="eyebrow">TeacherAI</p>
         <h1>Bu soru TeacherAI ile adım adım çözüldü.</h1>
-        <p>Çözüm yolunu inceleyebilir, ardından kendi sorunu TeacherAI'a gösterebilirsin.</p>
+        <p>Çözüm yolunu inceleyebilir, ardından kendi sorunu TeacherAI’a gösterebilirsin.</p>
         <Link className="primaryButton" href="/solve">Sen de soru çöz</Link>
       </section>
       <section className="publicQuestion" aria-labelledby="public-question-title">

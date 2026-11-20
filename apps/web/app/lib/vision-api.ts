@@ -1,4 +1,4 @@
-import {currentToken} from '../auth/AuthProvider';
+import { requestHeaders } from './request-headers';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'unknown';
 
 export interface VisualElements {
@@ -61,17 +61,17 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_TEACHERAI_API_BASE_URL ??
   'http://localhost:8000/api/v1';
 
-export function analyzeQuestionImage(
+export async function analyzeQuestionImage(
   image: File,
   onUploadComplete: () => void,
   timeoutMs = 60_000,
 ): Promise<VisionAnalysis> {
-  return new Promise(async (resolve, reject) => {
+  const headers = await requestHeaders();
+  return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('POST', `${API_BASE_URL}/vision/analyze`);
     request.timeout = timeoutMs;
-    const token = await currentToken();
-    if (token) request.setRequestHeader('Authorization', `Bearer ${token}`);
+    Object.entries(headers).forEach(([name,value]) => request.setRequestHeader(name,value));
     request.responseType = 'json';
     request.upload.addEventListener('load', onUploadComplete);
     request.addEventListener('load', () => {

@@ -4,8 +4,8 @@ from .schemas import FeedbackRecord
 
 
 class FirestoreFeedbackRepository:
-    def __init__(self):
-        self.db = firestore.client()
+    def __init__(self, db=None):
+        self.db = db if db is not None else firestore.client()
 
     def get(self, feedback_id: str) -> FeedbackRecord | None:
         snap = self.db.collection("feedback").document(feedback_id).get()

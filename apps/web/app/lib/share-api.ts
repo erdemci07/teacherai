@@ -1,4 +1,4 @@
-import { currentToken } from '../auth/AuthProvider';
+import { requestHeaders } from './request-headers';
 import type { BoardPlan, GeneratedLesson, LessonContent } from './lesson-api';
 
 export interface PublicLessonSnapshot {
@@ -48,11 +48,11 @@ interface ApiResponse<T> { success: boolean; data: T }
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_TEACHERAI_API_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 export async function createShare(result: GeneratedLesson, existingShareId?: string): Promise<CreatedShare> {
-  const token = await currentToken();
+  const headers = await requestHeaders();
   const response = await fetch(`${BASE}/shares`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    body: JSON.stringify({ result, existing_share_id: existingShareId ?? null }),
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify({ lesson_id: result.lesson.lesson_plan_id, existing_share_id: existingShareId ?? null }),
   });
   const body = await response.json();
   if (!response.ok) throw new Error(body.error ?? 'share_error');

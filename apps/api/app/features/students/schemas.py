@@ -5,6 +5,20 @@ class StudentProfile(BaseModel):
     student_id:str;display_name:str;exam_goal:str|None=None;email:str|None=None;created_at:datetime=Field(default_factory=lambda:datetime.now(timezone.utc))
 class ProfileInput(BaseModel):display_name:str=Field(min_length=1,max_length=80);exam_goal:str|None=None
 class LessonRecord(BaseModel):
+    server_generated: bool = False
     lesson_id:str;student_id:str;created_at:datetime=Field(default_factory=lambda:datetime.now(timezone.utc));subject:str;exam_context:str|None;topic:str;subtopic:str|None;difficulty:str;question_summary:str;final_answer:str;verification_status:str;lesson_data:dict
-class SaveLessonRequest(BaseModel):result:GeneratedLesson
+class LessonReference(BaseModel):
+    """Old clients may send result. Its ID is the only field used."""
+    lesson_id: str | None = Field(None, min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")
+    result: GeneratedLesson | None = None
+
+    def source_id(self):
+        from fastapi import HTTPException
+        value = self.lesson_id or (self.result.lesson.lesson_plan_id if self.result else None)
+        if not value or len(value)>128 or "/" in value:
+            raise HTTPException(422, "Invalid lesson reference.")
+        return value
+
+class SaveLessonRequest(LessonReference):
+    pass
 class DashboardSummary(BaseModel):questions_solved:int;recent_topics:list[str];practice_attempts:int;practice_correct:int;frequent_mistakes:dict[str,int];last_activity:datetime|None
