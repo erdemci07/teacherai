@@ -1,7 +1,9 @@
 'use client';
 
 import { ChangeEvent, ClipboardEvent, useEffect, useRef, useState } from 'react';
-import { analyzeQuestionImage, ImageStatus, VisionAnalysis, VisionApiError } from '../lib/vision-api';
+import { analyzeQuestionImage, clarifyQuestion, ImageStatus, VisionAnalysis, VisionApiError } from '../lib/vision-api';
+import { choiceMismatchNotice, questionState, type QuestionState } from '../lib/clarification';
+import { ClarificationPanel } from './ClarificationPanel';
 import { generateLesson, GeneratedLesson, LessonApiError } from '../lib/lesson-api';
 import Link from 'next/link';
 import { useAuth } from '../auth/AuthProvider';
@@ -18,7 +20,7 @@ import { BrandMark } from '../components/BrandMark';
 import { ERROR_MESSAGES } from '../lib/error-messages';
 import { IdempotencyKeys, outcomeOf } from '../lib/idempotency';
 
-type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'planning' | 'rendering' | 'success' | 'error';
+type SolveState = 'idle' | 'image_selected' | 'uploading' | 'analyzing' | 'clarifying' | 'planning' | 'rendering' | 'success' | 'error';
 const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -44,6 +46,8 @@ export function SolveWorkspace() {
   const [selectedFileKey, setSelectedFileKey] = useState('');
   const [solvedFileKey, setSolvedFileKey] = useState('');
   const [lessonScrollSignal, setLessonScrollSignal] = useState(0);
+  const [questionView, setQuestionView] = useState<QuestionState | null>(null);
+  const [clarifying, setClarifying] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -53,7 +57,8 @@ export function SolveWorkspace() {
   const busy = state === 'uploading' || state === 'analyzing' || state === 'planning' || state === 'rendering';
   const invalidAnalysis = analysis && !analysis.is_valid_question ? analysis : null;
   const solvedCurrentImage = Boolean(file && selectedFileKey && selectedFileKey === solvedFileKey);
-  const stateLabel = result ? 'Çözüldü' : busy ? 'Hazırlanıyor' : file ? 'Soru seçildi' : 'Yeni soru';
+  const stateLabel = result ? 'Çözüldü' : busy ? 'Hazırlanıyor' : state === 'clarifying' ? 'Netleştiriliyor' : file ? 'Soru seçildi' : 'Yeni soru';
+  const mismatch = result ? choiceMismatchNotice(result.verification.choice_match?.status) : null;
 
   const revokeBlobPreview = (url: string) => {
     if (url.startsWith('blob:')) URL.revokeObjectURL(url);
@@ -77,7 +82,7 @@ export function SolveWorkspace() {
     selectedFileKeyRef.current = key;
     setSelectedFileKey(key);
     setSolvedFileKey('');
-    setFile(selected); setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true); setAnalysis(null); setResult(null); setError(''); setState('image_selected');
+    setFile(selected); setPreview(URL.createObjectURL(selected)); setPreviewAvailable(true); setAnalysis(null); setResult(null); setQuestionView(null); setError(''); setState('image_selected');
   };
   const changed = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
@@ -89,7 +94,7 @@ export function SolveWorkspace() {
     selectedFileKeyRef.current = '';
     setSelectedFileKey('');
     setSolvedFileKey('');
-    setFile(null); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setError(''); setState('idle');
+    setFile(null); setPreview(''); setPreviewAvailable(false); setAnalysis(null); setResult(null); setQuestionView(null); setError(''); setState('idle');
   };
   const createLesson = async (value: VisionAnalysis, solveFileKey = selectedFileKeyRef.current) => {
     setState('planning');
@@ -97,6 +102,8 @@ export function SolveWorkspace() {
       const action = `generate:${value.request_id}`;
       const generated = await generateLesson(value, idempotency.current.keyFor(action));
       idempotency.current.settle(action, 'answered');
+      // Görsel bu arada değiştirildiyse eski sorunun dersi yeni ekranın üzerine yazılmaz.
+      if (solveFileKey && selectedFileKeyRef.current !== solveFileKey) return false;
       if (generated.verification.status === 'failed') throw new LessonApiError('math_verification_failed');
       setState('rendering'); setResult(generated); setState('success');
       if (solveFileKey && selectedFileKeyRef.current === solveFileKey) setSolvedFileKey(solveFileKey);
@@ -105,6 +112,7 @@ export function SolveWorkspace() {
     } catch (caught) {
       const code = caught instanceof LessonApiError ? caught.code : 'lesson_error';
       idempotency.current.settle(`generate:${value.request_id}`, outcomeOf(code));
+      if (solveFileKey && selectedFileKeyRef.current !== solveFileKey) return false;
       setError(ERRORS[code] ?? ERRORS.lesson_error); setState('error');
       return false;
     }
@@ -112,21 +120,45 @@ export function SolveWorkspace() {
   const solve = async () => {
     if (!file) return;
     const solveFileKey = selectedFileKeyRef.current;
-    setError(''); setAnalysis(null); setResult(null); setState('uploading');
+    setError(''); setAnalysis(null); setResult(null); setQuestionView(null); setState('uploading');
     try {
       const value = await analyzeQuestionImage(file, () => setState('analyzing'), undefined, idempotency.current.keyFor(`analyze:${solveFileKey}`));
       idempotency.current.settle(`analyze:${solveFileKey}`, 'answered');
+      // Eski görselin geç gelen yanıtı, öğrenci görseli değiştirdiyse yok sayılır.
+      if (selectedFileKeyRef.current !== solveFileKey) return;
       setAnalysis(value);
       if (!previewAvailable && value.normalized_preview_url) { setPreview(value.normalized_preview_url); setPreviewAvailable(true); }
       if (!value.is_valid_question || value.image_status !== 'valid_math_question') {
         const status = value.image_status === 'valid_math_question' ? 'unreadable' : value.image_status;
         setError(INVALID_QUESTION_MESSAGES[status]); setState('error'); return;
       }
+      // Olağan soru doğrudan çözülür; yalnızca sonuca bağlı ve çözülemeyen bir belirsizlikte sorulur.
+      const view = questionState(value.integrity);
+      if (view.kind !== 'proceed') { setQuestionView(view); setState('clarifying'); return; }
       await createLesson(value, solveFileKey);
     } catch (caught) {
       const code = caught instanceof VisionApiError ? caught.code : 'network_error';
       idempotency.current.settle(`analyze:${solveFileKey}`, outcomeOf(code));
+      if (selectedFileKeyRef.current !== solveFileKey) return;
       setError(ERRORS[code] ?? ERRORS.network_error); setState('error');
+    }
+  };
+  const answerClarification = async (uncertaintyId: string, selection: string) => {
+    if (!analysis || clarifying) return;
+    const solveFileKey = selectedFileKeyRef.current;
+    setClarifying(true); setError('');
+    try {
+      const updated = await clarifyQuestion(analysis.request_id, { expected_revision: analysis.revision ?? 1, uncertainty_id: uncertaintyId, selection });
+      if (selectedFileKeyRef.current !== solveFileKey) return;
+      setAnalysis(updated);
+      const view = questionState(updated.integrity);
+      if (view.kind === 'proceed') { setQuestionView(null); await createLesson(updated, solveFileKey); }
+      else setQuestionView(view);
+    } catch (caught) {
+      const code = caught instanceof VisionApiError ? caught.code : 'network_error';
+      if (selectedFileKeyRef.current === solveFileKey) setError(ERRORS[code] ?? ERRORS.network_error);
+    } finally {
+      setClarifying(false);
     }
   };
   const pasted = (event: ClipboardEvent<HTMLElement>) => {
@@ -174,6 +206,7 @@ export function SolveWorkspace() {
       <section className="solveInput" aria-label="Soru görseli">
         {!file ? <UploadCard disabled={busy} dragging={dragging} onDraggingChange={setDragging} onFile={select} onCamera={() => cameraRef.current?.click()} onGallery={() => galleryRef.current?.click()} onFilePicker={() => fileRef.current?.click()} /> : <ImagePreview file={file} previewUrl={preview} previewAvailable={previewAvailable} disabled={busy} onRemove={reset} onReplace={() => galleryRef.current?.click()} onPreviewError={handlePreviewError} />}
         {error && <ErrorBanner message={error} />}
+        {state === 'clarifying' && questionView && questionView.kind !== 'proceed' && <ClarificationPanel state={questionView} pending={clarifying} onSelect={answerClarification} onRetake={() => cameraRef.current?.click()} onReplace={() => galleryRef.current?.click()} />}
         {invalidAnalysis && <div className="invalidImageActions"><button type="button" className="primaryButton" onClick={() => cameraRef.current?.click()}>📷 Tekrar Çek</button><button type="button" className="secondaryButton" onClick={() => galleryRef.current?.click()}>Başka Görsel Seç</button></div>}
         {error && analysis?.is_valid_question && !result && <button className="secondaryButton retryButton" onClick={() => createLesson(analysis)}>Yeniden incele</button>}
         <div className="solveActions"><button className="primaryButton analyzeButton" onClick={solve} disabled={!file || busy}>{solvedCurrentImage ? 'Yeniden Çöz' : 'Soruyu Çöz'}</button><button className="secondaryButton" onClick={reset} disabled={!file || busy}>Temizle</button></div>
@@ -181,7 +214,7 @@ export function SolveWorkspace() {
       </section>
       <aside className="solveOutput" aria-label="TeacherAI anlatımı">
         {busy && <AnalysisLoading key={state} uploading={state === 'uploading'} stage={state} />}
-        {!busy && !result && !error && (
+        {!busy && !result && !error && state !== 'clarifying' && (
           <div className="resultEmpty solutionPlaceholder">
             <BrandMark size="lg" />
             <span>Çözüm alanı</span>
@@ -201,6 +234,7 @@ export function SolveWorkspace() {
             </section>
             <div ref={lessonStartRef} className="lessonScrollTarget" aria-hidden="true" />
             <TeacherBoard result={result} />
+            {mismatch && <p className="choiceMismatch" role="note">{mismatch}</p>}
             <section key={result.lesson.lesson_plan_id} className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
               <InteractionPanel lesson={result.lesson} />
               <ShareSolution result={result} />

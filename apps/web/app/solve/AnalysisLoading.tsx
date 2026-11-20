@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { BrandMark } from '../components/BrandMark';
 
-const stages: Record<string, { primary: string; secondary?: string; detail: string; checklist: string }> = {
+const stages: Record<string, { primary: string; secondary?: string; late?: string; detail: string; checklist: string }> = {
   uploading: { primary: 'Görsel hazırlanıyor...', secondary: 'Dosya güvenli şekilde yükleniyor...', detail: 'Fotoğrafı incelemeye hazırlıyorum.', checklist: 'Görsel alınıyor' },
-  analyzing: { primary: 'Soruyu okuyorum...', secondary: 'Şekil ve ifadeleri dikkatlice inceliyorum...', detail: 'Bu aşamada yalnızca sorunun içeriği çıkarılıyor.', checklist: 'Soruyu anlıyor' },
+  // TA-003: belirsiz bir parça hedefli olarak yeniden okunuyorsa analiz uzayabilir.
+  analyzing: { primary: 'Soruyu okuyorum...', secondary: 'Şekil ve ifadeleri dikkatlice inceliyorum...', late: 'İfadeyi biraz daha dikkatli inceliyorum...', detail: 'Bu aşamada yalnızca sorunun içeriği çıkarılıyor.', checklist: 'Soruyu anlıyor' },
   planning: { primary: 'Çözüm yolunu planlıyorum...', secondary: 'Adımları kontrol ediyorum...', detail: 'Öğretmen anlatımı matematiksel olarak denetleniyor.', checklist: 'Çözüm planı kuruluyor' },
   rendering: { primary: 'Anlatımı hazırlıyorum...', detail: 'Çözüm birazdan ekranda olacak.', checklist: 'Anlatım hazırlanıyor' },
 };
@@ -14,6 +15,7 @@ const order = ['uploading', 'analyzing', 'planning', 'rendering'];
 export function AnalysisLoading({ uploading, stage }: { uploading: boolean; stage?: string }) {
   const key = uploading ? 'uploading' : stage ?? 'analyzing';
   const [showSecondary, setShowSecondary] = useState(false);
+  const [showLate, setShowLate] = useState(false);
   const current = stages[key] ?? stages.analyzing;
   const activeIndex = Math.max(0, order.indexOf(key));
 
@@ -23,6 +25,12 @@ export function AnalysisLoading({ uploading, stage }: { uploading: boolean; stag
     return () => window.clearTimeout(timer);
   }, [key, current.secondary]);
 
+  useEffect(() => {
+    if (!current.late) return;
+    const timer = window.setTimeout(() => setShowLate(true), 16000);
+    return () => window.clearTimeout(timer);
+  }, [key, current.late]);
+
   return (
     <div className="analysisLoading teacherThinkingCard" role="status" aria-live="polite">
       <div className="loadingMascotWrap">
@@ -31,7 +39,7 @@ export function AnalysisLoading({ uploading, stage }: { uploading: boolean; stag
       </div>
       <div className="thinkingContent">
         <span className="loadingEyebrow">TeacherAI düşünüyor</span>
-        <strong>{showSecondary && current.secondary ? current.secondary : current.primary}</strong>
+        <strong>{showLate && current.late ? current.late : showSecondary && current.secondary ? current.secondary : current.primary}</strong>
         <p>{current.detail}</p>
         <ul className="loadingSteps teacherChecklist">
           {order.map((item, index) => (

@@ -1,4 +1,5 @@
 import { requestHeaders } from './request-headers';
+import type { ClarificationRequest, IntegrityReport } from './education.generated';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'unknown';
 
 export interface VisualElements {
@@ -34,6 +35,9 @@ export interface VisionAnalysis {
   processing_time_ms: number;
   normalized_preview_url: string | null;
   debug: Record<string, string> | null;
+  // TA-003: sunucuya ait soru revizyonu ve bütünlük kararı; eski yanıtlarda bulunmayabilir.
+  revision?: number;
+  integrity?: IntegrityReport | null;
 }
 
 interface ApiResponse<T> {
@@ -91,4 +95,21 @@ export async function analyzeQuestionImage(
     form.append('image', image);
     request.send(form);
   });
+}
+
+// TA-003: Öğrencinin tek bir belirsizlik için seçimi. Sağlayıcı çağrısı yapılmaz; sunucu sahipliği ve
+// beklenen revizyonu denetler. Aynı seçimin yeniden denemesi aynı revizyonu döndürür.
+export async function clarifyQuestion(analysisId: string, body: ClarificationRequest): Promise<VisionAnalysis> {
+  const headers = await requestHeaders();
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/vision/analyses/${encodeURIComponent(analysisId)}/clarification`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body), cache: 'no-store',
+    });
+  } catch {
+    throw new VisionApiError('network_error');
+  }
+  const payload = await response.json().catch(() => null) as ApiResponse<VisionAnalysis> | ApiErrorResponse | null;
+  if (response.ok && payload && 'data' in payload) return payload.data;
+  throw new VisionApiError(payload && 'error' in payload ? payload.error : 'unexpected_response', response.status);
 }
