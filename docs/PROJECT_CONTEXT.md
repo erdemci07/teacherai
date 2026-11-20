@@ -6,11 +6,52 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | --- | --- |
 | Uygulandı | Next.js/React/TypeScript öğrenci arayüzü, FastAPI/Pydantic modüler monoliti, Firebase Auth, Firestore, matematik görseli analizi, yapılandırılmış ders, BoardPlanner, KaTeX, ders sonrası etkileşim, geçmiş ve bağlantıyla paylaşım. TA-001 değişiklikleri yerel dalda doğrulanır. |
 | Uygulandı (TA-002) | Ortak eğitim çekirdeği (`features/education`): kanonik alan kimlikleri, kökenli eğitim bağlamı, soru anlama sözleşmesi, LessonPlan v2, alan yetenek tablosu, boyut bazında doğrulama raporu. Matematik üretim hattı v2 projeksiyonunu her derste kurar. Sahibine özel salt okunur `GET /api/v1/lessons/{id}/v2` ve geçmişte v2 anlatım görünümü. Pydantic’ten üretilen JSON Schema ve TypeScript tipleri, CI eskime denetimi. |
+| Uygulandı (TA-003) | Soru bütünlüğü motoru (`features/integrity`): sınırlı, dengeli ifade ayrıştırıcısı (kök, kesir, üs kapsamı, tekli eksi korunur), Türkçe soru amacı ve olumsuzluk işaretleri, yapılandırılmış seçenekler, kanıta dayalı önemlilik kararı, aynı istekte koşullu tek hedefli yeniden okuma, son çare öğrenci açıklaması (`POST /api/v1/vision/analyses/{id}/clarification`) ve sunucuya ait soru revizyonları. Kesin eşdeğerlikle seçenek uzlaştırması ve önce-çöz bağlamı. Mantıksal istek başına sağlayıcı çağrısı tavanı. Tahribatsız görüntü hazırlama ve tavsiye niteliğinde kalite göstergeleri. |
 | Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
-| Ertelendi | Bilim alanı motorları (TA-002 yalnızca sözleşmeyi kurdu), ek AI sağlayıcıları (TA-003), Öğretmen Stüdyosu, canlı ses ve cihaz entegrasyonu sonraki fazlarda ele alınacak. |
+| Ertelendi | Aşağıdaki yol haritasındaki TA-004 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
+
+## Yol haritası
+
+TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
+
+| Faz | Kapsam | Durum |
+| --- | --- | --- |
+| TA-001 / TA-001B | Temel ve son stabilizasyon | Tamamlandı |
+| TA-002 | Ortak eğitim çekirdeği, LessonPlan v2 | Tamamlandı |
+| TA-003 | Soru bütünlüğü ve görsel zekâ | Bu dal |
+| TA-004 | Akıl yürütme ve doğrulama çekirdeği | Planlandı |
+| TA-005 | Çok sağlayıcılı AI Gateway | Planlandı |
+| TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
+| TA-007 | Uzman öğretmen bilgisi | Planlandı |
+| TA-008 | İleri matematik ve geometri | Planlandı |
+| TA-009 | Fizik zekâsı | Planlandı |
+| TA-010 | Kimya zekâsı | Planlandı |
+| TA-011 | Biyoloji ve fen zekâsı | Planlandı |
+| TA-012 | Öğrenci zekâsı | Planlandı |
+| TA-013 | Uyarlanabilir ders motoru | Planlandı |
+| TA-014 | Ses ve akıllı tahta | Planlandı |
+| TA-015 | Etkileşimli canlı öğretmen | Planlandı |
+| TA-016 | Çapraz platform mobil (Capacitor) | Planlandı |
+| TA-017 | Üretime hazırlık ve ölçekleme | Planlandı |
+
+GPT-4.1-mini yaşam döngüsü ve model geçişi bu numaralandırmadan bağımsız, zamana bağlı bir yayın gerekliliğidir. Model varsayılanları değiştirilmedi.
+
+## Doğruluk boyutları
+
+Beş boyut (doğru soru, doğru cevap, uygun yöntem, tutarlı sunum, gerçek öğrenme) ayrı değerlendirilir. TA-003 birinci boyutu uygular ve seçenek tutarlılığıyla ikinciyi güçlendirir. Diğer boyutlar tamamlanmış sayılmaz.
+
+## Soru bütünlüğü (TA-003)
+
+Ayrıntılar [ADR TA-003](architecture/adr-ta-003-question-integrity.md) ve [TA-003 raporu](phase-reports/TA-003.md) içindedir.
+
+- Olağan temiz soru: 1 Vision + 1 ders çağrısı, öğrenciye soru sorulmaz. Ek Vision çağrısı yalnızca görsel olarak çözülebilir, sonuca bağlı bir belirsizlikte ve aynı istek içinde yapılır (`TEACHERAI_VISION_MAX_RECHECKS`, varsayılan 1, 0 kapatır). Ders üretimi en çok 3 sağlayıcı çağrısı yapar (`TEACHERAI_LESSON_MAX_PROVIDER_CALLS`).
+- Analiz yanıtı `revision` ve `integrity` taşır. Çözülemeyen soruda `/lessons/generate` sağlayıcı çağrılmadan 409 `question_clarification_required` döner. Eski revizyon 409 `stale_question_revision` alır.
+- Revizyon aynı `lesson_analyses` belgesinde tek işlemde, hesap silme işaretiyle birlikte yazılır. TTL uzatılmaz. Görsel kalıcı olarak saklanmaz.
+- `verification.source_consistency: partially_checked` yalnızca yapısal kaynak tutarlılığını ifade eder. Görselin doğru okunduğunu kanıtlamaz.
+- Gerçek tanıma doğruluğu, açıklama oranı ve maliyet ölçülmedi. Sentetik matris (`python -m scripts.integrity_matrix --check`) yalnızca fikstür kabul ölçütüdür.
 
 ## Mimari ve sözleşme
 

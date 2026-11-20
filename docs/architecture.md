@@ -2,6 +2,7 @@
 
 These documents describe the design roadmap. The [project context](PROJECT_CONTEXT.md) identifies the deployed-stack code, runtime contract and validation gates.
 
+- [`architecture/adr-ta-003-question-integrity.md`](architecture/adr-ta-003-question-integrity.md) records the implemented TA-003 question integrity decisions: materiality, bounded expression parsing, choice reconciliation, targeted re-reading, clarification, revisions and call budgets.
 - [`architecture/adr-ta-002-education-core.md`](architecture/adr-ta-002-education-core.md) records the implemented TA-002 decisions: canonical education domain, LessonPlan v2, subject capabilities, verification semantics, v1/v2 compatibility and contract generation. Unlike the drafts below, it describes running code.
 
 - [`architecture/system-architecture.md`](architecture/system-architecture.md) explains the scalable backend, frontend, module, abstraction, dependency, and portal architecture.
