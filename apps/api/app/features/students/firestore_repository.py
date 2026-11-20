@@ -1,11 +1,13 @@
-from apps.api.app.core.transactions import commit as commit_transaction
-from apps.api.app.core.retention import ANALYSES, expired, retention
-from apps.api.app.features.account.guard import ensure_active
 import json
-from google.cloud.firestore_v1.base_query import FieldFilter
+
+from apps.api.app.core.retention import ANALYSES, expired, retention
+from apps.api.app.core.transactions import commit as commit_transaction
+from apps.api.app.features.account.guard import ensure_active
+from apps.api.app.features.memory.schemas import StudentMemory
 from apps.api.app.features.vision.schemas import VisionAnalysis
 from firebase_admin import firestore
-from apps.api.app.features.memory.schemas import StudentMemory
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 from .schemas import LessonRecord, StudentProfile
 
 
@@ -143,6 +145,34 @@ class FirestoreStudentRepository:
             tx.create(ref, payload)
 
         commit_transaction(self.db, update)
+
+    def update_analysis(self, uid, analysis_id, mutate):
+        """Soru revizyonunu aynı belgede, tek işlemde günceller.
+
+        Sahiplik, süre ve hesap silme işareti işlem içinde okunur; ``mutate`` beklenen revizyonu
+        denetler. Eşzamanlı iki açıklamadan yalnızca biri kazanır; diğeri işlem yeniden denendiğinde
+        güncel revizyonu görür ve reddedilir. ``expires_at`` uzatılmaz.
+        """
+        ref = self.db.collection(ANALYSES).document(analysis_id)
+        outcome = {}
+
+        @firestore.transactional
+        def update(tx):
+            ensure_active(self.db, tx, uid)
+            data = ref.get(transaction=tx).to_dict()
+            if not data or data.get("owner") != uid or expired(data):
+                outcome["value"] = None
+                return
+            current = VisionAnalysis.model_validate_json(data["analysis"])
+            updated = mutate(current)
+            if updated is None:
+                outcome["value"] = current
+                return
+            tx.update(ref, {"analysis": updated.model_dump_json(exclude={"debug", "normalized_preview_url"})})
+            outcome["value"] = updated
+
+        commit_transaction(self.db, update)
+        return outcome.get("value")
 
     def analysis(self, uid, analysis_id):
         data = (

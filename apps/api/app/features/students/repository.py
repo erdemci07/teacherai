@@ -1,8 +1,10 @@
 from threading import Lock
-from apps.api.app.core.retention import ANALYSES, expired, retention
 from typing import Protocol
+
+from apps.api.app.core.retention import ANALYSES, expired, retention
 from apps.api.app.features.interactions.schemas import InteractionEvent
 from apps.api.app.features.memory.schemas import StudentMemory
+
 from .schemas import LessonRecord, StudentProfile
 
 
@@ -12,6 +14,7 @@ class StudentRepository(Protocol):
     def apply_event(self, uid, event, practice_id, engine, lesson=None) -> None: ...
     def save_analysis(self, uid, analysis) -> None: ...
     def analysis(self, uid, analysis_id): ...
+    def update_analysis(self, uid, analysis_id, mutate): ...
     def get_lesson(self, lesson_id: str) -> LessonRecord | None: ...
     def lesson_count(self, uid: str) -> int: ...
     def lessons(self, uid: str, limit: int = 50) -> list[LessonRecord]: ...
@@ -96,3 +99,15 @@ class InMemoryStudentRepository:
     def analysis(self, uid, analysis_id):
         item = self.analyses.get(analysis_id)
         return item[1] if item and item[0] == uid and not expired(item[2]) else None
+
+    def update_analysis(self, uid, analysis_id, mutate):
+        """mutate(mevcut) yeni analizi veya değişiklik yoksa None döndürür. Saklama süresi uzatılmaz."""
+        with self.lock:
+            item = self.analyses.get(analysis_id)
+            if not item or item[0] != uid or expired(item[2]):
+                return None
+            updated = mutate(item[1])
+            if updated is None:
+                return item[1]
+            self.analyses[analysis_id] = (uid, updated, item[2])
+            return updated
