@@ -16,6 +16,8 @@ python -m uvicorn apps.api.app.main:app --reload
 
 Ücretli işlemler için geçerli Firebase oturumu, Firestore erişimi ve sağlayıcı yapılandırması gerekir. Yerel testler sahte sağlayıcılarla çalışır. Ayarlar ve emülatör komutları [TA-001 raporunda](docs/phase-reports/TA-001.md), uygulanan ve planlanan özellikler [proje bağlamında](docs/PROJECT_CONTEXT.md) açıklanır.
 
+Eğitim sözleşmesi Pydantic modellerinden üretilir: `python -m scripts.education_contracts` (denetim için `--check`).
+
 ## Mimari taslaklar
 
 - [`docs/architecture/system-architecture.md`](docs/architecture/system-architecture.md) defines the complete scalable system architecture.
