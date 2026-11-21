@@ -156,6 +156,277 @@
       "title": "AnswerChoice",
       "type": "object"
     },
+    "AnswerTarget": {
+      "additionalProperties": false,
+      "description": "Sorunun istediği şey. Bir denklemin çözümü her zaman istenen cevap değildir (x = 3 iken x + 2).",
+      "properties": {
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
+        },
+        "integer_only": {
+          "default": false,
+          "title": "Integer Only",
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "variable_value",
+            "expression_value",
+            "sum",
+            "difference",
+            "product",
+            "ratio",
+            "solution_count",
+            "root_sum",
+            "root_product",
+            "solution_set",
+            "interval",
+            "minimum",
+            "maximum",
+            "comparison",
+            "proposition_truth",
+            "statement_combination",
+            "physical_quantity",
+            "chemical_quantity",
+            "scientific_interpretation",
+            "textual_explanation",
+            "unresolved"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "latex": {
+          "anyOf": [
+            {
+              "maxLength": 400,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latex"
+        },
+        "markers": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Markers",
+          "type": "array"
+        },
+        "origin": {
+          "enum": [
+            "deterministic",
+            "legacy_default",
+            "unresolved"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "pattern": "^(stem|visual|expression:[0-9]{1,2}|choice:[A-Za-z0-9]{1,4}|statement:[IVX]{1,4})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "variable": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z](_[a-zA-Z0-9]{1,4})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variable"
+        }
+      },
+      "required": [
+        "kind",
+        "origin"
+      ],
+      "title": "AnswerTarget",
+      "type": "object"
+    },
+    "Axis": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "origin": {
+          "default": "unknown",
+          "enum": [
+            "explicit",
+            "unknown"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "scale": {
+          "enum": [
+            "explicit_linear",
+            "explicit_nonlinear",
+            "unknown"
+          ],
+          "title": "Scale",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name",
+        "scale"
+      ],
+      "title": "Axis",
+      "type": "object"
+    },
+    "BlockCheck": {
+      "additionalProperties": false,
+      "description": "Tek bir doğrulama sonucunun hedef bloğu. Hedef bulunamazsa ders düzeyinde ``unmapped`` kalır.",
+      "properties": {
+        "dimension": {
+          "enum": [
+            "calculation",
+            "transformation",
+            "domain",
+            "answer_target",
+            "answer_choice",
+            "source_consistency",
+            "units",
+            "stoichiometry",
+            "evidence_consistency",
+            "scientific",
+            "curriculum",
+            "method",
+            "pedagogy"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 8,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mapping": {
+          "default": "mapped",
+          "enum": [
+            "mapped",
+            "unmapped"
+          ],
+          "title": "Mapping",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "unsupported",
+            "not_checked",
+            "not_applicable"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "block",
+            "answer",
+            "lesson"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "verifier": {
+          "enum": [
+            "mathai",
+            "integrity",
+            "units",
+            "chemistry",
+            "evidence",
+            "none"
+          ],
+          "title": "Verifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "scope",
+        "dimension",
+        "verifier",
+        "outcome",
+        "reason"
+      ],
+      "title": "BlockCheck",
+      "type": "object"
+    },
     "BoardPanel": {
       "additionalProperties": false,
       "properties": {
@@ -395,6 +666,87 @@
       "title": "ChoiceMatch",
       "type": "object"
     },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "causal": {
+          "default": false,
+          "title": "Causal",
+          "type": "boolean"
+        },
+        "groups": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Groups",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "increases",
+            "decreases",
+            "no_change",
+            "differs",
+            "equal"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "x": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "X"
+        },
+        "y": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Y",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "y",
+        "relation",
+        "provenance"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
     "ClarificationRecord": {
       "additionalProperties": false,
       "properties": {
@@ -449,6 +801,28 @@
         "selection"
       ],
       "title": "ClarificationRequest",
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        },
+        "variable": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable",
+        "value"
+      ],
+      "title": "Condition",
       "type": "object"
     },
     "ContextValue": {
@@ -517,6 +891,264 @@
         "from_revision"
       ],
       "title": "Correction",
+      "type": "object"
+    },
+    "DataTable": {
+      "additionalProperties": false,
+      "properties": {
+        "figure": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Figure"
+        },
+        "headers": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Headers",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        },
+        "units": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UnitSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxItems": 12,
+          "title": "Units",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "headers",
+        "rows"
+      ],
+      "title": "DataTable",
+      "type": "object"
+    },
+    "DerivationStepBlock": {
+      "additionalProperties": false,
+      "description": "Bir akıl yürütme adımı (TA-004). Matematik dönüşümü veya bilimsel çıkarım olabilir.\n\n``inputs`` ve ``outputs`` ifade, nicelik, durum veya kanıt referanslarıdır; biyoloji gibi denklemsiz\nakıl yürütmede matematiksel bir ``from/to`` çifti zorunlu değildir. ``operation`` bir işlemdir,\nöğretim yöntemi değildir (``method_ref``). İşlem adı doğruluk kanıtı sayılmaz; kontroller\n``VerificationReport.block_checks`` içindedir ve yalnızca sunucu doğrulayıcılarından gelir.",
+      "properties": {
+        "assumptions": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "conclusions": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 8,
+          "title": "Conclusions",
+          "type": "array"
+        },
+        "explanation": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 16,
+          "title": "Inputs",
+          "type": "array"
+        },
+        "kind": {
+          "const": "derivation_step",
+          "title": "Kind",
+          "type": "string"
+        },
+        "method_ref": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method Ref"
+        },
+        "narration_ref": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Narration Ref"
+        },
+        "operation": {
+          "default": "unknown",
+          "enum": [
+            "add_both_sides",
+            "subtract_both_sides",
+            "multiply_both_sides",
+            "divide_both_sides",
+            "expand",
+            "factor",
+            "complete_square",
+            "square_both_sides",
+            "isolate_variable",
+            "substitute",
+            "compare",
+            "evaluate",
+            "rewrite",
+            "case_split",
+            "apply_principle",
+            "calculate_quantity",
+            "convert_unit",
+            "compare_observations",
+            "infer_sequence",
+            "evaluate_premise",
+            "interpret_visual",
+            "explain",
+            "state_result",
+            "unknown"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "operation_origin": {
+          "default": "unknown",
+          "enum": [
+            "deterministic",
+            "v1_step_type",
+            "fixture",
+            "unknown"
+          ],
+          "title": "Operation Origin",
+          "type": "string"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 16,
+          "title": "Outputs",
+          "type": "array"
+        },
+        "preconditions": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Preconditions",
+          "type": "array"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "References",
+          "type": "array"
+        },
+        "relates_to": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Relates To",
+          "type": "array"
+        },
+        "step_index": {
+          "maximum": 256,
+          "minimum": 1,
+          "title": "Step Index",
+          "type": "integer"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "step_index",
+        "explanation"
+      ],
+      "title": "DerivationStepBlock",
       "type": "object"
     },
     "EducationContext": {
@@ -679,6 +1311,7 @@
                 "calculation": "#/$defs/CalculationBlock",
                 "checkpoint": "#/$defs/ProseBlock",
                 "definition": "#/$defs/ProseBlock",
+                "derivation_step": "#/$defs/DerivationStepBlock",
                 "explanation": "#/$defs/ProseBlock",
                 "expression": "#/$defs/ExpressionBlock",
                 "hint": "#/$defs/ProseBlock",
@@ -709,12 +1342,23 @@
               },
               {
                 "$ref": "#/$defs/VisualBlock"
+              },
+              {
+                "$ref": "#/$defs/DerivationStepBlock"
               }
             ]
           },
           "maxItems": 256,
           "minItems": 1,
           "title": "Blocks",
+          "type": "array"
+        },
+        "narration": {
+          "items": {
+            "$ref": "#/$defs/NarrationSegment"
+          },
+          "maxItems": 256,
+          "title": "Narration",
           "type": "array"
         },
         "objectives": {
@@ -750,6 +1394,129 @@
         "takeaway"
       ],
       "title": "EducationalDraft",
+      "type": "object"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "figure": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Figure"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "object",
+            "body",
+            "vehicle",
+            "planet",
+            "field",
+            "charge",
+            "circuit_element",
+            "lens",
+            "particle",
+            "species",
+            "substance",
+            "solution",
+            "apparatus",
+            "cell",
+            "organelle",
+            "organism",
+            "population",
+            "structure",
+            "process_stage",
+            "gene",
+            "point",
+            "segment",
+            "angle",
+            "region",
+            "axis",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "provenance"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "block",
+            "source_expression",
+            "source_choice",
+            "source_statement",
+            "source_region",
+            "observation",
+            "quantity",
+            "entity",
+            "relation",
+            "figure",
+            "table_cell",
+            "check"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "EvidenceRef",
       "type": "object"
     },
     "ExampleBlock": {
@@ -839,6 +1606,139 @@
       "title": "ExampleBlock",
       "type": "object"
     },
+    "ExperimentGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Conditions",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "conditions"
+      ],
+      "title": "ExperimentGroup",
+      "type": "object"
+    },
+    "ExperimentalModel": {
+      "additionalProperties": false,
+      "properties": {
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "maxItems": 12,
+          "title": "Claims",
+          "type": "array"
+        },
+        "controlled": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Controlled",
+          "type": "array"
+        },
+        "dependent": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Dependent",
+          "type": "array"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/ExperimentGroup"
+          },
+          "maxItems": 12,
+          "title": "Groups",
+          "type": "array"
+        },
+        "hypothesis": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hypothesis"
+        },
+        "independent": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Independent",
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Limitations",
+          "type": "array"
+        },
+        "measurements": {
+          "items": {
+            "$ref": "#/$defs/Measurement"
+          },
+          "maxItems": 128,
+          "title": "Measurements",
+          "type": "array"
+        },
+        "objective": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Objective"
+        },
+        "variables": {
+          "items": {
+            "$ref": "#/$defs/Variable"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Variables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variables"
+      ],
+      "title": "ExperimentalModel",
+      "type": "object"
+    },
     "ExpressionBlock": {
       "additionalProperties": false,
       "properties": {
@@ -884,6 +1784,94 @@
       "title": "ExpressionBlock",
       "type": "object"
     },
+    "Figure": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "geometry_figure",
+            "force_diagram",
+            "circuit",
+            "optics",
+            "planetary_system",
+            "motion_diagram",
+            "reaction_diagram",
+            "molecular_structure",
+            "particle_model",
+            "apparatus",
+            "cell_diagram",
+            "biological_system",
+            "process_diagram",
+            "experimental_setup",
+            "graph",
+            "table",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "legend": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Legend",
+          "type": "array"
+        },
+        "panel_label": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Panel Label"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRegion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "Figure",
+      "type": "object"
+    },
     "Grade": {
       "additionalProperties": false,
       "properties": {
@@ -907,6 +1895,58 @@
         "origin"
       ],
       "title": "Grade",
+      "type": "object"
+    },
+    "GraphSeries": {
+      "additionalProperties": false,
+      "properties": {
+        "figure": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Figure",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "items": {
+              "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 64,
+          "title": "Points",
+          "type": "array"
+        },
+        "points_origin": {
+          "default": "none",
+          "enum": [
+            "printed_values",
+            "none"
+          ],
+          "title": "Points Origin",
+          "type": "string"
+        },
+        "x": {
+          "$ref": "#/$defs/Axis"
+        },
+        "y": {
+          "$ref": "#/$defs/Axis"
+        }
+      },
+      "required": [
+        "id",
+        "figure",
+        "x",
+        "y"
+      ],
+      "title": "GraphSeries",
       "type": "object"
     },
     "IntegrityCheck": {
@@ -942,6 +1982,14 @@
             "target_question_unclear",
             "invalid_region_omitted",
             "essential_visual_without_facts",
+            "essential_visual_text_sufficient",
+            "essential_visual_insufficient",
+            "visual_supplied_by_recheck",
+            "legacy_uncertainty_material",
+            "legacy_uncertainty_formatting",
+            "legacy_uncertainty_context_absent",
+            "legacy_uncertainty_unclassified",
+            "legacy_uncertainty_merged",
             "recheck_confirmed",
             "recheck_equivalent",
             "recheck_disagreement",
@@ -1195,6 +2243,17 @@
           "title": "Lesson Id",
           "type": "string"
         },
+        "problem": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScientificProblemModel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "provenance": {
           "$ref": "#/$defs/Provenance"
         },
@@ -1323,6 +2382,147 @@
       "title": "MathAnswer",
       "type": "object"
     },
+    "Measurement": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Group",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+          "title": "Value",
+          "type": "string"
+        },
+        "variable": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "group",
+        "variable",
+        "value"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    },
+    "NarrationSegment": {
+      "additionalProperties": false,
+      "description": "Gelecekteki sesli anlatım için yalnızca sözleşme. Ses üretimi TA-014'tedir.",
+      "properties": {
+        "block": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Block",
+          "type": "string"
+        },
+        "emphasis": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Emphasis",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "order": {
+          "maximum": 1023,
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "pause_after_ms": {
+          "default": 0,
+          "maximum": 5000,
+          "minimum": 0,
+          "title": "Pause After Ms",
+          "type": "integer"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "order",
+        "block",
+        "text"
+      ],
+      "title": "NarrationSegment",
+      "type": "object"
+    },
+    "NarrativeSegment": {
+      "additionalProperties": false,
+      "description": "Uzun anlatımda bir cümle aralığı ve rolü. Özgün metin ayrıca saklanır; kısaltılmaz.",
+      "properties": {
+        "end": {
+          "maximum": 8192,
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "provenance": {
+          "const": "source_text",
+          "default": "source_text",
+          "title": "Provenance",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "scenario",
+            "initial_state",
+            "event",
+            "given",
+            "constraint",
+            "requested",
+            "unclassified"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "start": {
+          "maximum": 8192,
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "start",
+        "end",
+        "role"
+      ],
+      "title": "NarrativeSegment",
+      "type": "object"
+    },
     "NormalizationNote": {
       "additionalProperties": false,
       "description": "Anlamı değiştirmeyen belirlenimci dönüşüm. Özgün okuma ayrıca saklanır.",
@@ -1384,6 +2584,128 @@
         "value"
       ],
       "title": "NumberAnswer",
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 8,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "figure": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Figure"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "pattern": "^(stem|visual|expression:[0-9]{1,2}|choice:[A-Za-z0-9]{1,4}|statement:[IVX]{1,4})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "statement": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "provenance"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
+    "Premise": {
+      "additionalProperties": false,
+      "description": "Öncül: bilimsel olarak doğru olmak ile verilen kaynaktan çıkarılabilir olmak ayrıdır.",
+      "properties": {
+        "evaluator": {
+          "default": "none",
+          "enum": [
+            "evidence_check",
+            "none"
+          ],
+          "title": "Evaluator",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 8,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "label": {
+          "pattern": "^[IVX]{1,4}$",
+          "title": "Label",
+          "type": "string"
+        },
+        "status": {
+          "default": "unevaluated",
+          "enum": [
+            "supported",
+            "contradicted",
+            "not_decidable",
+            "true_not_deducible",
+            "unevaluated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "text"
+      ],
+      "title": "Premise",
       "type": "object"
     },
     "ProseBlock": {
@@ -1528,6 +2850,153 @@
         "quantity"
       ],
       "title": "QuantityAnswer",
+      "type": "object"
+    },
+    "QuantityValue": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "default": "none",
+          "enum": [
+            "none",
+            "positive",
+            "negative",
+            "left",
+            "right",
+            "up",
+            "down",
+            "into",
+            "out_of",
+            "unclear"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "maxItems": 8,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "magnitude": {
+          "anyOf": [
+            {
+              "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Magnitude"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "original": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "significant_digits": {
+          "anyOf": [
+            {
+              "maximum": 15,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Significant Digits"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "provenance"
+      ],
+      "title": "QuantityValue",
       "type": "object"
     },
     "QuestionIntent": {
@@ -1791,9 +3260,122 @@
       "title": "Reference",
       "type": "object"
     },
+    "Relation": {
+      "additionalProperties": false,
+      "description": "Gözlenen ilişki ile onun bilimsel yorumu ayrıdır (aynı ok kuvvet, taşınma veya neden olabilir).",
+      "properties": {
+        "direction_clear": {
+          "default": true,
+          "title": "Direction Clear",
+          "type": "boolean"
+        },
+        "figure": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Figure"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "interpretation": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interpretation"
+        },
+        "interpretation_provenance": {
+          "anyOf": [
+            {
+              "enum": [
+                "source_text",
+                "visual_reading",
+                "student_confirmed",
+                "background_knowledge",
+                "modeling_assumption",
+                "inferred",
+                "derived"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interpretation Provenance"
+        },
+        "object": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Object",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "subject": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Subject",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "connected_to",
+            "contains",
+            "part_of",
+            "points_to",
+            "measured_at",
+            "labeled_as",
+            "precedes",
+            "increases",
+            "decreases",
+            "adjacent_to",
+            "acts_on"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "subject",
+        "object",
+        "provenance"
+      ],
+      "title": "Relation",
+      "type": "object"
+    },
     "SchemaIdentity": {
       "additionalProperties": false,
-      "description": "2.1.0 (TA-003) yalnızca isteğe bağlı kaynak revizyonu alanlarını ekler; 2.0.0 belgeleri geçerlidir.",
+      "description": "2.1.0 (TA-003) kaynak revizyonunu, 2.2.0 (TA-004) adım, blok kontrolü, hedef, anlatım ve problem\nmodeli alanlarını isteğe bağlı olarak ekler. 2.0.0 ve 2.1.0 belgeleri aynı anlamla geçerlidir.",
       "properties": {
         "name": {
           "const": "teacherai.lesson_plan",
@@ -1803,7 +3385,8 @@
         "version": {
           "enum": [
             "2.0.0",
-            "2.1.0"
+            "2.1.0",
+            "2.2.0"
           ],
           "title": "Version",
           "type": "string"
@@ -1814,6 +3397,214 @@
         "version"
       ],
       "title": "SchemaIdentity",
+      "type": "object"
+    },
+    "ScientificProblemModel": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Observation"
+          },
+          "maxItems": 16,
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "boundary_conditions": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Boundary Conditions",
+          "type": "array"
+        },
+        "candidate_models": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Candidate Models",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Constraints",
+          "type": "array"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/Entity"
+          },
+          "maxItems": 64,
+          "title": "Entities",
+          "type": "array"
+        },
+        "experiment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExperimentalModel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "figures": {
+          "items": {
+            "$ref": "#/$defs/Figure"
+          },
+          "maxItems": 12,
+          "title": "Figures",
+          "type": "array"
+        },
+        "graphs": {
+          "items": {
+            "$ref": "#/$defs/GraphSeries"
+          },
+          "maxItems": 8,
+          "title": "Graphs",
+          "type": "array"
+        },
+        "initial_conditions": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Initial Conditions",
+          "type": "array"
+        },
+        "known": {
+          "items": {
+            "$ref": "#/$defs/QuantityValue"
+          },
+          "maxItems": 64,
+          "title": "Known",
+          "type": "array"
+        },
+        "narrative": {
+          "items": {
+            "$ref": "#/$defs/NarrativeSegment"
+          },
+          "maxItems": 64,
+          "title": "Narrative",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "maxLength": 8192,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Notes",
+          "type": "array"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/Observation"
+          },
+          "maxItems": 128,
+          "title": "Observations",
+          "type": "array"
+        },
+        "premises": {
+          "items": {
+            "$ref": "#/$defs/Premise"
+          },
+          "maxItems": 6,
+          "title": "Premises",
+          "type": "array"
+        },
+        "principles": {
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "maxItems": 16,
+          "title": "Principles",
+          "type": "array"
+        },
+        "relations": {
+          "items": {
+            "$ref": "#/$defs/Relation"
+          },
+          "maxItems": 128,
+          "title": "Relations",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_revision": {
+          "anyOf": [
+            {
+              "maximum": 64,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Revision"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/DataTable"
+          },
+          "maxItems": 8,
+          "title": "Tables",
+          "type": "array"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnswerTarget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "uncertainties": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Uncertainties",
+          "type": "array"
+        },
+        "unknown": {
+          "items": {
+            "$ref": "#/$defs/QuantityValue"
+          },
+          "maxItems": 16,
+          "title": "Unknown",
+          "type": "array"
+        }
+      },
+      "required": [
+        "subject"
+      ],
+      "title": "ScientificProblemModel",
       "type": "object"
     },
     "SourceExpression": {
@@ -2048,6 +3839,14 @@
               "target_question_unclear",
               "invalid_region_omitted",
               "essential_visual_without_facts",
+              "essential_visual_text_sufficient",
+              "essential_visual_insufficient",
+              "visual_supplied_by_recheck",
+              "legacy_uncertainty_material",
+              "legacy_uncertainty_formatting",
+              "legacy_uncertainty_context_absent",
+              "legacy_uncertainty_unclassified",
+              "legacy_uncertainty_merged",
               "recheck_confirmed",
               "recheck_equivalent",
               "recheck_disagreement",
@@ -2265,6 +4064,128 @@
       "title": "TableBlock",
       "type": "object"
     },
+    "TargetResolution": {
+      "additionalProperties": false,
+      "description": "Hedefin sunucu kaydı: verilen model, ara değerler, istenen değer, öneri ve seçenek ayrıdır.",
+      "properties": {
+        "claim_role": {
+          "enum": [
+            "target",
+            "intermediate",
+            "none",
+            "unparsed"
+          ],
+          "title": "Claim Role",
+          "type": "string"
+        },
+        "given": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Given",
+          "type": "array"
+        },
+        "intermediate": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Intermediate",
+          "type": "array"
+        },
+        "option_origin": {
+          "default": "none",
+          "enum": [
+            "independent",
+            "provider",
+            "none"
+          ],
+          "title": "Option Origin",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "unsupported",
+            "not_checked",
+            "not_applicable"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "provider_claim": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Provider Claim",
+          "type": "array"
+        },
+        "reason": {
+          "enum": [
+            "target_value_matched",
+            "target_value_mismatch",
+            "intermediate_not_requested",
+            "claim_missing",
+            "claim_unparsed",
+            "target_unresolved",
+            "target_not_computable",
+            "model_unsupported",
+            "multiplicity_or_complex_roots",
+            "domain_excluded",
+            "not_finite",
+            "unbounded_extremum",
+            "multiple_values"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "requested": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Requested",
+          "type": "array"
+        },
+        "selected_option": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Option"
+        },
+        "target": {
+          "$ref": "#/$defs/AnswerTarget"
+        }
+      },
+      "required": [
+        "target",
+        "claim_role",
+        "outcome",
+        "reason"
+      ],
+      "title": "TargetResolution",
+      "type": "object"
+    },
     "TextAnswer": {
       "additionalProperties": false,
       "properties": {
@@ -2287,9 +4208,129 @@
       "title": "TextAnswer",
       "type": "object"
     },
+    "UnitSpec": {
+      "additionalProperties": false,
+      "description": "Özgün yazım korunur. Kanonik sembol ve boyut yalnızca yerel ayrıştırıcıdan gelir.",
+      "properties": {
+        "affine": {
+          "default": false,
+          "title": "Affine",
+          "type": "boolean"
+        },
+        "canonical": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical"
+        },
+        "dimension": {
+          "items": {
+            "maximum": 12,
+            "minimum": -12,
+            "type": "integer"
+          },
+          "maxItems": 7,
+          "title": "Dimension",
+          "type": "array"
+        },
+        "normalization": {
+          "default": "none",
+          "enum": [
+            "none",
+            "alias",
+            "defined_conversion"
+          ],
+          "title": "Normalization",
+          "type": "string"
+        },
+        "original": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Original",
+          "type": "string"
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale"
+        },
+        "status": {
+          "enum": [
+            "parsed",
+            "ambiguous",
+            "unsupported"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "original",
+        "status"
+      ],
+      "title": "UnitSpec",
+      "type": "object"
+    },
+    "Variable": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Variable",
+      "type": "object"
+    },
     "VerificationReport": {
       "additionalProperties": false,
       "properties": {
+        "block_checks": {
+          "items": {
+            "$ref": "#/$defs/BlockCheck"
+          },
+          "maxItems": 512,
+          "title": "Block Checks",
+          "type": "array"
+        },
         "calculation": {
           "enum": [
             "passed",
@@ -2369,6 +4410,17 @@
           "const": "passed",
           "title": "Structural",
           "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TargetResolution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
