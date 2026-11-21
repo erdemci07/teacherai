@@ -193,7 +193,8 @@ Dimension = Literal[
     "calculation", "transformation", "domain", "answer_target", "answer_choice", "source_consistency", "units",
     "stoichiometry", "evidence_consistency", "scientific", "curriculum", "method", "pedagogy",
 ]
-Verifier = Literal["mathai", "integrity", "units", "chemistry", "evidence", "none"]
+# registry (TA-005): onaylı müfredat ve yöntem kaydı; yalnızca curriculum ve method boyutlarında.
+Verifier = Literal["mathai", "integrity", "units", "chemistry", "evidence", "registry", "none"]
 SUBJECT_VERIFIERS = frozenset({"units", "chemistry", "evidence"})
 
 
@@ -216,8 +217,11 @@ class BlockCheck(Contract):
             raise ValueError("Blok kontrolü bir hedef bloğa bağlı olmalı.")
         if self.mapping == "unmapped" and self.scope != "lesson":
             raise ValueError("Eşlenemeyen kontrol ders düzeyindedir.")
-        if self.dimension in {"curriculum", "method", "pedagogy"} and self.outcome not in {"not_checked", "not_applicable"}:
-            raise ValueError("Müfredat, yöntem ve pedagoji bu sürümde denetlenmez.")
+        if self.dimension == "pedagogy" and self.outcome not in {"not_checked", "not_applicable"}:
+            raise ValueError("Pedagoji bu sürümde denetlenmez.")
+        if (self.dimension in {"curriculum", "method"}) != (self.verifier == "registry") and self.outcome not in {
+                "not_checked", "not_applicable"}:
+            raise ValueError("Müfredat ve yöntem yalnızca onaylı kayıtla denetlenir.")
         if self.verifier == "none" and self.outcome in {"passed", "failed", "partially_checked"}:
             raise ValueError("Doğrulayıcısı olmayan kontrol sonuç taşıyamaz.")
         if self.dimension == "scientific" and self.outcome == "passed" and self.verifier not in SUBJECT_VERIFIERS:
@@ -230,8 +234,9 @@ class VerificationReport(Contract):
     scientific: State
     calculation: State
     source_consistency: State
-    curriculum: Literal["not_checked"]
-    method: Literal["not_checked"]
+    # TA-005: yalnızca onaylı kayıt (verifier "registry") passed/failed/partially_checked üretebilir.
+    curriculum: Literal["passed", "partially_checked", "not_checked"]
+    method: Literal["passed", "failed", "partially_checked", "not_checked"]
     pedagogy: Literal["not_checked"]
     engine: Label | None = None
     checked_claims: list[Text] = Field(default_factory=list, max_length=256)
@@ -244,8 +249,15 @@ class VerificationReport(Contract):
         ids = [item.id for item in self.block_checks]
         if len(set(ids)) != len(ids):
             raise ValueError("Kontrol kimlikleri benzersiz olmalı.")
-        if any(item.outcome == "failed" for item in self.block_checks) and "passed" in (self.calculation, self.scientific):
+        # Yöntem uygunsuzluğu hesap çelişkisi değildir; bağımsız hesap yine geçmiş olabilir.
+        if any(item.outcome == "failed" and item.dimension != "method" for item in self.block_checks) and "passed" in (
+                self.calculation, self.scientific):
             raise ValueError("Bilinen çelişki doğrulanmış gösterilemez.")
+        for dimension in ("method", "curriculum"):
+            state = getattr(self, dimension)
+            if state != "not_checked" and not any(c.dimension == dimension and c.verifier == "registry" and c.outcome == state
+                                                  for c in self.block_checks):
+                raise ValueError("Yöntem ve müfredat sonucu yalnızca onaylı kayıt kontrolüyle gösterilir.")
         if self.target is not None and self.target.outcome == "failed" and self.calculation == "passed":
             raise ValueError("Hedef çelişkisi doğrulanmış gösterilemez.")
         return self

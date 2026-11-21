@@ -36,13 +36,27 @@ const stepLabels: Record<Outcome, string> = {
 };
 
 export function stepOutcome(checks: BlockCheck[], ids: string[]): Outcome {
-  const outcomes = checks.filter(check => check.scope === 'block' && check.target && ids.includes(check.target)).map(check => check.outcome);
+  // TA-005: yöntem/müfredat kayıt kontrolleri adımın hesap durumunu belirlemez; ayrı rozetle gösterilir.
+  const outcomes = checks.filter(check => check.scope === 'block' && check.verifier !== 'registry' && check.target && ids.includes(check.target))
+    .map(check => check.outcome);
   if (outcomes.includes('failed')) return 'failed';
   if (outcomes.length && outcomes.every(value => value === 'passed')) return 'passed';
   if (outcomes.some(value => value === 'passed' || value === 'partially_checked')) return 'partially_checked';
   if (outcomes.includes('unsupported')) return 'unsupported';
   return 'not_checked';
 }
+
+const methodLabels: Record<VerificationReport['method'], string> = {
+  passed: 'Yöntem: bu sınıf düzeyinin onaylı politikasına uygun.',
+  failed: 'Yöntem: bu sınıf düzeyine uygun yöntem doğrulanamadı.',
+  partially_checked: 'Yöntem: yasak işlem bulunmadı; adımların hepsi kontrol edilemedi.',
+  not_checked: 'Yöntem: değerlendirilmedi.',
+};
+const curriculumLabels: Record<VerificationReport['curriculum'], string> = {
+  passed: 'Müfredat: konu kaynaklı bir kazanıma eşlendi.',
+  partially_checked: 'Müfredat: kısmen eşlendi.',
+  not_checked: 'Müfredat: değerlendirilmedi.',
+};
 
 const targetLabels: Partial<Record<Outcome, string>> = {
   passed: 'Sorunun istediği sonuç bağımsız olarak hesaplandı.',
@@ -81,6 +95,7 @@ export function EducationBoard({ view }: { view: LessonView }) {
     failed: 'Bilimsel kontrol başarısız.', unsupported: 'Bu alanda bilimsel içerik henüz otomatik doğrulanmıyor.',
     not_applicable: '', not_checked: 'Bilimsel içerik kontrol edilmedi.'}[verification.scientific];
   const target = verification.target ? targetLabels[verification.target.outcome] : undefined;
+  const policyChecked = verification.method !== 'not_checked' || verification.curriculum !== 'not_checked';
   return <article aria-label="Ders anlatımı">
     {view.panels.map(panel => <section key={panel.blocks[0]}>{panel.blocks.map(id => {
       const block = blocks.get(id);
@@ -88,6 +103,10 @@ export function EducationBoard({ view }: { view: LessonView }) {
     })}</section>)}
     {content.answer && <section><strong>Cevap</strong><AnswerContent answer={content.answer} />
       {target && <small data-target-check={verification.target?.outcome}>{target}</small>}</section>}
-    <p>{content.takeaway}</p><small>{calculation} {scientific} Müfredat ve öğretim yöntemi değerlendirilmedi.</small>
+    <p>{content.takeaway}</p><small>{calculation} {scientific}{policyChecked ? '' : ' Müfredat ve öğretim yöntemi değerlendirilmedi.'}</small>
+    {policyChecked && <p>
+      <small data-policy-check="method" data-state={verification.method}>{methodLabels[verification.method]}</small>{' '}
+      <small data-policy-check="curriculum" data-state={verification.curriculum}>{curriculumLabels[verification.curriculum]}</small>
+    </p>}
   </article>;
 }

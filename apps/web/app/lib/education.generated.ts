@@ -43,7 +43,7 @@ export type BlockCheck = {
   target?: string | null;
   mapping?: "mapped" | "unmapped";
   dimension: "calculation" | "transformation" | "domain" | "answer_target" | "answer_choice" | "source_consistency" | "units" | "stoichiometry" | "evidence_consistency" | "scientific" | "curriculum" | "method" | "pedagogy";
-  verifier: "mathai" | "integrity" | "units" | "chemistry" | "evidence" | "none";
+  verifier: "mathai" | "integrity" | "units" | "chemistry" | "evidence" | "registry" | "none";
   outcome: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
   reason: string;
   evidence?: Array<EvidenceRef>;
@@ -124,6 +124,20 @@ export type Correction = {
   corrected: string;
   uncertainty_id: string;
   from_revision: number;
+};
+
+export type CurriculumRegistry = {
+  schema_name: "teacherai.curriculum_registry";
+  version: "1.0.0";
+  program_note: string;
+  outcomes?: Array<Outcome>;
+  policies?: Array<MethodPolicy>;
+};
+
+export type CurriculumSource = {
+  document: string;
+  url: string;
+  pages?: string | null;
 };
 
 export type DataTable = {
@@ -233,6 +247,11 @@ export type Figure = {
   legend?: Array<string>;
 };
 
+export type ForbiddenOperation = {
+  operation: "add_both_sides" | "subtract_both_sides" | "multiply_both_sides" | "divide_both_sides" | "expand" | "factor" | "complete_square" | "square_both_sides" | "isolate_variable" | "substitute" | "compare" | "evaluate" | "rewrite" | "case_split" | "apply_principle" | "calculate_quantity" | "convert_unit" | "compare_observations" | "infer_sequence" | "evaluate_premise" | "interpret_visual" | "explain" | "state_result" | "unknown" | "derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula";
+  reason: string;
+};
+
 export type Grade = {
   value: number;
   origin: "declared" | "profile";
@@ -310,6 +329,19 @@ export type Measurement = {
   unit?: UnitSpec | null;
 };
 
+export type MethodPolicy = {
+  id: string;
+  grade: number;
+  topic: string;
+  allowed_operations?: Array<"add_both_sides" | "subtract_both_sides" | "multiply_both_sides" | "divide_both_sides" | "expand" | "factor" | "complete_square" | "square_both_sides" | "isolate_variable" | "substitute" | "compare" | "evaluate" | "rewrite" | "case_split" | "apply_principle" | "calculate_quantity" | "convert_unit" | "compare_observations" | "infer_sequence" | "evaluate_premise" | "interpret_visual" | "explain" | "state_result" | "unknown" | "derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula">;
+  forbidden_operations?: Array<ForbiddenOperation>;
+  preferred_representations?: Array<string>;
+  outcome_ids?: Array<string>;
+  status: "draft" | "approved";
+  authored_by: "claude-draft" | "teacher";
+  approved_by?: string | null;
+};
+
 export type NarrationSegment = {
   id: string;
   order: number;
@@ -345,6 +377,30 @@ export type Observation = {
   evidence?: Array<EvidenceRef>;
   figure?: string | null;
   source?: string | null;
+};
+
+export type Outcome = {
+  subject: "mathematics";
+  grade: number;
+  unit: string;
+  topic: string;
+  outcome_id: string;
+  outcome_text_tr?: string | null;
+  source: CurriculumSource;
+  source_status: "sourced" | "pending";
+};
+
+export type PolicyCheck = {
+  dimension: "method" | "curriculum";
+  state: "passed" | "failed" | "partially_checked" | "not_checked";
+  reason: string;
+  grade?: number | null;
+  topic?: string | null;
+  step?: string | null;
+  operations?: Array<"add_both_sides" | "subtract_both_sides" | "multiply_both_sides" | "divide_both_sides" | "expand" | "factor" | "complete_square" | "square_both_sides" | "isolate_variable" | "substitute" | "compare" | "evaluate" | "rewrite" | "case_split" | "apply_principle" | "calculate_quantity" | "convert_unit" | "compare_observations" | "infer_sequence" | "evaluate_premise" | "interpret_visual" | "explain" | "state_result" | "unknown" | "derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula">;
+  policy_ids?: Array<string>;
+  outcome_ids?: Array<string>;
+  detail?: string | null;
 };
 
 export type Premise = {
@@ -562,8 +618,8 @@ export type VerificationReport = {
   scientific: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
   calculation: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
   source_consistency: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
-  curriculum: "not_checked";
-  method: "not_checked";
+  curriculum: "passed" | "partially_checked" | "not_checked";
+  method: "passed" | "failed" | "partially_checked" | "not_checked";
   pedagogy: "not_checked";
   engine?: string | null;
   checked_claims?: Array<string>;

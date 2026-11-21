@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from starlette.concurrency import run_in_threadpool
 
 from ..auth.dependencies import require_user
+from ..education.domain import Grade
 from ..education.math_adapter import validated_math_lesson
 from ..education.presentation import LessonView, plan_panels
 from .exceptions import StaleQuestionRevisionError
@@ -34,7 +35,9 @@ async def generate(
     if body.expected_revision is not None and body.expected_revision != analysis.revision:
         raise StaleQuestionRevisionError
     context = await run_in_threadpool(students.context, user, analysis.topic)
-    result = await service.generate(analysis, context, request.state.request_id)
+    # TA-005: sınıf öğrenci beyanından veya profilden gelir; sorudan tahmin edilmez.
+    grade = Grade(value=body.grade, origin="declared") if body.grade is not None else await run_in_threadpool(students.grade, user)
+    result = await service.generate(analysis, context, request.state.request_id, grade=grade)
     await run_in_threadpool(students.save_lesson, user, result)
     return ApiResponse(data=result)
 
@@ -49,6 +52,7 @@ def read_v2(
     """Sahibin sunucuda üretilmiş v1 dersinin belirlenimci v2 görünümü. Salt okunur, kota ve sağlayıcı çağrısı yok."""
     record = students.owned(user, lesson_id)
     stored = GeneratedLesson.model_validate(record.lesson_data)
-    artifact = validated_math_lesson(stored.lesson, stored.verification, stored.education_context)
+    artifact = validated_math_lesson(stored.lesson, stored.verification, stored.education_context,
+                                     (stored.method_check, stored.curriculum_check))
     response.headers["Cache-Control"] = "private, no-store"
     return ApiResponse(data=LessonView(lesson=artifact, panels=plan_panels(artifact), created_at=record.created_at))

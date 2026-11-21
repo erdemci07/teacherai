@@ -90,3 +90,5 @@ class GenerateLessonRequest(BaseModel):
     analysis_id: str | None = Field(None, min_length=1, max_length=128)
     # TA-003: istemcinin gördüğü soru revizyonu. Verilirse sunucudaki güncel revizyonla eşleşmelidir.
     expected_revision: int | None = Field(None, ge=1, le=64)
+    # TA-005: öğrencinin beyan ettiği sınıf (isteğe bağlı). Yoksa profildeki değer; o da yoksa yöntem not_checked.
+    grade: int | None = Field(None, ge=5, le=12)

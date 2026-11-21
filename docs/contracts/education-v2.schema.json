@@ -410,6 +410,7 @@
             "units",
             "chemistry",
             "evidence",
+            "registry",
             "none"
           ],
           "title": "Verifier",
@@ -891,6 +892,87 @@
         "from_revision"
       ],
       "title": "Correction",
+      "type": "object"
+    },
+    "CurriculumRegistry": {
+      "additionalProperties": false,
+      "properties": {
+        "outcomes": {
+          "items": {
+            "$ref": "#/$defs/Outcome"
+          },
+          "maxItems": 512,
+          "title": "Outcomes",
+          "type": "array"
+        },
+        "policies": {
+          "items": {
+            "$ref": "#/$defs/MethodPolicy"
+          },
+          "maxItems": 256,
+          "title": "Policies",
+          "type": "array"
+        },
+        "program_note": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Program Note",
+          "type": "string"
+        },
+        "schema_name": {
+          "const": "teacherai.curriculum_registry",
+          "title": "Schema Name",
+          "type": "string"
+        },
+        "version": {
+          "const": "1.0.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_name",
+        "version",
+        "program_note"
+      ],
+      "title": "CurriculumRegistry",
+      "type": "object"
+    },
+    "CurriculumSource": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Document",
+          "type": "string"
+        },
+        "pages": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pages"
+        },
+        "url": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document",
+        "url"
+      ],
+      "title": "CurriculumSource",
       "type": "object"
     },
     "DataTable": {
@@ -1872,6 +1954,69 @@
       "title": "Figure",
       "type": "object"
     },
+    "ForbiddenOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "anyOf": [
+            {
+              "enum": [
+                "add_both_sides",
+                "subtract_both_sides",
+                "multiply_both_sides",
+                "divide_both_sides",
+                "expand",
+                "factor",
+                "complete_square",
+                "square_both_sides",
+                "isolate_variable",
+                "substitute",
+                "compare",
+                "evaluate",
+                "rewrite",
+                "case_split",
+                "apply_principle",
+                "calculate_quantity",
+                "convert_unit",
+                "compare_observations",
+                "infer_sequence",
+                "evaluate_premise",
+                "interpret_visual",
+                "explain",
+                "state_result",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "enum": [
+                "derivative",
+                "integral",
+                "limit",
+                "logarithm",
+                "trigonometry",
+                "complex_number",
+                "quadratic_formula"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Operation"
+        },
+        "reason": {
+          "maxLength": 8192,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "reason"
+      ],
+      "title": "ForbiddenOperation",
+      "type": "object"
+    },
     "Grade": {
       "additionalProperties": false,
       "properties": {
@@ -2420,6 +2565,143 @@
       "title": "Measurement",
       "type": "object"
     },
+    "MethodPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_operations": {
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "add_both_sides",
+                  "subtract_both_sides",
+                  "multiply_both_sides",
+                  "divide_both_sides",
+                  "expand",
+                  "factor",
+                  "complete_square",
+                  "square_both_sides",
+                  "isolate_variable",
+                  "substitute",
+                  "compare",
+                  "evaluate",
+                  "rewrite",
+                  "case_split",
+                  "apply_principle",
+                  "calculate_quantity",
+                  "convert_unit",
+                  "compare_observations",
+                  "infer_sequence",
+                  "evaluate_premise",
+                  "interpret_visual",
+                  "explain",
+                  "state_result",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "derivative",
+                  "integral",
+                  "limit",
+                  "logarithm",
+                  "trigonometry",
+                  "complex_number",
+                  "quadratic_formula"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "maxItems": 64,
+          "title": "Allowed Operations",
+          "type": "array"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "authored_by": {
+          "enum": [
+            "claude-draft",
+            "teacher"
+          ],
+          "title": "Authored By",
+          "type": "string"
+        },
+        "forbidden_operations": {
+          "items": {
+            "$ref": "#/$defs/ForbiddenOperation"
+          },
+          "maxItems": 32,
+          "title": "Forbidden Operations",
+          "type": "array"
+        },
+        "grade": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Grade",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "outcome_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Outcome Ids",
+          "type": "array"
+        },
+        "preferred_representations": {
+          "items": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Preferred Representations",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "approved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "topic": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "grade",
+        "topic",
+        "status",
+        "authored_by"
+      ],
+      "title": "MethodPolicy",
+      "type": "object"
+    },
     "NarrationSegment": {
       "additionalProperties": false,
       "description": "Gelecekteki sesli anlatım için yalnızca sözleşme. Ses üretimi TA-014'tedir.",
@@ -2654,6 +2936,232 @@
         "provenance"
       ],
       "title": "Observation",
+      "type": "object"
+    },
+    "Outcome": {
+      "additionalProperties": false,
+      "properties": {
+        "grade": {
+          "maximum": 12,
+          "minimum": 1,
+          "title": "Grade",
+          "type": "integer"
+        },
+        "outcome_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Outcome Id",
+          "type": "string"
+        },
+        "outcome_text_tr": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outcome Text Tr"
+        },
+        "source": {
+          "$ref": "#/$defs/CurriculumSource"
+        },
+        "source_status": {
+          "enum": [
+            "sourced",
+            "pending"
+          ],
+          "title": "Source Status",
+          "type": "string"
+        },
+        "subject": {
+          "const": "mathematics",
+          "title": "Subject",
+          "type": "string"
+        },
+        "topic": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Topic",
+          "type": "string"
+        },
+        "unit": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject",
+        "grade",
+        "unit",
+        "topic",
+        "outcome_id",
+        "source",
+        "source_status"
+      ],
+      "title": "Outcome",
+      "type": "object"
+    },
+    "PolicyCheck": {
+      "additionalProperties": false,
+      "description": "Sunucunun yöntem veya müfredat denetimi sonucu. Sağlayıcı bu alanı üretemez.",
+      "properties": {
+        "detail": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "dimension": {
+          "enum": [
+            "method",
+            "curriculum"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "grade": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grade"
+        },
+        "operations": {
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "add_both_sides",
+                  "subtract_both_sides",
+                  "multiply_both_sides",
+                  "divide_both_sides",
+                  "expand",
+                  "factor",
+                  "complete_square",
+                  "square_both_sides",
+                  "isolate_variable",
+                  "substitute",
+                  "compare",
+                  "evaluate",
+                  "rewrite",
+                  "case_split",
+                  "apply_principle",
+                  "calculate_quantity",
+                  "convert_unit",
+                  "compare_observations",
+                  "infer_sequence",
+                  "evaluate_premise",
+                  "interpret_visual",
+                  "explain",
+                  "state_result",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "derivative",
+                  "integral",
+                  "limit",
+                  "logarithm",
+                  "trigonometry",
+                  "complex_number",
+                  "quadratic_formula"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "maxItems": 64,
+          "title": "Operations",
+          "type": "array"
+        },
+        "outcome_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Outcome Ids",
+          "type": "array"
+        },
+        "policy_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Policy Ids",
+          "type": "array"
+        },
+        "reason": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "not_checked"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        },
+        "topic": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic"
+        }
+      },
+      "required": [
+        "dimension",
+        "state",
+        "reason"
+      ],
+      "title": "PolicyCheck",
       "type": "object"
     },
     "Premise": {
@@ -4354,7 +4862,11 @@
           "type": "array"
         },
         "curriculum": {
-          "const": "not_checked",
+          "enum": [
+            "passed",
+            "partially_checked",
+            "not_checked"
+          ],
           "title": "Curriculum",
           "type": "string"
         },
@@ -4373,7 +4885,12 @@
           "title": "Engine"
         },
         "method": {
-          "const": "not_checked",
+          "enum": [
+            "passed",
+            "failed",
+            "partially_checked",
+            "not_checked"
+          ],
           "title": "Method",
           "type": "string"
         },
