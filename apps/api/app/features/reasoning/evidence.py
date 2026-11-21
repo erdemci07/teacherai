@@ -69,7 +69,7 @@ def check_direction(model: ScientificProblemModel, relation_id: str) -> CheckOut
         return CheckOutcome("unsupported", "direction_not_observed")
     if not relation.direction_clear:
         return CheckOutcome("unsupported", "direction_unclear")
-    if relation.interpretation is None:
+    if relation.interpretation_provenance not in {"source_text", "student_confirmed"}:
         return CheckOutcome("partially_checked", "direction_observed_meaning_open")
     return CheckOutcome("passed", "direction_and_meaning_grounded")
 

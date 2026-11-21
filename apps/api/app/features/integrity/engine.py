@@ -462,17 +462,26 @@ def _decide(uncertainties: list[SourceUncertainty], checks: list[IntegrityCheck]
 _VISUAL_REFERENCE = re.compile(r"şekil|şekle|grafi|tablo|görsel|diyagram|çizim|yukarıda|aşağıda verilen")
 
 
+_VISUAL_TARGET = re.compile(
+    r"\b(?:grafik(?:ten|lerden|lere göre)|grafiğe göre|tablo(?:dan|ya göre))\b"
+    r"|\b(?:kırmızı|mavi|taralı|işaretli)\s+(?:[a-zçğıöşü]+\s+){0,2}(?:yay|kiriş|eğri|bölge|parça|doğru)\w*"
+)
+
+
 def text_suffices_without_visual(analysis, expressions: list[SourceExpression]) -> bool:
     """Zorunlu görselin olguları yokken metin problemi tek başına tanımlıyor mu? (TA-004)
 
     Metinde verilen bir ilişki (denklem veya eşitsizlik) varsa bilgi metindedir. Metin görsele atıf
     yapmıyor ve sayısal veri içeriyorsa da yeterli sayılır. Metin veriyi görselden istiyorsa yeterli değildir.
     """
+    text = casefold_tr(analysis.question_text or "")
+    # Kaynakta başka bir eşitlik bulunması, açıkça görselden istenen ilişkiyi sağlamaz.
+    if _VISUAL_TARGET.search(text):
+        return False
     given = [item for item in expressions if item.role == "given" and item.status == "parsed" and item.canonical
              and any(op in item.canonical for op in ("=", "<", ">"))]
     if given:
         return True
-    text = casefold_tr(analysis.question_text or "")
     return not _VISUAL_REFERENCE.search(text) and bool(re.search(r"\d", text))
 
 

@@ -70,3 +70,31 @@ def test_essential_visual_without_information_is_not_solved_from_fabricated_fact
     report = evaluate(analysis)
     assert report.decision == "retake_required" and report.recovery == "retake"
     assert report.pending()[0].id == "d_visual_missing"
+
+
+@pytest.mark.parametrize(("note", "category"), [
+    ("Kırmızı parçanın hangi noktaya ait olduğu belirsiz.", "diagram"),
+    ("Hangi eğrinin kesikli çizgiye ait olduğu okunamadı.", "graph"),
+    ("Kuvvet okunun ucu seçilemedi.", "diagram"),
+    ("Kesir değil, eksen başlığı okunamadı.", "graph"),
+])
+def test_answer_affecting_visual_notes_trigger_targeted_reading(note, category):
+    visual = dict(MISSING_VISUAL, has_graph=True, description="İki çizgi ve bir işaret var.")
+    report = evaluate(wire(visual_elements=visual, ocr_uncertainties=[note]), EvaluationState(recheck_limit=1))
+    assert report.decision == "targeted_recheck"
+    assert any(x.category == category and x.element == "visual" for x in report.pending())
+
+
+def test_decorative_color_does_not_require_recheck():
+    visual = dict(MISSING_VISUAL, description="Kenar uzunlukları belirtilmiş.")
+    report = evaluate(wire(visual_elements=visual, ocr_uncertainties=["Arka plan rengi soluk olabilir."]))
+    assert report.solvable
+
+
+@pytest.mark.parametrize("stem", [
+    "a = 7 ise grafiğe göre eğrilerin sıralaması nasıldır?",
+    "a = 7 ise kırmızı çember yayının uzunluğu kaçtır?",
+])
+def test_unrelated_equation_does_not_replace_requested_visual(stem):
+    analysis = wire(question_text=stem, mathematical_expressions=["a=7"], visual_elements=MISSING_VISUAL)
+    assert evaluate(analysis, EvaluationState(recheck_limit=1)).decision == "targeted_recheck"

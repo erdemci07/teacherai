@@ -87,16 +87,38 @@ def _has(structure: str, analysis, expressions: list[str], intent) -> list[int] 
     return False
 
 
+def _visual_binding(note: str, visual) -> str | None:
+    """Şekilde kimliği veya yönü belirleyen işaretler; taramanın genel rengi yeterli değildir."""
+    if visual.visual_relevance != "essential":
+        return None
+    if re.search(r"\b(?:ok yön|okun yön|ok uc|okun uc|kuvvet ok)", note):
+        return "diagram"
+    if not re.search(r"\b(?:hangi|ait|eşleş|karış|ayırt|temsil)", note):
+        return None
+    if visual.has_graph and re.search(r"\b(?:eğri|doğru parça|seri|lejant|panel|çizgi)", note):
+        return "graph"
+    if re.search(r"\b(?:renk|kırmızı|mavi|siyah|etiket|taralı)", note):
+        return "diagram"
+    return None
+
+
 def classify(note: str, analysis, intent=None) -> Materiality:
     folded = casefold_tr(note) + " "
     expressions = list(analysis.mathematical_expressions)
     doubt = any(word in folded for word in _DOUBT)
+    binding = _visual_binding(folded, analysis.visual_elements) if doubt else None
+    if binding:
+        return Materiality("material", binding, "visual", None)
+    absent = None
     for words, category, structure in _CATEGORIES:
         if not any(re.search(r"(?<!\w)" + re.escape(word), folded) for word in words):
             continue
         present = _has(structure, analysis, expressions, intent)
-        if not doubt or not present:
+        if not doubt:
             return Materiality("nonconsequential", category, None, None)
+        if not present:
+            absent = absent or category
+            continue
         if isinstance(present, list):
             if len(present) == 1:
                 index = present[0]
@@ -104,6 +126,8 @@ def classify(note: str, analysis, intent=None) -> Materiality:
             return Materiality("material", category, None, None)
         element = "visual" if structure == "visual" else "stem" if structure in {"negation", "unit", "arrow"} else None
         return Materiality("material", category, element, None)
+    if absent:
+        return Materiality("nonconsequential", absent, None, None)
     if any(word in folded for word in _HARMLESS):
         return Materiality("harmless", "text", None, None)
     return Materiality("insufficient" if doubt else "harmless", "text", None, None)
