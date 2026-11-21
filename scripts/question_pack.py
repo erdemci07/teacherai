@@ -31,6 +31,7 @@ from apps.api.app.features.lessons.schemas import (
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.features.reasoning import evidence, units
 from apps.api.app.features.vision.schemas import VisionAnalysis
+from scripts.answer_key import load_key
 from scripts.science_matrix import run_case
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,9 +123,13 @@ def run_math(question: dict, source: VisionAnalysis) -> dict:
             "context_has_evaluation": any(word in context for word in ('"evaluation"', '"answer_key"', '"cevap_anahtari"'))}
 
 
-def run() -> dict:
+def run(key_path=None) -> dict:
     pack = json.loads(PACK.read_text(encoding="utf-8"))
     rows, mismatches = [], []
+    # TA-005: bağımsız öğretmen anahtarı geldiyse başarı ölçütü odur; türetilmiş cevap ayrı sütunda kalır.
+    key = load_key(key_path) if key_path is not None else load_key()
+    teacher = {entry.id: entry.expected_choice for entry in key.entries} if key else {}
+    disagreements = []
     for question in pack["questions"]:
         source = analysis(question["reading"])
         decision = source.integrity.decision
@@ -152,8 +157,12 @@ def run() -> dict:
         # Değerlendirme (cevap anahtarı) yalnızca burada okunur.
         evaluation = question["evaluation"]
         row["expected"] = evaluation["expect"]
-        row["correct"] = selected == evaluation["answer"] if selected else None
-        if selected and selected != evaluation["answer"]:
+        row["derived_answer"], row["teacher_answer"] = evaluation["answer"], teacher.get(question["id"])
+        if row["teacher_answer"] and evaluation["answer"] and row["teacher_answer"] != evaluation["answer"]:
+            disagreements.append(f"{question['id']}: türetilmiş {evaluation['answer']}, öğretmen {row['teacher_answer']}")
+        reference = row["teacher_answer"] or (None if key else evaluation["answer"])
+        row["correct"] = selected == reference if selected and reference else None
+        if row["correct"] is False:
             mismatches.append(f"{question['id']}: yanlış cevap {selected}")
         if (selected is not None) != (evaluation["expect"] == "answer"):
             mismatches.append(f"{question['id']}: beklenti {evaluation['expect']}, seçim {selected}")
@@ -167,6 +176,8 @@ def run() -> dict:
     answered = Counter(row["subject"] for row in rows if row["selected"])
     return {
         "questions": len(rows), "answer_origin": pack["answer_origin"],
+        "success_reference": "teacher" if key else "derived", "teacher_key": f"{len(teacher)} satır" if key else "bekleniyor",
+        "derived_teacher_disagreements": disagreements,
         "deterministic_answers": dict(sorted(answered.items())), "by_subject": dict(sorted(by_subject.items())),
         "correct": sum(1 for row in rows if row["correct"]), "wrong": sum(1 for row in rows if row["correct"] is False),
         "abstained": [row["id"] for row in rows if not row["selected"]],
