@@ -17,10 +17,18 @@ class StudentService:
             student_id=user.uid,
             display_name=body.display_name,
             exam_goal=body.exam_goal,
+            grade=body.grade,
             email=user.email,
         )
         self.repository.save_profile(value)
         return value
+
+    def grade(self, user):
+        """Profildeki sınıf (TA-005). Yoksa None; sınıf sorudan tahmin edilmez."""
+        from ..education.domain import Grade
+
+        profile = self.repository.get_profile(user.uid)
+        return Grade(value=profile.grade, origin="profile") if profile is not None and profile.grade is not None else None
 
     def save_lesson(self, user, result):
         lesson = result.lesson

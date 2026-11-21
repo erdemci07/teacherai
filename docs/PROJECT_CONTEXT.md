@@ -11,6 +11,7 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Çevrimdışı denetim (TA-004) | Fizik, kimya ve biyoloji için `features/reasoning/` altında sınırlı yerel denetimler: birim/boyut, formül, grafik/tablo, atom/yük korunumu, denkleştirme, stokiyometri, etiket/sıra/ok, deney iddiaları, öncüller, DNA→mRNA. Sentetik matris ve 24 özgün soru paketi ile sınanır. Öğrenci akışına **bağlı değildir**. |
 | Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, öğrenci akışında doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
+| Uygulandı (TA-005) | 8. sınıf matematik için kaynaklı kazanım kaydı (MEB 2018) ve taslak yöntem politikası; yalnız onaylı politika yöntem denetimi uygular, sınıf bilgisi beyan veya profilden gelir. Değişkensiz ifadelerde ve eşitsizlik uç değerinde şıkları gizleyerek çözme. Bakım modu, eski bağlantı yönlendirmesi, tek proje ayarları ve Firestore kopya betiği. Ayrıntı: [TA-005 raporu](phase-reports/TA-005.md). |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
 | Ertelendi | Aşağıdaki yol haritasındaki TA-005 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
@@ -24,8 +25,9 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-001 / TA-001B | Temel ve son stabilizasyon | Tamamlandı |
 | TA-002 | Ortak eğitim çekirdeği, LessonPlan v2 | Tamamlandı |
 | TA-003 | Soru bütünlüğü ve görsel zekâ | Tamamlandı |
-| TA-004 | Akıl yürütme ve doğrulama çekirdeği | Bu dal |
-| TA-005 | Çok sağlayıcılı AI Gateway | Planlandı |
+| TA-004 | Akıl yürütme ve doğrulama çekirdeği | Tamamlandı |
+| TA-005 | Tek proje geçişine hazırlık, kimya düzeltmeleri, gizli şık stratejisi, 8. sınıf yöntem kaydı, değerlendirme altyapısı | Bu dal (canlı taşıma ve gerçek model koşusu onay bekliyor) |
+| TA-005B | Sağlayıcıdan bağımsız AI geçidi (Anthropic adaptörü), profil formunda sınıf alanı | Planlandı |
 | TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
 | TA-007 | Uzman öğretmen bilgisi | Planlandı |
 | TA-008 | İleri matematik ve geometri | Planlandı |
@@ -82,7 +84,7 @@ Ayrıntılı kararlar [ADR TA-002](architecture/adr-ta-002-education-core.md), s
 
 ## Kalıcı veri ve dağıtım
 
-Cloud Run ve mevcut Firestore yapılandırması math-ai-07, Firebase Hosting teacherai-07 ve bölge us-east4 olarak korunur. Web uygulamasının gerçek Firebase Auth projesini web kaydından doğrulayın. Sunucu kimlik kitlesi ve Firestore proje seçimi ayrı ayarlanabilir. Paylaşım kısayolu Hosting üzerinden Cloud Run’a yönlenir. Müşteri verisi, gizli anahtarlar ve canlı servis çağrıları olağan CI testlerine girmez.
+Hedef yapı (TA-005) tek Firebase projesidir: teacherai-07. Cloud Run, Firestore, Secret Manager, Artifact Registry, Auth ve Hosting aynı projede olur. Paylaşım kısayolu `/s/**` aynı projedeki Cloud Run servisine Hosting rewrite ile gider. API ise 60 sn Hosting sınırı nedeniyle doğrudan Cloud Run adresinden çağrılır. Production'da `TEACHERAI_FIREBASE_PROJECT_ID` ve `TEACHERAI_FIREBASE_AUTH_PROJECT_ID` zorunlu ve eşittir. Canlı taşıma henüz yapılmadı. Bugünkü canlı durum [TA-005 denetiminde](migration/TA-005-audit.md), adımlar [runbook'ta](migration/TA-005-runbook.md) yer alır.
 
 Kabul sonuçları, istemci geçişi, yapılandırma ve açık konular [TA-001](phase-reports/TA-001.md) ve [TA-001B](phase-reports/TA-001B.md) faz raporlarında yer alır.
 

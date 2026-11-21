@@ -1,14 +1,24 @@
-"""Sınırlı kimyasal formül ve tepkime ayrıştırıcısı, atom ve yük korunumu (TA-004).
+r"""Sınırlı kimyasal formül ve tepkime ayrıştırıcısı, atom ve yük korunumu (TA-004).
 
 Desteklenen güvenli alt küme:
 
 - Element sembolleri büyük/küçük harfe duyarlıdır: ``CO`` (karbon + oksijen) ile ``Co`` (kobalt) farklıdır.
 - Katsayı türün başındaki tam sayıdır (``2H₂``); alt simge elementten veya ayraçtan sonra gelir (``H₂O``,
-  ``Ca(OH)₂``). ASCII rakamlar da alt simge sayılır (``H2O``). En çok iki düzey ayraç.
+  ``Ca(OH)₂``). ASCII rakamlar ve LaTeX ``_2`` / ``_{2}`` da alt simge sayılır. En çok iki düzey ayraç;
+  açılış ve kapanış türü eşleşmelidir (``Ca(OH]2`` → ``mismatched_bracket``), boş grup reddedilir
+  (``Ca()2`` → ``empty_group``).
 - İyon yükü yalnızca açık üst simge (``Fe³⁺``, ``SO₄²⁻``) veya şapka (``Fe^{3+}``, ``Fe^3+``) ile yazılır.
   ``Fe2+`` gibi ASCII yazımda 2'nin alt simge mi yük mü olduğu belirsizdir; tahmin edilmez.
 - Fiziksel hâl: ``(s)``, ``(l)``, ``(g)``, ``(aq)``. Oklar: ``→``, ``->``, ``⟶`` (tek yönlü) ve
-  ``⇌``, ``<=>``, ``⇄`` (tersinir). ``=`` tepkime oku olarak kabul edilmez.
+  ``⇌``, ``<=>``, ``⇄`` (tersinir); LaTeX ``\rightarrow``, ``\to``, ``\longrightarrow``,
+  ``\rightleftharpoons``. ``\mathrm{…}``, ``\text{…}`` sarmalayıcıları açılır. ``=`` tepkime oku değildir.
+- Türler arasındaki düz ``+`` ayraçtır; boşluklu (``A + B``) veya boşluksuz (``2H₂+O₂``) olabilir. ``⁺``/``⁻``
+  ve ``^{…}``/``^…`` içindeki işaret yüktür. ``Na++Cl-`` veya ``Na+ +Cl-`` gibi yalnız ASCII ile yazılmış,
+  işaretin yük mü ayraç mı olduğu belirsiz biçimler tahmin edilmez: ``ambiguous_charge_notation``.
+
+Gösterim kaynağı: Vision istemi bugün yalnız matematik sorusunu kabul eder (``valid_math_question``) ve
+kimya türü üretmez. İfadeleri LaTeX biçiminde yazar; paket okumaları Unicode alt/üst simge kullanır.
+Desteklenen biçimler bu iki kaynağa göre seçildi.
 
 Dengeli bir denklem tepkimenin o koşulda gerçekleştiğini kanıtlamaz. Mekanizma ve kendiliğinden
 olma ``unsupported`` kalır. Hidrat noktası, yapı formülleri ve izotop gösterimi desteklenmez (korunur).
@@ -39,6 +49,20 @@ _SUP = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻", "0123456789+-")
 STATES = {"s", "l", "g", "aq"}
 FORWARD_ARROWS = ("⟶", "→", "->")
 REVERSIBLE_ARROWS = ("⇌", "⇄", "<=>", "<->")
+_LATEX = (
+    (re.compile(r"[\\](?:mathrm|text|ce)\{([^{}]*)\}"), r"\1"),
+    (re.compile(r"[\\](?:rightleftharpoons|leftrightharpoons|rightleftarrows)(?![A-Za-z])"), "⇌"),
+    (re.compile(r"[\\](?:longrightarrow|rightarrow|to)(?![A-Za-z])"), "→"),
+    (re.compile(r"_\{(\d+)\}|_(\d+)"), lambda m: m.group(1) or m.group(2)),
+    (re.compile(r"[\\][,;:! ]"), " "),
+)
+
+
+def normalize(text: str) -> str:
+    """LaTeX kimya yazımını ayrıştırıcının Unicode/ASCII alt kümesine çevirir; tahmin yapmaz."""
+    for pattern, replacement in _LATEX:
+        text = pattern.sub(replacement, text)
+    return text
 
 
 class ChemistryError(ValueError):
@@ -71,7 +95,7 @@ class Reaction:
 
 
 def parse_species(text: str) -> Species:
-    source = text.strip()
+    source = normalize(text).strip()
     if not source or len(source) > MAX_SPECIES_CHARS:
         raise ChemistryError("unsupported", "species_budget")
     rest = source
@@ -131,8 +155,12 @@ def _group(text: str, position: int, depth: int) -> tuple[Counter, int]:
         char = text[position]
         if char in "([":
             inner, position = _group(text, position + 1, depth + 1)
-            if position >= len(text) or text[position] not in ")]":
+            if position >= len(text):
                 raise ChemistryError("invalid", "unbalanced_parenthesis")
+            if text[position] != (")" if char == "(" else "]"):
+                raise ChemistryError("invalid", "mismatched_bracket")
+            if not inner:
+                raise ChemistryError("invalid", "empty_group")
             position += 1
             multiplier, position = _count(text, position)
             for element, count in inner.items():
@@ -168,7 +196,7 @@ def _count(text: str, position: int) -> tuple[int, int]:
 
 
 def parse_reaction(text: str) -> Reaction:
-    source = " ".join(text.split())
+    source = " ".join(normalize(text).split())
     if len(source) > MAX_EQUATION_CHARS:
         raise ChemistryError("unsupported", "equation_budget")
     arrows = [(arrow, True) for arrow in REVERSIBLE_ARROWS if arrow in source] + [
@@ -185,11 +213,43 @@ def parse_reaction(text: str) -> Reaction:
 
 
 def _side(text: str) -> tuple[Species, ...]:
-    # "+" yalnızca boşlukla çevriliyse tür ayırıcıdır; aksi halde (Na⁺, Fe^{3+}) yükün parçasıdır.
-    parts = [part for part in re.split(r"\s\+\s", f" {text.strip()} ") if part.strip()]
+    parts = _split_side(text.strip())
     if not parts or len(parts) > MAX_SPECIES:
         raise ChemistryError("unsupported", "species_count")
     return tuple(parse_species(part) for part in parts)
+
+
+def _split_side(text: str) -> list[str]:
+    """Bir taraftaki türleri düz ``+`` ayraçlarından böler.
+
+    ``^`` ile işaretli (``Fe^3+``, ``^{3+}``) veya Unicode (``⁺``) işaret yüktür. Düz ``+`` iki yanı da boşluklu
+    ya da iki yanı da boşluksuzsa ayraçtır (``A + B``, ``2H₂+O₂``). Yalnız solu bitişik, sağı boşluk veya
+    sonsa türün sonundaki ASCII yüktür (``Na+ + Cl-``). Ardışık düz ``++`` veya yalnız sağı bitişik ``+``
+    (``Na+ +Cl-``) yük ile ayracı ayırt edilemez kıldığından tahmin edilmez.
+    """
+    cuts, depth, marked = [], 0, set()
+    for i, char in enumerate(text):
+        if char in "{}":
+            depth += 1 if char == "{" else -1
+            continue
+        if char != "+" or depth:
+            continue
+        if re.search(r"\^\d*$", text[:i]):
+            marked.add(i)
+            continue
+        before, after = text[i - 1] if i else "", text[i + 1] if i + 1 < len(text) else ""
+        if after == "+" or (before == "+" and i - 1 not in marked):
+            raise ChemistryError("ambiguous", "ambiguous_charge_notation")
+        if not before or (not after and before.isspace()):
+            raise ChemistryError("invalid", "empty_species")
+        if before.isspace() == after.isspace() and after:
+            cuts.append(i)
+        elif before.isspace():
+            raise ChemistryError("ambiguous", "ambiguous_charge_notation")
+    parts = [text[a + 1:b].strip() for a, b in zip([-1, *cuts], [*cuts, len(text)])]
+    if any(not part for part in parts):
+        raise ChemistryError("invalid", "empty_species")
+    return parts
 
 
 @dataclass(frozen=True)
@@ -241,9 +301,21 @@ def stoichiometric_amount(reaction_text: str, given_formula: str, given_mol: str
 
 
 def same_species(left: str, right: str) -> bool:
-    """Bileşim, yük ve hâl aynıysa aynı türdür. ``CO`` ≠ ``Co``; ``Fe²⁺`` ≠ ``Fe³⁺``; ``2H₂`` ≠ ``H₂O``."""
+    """Tür kimliği bileşim ve yüktür; hâl yalnız iki tarafta da yazılıysa karşılaştırılır.
+
+    ``CO`` ≠ ``Co``; ``Fe²⁺`` ≠ ``Fe³⁺``; ``H₂O(l)`` ≠ ``H₂O(g)``.
+
+    Hâl politikası: iki tarafta da yazılı ve farklıysa farklı türdür. Bir tarafta yazılmamışsa o hâl
+    *bilinmiyor* sayılır ve karşılaştırmaya girmez (``H₂O`` = ``H₂O(l)``). Yazılmamış hâl farklılığın
+    kanıtı değildir; katı karşılaştırma, kaynakta hâli yazılmamış doğru bir türü çelişki sayardı.
+
+    Katsayı kimliğe girmez: katsayı miktardır (``2H₂O`` ile ``H₂O`` aynı türdür). Çağıranlar buna uygundur:
+    stokiyometri ve sınırlayıcı tür hesabı türleri zaten katsayısız ``formula`` ile eşler; bilimsel matrisin
+    ``species_distinct`` vakaları (``2H₂`` / ``H₂O``) bileşimle ayrılır.
+    """
     a, b = parse_species(left), parse_species(right)
-    return (a.composition, a.charge, a.coefficient) == (b.composition, b.charge, b.coefficient)
+    states_differ = a.state is not None and b.state is not None and a.state != b.state
+    return (a.composition, a.charge) == (b.composition, b.charge) and not states_differ
 
 
 # --------------------------------------------------------------------------- TA-004 paket denetimleri

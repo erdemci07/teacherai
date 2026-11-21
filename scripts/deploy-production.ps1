@@ -1,14 +1,16 @@
 $ErrorActionPreference = "Stop"
 
-# API / Google Cloud
-$ProjectId = "math-ai-07"
+# TA-005: tek proje. Cloud Run, Firestore, Secret Manager, Artifact Registry, Auth ve Hosting aynı projededir.
+$ProjectId = "teacherai-07"
 $Region = "us-east4"
 $ServiceName = "teacherai-api"
-$Image = "us-east4-docker.pkg.dev/$ProjectId/teacherai/teacherai-api:latest"
+$RuntimeServiceAccount = "teacherai-api-runtime@$ProjectId.iam.gserviceaccount.com"
+$MaxInstances = 20
+$Image = "$Region-docker.pkg.dev/$ProjectId/teacherai/teacherai-api:latest"
 
 # Firebase Hosting
-$FirebaseProjectId = "teacherai-07"
-$FirebaseSite = "teacherai-07"
+$FirebaseProjectId = $ProjectId
+$FirebaseSite = $ProjectId
 
 function Step($message) {
     Write-Host ""
@@ -70,22 +72,12 @@ if (-not $ApiUrl) {
 }
 
 $firebaseConfig = Get-Content "firebase.json" -Raw | ConvertFrom-Json
-$shareRedirect = @($firebaseConfig.hosting.redirects) |
-    Where-Object { $_.source -eq "/s/:shareId" } |
+$shareRewrite = @($firebaseConfig.hosting.rewrites) |
+    Where-Object { $_.source -eq "/s/**" } |
     Select-Object -First 1
 
-if (-not $shareRedirect) {
-    throw "Firebase Hosting /s/:shareId redirect kuralı bulunamadı."
-}
-
-if ($shareRedirect.destination -ne "$ApiUrl/s/:shareId") {
-    throw "Firebase paylaşım redirect hedefi Cloud Run URL ile eşleşmiyor. Beklenen: $ApiUrl/s/:shareId"
-}
-
-foreach ($rewrite in @($firebaseConfig.hosting.rewrites)) {
-    if ($rewrite.run -and $rewrite.run.serviceId -eq $ServiceName) {
-        throw "Firebase Hosting cross-project Cloud Run rewrite kullanmamalı. /s/:shareId redirect olarak kalmalı."
-    }
+if (-not $shareRewrite -or $shareRewrite.run.serviceId -ne $ServiceName -or $shareRewrite.run.region -ne $Region) {
+    throw "Firebase Hosting /s/** rewrite kuralı aynı projedeki $ServiceName ($Region) servisine bağlı değil."
 }
 
 $env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"
@@ -108,7 +100,9 @@ if (-not (Test-Path "apps\web\out\index.html")) {
 
 Step "5/9 - Google Cloud proje kontrolü"
 
-gcloud config set project $ProjectId
+# Yerel gcloud varsayılanı değiştirilmez; her komut --project ile çalışır.
+gcloud projects describe $ProjectId --format="value(projectId)"
+if ($LASTEXITCODE -ne 0) { throw "Proje okunamadı: $ProjectId" }
 
 
 Step "6/9 - API container build"
@@ -126,6 +120,9 @@ gcloud run deploy $ServiceName `
     --project $ProjectId `
     --platform managed `
     --port 8000 `
+    --service-account $RuntimeServiceAccount `
+    --max-instances $MaxInstances `
+    --set-env-vars "TEACHERAI_ENVIRONMENT=production,TEACHERAI_FIREBASE_ENABLED=true,TEACHERAI_FIREBASE_PROJECT_ID=$ProjectId,TEACHERAI_FIREBASE_AUTH_PROJECT_ID=$ProjectId" `
     --set-secrets "OPENAI_API_KEY=openai-api-key:latest"
 
 Step "8/9 - Cloud Run health check"
@@ -169,8 +166,6 @@ if (-not $healthOk) {
 Write-Host "API health: OK"
 
 Step "9/9 - Firebase Hosting deploy"
-
-firebase use $FirebaseProjectId
 
 firebase deploy --only hosting --project $FirebaseProjectId
 

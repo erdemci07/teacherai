@@ -29,7 +29,6 @@ class Settings(BaseSettings):
     cors_allowed_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
             "https://teacherai-07.web.app",
-            "https://math-ai-07.web.app",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
         ]
@@ -37,7 +36,7 @@ class Settings(BaseSettings):
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: object) -> list[str]:
-        defaults = ["https://teacherai-07.web.app", "https://math-ai-07.web.app", "http://localhost:3000", "http://127.0.0.1:3000"]
+        defaults = ["https://teacherai-07.web.app", "http://localhost:3000", "http://127.0.0.1:3000"]
         if isinstance(value, (list, tuple)):
             candidates = [str(item).strip() for item in value]
         elif isinstance(value, str):
@@ -75,8 +74,11 @@ class Settings(BaseSettings):
     lesson_context_max_bytes: int = Field(default=24_000, validation_alias=AliasChoices("LESSON_CONTEXT_MAX_BYTES", "TEACHERAI_LESSON_CONTEXT_MAX_BYTES"))
     openai_interaction_model: str = Field(default="gpt-4.1-mini", validation_alias=AliasChoices("OPENAI_INTERACTION_MODEL", "TEACHERAI_OPENAI_INTERACTION_MODEL"))
     interaction_provider_timeout_seconds: float = Field(60, gt=0, le=180)
-    firebase_project_id: str | None = "math-ai-07"
+    # TA-005: tek Firebase projesi. Varsayılan proje yoktur; production'da ikisi zorunlu ve eşittir.
+    firebase_project_id: str | None = None
     firebase_auth_project_id: str | None = None
+    maintenance_mode: Literal["off", "read_only", "redirect"] = "off"
+    legacy_redirect_base: str | None = None
     firebase_service_account_json: str | None = None
     firebase_enabled: bool = False
     authenticated_daily_ai_limit: int = Field(50, ge=0, le=10000)
@@ -102,6 +104,15 @@ class Settings(BaseSettings):
     max_output_tokens: int | None = Field(None, ge=128, le=32000)
     max_output_tokens_by_operation: dict[Operation, Annotated[int, Field(ge=128, le=32000, strict=True)]] = Field(default_factory=dict)
     reasoning_effort_by_operation: dict[Operation, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def single_project(self):
+        if self.environment == "production" and (
+                not self.firebase_project_id or self.firebase_project_id != self.firebase_auth_project_id):
+            raise ValueError("Production'da TEACHERAI_FIREBASE_PROJECT_ID ve TEACHERAI_FIREBASE_AUTH_PROJECT_ID zorunlu ve eşit olmalı.")
+        if self.legacy_redirect_base is not None and not self.legacy_redirect_base.startswith("https://"):
+            raise ValueError("TEACHERAI_LEGACY_REDIRECT_BASE https adresi olmalı.")
+        return self
 
     @model_validator(mode="after")
     def configure_operations(self):

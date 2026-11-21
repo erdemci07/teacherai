@@ -4,6 +4,16 @@ Bu dizin, mevcut modeller (`gpt-4.1-mini`) ile aday model (`gpt-6-luna`) arasın
 
 > **Durum (20 Kasım 2026):** 100 soruluk özgün öğretmen veri seti **henüz yoktur**. `datasets/original-100.jsonl` boş bir şablondur. 10 öğelik `datasets/smoke.jsonl` tamamen sentetiktir ve yalnızca hattın çalıştığını sınar. Model kalitesini ölçmez. Bu görevde ücretli koşu yapılmadı. Tam set ve insan değerlendirmesi olmadan model geçişi onaylanmaz.
 
+## Özgün 24 soru paketi, görsel ve öğretmen anahtarı (TA-005)
+
+`python -m scripts.evaluate_models pack` tam üretim yolunu koşar: Vision → bütünlük → hedef → ders. Girdiler:
+
+- görseller: `evals/local/images/` (Git dışı)
+- manifest: `python -m scripts.answer_key manifest`
+- öğretmen anahtarı: `evals/datasets/original-24.answers.json`. Şablonu `python -m scripts.answer_key template` üretir.
+
+`--dry-run` hiçbir çağrı yapmaz. Plan, üst tahmin ve onay sonrası komutu yazar. Fiyatlar `evals/config/models.json` dosyasından okunur. Ham çıktılar `evals/runs/` altına (Git dışı) yazılır. Ayrıntı: [docs/evals/TA-005-luna.md](../docs/evals/TA-005-luna.md).
+
 ## Soru bütünlüğü matrisi (TA-003)
 
 `python -m scripts.integrity_matrix --check` 49 sentetik Vision yanıt senaryosunu ve 10 seçenek uzlaştırma vakasını gerçek `VisionService`, `OpenAIVisionProvider`, gateway ve çağrı tavanından geçirir. OpenAI istemcisi ağsız bir sahtedir. Matris; yanlış engelleme, geçirilen kritik belirsizlik, otomatik kaynak değişikliği, yanlış seçenek uzlaştırması ve çağrı sınırı için fikstür kabul ölçütlerini denetler. Gerçek model tanıma doğruluğunu ölçmez. Fikstürler `apps/api/tests/fixtures/integrity/scenarios.json` içindedir ve model değerlendirme veri setlerinden ayrıdır.

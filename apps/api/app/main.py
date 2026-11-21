@@ -36,6 +36,9 @@ def create_app(settings_override=None) -> FastAPI:
 
     from apps.api.app.core.body_limit import BodyLimit
     app.add_middleware(BodyLimit, settings=settings)
+    from apps.api.app.core.maintenance import maintenance_middleware
+    # TA-005: kimlik ve gövde denetiminden önce, CORS'un içinde (503 tarayıcıya CORS başlığıyla ulaşır).
+    app.middleware("http")(maintenance_middleware(settings))
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.cors_allowed_origins],

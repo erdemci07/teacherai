@@ -39,6 +39,7 @@ jobs:
       - run: python -m pip install -r apps/api/requirements-dev.lock
       - run: python -m ruff check apps/api scripts
       - run: python -m scripts.evaluate_models validate
+      - run: python -m scripts.answer_key validate
       - run: python -m scripts.education_contracts --check
       - run: python -m scripts.integrity_matrix --check
       - run: python -m scripts.science_matrix --check

@@ -49,6 +49,12 @@ class MathAIService:
             inequality = self._source_inequality(plan)
             if inequality is not None and target.computable:
                 return self._verify_target_only(plan, target, None, inequality, started)
+            if inequality is None and target.computable and target.kind in EXPRESSION_TARGETS:
+                # TA-005: değişkensiz ifade (köklü, üslü, kesirli) yalnızca hedef olarak hesaplanır.
+                computed = targets.compute(target, None, None, [])
+                if computed.values is not None:
+                    return self._verify_target_only(plan, target, None, None, started, [], computed=computed,
+                                                    sources=[target.expression])
             return self._unsupported(plan, target, checks, "Bu soru türü henüz deterministik olarak doğrulanamıyor.", started)
         if len(originals) > 1 and target.kind in EXPRESSION_TARGETS:
             computed = targets.from_definitions(target, originals)
@@ -449,6 +455,10 @@ class MathAIService:
             claimed, role = targets.claim(target, [item.latex for item in plan.content.final_answer_expressions], [])
             return target, computed.values, claimed if role == "target" else None, None
         inequality = self._source_inequality(plan) if not originals else None
+        if not originals and inequality is None and target.kind in EXPRESSION_TARGETS:
+            computed = targets.compute(target, None, None, [])
+            claimed, role = targets.claim(target, [item.latex for item in plan.content.final_answer_expressions], [])
+            return target, computed.values, claimed if role == "target" else None, None
         variables = self._source_variables(plan)
         if not variables or len(originals) > 1:
             return target, None, None, None

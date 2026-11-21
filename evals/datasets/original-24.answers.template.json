@@ -1,0 +1,199 @@
+{
+  "pack": "teacherai_24",
+  "answer_origin": "teacher",
+  "reviewed_by": "",
+  "entries": [
+    {
+      "id": "M01",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "M02",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "M03",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "M04",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "M05",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "M06",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P01",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P02",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P03",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P04",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P05",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "P06",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C01",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C02",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C03",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C04",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C05",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "C06",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B01",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B02",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B03",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B04",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B05",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    },
+    {
+      "id": "B06",
+      "expected_choice": null,
+      "expected_value": null,
+      "answer_origin": "teacher",
+      "notes": null,
+      "trap_tags": []
+    }
+  ]
+}

@@ -45,3 +45,19 @@ test('anlatım ve adım metni betik olarak yorumlanmaz', () => {
   assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.doesNotMatch(html, /<img src=x/);
 });
+
+test('TA-005 yöntem ve müfredat rozetleri yalnızca sunucu kaydı sonucunu gösterir', () => {
+  const plain = render(find('hedef_dogrulandi'));
+  assert.match(plain, /Müfredat ve öğretim yöntemi değerlendirilmedi/);
+  assert.doesNotMatch(plain, /data-policy-check/);
+  const view = structuredClone(find('hedef_dogrulandi'));
+  const step = view.lesson.content.blocks.find(block => block.kind === 'derivation_step')!;
+  view.lesson.verification.method = 'failed';
+  view.lesson.verification.curriculum = 'passed';
+  view.lesson.verification.block_checks = [...(view.lesson.verification.block_checks ?? []), {id: 'registry:method', scope: 'block', target: step.id, mapping: 'mapped',
+    dimension: 'method', verifier: 'registry', outcome: 'failed', reason: 'forbidden_operation', evidence: []}];
+  const html = render(view);
+  assert.match(html, /data-policy-check="method" data-state="failed"[^>]*>Yöntem: bu sınıf düzeyine uygun yöntem doğrulanamadı/);
+  assert.match(html, /data-policy-check="curriculum" data-state="passed"[^>]*>Müfredat: konu kaynaklı bir kazanıma eşlendi/);
+  assert.doesNotMatch(html, /Bu adımda bir çelişki bulundu/);  // yöntem uygunsuzluğu hesap çelişkisi değildir
+});

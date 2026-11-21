@@ -25,6 +25,7 @@ from .domain import (
     capabilities,
 )
 from .lesson import (
+    BlockCheck,
     DerivationStepBlock,
     EducationalDraft,
     ExpressionBlock,
@@ -98,7 +99,7 @@ def require_math_question(analysis: VisionAnalysis) -> QuestionUnderstanding:
     return question
 
 
-def verification_report(result: VerificationResult, integrity=None, checks=()) -> VerificationReport:
+def verification_report(result: VerificationResult, integrity=None, checks=(), policy=()) -> VerificationReport:
     if result.status == "failed" or result.contradiction:
         raise VerificationContradictionError
     state = {"verified": "passed", "partially_verified": "partially_checked", "unsupported": "unsupported"}[result.status]
@@ -106,14 +107,23 @@ def verification_report(result: VerificationResult, integrity=None, checks=()) -
         structural="passed", scientific="partially_checked" if state != "unsupported" else "unsupported",
         calculation=state,
         # TA-003: yapısal kaynak tutarlılığı denetlendi; görselin doğru okunduğu kanıtlanmadı.
-        source_consistency="partially_checked" if integrity is not None and integrity.solvable else "not_checked", curriculum="not_checked", method="not_checked",
+        source_consistency="partially_checked" if integrity is not None and integrity.solvable else "not_checked",
+        **({"curriculum": "not_checked", "method": "not_checked"} | {check.dimension: check.state for check in policy}),
         pedagogy="not_checked", engine=result.engine,
         checked_claims=[check.statement for check in result.checks if check.status == "passed"],
-        block_checks=list(checks), target=result.target if checks else None,
+        block_checks=list(checks) + [policy_block(check) for check in policy if check.state != "not_checked"],
+        target=result.target if checks else None,
     )
 
 
-def project_math(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None) -> LessonPlanV2:
+def policy_block(check) -> BlockCheck:
+    """Yöntem/müfredat sonucu; yasak işlemin adımı varsa o adıma bağlanır."""
+    return BlockCheck(id=f"registry:{check.dimension}", scope="block" if check.step else "lesson", target=check.step,
+                      dimension=check.dimension, verifier="registry", outcome=check.state, reason=check.reason)
+
+
+def project_math(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None,
+                 policy=()) -> LessonPlanV2:
     if plan.schema_.get("version") != "1.0.0" or plan.schema_.get("name") != "teacherai.lesson_plan":
         raise InvalidLessonPlanError
     question = require_math_question(plan.source_analysis)
@@ -160,7 +170,7 @@ def project_math(plan: LessonPlan, result: VerificationResult, education_context
     prose("teacher_tip", "hint", c.teacher_tip)
     context = education_context or question.context
     target = result.target.target if result.target is not None else target_for(plan.source_analysis, integrity)
-    report = verification_report(result, integrity, block_checks(result, blocks, integrity))
+    report = verification_report(result, integrity, block_checks(result, blocks, integrity), [p for p in policy if p is not None])
     return LessonPlanV2(
         schema={"name": "teacherai.lesson_plan", "version": "2.2.0"},
         lesson_id=plan.lesson_plan_id, source_id=question.source_id, context=context,
@@ -186,8 +196,9 @@ def resolved_context(question: QuestionUnderstanding, teaching_context=None) -> 
     return question.context.model_copy(update={"exam": exam})
 
 
-def validated_math_lesson(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None) -> LessonPlanV2:
+def validated_math_lesson(plan: LessonPlan, result: VerificationResult, education_context: EducationContext | None = None,
+                          policy=()) -> LessonPlanV2:
     try:
-        return project_math(plan, result, education_context)
+        return project_math(plan, result, education_context, policy)
     except ValidationError as exc:
         raise InvalidLessonPlanError from exc

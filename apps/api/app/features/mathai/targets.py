@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 import sympy as sp
 
-from ..education.reasoning import AnswerTarget
+from ..education.reasoning import EXPRESSION_TARGETS, AnswerTarget
 from ..integrity import expression as tree
 from .parser import MathParseError, branches, denominators, equation, relation_set, solutions, to_sympy
 
@@ -78,7 +78,7 @@ def compute(target: AnswerTarget, original: str | None, inequality: str | None, 
     if inequality is not None:
         return _from_inequality(target, inequality, variables)
     if original is None:
-        return Computed(None, "model_unsupported", [], [])
+        return constant(target) if target.kind in EXPRESSION_TARGETS else Computed(None, "model_unsupported", [], [])
     if len(variables) == 2 and target.kind in {"expression_value", "sum", "difference", "product", "ratio"}:
         return _two_variable(target, original, variables)
     if len(variables) != 1:
@@ -125,6 +125,28 @@ def compute(target: AnswerTarget, original: str | None, inequality: str | None, 
     if not values:
         return Computed(None, "domain_excluded", intermediate, excluded_text)
     return Computed(values, "computed", intermediate, excluded_text)
+
+
+def constant(target: AnswerTarget) -> Computed:
+    """Değişken içermeyen istenen ifadenin (sayısal, köklü, üslü, kesirli) kesin gerçel değeri (TA-005).
+
+    Kök, üs ve kesir kapsamı bütünlük ayrıştırıcısının ağacından gelir; değer tahmin edilmez. Değişken
+    içeren ifade (sembolik sadeleştirme) burada hesaplanmaz.
+    """
+    try:
+        expr = requested_expression(target)
+    except (MathParseError, NotImplementedError, TypeError, ValueError):
+        return Computed(None, "model_unsupported", [], [])
+    if expr is None or expr.free_symbols:
+        return Computed(None, "model_unsupported", [], [])
+    if any(_same(den, 0) for den in denominators(expr)):
+        return Computed(None, "domain_excluded", [], [])
+    value = sp.simplify(expr)
+    if value.atoms(sp.Pow):  # iç içe kök: √(4 + 2√3) = 1 + √3; tam sayı girdide sqrtdenest çağrılmaz
+        value = sp.simplify(sp.sqrtdenest(value))
+    if not value.is_number or value.is_real is not True or value.is_finite is not True:
+        return Computed(None, "not_finite", [], [])
+    return Computed({value}, "computed", [], [])
 
 
 def _distinct_real_polynomial_roots(original: str, variable, roots: set) -> bool:

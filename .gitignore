@@ -19,3 +19,7 @@ firestore-debug.log
 
 # Model değerlendirme ham sonuçları (TA-001B, D)
 eval-results/
+
+# TA-005: yerel değerlendirme görselleri ve ham koşu çıktıları
+evals/local/
+evals/runs/

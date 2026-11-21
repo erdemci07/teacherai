@@ -36,28 +36,24 @@ def test_public_page_reuses_existing_solution_renderers_and_cta() -> None:
     assert "Sen de soru çöz" in source
 
 
-def test_firebase_hosting_routes_short_share_urls_without_cross_project_run_rewrite() -> None:
+def test_firebase_hosting_routes_short_share_urls_to_same_project_run_service() -> None:
+    # TA-005: Hosting ve Cloud Run aynı projede olduğundan run.app'e 302 yerine rewrite kullanılır; adres Hosting'de kalır.
     firebase = Path("firebase.json").read_text(encoding="utf-8")
 
     assert '"public": "apps/web/out"' in firebase
-    assert '"redirects"' in firebase
-    assert '"/s/:shareId"' in firebase
-    assert '"destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId"' in firebase
-    assert '"serviceId": "teacherai-api"' not in firebase
-    assert '"/api/**"' not in firebase
+    assert '"redirects"' not in firebase
+    assert ".run.app" not in firebase
+    assert '"/api/**"' not in firebase  # API rewrite'tan geçmez (60 sn Hosting sınırı)
 
 
-def test_share_redirect_points_to_existing_cloud_run_public_html_route() -> None:
+def test_share_rewrite_points_to_existing_cloud_run_public_html_route() -> None:
     import json
 
     hosting = json.loads(Path("firebase.json").read_text(encoding="utf-8-sig"))["hosting"]
+    main = Path("apps/api/app/main.py").read_text(encoding="utf-8")
 
-    assert hosting.get("rewrites") is None
-    assert hosting["redirects"][0] == {
-        "source": "/s/:shareId",
-        "destination": "https://teacherai-api-n75p6jbera-uk.a.run.app/s/:shareId",
-        "type": 302,
-    }
+    assert hosting["rewrites"] == [{"source": "/s/**", "run": {"serviceId": "teacherai-api", "region": "us-east4"}}]
+    assert '@app.get("/s/{share_id}"' in main
 
 
 def test_brand_mark_component_uses_simple_education_icon_without_mascot() -> None:

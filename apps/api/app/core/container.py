@@ -55,6 +55,9 @@ def build_container(settings: Settings | None = None) -> Container:
     import os
     if resolved_settings.environment == "test" and os.getenv("K_SERVICE"):
         raise RuntimeError("Test storage is unavailable on Cloud Run.")
+    if os.getenv("K_SERVICE") and resolved_settings.environment not in {"production", "staging"}:
+        # TA-005 denetimi: canlı servis TEACHERAI_ENVIRONMENT olmadan development varsayılanıyla çalışıyordu.
+        raise RuntimeError("Cloud Run requires TEACHERAI_ENVIRONMENT=production or staging.")
     student_repository = InMemoryStudentRepository()
     feedback_repository = InMemoryFeedbackRepository()
     share_repository = InMemoryShareRepository()

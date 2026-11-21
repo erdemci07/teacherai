@@ -3,6 +3,7 @@
     python -m scripts.evaluate_models                 # doğrulama (CI), sağlayıcı çağrısı yok
     python -m scripts.evaluate_models validate        # aynı doğrulama
     python -m scripts.evaluate_models run --provider fake
+    python -m scripts.evaluate_models pack --dry-run --model gpt-6-luna   # TA-005 paket, çağrı yok
     python -m scripts.evaluate_models run --allow-paid --max-usd 2 --max-calls 60 \\
         --candidate gpt-6-luna --reasoning-effort none low medium
 
@@ -459,6 +460,15 @@ def parser():
     go.add_argument("--image-input-tokens", type=int, default=1600, help="Görsel başına giriş token tahmini")
     go.add_argument("--fake-input-tokens", type=int, default=1200, help=argparse.SUPPRESS)
     go.add_argument("--output-dir")
+    pack = commands.add_parser("pack", help="TA-005: 24 özgün soru, görsel + öğretmen anahtarı, tam üretim yolu.")
+    pack.add_argument("--provider", choices=["openai", "anthropic"], default="openai")
+    pack.add_argument("--model", help="Vision modeli (varsayılan: ayardaki model)")
+    pack.add_argument("--lesson-model", help="Ders modeli (varsayılan: ayardaki model)")
+    pack.add_argument("--reasoning-effort", choices=["none", "low", "medium", "high", "xhigh", "max"])
+    pack.add_argument("--dry-run", action="store_true")
+    pack.add_argument("--allow-paid", action="store_true")
+    pack.add_argument("--max-usd", type=float)
+    pack.add_argument("--max-calls", type=int)
     return root
 
 
@@ -468,6 +478,18 @@ def main(argv=None, settings=None, client_factory=None, out_root=ROOT / "eval-re
         datasets = getattr(args, "datasets", None) or sorted(DATASETS.glob("*.jsonl"))
         return validate(datasets)
     settings = settings or get_settings()
+    if args.mode == "pack":
+        from scripts import eval_pack
+
+        if args.provider == "anthropic":
+            parser().error("Anthropic adaptörü TA-005B'ye kaldı. Çağrı yapılmadı.")
+        if not args.dry_run:
+            missing = [flag for flag, value in (("--allow-paid", args.allow_paid), ("--max-usd", args.max_usd),
+                                                ("--max-calls", args.max_calls)) if not value]
+            if missing or not settings.openai_api_key or not settings.ai_enabled:
+                parser().error("Ücretli koşu için birlikte gerekli: --allow-paid, --max-usd, --max-calls ve anahtar. Çağrı yapılmadı.")
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")
+        return asyncio.run(eval_pack.run(args, settings))
     if args.provider == "openai":
         missing = [flag for flag, value in (("--allow-paid", args.allow_paid), ("--max-usd", args.max_usd), ("--max-calls", args.max_calls)) if not value]
         if missing:
