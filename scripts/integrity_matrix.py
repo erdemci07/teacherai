@@ -77,6 +77,7 @@ async def run_scenario(base: dict, scenario: dict) -> dict:
     from apps.api.app.core.gateway import begin_accounting, end_accounting
     from apps.api.app.core.settings import Settings
     from apps.api.app.core.usage import UsageTracker
+    from apps.api.app.features.lessons.context import strategy_decision
     from apps.api.app.features.vision.openai_provider import OpenAIVisionProvider
     from apps.api.app.features.vision.schemas import (
         RecheckResponse,
@@ -117,6 +118,7 @@ async def run_scenario(base: dict, scenario: dict) -> dict:
         finally:
             end_accounting(token)
     report = analysis.integrity
+    decision = strategy_decision(analysis)
     recheck_images = []
     if len(calls) > 1:
         recheck_images = [part for part in calls[1]["input"][0]["content"] if part["type"] == "input_image"]
@@ -125,6 +127,8 @@ async def run_scenario(base: dict, scenario: dict) -> dict:
         "decision": report.decision, "recovery": report.recovery, "calls": len(calls),
         "solvable": report.decision in SOLVABLE,
         "intent": report.intent.kind, "strategy": report.intent.answer_strategy,
+        # TA-005: ders bağlamındaki seçenek stratejisi ve belirlenimci nedeni.
+        "lesson_strategy": f"{decision.strategy}|{decision.reason}",
         "labels": [choice.label for choice in report.choices],
         "canonical": [item.canonical for item in report.expressions],
         "alternatives": max((len(item.alternatives) for item in report.pending()), default=0),
@@ -216,7 +220,7 @@ def failures(result: dict) -> list[str]:
         problems.append("unbounded_calls")
     for row in result["rows"]:
         expect = row["expect"]
-        for key in ("intent", "strategy", "recovery", "labels", "canonical"):
+        for key in ("intent", "strategy", "lesson_strategy", "recovery", "labels", "canonical"):
             if key in expect and row[key] != expect[key]:
                 problems.append(f"{row['id']}:{key}={row[key]!r}")
         if "alternatives" in expect and row["alternatives"] != expect["alternatives"]:

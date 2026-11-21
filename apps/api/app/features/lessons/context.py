@@ -6,6 +6,8 @@ from apps.api.app.features.vision.schemas import VisionAnalysis
 
 from ..education.policy import TeachingPolicy
 from ..integrity.engine import symbols_of
+from ..integrity.expression import parse as parse_expression
+from ..integrity.expression import symbols as expression_symbols
 from ..reasoning.target import target_for
 from ..memory.schemas import TeachingContext
 
@@ -23,6 +25,8 @@ class LessonContextMetrics:
     visual_fact_count_after_compaction: int
     context_compaction_level: CompactionLevel
     teaching_context_included: bool
+    answer_strategy: str | None = None
+    answer_strategy_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -78,7 +82,8 @@ def build_lesson_generation_context(
         }
     )
 
-    strategy = answer_strategy(analysis)
+    decision = strategy_decision(analysis)
+    strategy = decision.strategy
     hidden = strategy == "solve_first_hidden"
     # TA-003: Soru metni, ifadeler, seçenekler ve öncüller karakter dilimlemeyle kısaltılmaz; yalnızca
     # boşluk normalleşir. İsteğe bağlı açıklamalar (belirsizlik notları, görsel betimleme) sıkıştırılabilir.
@@ -122,31 +127,73 @@ def build_lesson_generation_context(
             visual_fact_count_after_compaction=after_visual_count,
             context_compaction_level=level,
             teaching_context_included="teaching_context" in payload,
+            answer_strategy=strategy,
+            answer_strategy_reason=decision.reason,
         ),
     )
 
 
-def answer_strategy(analysis: VisionAnalysis) -> str | None:
-    """Seçeneklerin ders bağlamına nasıl gireceği.
+@dataclass(frozen=True)
+class StrategyDecision:
+    strategy: str | None
+    reason: str
 
-    ``solve_first_hidden`` yalnızca amaç bir değer bulmaksa, seçenekler sayı/ifadeyse ve kaynakta tek
-    değişkenli tek bir denklem varsa uygulanır; böylece MathAI sonucu bağımsız hesaplayıp etiketi
-    sonradan belirleyebilir. Diğer durumlarda seçenekler korunur.
+
+# Gizli stratejide MathAI'nin hedefi bağımsız hesaplayabildiği kaynak modelleri (TA-005).
+_HIDDEN_MODELS = {
+    "constant_expression": {"expression_value", "sum", "difference", "product", "ratio"},
+    "single_equation": {"variable_value", "expression_value", "sum", "difference", "product", "ratio",
+                        "solution_count", "root_sum", "root_product", "solution_set", "minimum", "maximum"},
+    "single_inequality": {"minimum", "maximum", "solution_count"},
+}
+
+
+def strategy_decision(analysis: VisionAnalysis) -> StrategyDecision:
+    """Seçeneklerin ders bağlamına nasıl gireceği ve nedeni. Belirlenimcidir, sağlayıcı çağırmaz.
+
+    Seçenekler sorunun parçasıysa (doğru/yanlış, öncül, karşılaştırma, "olabilir/olamaz", grafik/tablo
+    yorumu) ``choice_dependent`` korunur. Aksi halde, seçeneklerin hepsi sayı/ifadeyse ve istenen hedef
+    belirlenimci olarak tespit edilip MathAI'nin desteklediği bir modelden bağımsız hesaplanabiliyorsa
+    ``solve_first_hidden`` seçilir: model önce çözer, seçenek etiketi sonradan bağımsız değerle eşlenir;
+    böylece yakın çeldirici şıklar çözümü yönlendiremez. Modeller: değişkensiz ifade (köklü, üslü, kesirli),
+    tek değişkenli tek denklem, tek değişkenli tek eşitsizlikte uç değer/sayım. Değişken içeren ifade
+    sadeleştirmesinde seçenekler sembolik eşlenemediği için seçenekler korunur.
     """
     integrity = analysis.integrity
     if integrity is None:
-        return None
-    strategy = integrity.intent.answer_strategy
-    if strategy != "solve_first_hidden":
-        return strategy
-    equations = [
-        item for item in integrity.expressions
-        if item.role == "given" and item.status == "parsed" and item.canonical and item.canonical.count(" = ") == 1
-        and not any(op in item.canonical for op in ("<", ">", "!="))
-    ]
-    if len(equations) == 1 and len(symbols_of(equations[0])) == 1:
-        return strategy
-    return "derive_then_select"
+        return StrategyDecision(None, "no_integrity_report")
+    intent = integrity.intent
+    if intent.answer_strategy in {"choice_dependent", "open"}:
+        return StrategyDecision(intent.answer_strategy, "choice_dependent_intent" if intent.choice_dependent else "no_choices")
+    if not integrity.choices or any(choice.kind not in {"number", "expression"} for choice in integrity.choices):
+        return StrategyDecision("derive_then_select", "non_numeric_choices")
+    target = target_for(analysis, integrity)
+    if target.origin != "deterministic" or not target.computable or target.kind == "statement_combination":
+        return StrategyDecision("derive_then_select", "target_not_computable")
+    given = [item for item in integrity.expressions if item.role == "given" and item.status == "parsed" and item.canonical]
+    if any(item.role == "given" and item.status != "parsed" for item in integrity.expressions):
+        return StrategyDecision("derive_then_select", "unparsed_source_expression")
+    inequalities = [item for item in given if any(op in item.canonical for op in ("<", ">", "!="))]
+    equations = [item for item in given if item not in inequalities and item.canonical.count(" = ") == 1]
+    if not given:
+        expression = parse_expression(target.expression or "")
+        if expression.parsed and not expression_symbols(expression.tree):
+            model = "constant_expression"
+        else:
+            return StrategyDecision("derive_then_select", "symbolic_expression")
+    elif len(given) == 1 and len(equations) == 1 and len(symbols_of(equations[0])) == 1:
+        model = "single_equation"
+    elif len(given) == 1 and len(inequalities) == 1 and len(symbols_of(inequalities[0])) == 1:
+        model = "single_inequality"
+    else:
+        return StrategyDecision("derive_then_select", "model_not_supported")
+    if target.kind not in _HIDDEN_MODELS[model]:
+        return StrategyDecision("derive_then_select", f"{model}_target_not_supported")
+    return StrategyDecision("solve_first_hidden", f"{model}:{target.kind}")
+
+
+def answer_strategy(analysis: VisionAnalysis) -> str | None:
+    return strategy_decision(analysis).strategy
 
 
 def _integrity_payload(analysis: VisionAnalysis, strategy: str | None) -> dict[str, Any] | None:

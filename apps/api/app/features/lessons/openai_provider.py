@@ -128,6 +128,9 @@ class OpenAILessonProvider:
                 "visual_fact_count": context.metrics.visual_fact_count,
                 "visual_fact_count_after_compaction": context.metrics.visual_fact_count_after_compaction,
                 "context_compaction_level": context.metrics.context_compaction_level,
+                # TA-005: seçenek stratejisi ve nedeni (belirlenimci karar).
+                "answer_strategy": context.metrics.answer_strategy,
+                "answer_strategy_reason": context.metrics.answer_strategy_reason,
             },
         )
         return await parse_response(

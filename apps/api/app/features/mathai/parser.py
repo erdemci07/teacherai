@@ -85,6 +85,8 @@ def to_sympy(node, budget: _Budget | None = None):
         return _divide(left, right)
     if isinstance(node, tree.Pow):
         left, right = to_sympy(node.base, budget), to_sympy(node.exp, budget)
+        if right.is_number and not right.free_symbols and isinstance(right.doit(), sp.Integer):
+            right = right.doit()  # TA-005: 2^{3^2} gibi sabit tam sayı üssü; bütçe aynı kalır
         if not isinstance(right, sp.Integer) or abs(right) > MAX_COMPUTE_EXPONENT or left.has(sp.Pow):
             raise MathParseError("power budget")
         return sp.Pow(left, right, evaluate=False)
