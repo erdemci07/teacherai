@@ -1,0 +1,2697 @@
+{
+ "note": "TeacherAI_24_Orijinal_Soru.pdf içindeki proje sahibine ait 24 özgün sorudan çevrimdışı regresyon fikstürü. Resmî ÖSYM sorusu değildir. 'reading', doğru bir görsel okumanın benzetimidir ve sağlayıcıya gidebilecek tek girdidir; 'evaluation' yalnızca değerlendirme aşamasında okunur. Bu bir model başarı veri seti değildir.",
+ "answer_origin": "derived",
+ "answer_origin_note": "Paketin cevap anahtarı bu çalışmada dosya olarak yoktu. 'evaluation.answer' değerleri soruların çözümünden türetildi; resmî anahtar geldiğinde karşılaştırılmalıdır.",
+ "questions": [
+  {
+   "id": "M01",
+   "subject": "mathematics",
+   "archetypes": [
+    "radical_scope_ocr",
+    "definitions",
+    "requested_expression"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "A = √(16 + √81) ve B = √16 + √81 olarak tanımlanıyor. B − A kaçtır?",
+    "answer_choices": [
+     "A) 3",
+     "B) 5",
+     "C) 8",
+     "D) 9",
+     "E) 13"
+    ],
+    "mathematical_expressions": [
+     "A = \\sqrt{16 + \\sqrt{81}}",
+     "B = \\sqrt{16} + \\sqrt{81}",
+     "B - A"
+    ],
+    "visual_elements": {
+     "has_diagram": true,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": "A ve B ifadeleri; mavi kök çizgisi toplamın tamamını kapsar.",
+     "visual_relevance": "supporting"
+    }
+   },
+   "proposal": {
+    "final": "8",
+    "finals": [
+     "B - A = 8"
+    ]
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   },
+   "variants": [
+    {
+     "id": "M01_radical_scope_uncertain",
+     "overrides": {
+      "source": {
+       "uncertainties": [
+        {
+         "category": "radical_scope",
+         "element": "expression:0",
+         "recognized": "\\sqrt{16 + \\sqrt{81}}",
+         "alternatives": [
+          "\\sqrt{16} + \\sqrt{81}"
+         ],
+         "affects_answer": true,
+         "region_index": null
+        }
+       ]
+      }
+     },
+     "expect_decision": "targeted_recheck"
+    },
+    {
+     "id": "M01_radical_note_only_in_legacy_text",
+     "overrides": {
+      "ocr_uncertainties": [
+       "A ifadesinde kök çizgisinin nerede bittiği net değil."
+      ]
+     },
+     "expect_decision": "targeted_recheck"
+    }
+   ]
+  },
+  {
+   "id": "M02",
+   "subject": "mathematics",
+   "archetypes": [
+    "requested_expression_not_variable"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "2x − 1 = 5 olduğuna göre 2x² − x ifadesinin değeri kaçtır?",
+    "answer_choices": [
+     "A) 6",
+     "B) 9",
+     "C) 12",
+     "D) 15",
+     "E) 18"
+    ],
+    "mathematical_expressions": [
+     "2x - 1 = 5",
+     "2x^2 - x"
+    ],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "proposal": {
+    "final": "A) 6",
+    "finals": [
+     "x = 3"
+    ]
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   },
+   "notes": "Sağlayıcı önerisi bilinçli olarak ara değeri (x = 3) veriyor; sistem istenen 2x² − x = 15 hedefine göre seçmeli."
+  },
+  {
+   "id": "M03",
+   "subject": "mathematics",
+   "archetypes": [
+    "graph_reading",
+    "average_rate"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "Grafikte bir aracın konumu zamana göre verilmiştir. 0–4 saniye aralığında ortalama hızının işaretli değeri kaç m/s olur?",
+    "answer_choices": [
+     "A) 0,5",
+     "B) 1",
+     "C) 1,5",
+     "D) 2",
+     "E) 3"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": true,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": "Konum-zaman grafiği",
+     "visual_relevance": "essential",
+     "relevant_visual_facts": [
+      "t = 0 s'de konum 2 m",
+      "t = 2 s'de konum 6 m",
+      "t = 4 s'de konum 6 m"
+     ]
+    }
+   },
+   "proposal": {
+    "final": "B) 1",
+    "finals": [
+     "1"
+    ]
+   },
+   "checks": [
+    {
+     "id": "avg",
+     "kind": "graph_slope",
+     "input": {
+      "graph": {
+       "id": "g1",
+       "figure": "fig1",
+       "points_origin": "printed_values",
+       "points": [
+        [
+         "0",
+         "2"
+        ],
+        [
+         "2",
+         "6"
+        ],
+        [
+         "4",
+         "6"
+        ]
+       ],
+       "x": {
+        "name": "zaman",
+        "unit": {
+         "original": "s",
+         "status": "parsed",
+         "canonical": "s",
+         "dimension": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+         ],
+         "scale": "1",
+         "affine": false,
+         "normalization": "none"
+        },
+        "scale": "explicit_linear",
+        "origin": "explicit"
+       },
+       "y": {
+        "name": "konum",
+        "unit": {
+         "original": "m",
+         "status": "parsed",
+         "canonical": "m",
+         "dimension": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+         ],
+         "scale": "1",
+         "affine": false,
+         "normalization": "none"
+        },
+        "scale": "explicit_linear",
+        "origin": "explicit"
+       }
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "avg"
+   },
+   "evaluation": {
+    "answer": "B",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "M04",
+   "subject": "mathematics",
+   "archetypes": [
+    "story_model",
+    "visual_label_unknown"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "Bir müze için iki silindirik sergi kabı tasarlanıyor. İlk kabın yarıçapı 3 cm ve yüksekliği 8 cm; ikinci kabın yarıçapı 4 cm. Hacimleri eşit olduğuna göre ikinci kabın yüksekliği kaç cm olur?",
+    "answer_choices": [
+     "A) 3",
+     "B) 4",
+     "C) 4,5",
+     "D) 5",
+     "E) 6"
+    ],
+    "mathematical_expressions": [
+     "\\pi \\cdot 3^2 \\cdot 8 = \\pi \\cdot 4^2 \\cdot h"
+    ],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": true,
+     "description": "İki silindir",
+     "visual_relevance": "supporting",
+     "relevant_visual_facts": [
+      "1. kap: r=3, h=8",
+      "2. kap: r=4, h=?"
+     ]
+    }
+   },
+   "proposal": {
+    "final": "C) 4,5",
+    "finals": [
+     "h = 4,5"
+    ]
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   },
+   "variants": [
+    {
+     "id": "M04_unknown_marker_missing",
+     "overrides": {
+      "visual_elements": {
+       "has_diagram": false,
+       "has_graph": false,
+       "has_table": false,
+       "has_geometry_figure": true,
+       "description": "İki silindir",
+       "visual_relevance": "supporting",
+       "relevant_visual_facts": []
+      }
+     },
+     "expect_decision": "ready",
+     "expect_target": "unresolved"
+    }
+   ]
+  },
+  {
+   "id": "M05",
+   "subject": "mathematics",
+   "archetypes": [
+    "probability_unsupported"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "Bir torbada 3 kırmızı ve 2 mavi bilye vardır. Geri koymadan iki bilye seçiliyor. Tam birinin kırmızı olma olasılığı kaçtır?",
+    "answer_choices": [
+     "A) 1/5",
+     "B) 2/5",
+     "C) 1/2",
+     "D) 3/5",
+     "E) 4/5"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "proposal": {
+    "final": "D) 3/5",
+    "finals": [
+     "\\frac{3}{5}"
+    ]
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "abstain"
+   },
+   "notes": "Olasılık hesabı için belirlenimci doğrulayıcı yok; sistem cevabı doğrulanmış göstermemeli."
+  },
+  {
+   "id": "M06",
+   "subject": "mathematics",
+   "archetypes": [
+    "premises",
+    "polarity"
+   ],
+   "reading": {
+    "subject": "Matematik",
+    "question_text": "3x − 2 = 10 eşitliği için: I. x² = 16. II. x + 2 = 5. III. 2x > 7. ifadelerinden hangileri doğrudur?",
+    "answer_choices": [
+     "A) Yalnız I",
+     "B) Yalnız II",
+     "C) I ve II",
+     "D) I ve III",
+     "E) II ve III"
+    ],
+    "mathematical_expressions": [
+     "3x - 2 = 10",
+     "x^2 = 16",
+     "x + 2 = 5",
+     "2x > 7"
+    ],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    },
+    "source": {
+     "statements": [
+      "I. x^2 = 16",
+      "II. x + 2 = 5",
+      "III. 2x > 7"
+     ]
+    }
+   },
+   "proposal": {
+    "final": "C) I ve II",
+    "finals": [
+     "x = 4"
+    ]
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   },
+   "notes": "Sağlayıcı önerisi bilinçli olarak yanlış birleşimi seçiyor; öncüller x = 4'te belirlenimci değerlendirilir."
+  },
+  {
+   "id": "P01",
+   "subject": "physics",
+   "archetypes": [
+    "fictional_planet",
+    "projectile",
+    "units"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "Yerçekimi ivmesinin 4 m/s² olduğu kurgusal bir gezegende, 8 m yüksekten yatay 6 m/s hızla bir top fırlatılıyor. Hava direnci yoksa top yatayda kaç metre gider?",
+    "answer_choices": [
+     "A) 6",
+     "B) 8",
+     "C) 10",
+     "D) 12",
+     "E) 16"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "range",
+     "kind": "formula",
+     "input": {
+      "formula": "x = v \\sqrt{\\frac{2 h}{g}}",
+      "quantities": {
+       "v": "6 m/s",
+       "h": "8 m",
+       "g": "4 m/s²"
+      }
+     }
+    },
+    {
+     "id": "earth_g_misuse",
+     "kind": "formula",
+     "input": {
+      "formula": "x = v \\sqrt{\\frac{2 h}{g}}",
+      "quantities": {
+       "v": "6 m/s",
+       "h": "8 m",
+       "g": "4 m/s²"
+      },
+      "claim": "7,6 m"
+     },
+     "expect": "failed"
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "range",
+    "unit": "m"
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "P02",
+   "subject": "physics",
+   "archetypes": [
+    "velocity_time_graph",
+    "area"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "Bir cisim 0–4 s arasında hızı 0’dan 8 m/s’ye doğrusal artırıyor; 4–6 s arasında hızını doğrusal olarak 0’a düşürüyor. Grafik altındaki alana göre toplam yer değiştirme kaç metredir?",
+    "answer_choices": [
+     "A) 16",
+     "B) 20",
+     "C) 24",
+     "D) 28",
+     "E) 32"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "area",
+     "kind": "graph_area",
+     "input": {
+      "graph": {
+       "id": "g1",
+       "figure": "fig1",
+       "points_origin": "printed_values",
+       "points": [
+        [
+         "0",
+         "0"
+        ],
+        [
+         "4",
+         "8"
+        ],
+        [
+         "6",
+         "0"
+        ]
+       ],
+       "x": {
+        "name": "zaman",
+        "unit": {
+         "original": "s",
+         "status": "parsed",
+         "canonical": "s",
+         "dimension": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+         ],
+         "scale": "1",
+         "affine": false,
+         "normalization": "none"
+        },
+        "scale": "explicit_linear",
+        "origin": "explicit"
+       },
+       "y": {
+        "name": "hız",
+        "unit": {
+         "original": "m/s",
+         "status": "parsed",
+         "canonical": "m·s^-1",
+         "dimension": [
+          1,
+          0,
+          -1,
+          0,
+          0,
+          0,
+          0
+         ],
+         "scale": "1",
+         "affine": false,
+         "normalization": "none"
+        },
+        "scale": "explicit_linear",
+        "origin": "explicit"
+       }
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "area"
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "P03",
+   "subject": "physics",
+   "archetypes": [
+    "circuit",
+    "connectivity"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "İdeal 6 V üretece paralel bağlı 3 Ω ve 6 Ω dirençler vardır. Üreteçten geçen toplam akım kaç amperdir?",
+    "answer_choices": [
+     "A) 1",
+     "B) 2",
+     "C) 3",
+     "D) 4",
+     "E) 6"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "current",
+     "kind": "formula",
+     "input": {
+      "formula": "I = \\frac{V (R_1 + R_2)}{R_1 R_2}",
+      "quantities": {
+       "V": "6 V",
+       "R_1": "3 Ω",
+       "R_2": "6 Ω"
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "current",
+    "unit": "A"
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   },
+   "notes": "Paralel bağlantı modeli metinden gelir; devre yasasının seçimi denetlenmez, yalnızca birimli hesap denetlenir."
+  },
+  {
+   "id": "P04",
+   "subject": "physics",
+   "archetypes": [
+    "experiment_table",
+    "proportional_model"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "İdeal bir yayın aynı sıcaklıktaki deneyinde uygulanan kuvvet ve uzama sırasıyla (1 N, 2 cm), (2 N, 4 cm), (3 N, 6 cm) ölçülmüştür. Yayın 5 N’a kadar Hooke yasasına uyduğu bilindiğine göre beklenen uzama kaç cm olur?",
+    "answer_choices": [
+     "A) 5",
+     "B) 6",
+     "C) 8",
+     "D) 10",
+     "E) 12"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "hooke",
+     "kind": "proportional",
+     "input": {
+      "x": "F",
+      "y": "dx",
+      "at": "5",
+      "claim": "10",
+      "experiment": {
+       "variables": [
+        {
+         "id": "F",
+         "name": "kuvvet",
+         "unit": {
+          "original": "N",
+          "status": "parsed",
+          "canonical": "N",
+          "dimension": [
+           1,
+           1,
+           -2,
+           0,
+           0,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": false,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "dx",
+         "name": "uzama",
+         "unit": {
+          "original": "cm",
+          "status": "parsed",
+          "canonical": "cm",
+          "dimension": [
+           1,
+           0,
+           0,
+           0,
+           0,
+           0,
+           0
+          ],
+          "scale": "1/100",
+          "affine": false,
+          "normalization": "none"
+         }
+        }
+       ],
+       "independent": [
+        "F"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g1",
+         "conditions": [
+          {
+           "variable": "F",
+           "value": "1"
+          }
+         ]
+        },
+        {
+         "id": "g2",
+         "conditions": [
+          {
+           "variable": "F",
+           "value": "2"
+          }
+         ]
+        },
+        {
+         "id": "g3",
+         "conditions": [
+          {
+           "variable": "F",
+           "value": "3"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g1",
+         "variable": "dx",
+         "value": "2"
+        },
+        {
+         "group": "g2",
+         "variable": "dx",
+         "value": "4"
+        },
+        {
+         "group": "g3",
+         "variable": "dx",
+         "value": "6"
+        }
+       ],
+       "claims": []
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "claim",
+    "check": "hooke",
+    "label": "D"
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "P05",
+   "subject": "physics",
+   "archetypes": [
+    "buoyancy",
+    "units_scientific_decimal"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "Suyun yoğunluğu 1000 kg/m³, yerçekimi ivmesi 10 m/s² iken tamamen batmış bir cismin taşırdığı suyun hacmi 0,002 m³’tür. Cismin maruz kaldığı kaldırma kuvveti kaç N olur?",
+    "answer_choices": [
+     "A) 5",
+     "B) 10",
+     "C) 20",
+     "D) 25",
+     "E) 40"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "buoyancy",
+     "kind": "formula",
+     "input": {
+      "formula": "F = d g V",
+      "quantities": {
+       "d": "1000 kg/m³",
+       "g": "10 m/s²",
+       "V": "0,002 m³"
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "buoyancy",
+    "unit": "N"
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "P06",
+   "subject": "physics",
+   "archetypes": [
+    "force_directions",
+    "vectors"
+   ],
+   "reading": {
+    "subject": "Fizik",
+    "question_text": "Kütlesi 2 kg olan bir kutuya yatay doğrultuda sağa 5 N, sola 3 N ve sola 2 N kuvvet uygulanıyor. Başka yatay kuvvet yok. İvmenin büyüklüğü kaç m/s² olur?",
+    "answer_choices": [
+     "A) 5",
+     "B) 3",
+     "C) 2",
+     "D) 1",
+     "E) 0"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "net",
+     "kind": "formula",
+     "input": {
+      "formula": "a = \\frac{F_1 - F_2 - F_3}{m}",
+      "quantities": {
+       "F_1": "5 N",
+       "F_2": "3 N",
+       "F_3": "2 N",
+       "m": "2 kg"
+      }
+     }
+    },
+    {
+     "id": "arrow_left_unclear",
+     "kind": "direction",
+     "expect": "unsupported",
+     "input": {
+      "relation": "r2",
+      "model": {
+       "subject": "physics",
+       "figures": [
+        {
+         "id": "fig1",
+         "kind": "force_diagram"
+        }
+       ],
+       "entities": [
+        {
+         "id": "box",
+         "kind": "body",
+         "label": "2 kg",
+         "figure": "fig1",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "f3",
+         "kind": "object",
+         "label": "3 N",
+         "figure": "fig1",
+         "provenance": "visual_reading"
+        }
+       ],
+       "relations": [
+        {
+         "id": "r2",
+         "type": "acts_on",
+         "subject": "f3",
+         "object": "box",
+         "figure": "fig1",
+         "provenance": "visual_reading",
+         "direction_clear": false
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "net",
+    "unit": "m/s²"
+   },
+   "evaluation": {
+    "answer": "E",
+    "expect": "answer"
+   },
+   "notes": "Yön işaretleri metindeki sağa/sola ifadesinden gelir; belirsiz bir ok yönü tahmin edilmez."
+  },
+  {
+   "id": "C01",
+   "subject": "chemistry",
+   "archetypes": [
+    "balancing",
+    "subscripts"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "Fe + O₂ → Fe₂O₃ tepkimesi en küçük pozitif tam sayılarla denkleştiriliyor. Katsayıların toplamı kaçtır?",
+    "answer_choices": [
+     "A) 6",
+     "B) 7",
+     "C) 9",
+     "D) 10",
+     "E) 12"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "balance",
+     "kind": "balance_coefficients",
+     "input": {
+      "equation": "Fe + O₂ → Fe₂O₃"
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "balance"
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "C02",
+   "subject": "chemistry",
+   "archetypes": [
+    "mol",
+    "ion_count"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "0,25 mol CaCl₂ bileşiği suda tamamen ayrışıyor. Oluşan klorür iyonlarının madde miktarı kaç moldür?",
+    "answer_choices": [
+     "A) 0,25",
+     "B) 0,50",
+     "C) 0,75",
+     "D) 1,00",
+     "E) 1,50"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "chloride",
+     "kind": "element_amount",
+     "input": {
+      "formula": "CaCl₂",
+      "mol": "0,25",
+      "element": "Cl"
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "chloride"
+   },
+   "evaluation": {
+    "answer": "B",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "C03",
+   "subject": "chemistry",
+   "archetypes": [
+    "energy_diagram",
+    "graph_values"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "Grafikte bir tepkimenin potansiyel enerjileri verilmiştir: girenler 40 kJ/mol, tepe 100 kJ/mol, ürünler 20 kJ/mol. Ters tepkimenin aktivasyon enerjisi kaç kJ/mol olur?",
+    "answer_choices": [
+     "A) 40",
+     "B) 60",
+     "C) 70",
+     "D) 80",
+     "E) 100"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "reverse_ea",
+     "kind": "formula",
+     "input": {
+      "formula": "E = E_t - E_u",
+      "quantities": {
+       "E_t": "100 kJ/mol",
+       "E_u": "20 kJ/mol"
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "reverse_ea",
+    "unit": "kJ/mol"
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   },
+   "notes": "Ters aktivasyon enerjisi modeli (tepe − ürün) çözüm modelidir; yasa seçimi denetlenmez."
+  },
+  {
+   "id": "C04",
+   "subject": "chemistry",
+   "archetypes": [
+    "ionic_charge_notation",
+    "oxidation"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "Aşağıdaki değişimlerin hangisinde verilen tanecik elektron kaybederek yükseltgenir?",
+    "answer_choices": [
+     "A) Fe²⁺ → Fe³⁺",
+     "B) Fe³⁺ → Fe²⁺",
+     "C) Cl₂ → 2Cl⁻",
+     "D) O → O²⁻",
+     "E) Na⁺ → Na"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "A",
+     "kind": "electron_loss",
+     "input": {
+      "equation": "Fe²⁺ → Fe³⁺"
+     }
+    },
+    {
+     "id": "B",
+     "kind": "electron_loss",
+     "input": {
+      "equation": "Fe³⁺ → Fe²⁺"
+     }
+    },
+    {
+     "id": "C",
+     "kind": "electron_loss",
+     "input": {
+      "equation": "Cl₂ → 2Cl⁻"
+     }
+    },
+    {
+     "id": "D",
+     "kind": "electron_loss",
+     "input": {
+      "equation": "O → O²⁻"
+     }
+    },
+    {
+     "id": "E",
+     "kind": "electron_loss",
+     "input": {
+      "equation": "Na⁺ → Na"
+     }
+    }
+   ],
+   "select": {
+    "strategy": "single"
+   },
+   "evaluation": {
+    "answer": "A",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "C05",
+   "subject": "chemistry",
+   "archetypes": [
+    "limiting_reactant",
+    "stoichiometry"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "2H₂ + O₂ → 2H₂O tepkimesinde başlangıçta 4 mol H₂ ve 1,5 mol O₂ vardır. Tam tepkime sonrası kaç mol H₂O oluşur?",
+    "answer_choices": [
+     "A) 1",
+     "B) 1,5",
+     "C) 2",
+     "D) 3",
+     "E) 4"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "water",
+     "kind": "limiting",
+     "input": {
+      "equation": "2H₂ + O₂ → 2H₂O",
+      "amounts": {
+       "H₂": "4",
+       "O₂": "1,5"
+      },
+      "wanted": "H₂O"
+     }
+    }
+   ],
+   "select": {
+    "strategy": "value",
+    "check": "water"
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "C06",
+   "subject": "chemistry",
+   "archetypes": [
+    "experiment",
+    "premises",
+    "causality_limits"
+   ],
+   "reading": {
+    "subject": "Kimya",
+    "question_text": "Aynı derişim ve miktardaki çözeltilerle, aynı miktarda gaz üretme süresi 20 °C’de 20 s, 30 °C’de 12 s, 40 °C’de 8 s ölçülmüştür. I. Ölçülen aralıkta sıcaklık arttıkça hız artmıştır. II. Başlangıç derişimi de artmıştır. III. Tepkime endotermiktir. Hangileri yalnızca verilenlerle desteklenir?",
+    "answer_choices": [
+     "A) Yalnız I",
+     "B) Yalnız II",
+     "C) Yalnız III",
+     "D) I ve II",
+     "E) II ve III"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [],
+   "select": {
+    "strategy": "premises",
+    "premises": {
+     "I": "c1",
+     "II": "c2",
+     "III": "c3"
+    },
+    "experiment": {
+     "variables": [
+      {
+       "id": "T",
+       "name": "sıcaklık",
+       "unit": {
+        "original": "°C",
+        "status": "parsed",
+        "canonical": "°C",
+        "dimension": [
+         0,
+         0,
+         0,
+         0,
+         1,
+         0,
+         0
+        ],
+        "scale": "1",
+        "affine": true,
+        "normalization": "none"
+       }
+      },
+      {
+       "id": "t",
+       "name": "eşit gaz için süre",
+       "unit": {
+        "original": "s",
+        "status": "parsed",
+        "canonical": "s",
+        "dimension": [
+         0,
+         0,
+         1,
+         0,
+         0,
+         0,
+         0
+        ],
+        "scale": "1",
+        "affine": false,
+        "normalization": "none"
+       }
+      },
+      {
+       "id": "c",
+       "name": "başlangıç derişimi"
+      },
+      {
+       "id": "q",
+       "name": "tepkime ısısı"
+      }
+     ],
+     "independent": [
+      "T"
+     ],
+     "controlled": [
+      "c"
+     ],
+     "groups": [
+      {
+       "id": "g1",
+       "conditions": [
+        {
+         "variable": "T",
+         "value": "20"
+        },
+        {
+         "variable": "c",
+         "value": "1"
+        }
+       ]
+      },
+      {
+       "id": "g2",
+       "conditions": [
+        {
+         "variable": "T",
+         "value": "30"
+        },
+        {
+         "variable": "c",
+         "value": "1"
+        }
+       ]
+      },
+      {
+       "id": "g3",
+       "conditions": [
+        {
+         "variable": "T",
+         "value": "40"
+        },
+        {
+         "variable": "c",
+         "value": "1"
+        }
+       ]
+      }
+     ],
+     "measurements": [
+      {
+       "group": "g1",
+       "variable": "t",
+       "value": "20"
+      },
+      {
+       "group": "g2",
+       "variable": "t",
+       "value": "12"
+      },
+      {
+       "group": "g3",
+       "variable": "t",
+       "value": "8"
+      },
+      {
+       "group": "g1",
+       "variable": "c",
+       "value": "1"
+      },
+      {
+       "group": "g2",
+       "variable": "c",
+       "value": "1"
+      },
+      {
+       "group": "g3",
+       "variable": "c",
+       "value": "1"
+      }
+     ],
+     "claims": [
+      {
+       "id": "c1",
+       "text": "Sıcaklık arttıkça eşit gaz için süre kısalır (hız artar).",
+       "x": "T",
+       "y": "t",
+       "relation": "decreases",
+       "provenance": "source_text"
+      },
+      {
+       "id": "c2",
+       "text": "Başlangıç derişimi artmıştır.",
+       "x": "T",
+       "y": "c",
+       "relation": "increases",
+       "provenance": "source_text"
+      },
+      {
+       "id": "c3",
+       "text": "Tepkime endotermiktir.",
+       "x": "T",
+       "y": "q",
+       "relation": "increases",
+       "provenance": "source_text"
+      }
+     ]
+    }
+   },
+   "evaluation": {
+    "answer": "A",
+    "expect": "answer"
+   },
+   "notes": "III için veri yoktur (ısı ölçülmemiştir): kaynak yetersiz → desteklenmez. Bu bir bilimsel bilgi iddiası değildir."
+  },
+  {
+   "id": "B01",
+   "subject": "biology",
+   "archetypes": [
+    "cell_labels",
+    "structure_function_premises"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Şemada bir hayvan hücresinin 1 numaralı bölgesi çekirdek, 2 numaralı bölgesi mitokondri, 3 numaralı bölgesi Golgi aygıtıdır. I. 1 kalıtsal bilgiyle ilişkilidir. II. 2 ATP üretiminde görevlidir. III. 3 fotosentez yapar. Hangileri doğrudur?",
+    "answer_choices": [
+     "A) Yalnız I",
+     "B) Yalnız II",
+     "C) I ve II",
+     "D) I ve III",
+     "E) II ve III"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "labels",
+     "kind": "labels",
+     "expect": "passed",
+     "input": {
+      "model": {
+       "subject": "biology",
+       "figures": [
+        {
+         "id": "cell",
+         "kind": "cell_diagram"
+        }
+       ],
+       "entities": [
+        {
+         "id": "n1",
+         "kind": "organelle",
+         "figure": "cell",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "n2",
+         "kind": "organelle",
+         "figure": "cell",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "n3",
+         "kind": "organelle",
+         "figure": "cell",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "t1",
+         "kind": "other",
+         "label": "çekirdek",
+         "figure": "cell",
+         "provenance": "source_text"
+        },
+        {
+         "id": "t2",
+         "kind": "other",
+         "label": "mitokondri",
+         "figure": "cell",
+         "provenance": "source_text"
+        },
+        {
+         "id": "t3",
+         "kind": "other",
+         "label": "Golgi aygıtı",
+         "figure": "cell",
+         "provenance": "source_text"
+        }
+       ],
+       "relations": [
+        {
+         "id": "r1",
+         "type": "labeled_as",
+         "subject": "n1",
+         "object": "t1",
+         "figure": "cell",
+         "provenance": "source_text"
+        },
+        {
+         "id": "r2",
+         "type": "labeled_as",
+         "subject": "n2",
+         "object": "t2",
+         "figure": "cell",
+         "provenance": "source_text"
+        },
+        {
+         "id": "r3",
+         "type": "labeled_as",
+         "subject": "n3",
+         "object": "t3",
+         "figure": "cell",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "evaluation": {
+    "answer": "C",
+    "expect": "abstain"
+   },
+   "notes": "Etiket–yapı tutarlılığı denetlenir; organel işlevi öğretmen incelemeli bilgi gerektirir (TA-007/TA-011), bu yüzden cevap seçilmez."
+  },
+  {
+   "id": "B02",
+   "subject": "biology",
+   "archetypes": [
+    "chloroplast_labels",
+    "structure_function_premises"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Şemada K granum/tilakoit zarlarını, L stromayı göstermektedir. I. Işığa bağımlı tepkimeler K ile ilişkilidir. II. Calvin döngüsü L bölümünde gerçekleşir. III. Suyun fotolizi L bölgesinde gerçekleşir. Hangileri doğrudur?",
+    "answer_choices": [
+     "A) Yalnız I",
+     "B) Yalnız II",
+     "C) I ve II",
+     "D) I ve III",
+     "E) II ve III"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "labels",
+     "kind": "labels",
+     "expect": "passed",
+     "input": {
+      "model": {
+       "subject": "biology",
+       "figures": [
+        {
+         "id": "cp",
+         "kind": "cell_diagram"
+        }
+       ],
+       "entities": [
+        {
+         "id": "k",
+         "kind": "structure",
+         "figure": "cp",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "l",
+         "kind": "structure",
+         "figure": "cp",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "tk",
+         "kind": "other",
+         "label": "granum/tilakoit",
+         "figure": "cp",
+         "provenance": "source_text"
+        },
+        {
+         "id": "tl",
+         "kind": "other",
+         "label": "stroma",
+         "figure": "cp",
+         "provenance": "source_text"
+        }
+       ],
+       "relations": [
+        {
+         "id": "rk",
+         "type": "labeled_as",
+         "subject": "k",
+         "object": "tk",
+         "figure": "cp",
+         "provenance": "source_text"
+        },
+        {
+         "id": "rl",
+         "type": "labeled_as",
+         "subject": "l",
+         "object": "tl",
+         "figure": "cp",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "evaluation": {
+    "answer": "C",
+    "expect": "abstain"
+   }
+  },
+  {
+   "id": "B03",
+   "subject": "biology",
+   "archetypes": [
+    "dna_orientation",
+    "base_pairing",
+    "prime_notation"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Kalıp DNA ipliği 3′-TAC GGA ATT-5′ biçimindedir. Üretilen mRNA 5′→3′ yönünde yazıldığında ikinci kodon hangisidir?",
+    "answer_choices": [
+     "A) AUG",
+     "B) CCU",
+     "C) UAA",
+     "D) GGA",
+     "E) ATT"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "codon",
+     "kind": "codon",
+     "input": {
+      "template": "3′-TAC GGA ATT-5′",
+      "position": 2
+     }
+    },
+    {
+     "id": "orientation_missing",
+     "kind": "codon",
+     "expect": "unsupported",
+     "input": {
+      "template": "TAC GGA ATT",
+      "position": 2
+     }
+    }
+   ],
+   "select": {
+    "strategy": "text",
+    "check": "codon"
+   },
+   "evaluation": {
+    "answer": "B",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "B04",
+   "subject": "biology",
+   "archetypes": [
+    "enzyme_table",
+    "certainty_of_conclusion"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Bir enzimin göreli etkinliği 10 °C’de 3, 25 °C’de 7, 40 °C’de 9, 70 °C’de 1 ölçülmüştür. Yalnızca bu ölçümlerden hangi sonuç kesin çıkar?",
+    "answer_choices": [
+     "A) Enzim tüm sıcaklıklarda aynıdır.",
+     "B) Optimum tam olarak 40 °C’dir.",
+     "C) Ölçülen en yüksek etkinlik 40 °C’dedir.",
+     "D) Enzim 70 °C’de hiç çalışmaz.",
+     "E) Sıcaklık arttıkça etkinlik her zaman artar."
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "A",
+     "kind": "claim",
+     "input": {
+      "claim": "same",
+      "experiment": {
+       "variables": [
+        {
+         "id": "T",
+         "name": "sıcaklık",
+         "unit": {
+          "original": "°C",
+          "status": "parsed",
+          "canonical": "°C",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": true,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "A",
+         "name": "göreli etkinlik"
+        }
+       ],
+       "independent": [
+        "T"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g10",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "10"
+          }
+         ]
+        },
+        {
+         "id": "g25",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "25"
+          }
+         ]
+        },
+        {
+         "id": "g40",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "40"
+          }
+         ]
+        },
+        {
+         "id": "g70",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "70"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g10",
+         "variable": "A",
+         "value": "3"
+        },
+        {
+         "group": "g25",
+         "variable": "A",
+         "value": "7"
+        },
+        {
+         "group": "g40",
+         "variable": "A",
+         "value": "9"
+        },
+        {
+         "group": "g70",
+         "variable": "A",
+         "value": "1"
+        }
+       ],
+       "claims": [
+        {
+         "id": "same",
+         "text": "Enzim tüm sıcaklıklarda aynıdır.",
+         "y": "A",
+         "relation": "equal",
+         "provenance": "source_text"
+        },
+        {
+         "id": "always",
+         "text": "Sıcaklık arttıkça etkinlik her zaman artar.",
+         "x": "T",
+         "y": "A",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "B",
+     "kind": "exact_optimum",
+     "input": {
+      "x": "T",
+      "y": "A",
+      "at": "40",
+      "experiment": {
+       "variables": [
+        {
+         "id": "T",
+         "name": "sıcaklık",
+         "unit": {
+          "original": "°C",
+          "status": "parsed",
+          "canonical": "°C",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": true,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "A",
+         "name": "göreli etkinlik"
+        }
+       ],
+       "independent": [
+        "T"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g10",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "10"
+          }
+         ]
+        },
+        {
+         "id": "g25",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "25"
+          }
+         ]
+        },
+        {
+         "id": "g40",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "40"
+          }
+         ]
+        },
+        {
+         "id": "g70",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "70"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g10",
+         "variable": "A",
+         "value": "3"
+        },
+        {
+         "group": "g25",
+         "variable": "A",
+         "value": "7"
+        },
+        {
+         "group": "g40",
+         "variable": "A",
+         "value": "9"
+        },
+        {
+         "group": "g70",
+         "variable": "A",
+         "value": "1"
+        }
+       ],
+       "claims": [
+        {
+         "id": "same",
+         "text": "Enzim tüm sıcaklıklarda aynıdır.",
+         "y": "A",
+         "relation": "equal",
+         "provenance": "source_text"
+        },
+        {
+         "id": "always",
+         "text": "Sıcaklık arttıkça etkinlik her zaman artar.",
+         "x": "T",
+         "y": "A",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "C",
+     "kind": "measured_extremum",
+     "input": {
+      "x": "T",
+      "y": "A",
+      "at": "40",
+      "experiment": {
+       "variables": [
+        {
+         "id": "T",
+         "name": "sıcaklık",
+         "unit": {
+          "original": "°C",
+          "status": "parsed",
+          "canonical": "°C",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": true,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "A",
+         "name": "göreli etkinlik"
+        }
+       ],
+       "independent": [
+        "T"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g10",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "10"
+          }
+         ]
+        },
+        {
+         "id": "g25",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "25"
+          }
+         ]
+        },
+        {
+         "id": "g40",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "40"
+          }
+         ]
+        },
+        {
+         "id": "g70",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "70"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g10",
+         "variable": "A",
+         "value": "3"
+        },
+        {
+         "group": "g25",
+         "variable": "A",
+         "value": "7"
+        },
+        {
+         "group": "g40",
+         "variable": "A",
+         "value": "9"
+        },
+        {
+         "group": "g70",
+         "variable": "A",
+         "value": "1"
+        }
+       ],
+       "claims": [
+        {
+         "id": "same",
+         "text": "Enzim tüm sıcaklıklarda aynıdır.",
+         "y": "A",
+         "relation": "equal",
+         "provenance": "source_text"
+        },
+        {
+         "id": "always",
+         "text": "Sıcaklık arttıkça etkinlik her zaman artar.",
+         "x": "T",
+         "y": "A",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "D",
+     "kind": "measured_value",
+     "input": {
+      "group": "g70",
+      "y": "A",
+      "relation": "equal",
+      "value": "0",
+      "experiment": {
+       "variables": [
+        {
+         "id": "T",
+         "name": "sıcaklık",
+         "unit": {
+          "original": "°C",
+          "status": "parsed",
+          "canonical": "°C",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": true,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "A",
+         "name": "göreli etkinlik"
+        }
+       ],
+       "independent": [
+        "T"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g10",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "10"
+          }
+         ]
+        },
+        {
+         "id": "g25",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "25"
+          }
+         ]
+        },
+        {
+         "id": "g40",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "40"
+          }
+         ]
+        },
+        {
+         "id": "g70",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "70"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g10",
+         "variable": "A",
+         "value": "3"
+        },
+        {
+         "group": "g25",
+         "variable": "A",
+         "value": "7"
+        },
+        {
+         "group": "g40",
+         "variable": "A",
+         "value": "9"
+        },
+        {
+         "group": "g70",
+         "variable": "A",
+         "value": "1"
+        }
+       ],
+       "claims": [
+        {
+         "id": "same",
+         "text": "Enzim tüm sıcaklıklarda aynıdır.",
+         "y": "A",
+         "relation": "equal",
+         "provenance": "source_text"
+        },
+        {
+         "id": "always",
+         "text": "Sıcaklık arttıkça etkinlik her zaman artar.",
+         "x": "T",
+         "y": "A",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "E",
+     "kind": "claim",
+     "input": {
+      "claim": "always",
+      "experiment": {
+       "variables": [
+        {
+         "id": "T",
+         "name": "sıcaklık",
+         "unit": {
+          "original": "°C",
+          "status": "parsed",
+          "canonical": "°C",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           1,
+           0,
+           0
+          ],
+          "scale": "1",
+          "affine": true,
+          "normalization": "none"
+         }
+        },
+        {
+         "id": "A",
+         "name": "göreli etkinlik"
+        }
+       ],
+       "independent": [
+        "T"
+       ],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "g10",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "10"
+          }
+         ]
+        },
+        {
+         "id": "g25",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "25"
+          }
+         ]
+        },
+        {
+         "id": "g40",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "40"
+          }
+         ]
+        },
+        {
+         "id": "g70",
+         "conditions": [
+          {
+           "variable": "T",
+           "value": "70"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "g10",
+         "variable": "A",
+         "value": "3"
+        },
+        {
+         "group": "g25",
+         "variable": "A",
+         "value": "7"
+        },
+        {
+         "group": "g40",
+         "variable": "A",
+         "value": "9"
+        },
+        {
+         "group": "g70",
+         "variable": "A",
+         "value": "1"
+        }
+       ],
+       "claims": [
+        {
+         "id": "same",
+         "text": "Enzim tüm sıcaklıklarda aynıdır.",
+         "y": "A",
+         "relation": "equal",
+         "provenance": "source_text"
+        },
+        {
+         "id": "always",
+         "text": "Sıcaklık arttıkça etkinlik her zaman artar.",
+         "x": "T",
+         "y": "A",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "single"
+   },
+   "evaluation": {
+    "answer": "C",
+    "expect": "answer"
+   }
+  },
+  {
+   "id": "B05",
+   "subject": "biology",
+   "archetypes": [
+    "osmosis",
+    "arrow_meaning"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Yarı geçirgen zarlı bir hücre, iç ortama göre daha yoğun çözünen içeren bir ortama konuluyor. Hücre zarı çözünene geçirgen değil. Başlangıçtaki net su hareketi ve hücre hacmi değişimi hangisidir?",
+    "answer_choices": [
+     "A) İçeri su, hacim artar",
+     "B) İçeri su, hacim azalır",
+     "C) Dışarı su, hacim azalır",
+     "D) Su hareketi olmaz",
+     "E) Organeller kaybolur"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "arrow_meaning",
+     "kind": "direction",
+     "expect": "partially_checked",
+     "input": {
+      "relation": "r1",
+      "model": {
+       "subject": "biology",
+       "figures": [
+        {
+         "id": "fig",
+         "kind": "biological_system"
+        }
+       ],
+       "entities": [
+        {
+         "id": "cell",
+         "kind": "cell",
+         "figure": "fig",
+         "provenance": "visual_reading"
+        },
+        {
+         "id": "out",
+         "kind": "region",
+         "figure": "fig",
+         "provenance": "visual_reading"
+        }
+       ],
+       "relations": [
+        {
+         "id": "r1",
+         "type": "points_to",
+         "subject": "cell",
+         "object": "out",
+         "figure": "fig",
+         "provenance": "visual_reading"
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "evaluation": {
+    "answer": "C",
+    "expect": "abstain"
+   },
+   "notes": "Okun yönü gözlenir, anlamı (su hareketi) şekilden çıkarılmaz; ozmoz kuralı onaylı bilgi tabanı gerektirir."
+  },
+  {
+   "id": "B06",
+   "subject": "biology",
+   "archetypes": [
+    "food_chain_data",
+    "premises",
+    "sequence_arrows"
+   ],
+   "reading": {
+    "subject": "Biyoloji",
+    "question_text": "Göldeki ölçümlerde alg, küçük kabuklu, küçük balık ve büyük balık için toksin birikimi sırasıyla 2, 5, 12 ve 30 μg/kg’dır. I. Bu örneklenen zincirde ölçülen birikim her basamakta artmıştır. II. Artış katsayısı her basamakta tam aynıdır. III. Büyük balıkta ölçülen değer küçük balıktan fazladır. Hangileri verilere göre doğrudur?",
+    "answer_choices": [
+     "A) Yalnız I",
+     "B) Yalnız II",
+     "C) I ve II",
+     "D) I ve III",
+     "E) II ve III"
+    ],
+    "mathematical_expressions": [],
+    "visual_elements": {
+     "has_diagram": false,
+     "has_graph": false,
+     "has_table": false,
+     "has_geometry_figure": false,
+     "description": null
+    }
+   },
+   "checks": [
+    {
+     "id": "I",
+     "kind": "claim",
+     "input": {
+      "claim": "rise",
+      "experiment": {
+       "variables": [
+        {
+         "id": "k",
+         "name": "besin basamağı"
+        },
+        {
+         "id": "toxin",
+         "name": "toksin birikimi",
+         "unit": {
+          "original": "µg/kg",
+          "status": "parsed",
+          "canonical": "µg·kg^-1",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           0,
+           0,
+           0
+          ],
+          "scale": "1/1000000000",
+          "affine": false,
+          "normalization": "none"
+         }
+        }
+       ],
+       "independent": [],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "alg",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "1"
+          }
+         ]
+        },
+        {
+         "id": "kabuklu",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "2"
+          }
+         ]
+        },
+        {
+         "id": "kucuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "3"
+          }
+         ]
+        },
+        {
+         "id": "buyuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "4"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "alg",
+         "variable": "toxin",
+         "value": "2"
+        },
+        {
+         "group": "kabuklu",
+         "variable": "toxin",
+         "value": "5"
+        },
+        {
+         "group": "kucuk",
+         "variable": "toxin",
+         "value": "12"
+        },
+        {
+         "group": "buyuk",
+         "variable": "toxin",
+         "value": "30"
+        }
+       ],
+       "claims": [
+        {
+         "id": "rise",
+         "text": "Ölçülen birikim her basamakta artmıştır.",
+         "x": "k",
+         "y": "toxin",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "II",
+     "kind": "constant_ratio",
+     "input": {
+      "x": "k",
+      "y": "toxin",
+      "experiment": {
+       "variables": [
+        {
+         "id": "k",
+         "name": "besin basamağı"
+        },
+        {
+         "id": "toxin",
+         "name": "toksin birikimi",
+         "unit": {
+          "original": "µg/kg",
+          "status": "parsed",
+          "canonical": "µg·kg^-1",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           0,
+           0,
+           0
+          ],
+          "scale": "1/1000000000",
+          "affine": false,
+          "normalization": "none"
+         }
+        }
+       ],
+       "independent": [],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "alg",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "1"
+          }
+         ]
+        },
+        {
+         "id": "kabuklu",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "2"
+          }
+         ]
+        },
+        {
+         "id": "kucuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "3"
+          }
+         ]
+        },
+        {
+         "id": "buyuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "4"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "alg",
+         "variable": "toxin",
+         "value": "2"
+        },
+        {
+         "group": "kabuklu",
+         "variable": "toxin",
+         "value": "5"
+        },
+        {
+         "group": "kucuk",
+         "variable": "toxin",
+         "value": "12"
+        },
+        {
+         "group": "buyuk",
+         "variable": "toxin",
+         "value": "30"
+        }
+       ],
+       "claims": [
+        {
+         "id": "rise",
+         "text": "Ölçülen birikim her basamakta artmıştır.",
+         "x": "k",
+         "y": "toxin",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "id": "III",
+     "kind": "pair",
+     "input": {
+      "y": "toxin",
+      "left": "buyuk",
+      "right": "kucuk",
+      "relation": "greater",
+      "experiment": {
+       "variables": [
+        {
+         "id": "k",
+         "name": "besin basamağı"
+        },
+        {
+         "id": "toxin",
+         "name": "toksin birikimi",
+         "unit": {
+          "original": "µg/kg",
+          "status": "parsed",
+          "canonical": "µg·kg^-1",
+          "dimension": [
+           0,
+           0,
+           0,
+           0,
+           0,
+           0,
+           0
+          ],
+          "scale": "1/1000000000",
+          "affine": false,
+          "normalization": "none"
+         }
+        }
+       ],
+       "independent": [],
+       "controlled": [],
+       "groups": [
+        {
+         "id": "alg",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "1"
+          }
+         ]
+        },
+        {
+         "id": "kabuklu",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "2"
+          }
+         ]
+        },
+        {
+         "id": "kucuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "3"
+          }
+         ]
+        },
+        {
+         "id": "buyuk",
+         "conditions": [
+          {
+           "variable": "k",
+           "value": "4"
+          }
+         ]
+        }
+       ],
+       "measurements": [
+        {
+         "group": "alg",
+         "variable": "toxin",
+         "value": "2"
+        },
+        {
+         "group": "kabuklu",
+         "variable": "toxin",
+         "value": "5"
+        },
+        {
+         "group": "kucuk",
+         "variable": "toxin",
+         "value": "12"
+        },
+        {
+         "group": "buyuk",
+         "variable": "toxin",
+         "value": "30"
+        }
+       ],
+       "claims": [
+        {
+         "id": "rise",
+         "text": "Ölçülen birikim her basamakta artmıştır.",
+         "x": "k",
+         "y": "toxin",
+         "relation": "increases",
+         "provenance": "source_text"
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "select": {
+    "strategy": "premise_checks"
+   },
+   "evaluation": {
+    "answer": "D",
+    "expect": "answer"
+   }
+  }
+ ]
+}

@@ -19,6 +19,36 @@ export type AnswerChoice = {
   statement_refs?: Array<string>;
 };
 
+export type AnswerTarget = {
+  kind: "variable_value" | "expression_value" | "sum" | "difference" | "product" | "ratio" | "solution_count" | "root_sum" | "root_product" | "solution_set" | "interval" | "minimum" | "maximum" | "comparison" | "proposition_truth" | "statement_combination" | "physical_quantity" | "chemical_quantity" | "scientific_interpretation" | "textual_explanation" | "unresolved";
+  origin: "deterministic" | "legacy_default" | "unresolved";
+  variable?: string | null;
+  expression?: string | null;
+  latex?: string | null;
+  source?: string | null;
+  integer_only?: boolean;
+  markers?: Array<string>;
+};
+
+export type Axis = {
+  name: string;
+  unit?: UnitSpec | null;
+  scale: "explicit_linear" | "explicit_nonlinear" | "unknown";
+  origin?: "explicit" | "unknown";
+};
+
+export type BlockCheck = {
+  id: string;
+  scope: "block" | "answer" | "lesson";
+  target?: string | null;
+  mapping?: "mapped" | "unmapped";
+  dimension: "calculation" | "transformation" | "domain" | "answer_target" | "answer_choice" | "source_consistency" | "units" | "stoichiometry" | "evidence_consistency" | "scientific" | "curriculum" | "method" | "pedagogy";
+  verifier: "mathai" | "integrity" | "units" | "chemistry" | "evidence" | "none";
+  outcome: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
+  reason: string;
+  evidence?: Array<EvidenceRef>;
+};
+
 export type BoardPanel = {
   blocks: Array<string>;
 };
@@ -55,6 +85,17 @@ export type ChoiceMatch = {
   matched_labels?: Array<string>;
 };
 
+export type Claim = {
+  id: string;
+  text: string;
+  x?: string | null;
+  y: string;
+  relation: "increases" | "decreases" | "no_change" | "differs" | "equal";
+  causal?: boolean;
+  groups?: Array<string>;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+};
+
 export type ClarificationRecord = {
   uncertainty_id: string;
   selection: string;
@@ -65,6 +106,11 @@ export type ClarificationRequest = {
   expected_revision: number;
   uncertainty_id: string;
   selection: string;
+};
+
+export type Condition = {
+  variable: string;
+  value: string;
 };
 
 export type ContextValue = {
@@ -78,6 +124,33 @@ export type Correction = {
   corrected: string;
   uncertainty_id: string;
   from_revision: number;
+};
+
+export type DataTable = {
+  id: string;
+  figure?: string | null;
+  headers: Array<string>;
+  units?: Array<UnitSpec | null>;
+  rows: Array<Array<string | null>>;
+};
+
+export type DerivationStepBlock = {
+  id: string;
+  relates_to?: Array<string>;
+  references?: Array<Reference>;
+  kind: "derivation_step";
+  step_index: number;
+  title?: string | null;
+  explanation: string;
+  inputs?: Array<EvidenceRef>;
+  outputs?: Array<EvidenceRef>;
+  operation?: "add_both_sides" | "subtract_both_sides" | "multiply_both_sides" | "divide_both_sides" | "expand" | "factor" | "complete_square" | "square_both_sides" | "isolate_variable" | "substitute" | "compare" | "evaluate" | "rewrite" | "case_split" | "apply_principle" | "calculate_quantity" | "convert_unit" | "compare_observations" | "infer_sequence" | "evaluate_premise" | "interpret_visual" | "explain" | "state_result" | "unknown";
+  operation_origin?: "deterministic" | "v1_step_type" | "fixture" | "unknown";
+  method_ref?: string | null;
+  assumptions?: Array<string>;
+  preconditions?: Array<string>;
+  conclusions?: Array<EvidenceRef>;
+  narration_ref?: string | null;
 };
 
 export type EducationContext = {
@@ -96,9 +169,23 @@ export type EducationalDraft = {
   activity: "question_solution" | "topic_lesson" | "worked_example" | "guided_practice" | "independent_practice" | "diagnostic_question" | "review";
   objectives: Array<string>;
   references?: Array<Reference>;
-  blocks: Array<ProseBlock | ExpressionBlock | CalculationBlock | ExampleBlock | TableBlock | VisualBlock>;
+  blocks: Array<ProseBlock | ExpressionBlock | CalculationBlock | ExampleBlock | TableBlock | VisualBlock | DerivationStepBlock>;
   answer?: MathAnswer | NumberAnswer | QuantityAnswer | ChoiceAnswer | TextAnswer | TableAnswer | null;
   takeaway: string;
+  narration?: Array<NarrationSegment>;
+};
+
+export type Entity = {
+  id: string;
+  kind: "object" | "body" | "vehicle" | "planet" | "field" | "charge" | "circuit_element" | "lens" | "particle" | "species" | "substance" | "solution" | "apparatus" | "cell" | "organelle" | "organism" | "population" | "structure" | "process_stage" | "gene" | "point" | "segment" | "angle" | "region" | "axis" | "other";
+  label?: string | null;
+  figure?: string | null;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+};
+
+export type EvidenceRef = {
+  kind: "block" | "source_expression" | "source_choice" | "source_statement" | "source_region" | "observation" | "quantity" | "entity" | "relation" | "figure" | "table_cell" | "check";
+  id: string;
 };
 
 export type ExampleBlock = {
@@ -111,6 +198,24 @@ export type ExampleBlock = {
   answer: MathAnswer | NumberAnswer | QuantityAnswer | ChoiceAnswer | TextAnswer | TableAnswer;
 };
 
+export type ExperimentGroup = {
+  id: string;
+  conditions: Array<Condition>;
+};
+
+export type ExperimentalModel = {
+  objective?: string | null;
+  hypothesis?: string | null;
+  variables: Array<Variable>;
+  independent?: Array<string>;
+  dependent?: Array<string>;
+  controlled?: Array<string>;
+  groups?: Array<ExperimentGroup>;
+  measurements?: Array<Measurement>;
+  claims?: Array<Claim>;
+  limitations?: Array<string>;
+};
+
 export type ExpressionBlock = {
   id: string;
   relates_to?: Array<string>;
@@ -119,13 +224,31 @@ export type ExpressionBlock = {
   latex: string;
 };
 
+export type Figure = {
+  id: string;
+  kind: "geometry_figure" | "force_diagram" | "circuit" | "optics" | "planetary_system" | "motion_diagram" | "reaction_diagram" | "molecular_structure" | "particle_model" | "apparatus" | "cell_diagram" | "biological_system" | "process_diagram" | "experimental_setup" | "graph" | "table" | "other";
+  panel_label?: string | null;
+  region?: SourceRegion | null;
+  scale?: string | null;
+  legend?: Array<string>;
+};
+
 export type Grade = {
   value: number;
   origin: "declared" | "profile";
 };
 
+export type GraphSeries = {
+  id: string;
+  figure: string;
+  x: Axis;
+  y: Axis;
+  points?: Array<Array<string>>;
+  points_origin?: "printed_values" | "none";
+};
+
 export type IntegrityCheck = {
-  code: "clean" | "normalized_notation" | "decimal_comma_resolved" | "mixed_number_convention" | "unsupported_notation" | "invalid_structure" | "latex_exponent_scope" | "decimal_ambiguity" | "duplicate_expression" | "duplicate_choice_labels" | "missing_choice_label" | "unlabeled_choices" | "equivalent_choice_values" | "single_choice" | "missing_statements" | "duplicate_statement_labels" | "polarity_conflict" | "negation_present" | "missing_question_text" | "provider_uncertainty_material" | "provider_uncertainty_noncritical" | "equivalent_alternatives" | "alternative_not_applicable" | "legacy_uncertainty" | "multiple_questions" | "target_question_unclear" | "invalid_region_omitted" | "essential_visual_without_facts" | "recheck_confirmed" | "recheck_equivalent" | "recheck_disagreement" | "recheck_illegible" | "recheck_unavailable" | "recheck_budget_exhausted" | "student_selected" | "student_rejected" | "unsupported_subject" | "not_a_question" | "unreadable_source" | "incomplete_source";
+  code: "clean" | "normalized_notation" | "decimal_comma_resolved" | "mixed_number_convention" | "unsupported_notation" | "invalid_structure" | "latex_exponent_scope" | "decimal_ambiguity" | "duplicate_expression" | "duplicate_choice_labels" | "missing_choice_label" | "unlabeled_choices" | "equivalent_choice_values" | "single_choice" | "missing_statements" | "duplicate_statement_labels" | "polarity_conflict" | "negation_present" | "missing_question_text" | "provider_uncertainty_material" | "provider_uncertainty_noncritical" | "equivalent_alternatives" | "alternative_not_applicable" | "legacy_uncertainty" | "multiple_questions" | "target_question_unclear" | "invalid_region_omitted" | "essential_visual_without_facts" | "essential_visual_text_sufficient" | "essential_visual_insufficient" | "visual_supplied_by_recheck" | "legacy_uncertainty_material" | "legacy_uncertainty_formatting" | "legacy_uncertainty_context_absent" | "legacy_uncertainty_unclassified" | "legacy_uncertainty_merged" | "recheck_confirmed" | "recheck_equivalent" | "recheck_disagreement" | "recheck_illegible" | "recheck_unavailable" | "recheck_budget_exhausted" | "student_selected" | "student_rejected" | "unsupported_subject" | "not_a_question" | "unreadable_source" | "incomplete_source";
   impact: "noncritical" | "material" | "fatal";
   element?: string | null;
 };
@@ -165,6 +288,7 @@ export type LessonPlanV2 = {
   content: EducationalDraft;
   provenance: Provenance;
   verification: VerificationReport;
+  problem?: ScientificProblemModel | null;
 };
 
 export type LessonView = {
@@ -179,6 +303,30 @@ export type MathAnswer = {
   description: string;
 };
 
+export type Measurement = {
+  group: string;
+  variable: string;
+  value: string;
+  unit?: UnitSpec | null;
+};
+
+export type NarrationSegment = {
+  id: string;
+  order: number;
+  block: string;
+  text: string;
+  emphasis?: Array<string>;
+  pause_after_ms?: number;
+};
+
+export type NarrativeSegment = {
+  id: string;
+  start: number;
+  end: number;
+  role: "scenario" | "initial_state" | "event" | "given" | "constraint" | "requested" | "unclassified";
+  provenance?: "source_text";
+};
+
 export type NormalizationNote = {
   rule: "unicode_minus" | "dash_as_minus" | "multiplication_sign" | "division_sign" | "superscript_digit" | "latex_spacing" | "latex_fraction_variant" | "decimal_comma" | "whitespace" | "unicode_relation" | "unicode_root" | "unicode_constant";
   original: string;
@@ -188,6 +336,23 @@ export type NormalizationNote = {
 export type NumberAnswer = {
   kind: "number";
   value: number;
+};
+
+export type Observation = {
+  id: string;
+  statement: string;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  evidence?: Array<EvidenceRef>;
+  figure?: string | null;
+  source?: string | null;
+};
+
+export type Premise = {
+  label: string;
+  text: string;
+  status?: "supported" | "contradicted" | "not_decidable" | "true_not_deducible" | "unevaluated";
+  evaluator?: "evidence_check" | "none";
+  evidence?: Array<EvidenceRef>;
 };
 
 export type ProseBlock = {
@@ -213,6 +378,20 @@ export type Quantity = {
 export type QuantityAnswer = {
   kind: "quantity";
   quantity: Quantity;
+};
+
+export type QuantityValue = {
+  id: string;
+  symbol?: string | null;
+  name?: string | null;
+  magnitude?: string | null;
+  original?: string | null;
+  unit?: UnitSpec | null;
+  significant_digits?: number | null;
+  direction?: "none" | "positive" | "negative" | "left" | "right" | "up" | "down" | "into" | "out_of" | "unclear";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  evidence?: Array<EvidenceRef>;
+  entity?: string | null;
 };
 
 export type QuestionIntent = {
@@ -247,9 +426,47 @@ export type Reference = {
   review?: "unreviewed";
 };
 
+export type Relation = {
+  id: string;
+  type: "connected_to" | "contains" | "part_of" | "points_to" | "measured_at" | "labeled_as" | "precedes" | "increases" | "decreases" | "adjacent_to" | "acts_on";
+  subject: string;
+  object: string;
+  figure?: string | null;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  direction_clear?: boolean;
+  interpretation?: string | null;
+  interpretation_provenance?: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | null;
+};
+
 export type SchemaIdentity = {
   name: "teacherai.lesson_plan";
-  version: "2.0.0" | "2.1.0";
+  version: "2.0.0" | "2.1.0" | "2.2.0";
+};
+
+export type ScientificProblemModel = {
+  schema_version?: "1.0.0";
+  subject: Subject;
+  source_revision?: number | null;
+  narrative?: Array<NarrativeSegment>;
+  observations?: Array<Observation>;
+  entities?: Array<Entity>;
+  relations?: Array<Relation>;
+  known?: Array<QuantityValue>;
+  unknown?: Array<QuantityValue>;
+  assumptions?: Array<Observation>;
+  constraints?: Array<string>;
+  initial_conditions?: Array<string>;
+  boundary_conditions?: Array<string>;
+  principles?: Array<Reference>;
+  candidate_models?: Array<string>;
+  target?: AnswerTarget | null;
+  figures?: Array<Figure>;
+  graphs?: Array<GraphSeries>;
+  tables?: Array<DataTable>;
+  experiment?: ExperimentalModel | null;
+  premises?: Array<Premise>;
+  uncertainties?: Array<string>;
+  notes?: Array<string>;
 };
 
 export type SourceExpression = {
@@ -281,7 +498,7 @@ export type SourceUncertainty = {
   impact: "noncritical" | "material" | "fatal";
   resolution: "unresolved" | "resolved_locally" | "confirmed_by_recheck" | "resolved_by_student" | "rejected_by_student";
   origin: "vision" | "vision_recheck" | "deterministic" | "legacy_text" | "student";
-  evidence?: Array<"clean" | "normalized_notation" | "decimal_comma_resolved" | "mixed_number_convention" | "unsupported_notation" | "invalid_structure" | "latex_exponent_scope" | "decimal_ambiguity" | "duplicate_expression" | "duplicate_choice_labels" | "missing_choice_label" | "unlabeled_choices" | "equivalent_choice_values" | "single_choice" | "missing_statements" | "duplicate_statement_labels" | "polarity_conflict" | "negation_present" | "missing_question_text" | "provider_uncertainty_material" | "provider_uncertainty_noncritical" | "equivalent_alternatives" | "alternative_not_applicable" | "legacy_uncertainty" | "multiple_questions" | "target_question_unclear" | "invalid_region_omitted" | "essential_visual_without_facts" | "recheck_confirmed" | "recheck_equivalent" | "recheck_disagreement" | "recheck_illegible" | "recheck_unavailable" | "recheck_budget_exhausted" | "student_selected" | "student_rejected" | "unsupported_subject" | "not_a_question" | "unreadable_source" | "incomplete_source">;
+  evidence?: Array<"clean" | "normalized_notation" | "decimal_comma_resolved" | "mixed_number_convention" | "unsupported_notation" | "invalid_structure" | "latex_exponent_scope" | "decimal_ambiguity" | "duplicate_expression" | "duplicate_choice_labels" | "missing_choice_label" | "unlabeled_choices" | "equivalent_choice_values" | "single_choice" | "missing_statements" | "duplicate_statement_labels" | "polarity_conflict" | "negation_present" | "missing_question_text" | "provider_uncertainty_material" | "provider_uncertainty_noncritical" | "equivalent_alternatives" | "alternative_not_applicable" | "legacy_uncertainty" | "multiple_questions" | "target_question_unclear" | "invalid_region_omitted" | "essential_visual_without_facts" | "essential_visual_text_sufficient" | "essential_visual_insufficient" | "visual_supplied_by_recheck" | "legacy_uncertainty_material" | "legacy_uncertainty_formatting" | "legacy_uncertainty_context_absent" | "legacy_uncertainty_unclassified" | "legacy_uncertainty_merged" | "recheck_confirmed" | "recheck_equivalent" | "recheck_disagreement" | "recheck_illegible" | "recheck_unavailable" | "recheck_budget_exhausted" | "student_selected" | "student_rejected" | "unsupported_subject" | "not_a_question" | "unreadable_source" | "incomplete_source">;
   region?: SourceRegion | null;
   note?: string | null;
 };
@@ -306,9 +523,38 @@ export type TableBlock = {
   table: Table;
 };
 
+export type TargetResolution = {
+  target: AnswerTarget;
+  given?: Array<string>;
+  intermediate?: Array<string>;
+  requested?: Array<string>;
+  provider_claim?: Array<string>;
+  claim_role: "target" | "intermediate" | "none" | "unparsed";
+  outcome: "passed" | "failed" | "partially_checked" | "unsupported" | "not_checked" | "not_applicable";
+  reason: "target_value_matched" | "target_value_mismatch" | "intermediate_not_requested" | "claim_missing" | "claim_unparsed" | "target_unresolved" | "target_not_computable" | "model_unsupported" | "multiplicity_or_complex_roots" | "domain_excluded" | "not_finite" | "unbounded_extremum" | "multiple_values";
+  selected_option?: string | null;
+  option_origin?: "independent" | "provider" | "none";
+};
+
 export type TextAnswer = {
   kind: "text";
   text: string;
+};
+
+export type UnitSpec = {
+  original: string;
+  status: "parsed" | "ambiguous" | "unsupported";
+  canonical?: string | null;
+  dimension?: Array<number>;
+  scale?: string | null;
+  affine?: boolean;
+  normalization?: "none" | "alias" | "defined_conversion";
+};
+
+export type Variable = {
+  id: string;
+  name: string;
+  unit?: UnitSpec | null;
 };
 
 export type VerificationReport = {
@@ -321,6 +567,8 @@ export type VerificationReport = {
   pedagogy: "not_checked";
   engine?: string | null;
   checked_claims?: Array<string>;
+  block_checks?: Array<BlockCheck>;
+  target?: TargetResolution | null;
 };
 
 export type VisualBlock = {

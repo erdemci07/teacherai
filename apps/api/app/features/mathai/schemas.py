@@ -2,11 +2,16 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ..education.reasoning import TargetResolution
+
 
 class VerificationCheck(BaseModel):
-    id:str; kind:Literal["equation","transformation","final_answer","expression","function","geometry"]
+    id:str; kind:Literal["equation","transformation","final_answer","expression","function","geometry","domain","answer_target"]
     status:Literal["passed","failed","unsupported"]
     statement:str; detail:str|None=None
+    # TA-004: belirlenimci neden kodu ve ardışık ifadelerden sınıflandırılan işlem (yoksa None).
+    reason:str|None=None
+    operation:str|None=None
 class GraphData(BaseModel):
     expression:str; variable:str="x"; roots:list[float]=Field(default_factory=list); y_intercept:float|None=None
     critical_points:list[float]=Field(default_factory=list); sample_points:list[tuple[float,float]]=Field(default_factory=list)
@@ -25,3 +30,5 @@ class VerificationResult(BaseModel):
     final_answer_verified:bool; contradiction:bool=False; warnings:list[str]=Field(default_factory=list)
     engine:str="sympy"; engine_version:str; graph:GraphData|None=None; processing_time_ms:int=Field(ge=0)
     choice_match:ChoiceMatch|None=None
+    # TA-004: istenen hedef, verilen model, ara değer, öneri ve bağımsız değer ayrı kaydı. Eski kayıtlarda yoktur.
+    target:TargetResolution|None=None

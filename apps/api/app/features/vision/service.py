@@ -15,7 +15,9 @@ from apps.api.app.features.integrity.engine import (
     evaluate,
     mark_recheck_unavailable,
     recheck_items,
+    visual_facts_from_recheck,
 )
+from apps.api.app.features.education.source import IntegrityCheck
 from apps.api.app.features.integrity.image_quality import (
     assess,
     contrast_view,
@@ -166,7 +168,7 @@ class VisionService:
                     "subtopic": normalize_topic_name(provider_result.analysis.subtopic),
                 }
             )
-            integrity = await self._integrity(analysis, prepared, resolved_request_id)
+            analysis, integrity = await self._integrity(analysis, prepared, resolved_request_id)
             duration = round((perf_counter() - started) * 1000)
             logger.info(
                 "Vision processing succeeded",
@@ -220,14 +222,14 @@ class VisionService:
         state = EvaluationState(recheck_limit=limit, image=prepared.advisories)
         report = evaluate(analysis, state)
         if report.decision != "targeted_recheck":
-            return report
+            return analysis, report
         items = recheck_items(report)
         remaining = calls_remaining()
         if remaining is not None and remaining <= 0:
-            return mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
+            return analysis, mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
         recheck = getattr(self._provider, "recheck", None)
         if recheck is None or not items:
-            return mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
+            return analysis, mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
         images = [(prepared.content, prepared.media_type)]
         regions = [item.region for item in items if item.region is not None]
         try:
@@ -240,14 +242,26 @@ class VisionService:
         try:
             result = await recheck(images, recheck_prompt_items(items), request_id)
         except (ProviderCallBudgetExhausted, UsageLimitExceeded):
-            return mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
+            return analysis, mark_recheck_unavailable(analysis, report, state, "recheck_budget_exhausted")
         except (AIOutcomeError, VisionError):
-            return mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
+            return analysis, mark_recheck_unavailable(analysis, report, state, "recheck_unavailable")
         readings: dict[int, tuple[bool, str]] = {}
         for reading in result.readings[: len(items)]:
             if 1 <= reading.item <= len(items) and reading.item not in readings:
                 readings[reading.item] = (reading.legible, reading.reading)
-        return apply_recheck(analysis, report, items, readings, state)
+        # TA-004: zorunlu görselin eksik olguları hedefli okumayla geldiyse kaynak analize eklenir. Tek bir
+        # okumadır, doğrulama değildir; kararda ``visual_supplied_by_recheck`` olarak açıkça kaydedilir.
+        facts = visual_facts_from_recheck(items, readings)
+        if facts:
+            visual = analysis.visual_elements.model_copy(update={"relevant_visual_facts": facts})
+            analysis = analysis.model_copy(update={"visual_elements": visual})
+        report = apply_recheck(analysis, report, items, readings, state)
+        if facts:
+            report = report.model_copy(update={
+                "checks": [*report.checks, IntegrityCheck(code="visual_supplied_by_recheck", impact="noncritical", element="visual")][:96],
+                "decision": "ready_with_noncritical_uncertainty" if report.decision == "ready" else report.decision,
+            })
+        return analysis, report
 
     async def _read_limited(self, upload: UploadFile) -> bytes:
         content = bytearray()

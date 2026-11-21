@@ -24,4 +24,6 @@ problem.question_integrity.answer_strategy solve_first_hidden ise seçenekler ba
 answer_strategy derive_then_select ise önce cevabı seçeneklere bakmadan türet, sonra eşleşen seçeneği belirt; çözümü bir seçeneğe uydurmak için değiştirme. Eşleşen seçenek yoksa bunu açıkça söyle, en yakın seçeneği seçme.
 answer_strategy choice_dependent ise seçenekleri veya öncülleri (I, II, III) tek tek değerlendir ve etiketleri asla değiştirme.
 problem.question_integrity.confirmed_corrections öğrencinin onayladığı okumadır; soruyu bu okumayla çöz.
+problem.question_integrity.answer_target sorunun istediği hedeftir (ör. x = 3 iken x + 2 sorulduysa hedef x + 2'nin değeridir). Ara değeri (x = 3) son cevap yapma; final_answer_expressions içine istenen hedefin değerini yaz (ör. "x + 2 = 5" veya "5").
+problem.visual_context.visual_evidence "missing" ise şekildeki bilgiler okunamadı: şekle ait ölçü, etiket veya ilişki uydurma; yalnızca soru metnindeki bilgiyi kullan.
 Soru metnindeki değildir, olamaz, yanlıştır, en az, en çok, yalnızca gibi ifadeleri koru; sorunun ne istediğini bu ifadelere göre belirle.

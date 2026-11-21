@@ -160,8 +160,8 @@ def test_version_and_verification_authority():
     bio = FIXTURES[7]["lesson"]
     assert bio["content"]["answer"] is None
     for changes in [
-        # 2.1.0 (TA-003) yalnızca isteğe bağlı kaynak revizyonu alanlarını ekler; bilinmeyen sürüm reddedilir.
-        {"schema": {"name": "teacherai.lesson_plan", "version": "2.2.0"}},
+        # 2.1.0 (TA-003) ve 2.2.0 (TA-004) yalnızca isteğe bağlı alanlar ekler; bilinmeyen sürüm reddedilir.
+        {"schema": {"name": "teacherai.lesson_plan", "version": "2.3.0"}},
         {"source_revision": 1},
         {"context": {"subject": "unknown", "language": "tr"}},
         {"verification": bio["verification"] | {"calculation": "passed"}},

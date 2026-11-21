@@ -45,6 +45,12 @@ def _location(element: str | None) -> str:
 def recheck_prompt_items(items: list[SourceUncertainty]) -> str:
     lines = []
     for number, item in enumerate(items, start=1):
+        if item.id == "d_visual_missing":
+            # TA-004: zorunlu görselin olguları ilk okumada yoktu; yalnızca basılı olanlar istenir.
+            lines.append(f"{number}. Location: the figure, graph or table. The first reading returned no facts. Check: List only "
+                         "the labels, measurements and relationships that are printed on the figure and needed for the "
+                         "question, in one line. Do not estimate unprinted values; if they are not legible, mark legible false.")
+            continue
         recognized = json.dumps(item.recognized, ensure_ascii=False) if item.recognized else "(not readable in the first reading)"
         lines.append(
             f"{number}. Location: {_location(item.element)}. First reading of the fragment: {recognized}. "

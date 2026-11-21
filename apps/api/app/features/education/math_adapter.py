@@ -12,6 +12,8 @@ from ..lessons.exceptions import (
 )
 from ..lessons.schemas import LessonPlan
 from ..mathai.schemas import VerificationResult
+from ..reasoning.mapping import block_checks, math_problem
+from ..reasoning.target import target_for
 from ..vision.schemas import VisionAnalysis
 from .domain import (
     ContextValue,
@@ -23,6 +25,7 @@ from .domain import (
     capabilities,
 )
 from .lesson import (
+    DerivationStepBlock,
     EducationalDraft,
     ExpressionBlock,
     LessonPlanV2,
@@ -32,6 +35,12 @@ from .lesson import (
     VerificationReport,
     VisualBlock,
 )
+from .reasoning import EvidenceRef
+
+# v1 adım türünden yalnızca anlamı açık olanlar bir işleme eşlenir; diğerleri belirlenimci sınıflandırma
+# yoksa "unknown" kalır. Adaptör v1'de olmayan bir işlem veya doğrulama kanıtı uydurmaz.
+_V1_STEP_OPERATIONS = {"case": "case_split", "result": "state_result", "explanation": "explain",
+                       "diagram_reference": "interpret_visual", "graph_reference": "interpret_visual"}
 
 
 class UnsupportedSubjectError(LessonError):
@@ -89,7 +98,7 @@ def require_math_question(analysis: VisionAnalysis) -> QuestionUnderstanding:
     return question
 
 
-def verification_report(result: VerificationResult, integrity=None) -> VerificationReport:
+def verification_report(result: VerificationResult, integrity=None, checks=()) -> VerificationReport:
     if result.status == "failed" or result.contradiction:
         raise VerificationContradictionError
     state = {"verified": "passed", "partially_verified": "partially_checked", "unsupported": "unsupported"}[result.status]
@@ -100,6 +109,7 @@ def verification_report(result: VerificationResult, integrity=None) -> Verificat
         source_consistency="partially_checked" if integrity is not None and integrity.solvable else "not_checked", curriculum="not_checked", method="not_checked",
         pedagogy="not_checked", engine=result.engine,
         checked_claims=[check.statement for check in result.checks if check.status == "passed"],
+        block_checks=list(checks), target=result.target if checks else None,
     )
 
 
@@ -122,20 +132,38 @@ def project_math(plan: LessonPlan, result: VerificationResult, education_context
     prose("strategy", "explanation", c.strategy)
     for i, expression in enumerate(c.mini_example):
         blocks.append(ExpressionBlock(id=f"example_{i}", kind="expression", latex=expression.latex))
-    for step in c.steps:
-        blocks.append(ProseBlock(id=step.id, kind="warning" if step.type == "warning" else "explanation",
-                                 title=step.title or None, text=step.explanation))
+    integrity = plan.source_analysis.integrity
+    operations = {check.id: check.operation for check in result.checks if check.operation}
+    previous = [EvidenceRef(kind="source_expression", id=item.id) for item in (integrity.expressions if integrity else [])
+                if item.role == "given" and item.status == "parsed"][:16]
+    for index, step in enumerate(c.steps, start=1):
+        outputs = [EvidenceRef(kind="block", id=f"{step.id}_{i}") for i in range(len(step.expressions))][:16]
+        if step.type == "warning":
+            blocks.append(ProseBlock(id=step.id, kind="warning", title=step.title or None, text=step.explanation))
+        else:
+            operation = operations.get(f"{step.id}_0") or operations.get(step.id)
+            origin = "deterministic" if operation else "v1_step_type" if step.type in _V1_STEP_OPERATIONS else "unknown"
+            blocks.append(DerivationStepBlock(
+                id=step.id, kind="derivation_step", step_index=index, title=step.title or None, explanation=step.explanation,
+                inputs=previous if outputs else [], outputs=outputs,
+                operation=operation or _V1_STEP_OPERATIONS.get(step.type, "unknown"), operation_origin=origin,
+            ))
         for i, expr in enumerate(step.expressions):
             blocks.append(ExpressionBlock(id=f"{step.id}_{i}", kind="expression", latex=expr.latex, relates_to=[step.id]))
         if step.visual_reference:
             blocks.append(VisualBlock(id=f"{step.id}_figure", kind="visual", visual_type="source_figure",
                                       description=step.visual_reference, relates_to=[step.id]))
+        if outputs:
+            previous = outputs[-1:]
     prose("mistake", "warning", c.common_mistake)
     prose("shortcut", "hint", c.shortcut)
     prose("teacher_tip", "hint", c.teacher_tip)
+    context = education_context or question.context
+    target = result.target.target if result.target is not None else target_for(plan.source_analysis, integrity)
+    report = verification_report(result, integrity, block_checks(result, blocks, integrity))
     return LessonPlanV2(
-        schema={"name": "teacherai.lesson_plan", "version": "2.1.0"},
-        lesson_id=plan.lesson_plan_id, source_id=question.source_id, context=education_context or question.context,
+        schema={"name": "teacherai.lesson_plan", "version": "2.2.0"},
+        lesson_id=plan.lesson_plan_id, source_id=question.source_id, context=context,
         source_revision=plan.source_analysis.revision if plan.source_analysis.integrity is not None else None,
         source_decision=plan.source_analysis.integrity.decision if plan.source_analysis.integrity is not None else None,
         content=EducationalDraft(activity="question_solution",
@@ -144,7 +172,8 @@ def project_math(plan: LessonPlan, result: VerificationResult, education_context
             blocks=blocks, answer=MathAnswer(kind="math", description=c.final_answer,
                 expressions=[expr.latex for expr in c.final_answer_expressions]), takeaway=c.takeaway),
         provenance=Provenance(provider=plan.provider, model=plan.model),
-        verification=verification_report(result, plan.source_analysis.integrity),
+        verification=report,
+        problem=math_problem(plan.source_analysis, context.subject, target),
     )
 
 
