@@ -82,7 +82,7 @@ Ayrıntılı kararlar [ADR TA-002](architecture/adr-ta-002-education-core.md), s
 
 ## Kalıcı veri ve dağıtım
 
-Cloud Run ve mevcut Firestore yapılandırması math-ai-07, Firebase Hosting teacherai-07 ve bölge us-east4 olarak korunur. Web uygulamasının gerçek Firebase Auth projesini web kaydından doğrulayın. Sunucu kimlik kitlesi ve Firestore proje seçimi ayrı ayarlanabilir. Paylaşım kısayolu Hosting üzerinden Cloud Run’a yönlenir. Müşteri verisi, gizli anahtarlar ve canlı servis çağrıları olağan CI testlerine girmez.
+Hedef yapı (TA-005) tek Firebase projesidir: teacherai-07. Cloud Run, Firestore, Secret Manager, Artifact Registry, Auth ve Hosting aynı projede olur. Paylaşım kısayolu `/s/**` aynı projedeki Cloud Run servisine Hosting rewrite ile gider. API ise 60 sn Hosting sınırı nedeniyle doğrudan Cloud Run adresinden çağrılır. Production'da `TEACHERAI_FIREBASE_PROJECT_ID` ve `TEACHERAI_FIREBASE_AUTH_PROJECT_ID` zorunlu ve eşittir. Canlı taşıma henüz yapılmadı. Bugünkü canlı durum [TA-005 denetiminde](migration/TA-005-audit.md), adımlar [runbook'ta](migration/TA-005-runbook.md) yer alır.
 
 Kabul sonuçları, istemci geçişi, yapılandırma ve açık konular [TA-001](phase-reports/TA-001.md) ve [TA-001B](phase-reports/TA-001B.md) faz raporlarında yer alır.
 

@@ -1,3 +1,6 @@
+# TA-005: proje kimliği Cloud Build'in yerleşik $PROJECT_ID değişkeninden gelir (gcloud builds submit --project).
+substitutions:
+  _REGION: "us-east4"
 steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -6,9 +9,9 @@ steps:
         "-f",
         "docker/api/Dockerfile",
         "-t",
-        "us-east4-docker.pkg.dev/math-ai-07/teacherai/teacherai-api:latest",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:latest",
         "."
       ]
 
 images:
-  - "us-east4-docker.pkg.dev/math-ai-07/teacherai/teacherai-api:latest"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:latest"

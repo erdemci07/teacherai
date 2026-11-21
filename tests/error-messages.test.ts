@@ -26,3 +26,8 @@ test('bilinmeyen veya eksik kod varsayılan mesaja düşer', () => {
   assert.equal(errorMessage(undefined), DEFAULT_ERROR_MESSAGE);
   assert.equal(errorMessage(''), DEFAULT_ERROR_MESSAGE);
 });
+
+test('TA-005 bakım ve taşınma kodları anlaşılır mesaja eşlenir', () => {
+  assert.match(errorMessage('maintenance_read_only'), /bakımda/);
+  assert.match(errorMessage('service_moved'), /yeni adresine/);
+});

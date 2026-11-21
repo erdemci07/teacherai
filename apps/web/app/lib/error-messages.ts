@@ -42,6 +42,9 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   account_deletion_in_progress: 'Hesabın silinme sürecinde olduğu için bu işlem yapılamıyor.',
   // C paketi: günlük küresel AI kapasitesi doldu.
   ai_global_budget_exhausted: 'Öğretmen servisi bugünlük kapasitesine ulaştı. Yarın yeniden deneyebilirsin.',
+  // TA-005: proje taşıma dönemi (503, Retry-After).
+  maintenance_read_only: 'TeacherAI kısa bir bakımda. Şu an yeni soru gönderilemiyor; geçmişin ve paylaşımların açık. Birkaç dakika sonra yeniden dene.',
+  service_moved: 'TeacherAI yeni adresine taşındı. Sayfayı yenileyip yeniden dene.',
 };
 
 export const DEFAULT_ERROR_MESSAGE = 'Bir sorun oluştu. Biraz sonra yeniden deneyebilirsin.';

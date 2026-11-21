@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -17,7 +18,7 @@ def test_frontend_api_helpers_use_configured_api_base() -> None:
         assert "NEXT_PUBLIC_API_BASE_URL" in source
         assert "NEXT_PUBLIC_TEACHERAI_API_BASE_URL" in source
         assert "teacherai-07.web.app/api" not in source
-        assert "math-ai-07.web.app/api" not in source
+        assert not re.search(r"[a-z0-9-]+\.web\.app/api", source)  # hiçbir Hosting alanı API tabanı değildir
 
 
 def test_deploy_script_resolves_absolute_cloud_run_api_before_static_build() -> None:

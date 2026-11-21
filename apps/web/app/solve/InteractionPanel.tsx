@@ -50,7 +50,7 @@ export function InteractionPanel({ lesson }: { lesson: LessonPlan }) {
       setResponse(result);
       if (action === 'hint' && result.next_hint_level) setHintLevel(result.next_hint_level);
     } catch (e) {
-      setError(e instanceof InteractionApiError && e.code.startsWith('ai_') ? errorMessage(e.code) : e instanceof InteractionApiError && e.code === 'interaction_provider_unavailable' ? 'Öğretmen yanıtı şu anda hazırlanamadı. Tekrar deneyelim.' : e instanceof InteractionApiError && e.code === 'interaction_context_too_large' ? 'Bu çözüm çok ayrıntılı olduğu için ek anlatım şu anda hazırlanamadı.' : 'Bu etkileşim tamamlanamadı.');
+      setError(e instanceof InteractionApiError && (e.code.startsWith('ai_') || e.code === 'maintenance_read_only' || e.code === 'service_moved') ? errorMessage(e.code) : e instanceof InteractionApiError && e.code === 'interaction_provider_unavailable' ? 'Öğretmen yanıtı şu anda hazırlanamadı. Tekrar deneyelim.' : e instanceof InteractionApiError && e.code === 'interaction_context_too_large' ? 'Bu çözüm çok ayrıntılı olduğu için ek anlatım şu anda hazırlanamadı.' : 'Bu etkileşim tamamlanamadı.');
     } finally {
       setLoading(null);
     }
