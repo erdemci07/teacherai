@@ -7,10 +7,12 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Uygulandı | Next.js/React/TypeScript öğrenci arayüzü, FastAPI/Pydantic modüler monoliti, Firebase Auth, Firestore, matematik görseli analizi, yapılandırılmış ders, BoardPlanner, KaTeX, ders sonrası etkileşim, geçmiş ve bağlantıyla paylaşım. TA-001 değişiklikleri yerel dalda doğrulanır. |
 | Uygulandı (TA-002) | Ortak eğitim çekirdeği (`features/education`): kanonik alan kimlikleri, kökenli eğitim bağlamı, soru anlama sözleşmesi, LessonPlan v2, alan yetenek tablosu, boyut bazında doğrulama raporu. Matematik üretim hattı v2 projeksiyonunu her derste kurar. Sahibine özel salt okunur `GET /api/v1/lessons/{id}/v2` ve geçmişte v2 anlatım görünümü. Pydantic’ten üretilen JSON Schema ve TypeScript tipleri, CI eskime denetimi. |
 | Uygulandı (TA-003) | Soru bütünlüğü motoru (`features/integrity`): sınırlı, dengeli ifade ayrıştırıcısı (kök, kesir, üs kapsamı, tekli eksi korunur), Türkçe soru amacı ve olumsuzluk işaretleri, yapılandırılmış seçenekler, kanıta dayalı önemlilik kararı, aynı istekte koşullu tek hedefli yeniden okuma, son çare öğrenci açıklaması (`POST /api/v1/vision/analyses/{id}/clarification`) ve sunucuya ait soru revizyonları. Kesin eşdeğerlikle seçenek uzlaştırması ve önce-çöz bağlamı. Mantıksal istek başına sağlayıcı çağrısı tavanı. Tahribatsız görüntü hazırlama ve tavsiye niteliğinde kalite göstergeleri. |
-| Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
+| Uygulandı (TA-004) | İstenen hedef (`AnswerTarget`) ve hedefe göre son cevap ve seçenek uzlaştırması (x = 3 iken x + 2 için 5). Kök doğrulama, yabancı kök, çözüm kaybı, eşitsizlik yönü, tanımlardan yerine koyma, iki bilinmeyende sabit oran, matematik öncül birleşimi. LessonPlan v2 2.2.0: `derivation_step`, blok kontrolleri, hedef çözümü, anlatım sözleşmesi, `ScientificProblemModel`. Eski OCR notları için önemlilik köprüsü ve zorunlu görselin metin yeterliliği. Bunlar gerçek matematik akışındadır. |
+| Çevrimdışı denetim (TA-004) | Fizik, kimya ve biyoloji için `features/reasoning/` altında sınırlı yerel denetimler: birim/boyut, formül, grafik/tablo, atom/yük korunumu, denkleştirme, stokiyometri, etiket/sıra/ok, deney iddiaları, öncüller, DNA→mRNA. Sentetik matris ve 24 özgün soru paketi ile sınanır. Öğrenci akışına **bağlı değildir**. |
+| Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, öğrenci akışında doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
-| Ertelendi | Aşağıdaki yol haritasındaki TA-004 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
+| Ertelendi | Aşağıdaki yol haritasındaki TA-005 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
 
 ## Yol haritası
@@ -21,8 +23,8 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | --- | --- | --- |
 | TA-001 / TA-001B | Temel ve son stabilizasyon | Tamamlandı |
 | TA-002 | Ortak eğitim çekirdeği, LessonPlan v2 | Tamamlandı |
-| TA-003 | Soru bütünlüğü ve görsel zekâ | Bu dal |
-| TA-004 | Akıl yürütme ve doğrulama çekirdeği | Planlandı |
+| TA-003 | Soru bütünlüğü ve görsel zekâ | Tamamlandı |
+| TA-004 | Akıl yürütme ve doğrulama çekirdeği | Bu dal |
 | TA-005 | Çok sağlayıcılı AI Gateway | Planlandı |
 | TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
 | TA-007 | Uzman öğretmen bilgisi | Planlandı |
@@ -41,7 +43,17 @@ GPT-4.1-mini yaşam döngüsü ve model geçişi bu numaralandırmadan bağıms�
 
 ## Doğruluk boyutları
 
-Beş boyut (doğru soru, doğru cevap, uygun yöntem, tutarlı sunum, gerçek öğrenme) ayrı değerlendirilir. TA-003 birinci boyutu uygular ve seçenek tutarlılığıyla ikinciyi güçlendirir. Diğer boyutlar tamamlanmış sayılmaz.
+Beş boyut (doğru soru, doğru cevap, uygun yöntem, tutarlı sunum, gerçek öğrenme) ayrı değerlendirilir. TA-003 birinci boyutu uygular ve seçenek tutarlılığıyla ikinciyi güçlendirir. TA-004 ikinci boyutu istenen hedefe bağlar ve dördüncü boyut için adım/blok kontrolleri ekler. Diğer boyutlar tamamlanmış sayılmaz.
+
+## Akıl yürütme ve doğrulama (TA-004)
+
+Ayrıntılar [ADR TA-004](architecture/adr-ta-004-reasoning-verification.md) ve [TA-004 raporu](phase-reports/TA-004.md) içindedir.
+
+- Denklemin çözümü her zaman istenen cevap değildir. Hedef sağlayıcıdan bağımsız belirlenir ve MathAI işçisinde hesaplanır. Seçenek yalnızca hedefin bağımsız değeriyle eşlenir. Hedef belirlenemezse seçenek değiştirilmez.
+- v2 2.2.0 her istekte v1’den üretilir ve saklanmaz. Kontrolü olmayan adım `not_checked` görünür. Bloğa bağlanamayan kontrol ders düzeyinde `unmapped` kalır. Sağlayıcı çıktısı hiçbir kontrolün sonucunu belirleyemez.
+- FKB denetimleri yereldir ve çevrimdışıdır. Bunlar kaynağın kendi içindeki tutarlılığını ve verilen modelle hesabı sınar; yasa seçimini, tepkimenin gerçekleşmesini veya biyolojik işlevi kanıtlamaz.
+- Olağan soruda ek sağlayıcı çağrısı yoktur. Hedef ipucu mevcut ders çağrısının bağlamındadır.
+- Çevrimdışı kabul: `python -m scripts.science_matrix --check` (71 vaka) ve `python -m scripts.question_pack --check` (proje sahibinin 24 özgün sorusu; cevaplar çözümden türetildi, resmî anahtar ve görseller henüz eklenmedi). Bunlar model başarısı ölçmez.
 
 ## Soru bütünlüğü (TA-003)
 
