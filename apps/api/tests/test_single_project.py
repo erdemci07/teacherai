@@ -66,3 +66,23 @@ def test_off_mode_without_base_changes_nothing():
         assert api.get("/s/unknown_share").status_code == 404
     with pytest.raises(ValidationError):
         Settings(_env_file=None, legacy_redirect_base="http://insecure.example")
+
+
+def test_token_verification_and_admin_identity_use_the_single_project(monkeypatch):
+    """K1: tek projede doğrulama ve hesap silme/token iptali aynı (hedef) projenin varsayılan uygulamasını kullanır."""
+    import firebase_admin
+
+    from apps.api.app.core.container import build_container
+
+    for app in list(firebase_admin._apps.values()):
+        firebase_admin.delete_app(app)
+    settings = Settings(_env_file=None, environment="test", firebase_enabled=True,
+                        firebase_project_id="teacherai-07", firebase_auth_project_id="teacherai-07")
+    try:
+        container = build_container(settings)
+        assert firebase_admin.get_app().project_id == "teacherai-07"
+        assert "identity" not in firebase_admin._apps  # ikinci bir Auth projesine uygulama açılmaz
+        assert container.token_verifier.app is None and container.account_deletion.identity.app is None
+    finally:
+        for app in list(firebase_admin._apps.values()):
+            firebase_admin.delete_app(app)
