@@ -1,0 +1,538 @@
+[
+ {
+  "created_at": "2026-01-01T00:00:00Z",
+  "lesson": {
+   "content": {
+    "activity": "question_solution",
+    "answer": {
+     "description": "5",
+     "expressions": [
+      "x + 2 = 5"
+     ],
+     "kind": "math"
+    },
+    "blocks": [
+     {
+      "id": "understanding",
+      "kind": "explanation",
+      "references": [],
+      "relates_to": [],
+      "text": "Soruda istenen hedefi belirle.",
+      "title": null
+     },
+     {
+      "id": "strategy",
+      "kind": "explanation",
+      "references": [],
+      "relates_to": [],
+      "text": "Önce modeli çöz, sonra hedefi hesapla.",
+      "title": null
+     },
+     {
+      "assumptions": [],
+      "conclusions": [],
+      "explanation": "x yerine 3 yazılır.",
+      "id": "step_1",
+      "inputs": [
+       {
+        "id": "expr_1",
+        "kind": "source_expression"
+       }
+      ],
+      "kind": "derivation_step",
+      "method_ref": null,
+      "narration_ref": null,
+      "operation": "add_both_sides",
+      "operation_origin": "deterministic",
+      "outputs": [
+       {
+        "id": "step_1_0",
+        "kind": "block"
+       }
+      ],
+      "preconditions": [],
+      "references": [],
+      "relates_to": [],
+      "step_index": 1,
+      "title": "Değeri yerine koy"
+     },
+     {
+      "id": "step_1_0",
+      "kind": "expression",
+      "latex": "x + 2 = 5",
+      "references": [],
+      "relates_to": [
+       "step_1"
+      ]
+     },
+     {
+      "assumptions": [],
+      "conclusions": [],
+      "explanation": "Sonucun istenen hedef olduğunu kontrol et.",
+      "id": "step_2",
+      "inputs": [],
+      "kind": "derivation_step",
+      "method_ref": null,
+      "narration_ref": null,
+      "operation": "explain",
+      "operation_origin": "v1_step_type",
+      "outputs": [],
+      "preconditions": [],
+      "references": [],
+      "relates_to": [],
+      "step_index": 2,
+      "title": "Kontrol"
+     }
+    ],
+    "narration": [],
+    "objectives": [
+     "istenen hedefi bulmak"
+    ],
+    "references": [
+     {
+      "key": "concept_target",
+      "kind": "concept",
+      "review": "unreviewed"
+     },
+     {
+      "key": "strategy_target",
+      "kind": "method",
+      "review": "unreviewed"
+     }
+    ],
+    "takeaway": "Ara değer ile istenen cevap farklı olabilir."
+   },
+   "context": {
+    "academic_year": null,
+    "exam": null,
+    "grade": null,
+    "language": "tr",
+    "references": [],
+    "source_exam": null,
+    "stage": null,
+    "subject": "mathematics",
+    "system": null
+   },
+   "lesson_id": "hedef_dogrulandi",
+   "problem": {
+    "assumptions": [],
+    "boundary_conditions": [],
+    "candidate_models": [
+     "x = 3"
+    ],
+    "constraints": [],
+    "entities": [],
+    "experiment": null,
+    "figures": [],
+    "graphs": [],
+    "initial_conditions": [],
+    "known": [],
+    "narrative": [
+     {
+      "end": 33,
+      "id": "seg_1",
+      "provenance": "source_text",
+      "role": "requested",
+      "start": 0
+     }
+    ],
+    "notes": [],
+    "observations": [],
+    "premises": [],
+    "principles": [],
+    "relations": [],
+    "schema_version": "1.0.0",
+    "source_revision": 1,
+    "subject": "mathematics",
+    "tables": [],
+    "target": {
+     "expression": "x + 2",
+     "integer_only": false,
+     "kind": "sum",
+     "latex": "x + 2",
+     "markers": [
+      "istenen ifade"
+     ],
+     "origin": "deterministic",
+     "source": "expression:1",
+     "variable": "x"
+    },
+    "uncertainties": [],
+    "unknown": []
+   },
+   "provenance": {
+    "model": "fixture",
+    "provider": "fixture"
+   },
+   "schema": {
+    "name": "teacherai.lesson_plan",
+    "version": "2.2.0"
+   },
+   "source_decision": "ready",
+   "source_id": "source_hedef_dogrulandi",
+   "source_revision": 1,
+   "verification": {
+    "block_checks": [
+     {
+      "dimension": "calculation",
+      "evidence": [
+       {
+        "id": "original_equation",
+        "kind": "check"
+       }
+      ],
+      "id": "mathai:original_equation",
+      "mapping": "unmapped",
+      "outcome": "passed",
+      "reason": "check_passed",
+      "scope": "lesson",
+      "target": null,
+      "verifier": "mathai"
+     },
+     {
+      "dimension": "transformation",
+      "evidence": [
+       {
+        "id": "step_1_0",
+        "kind": "check"
+       }
+      ],
+      "id": "mathai:step_1_0",
+      "mapping": "mapped",
+      "outcome": "passed",
+      "reason": "solution_set_preserved",
+      "scope": "block",
+      "target": "step_1_0",
+      "verifier": "mathai"
+     },
+     {
+      "dimension": "answer_target",
+      "evidence": [
+       {
+        "id": "final_answer",
+        "kind": "check"
+       }
+      ],
+      "id": "mathai:final_answer",
+      "mapping": "mapped",
+      "outcome": "passed",
+      "reason": "target_value_matched",
+      "scope": "answer",
+      "target": null,
+      "verifier": "mathai"
+     },
+     {
+      "dimension": "transformation",
+      "evidence": [],
+      "id": "none:step_2",
+      "mapping": "mapped",
+      "outcome": "not_checked",
+      "reason": "no_verifier_for_step",
+      "scope": "block",
+      "target": "step_2",
+      "verifier": "none"
+     },
+     {
+      "dimension": "source_consistency",
+      "evidence": [],
+      "id": "integrity:source",
+      "mapping": "unmapped",
+      "outcome": "partially_checked",
+      "reason": "structural_source_check",
+      "scope": "lesson",
+      "target": null,
+      "verifier": "integrity"
+     }
+    ],
+    "calculation": "passed",
+    "checked_claims": [
+     "x = 3",
+     "x + 2 = 5",
+     "istenen toplam: x + 2"
+    ],
+    "curriculum": "not_checked",
+    "engine": "sympy",
+    "method": "not_checked",
+    "pedagogy": "not_checked",
+    "scientific": "partially_checked",
+    "source_consistency": "partially_checked",
+    "structural": "passed",
+    "target": {
+     "claim_role": "target",
+     "given": [
+      "x = 3"
+     ],
+     "intermediate": [
+      "x = 3"
+     ],
+     "option_origin": "none",
+     "outcome": "passed",
+     "provider_claim": [
+      "5"
+     ],
+     "reason": "target_value_matched",
+     "requested": [
+      "5"
+     ],
+     "selected_option": null,
+     "target": {
+      "expression": "x + 2",
+      "integer_only": false,
+      "kind": "sum",
+      "latex": "x + 2",
+      "markers": [
+       "istenen ifade"
+      ],
+      "origin": "deterministic",
+      "source": "expression:1",
+      "variable": "x"
+     }
+    }
+   }
+  },
+  "panels": [
+   {
+    "blocks": [
+     "understanding"
+    ]
+   },
+   {
+    "blocks": [
+     "strategy"
+    ]
+   },
+   {
+    "blocks": [
+     "step_1",
+     "step_1_0"
+    ]
+   },
+   {
+    "blocks": [
+     "step_2"
+    ]
+   }
+  ]
+ },
+ {
+  "created_at": "2026-01-01T00:00:00Z",
+  "lesson": {
+   "content": {
+    "activity": "question_solution",
+    "answer": {
+     "description": "1/2",
+     "expressions": [
+      "1/2"
+     ],
+     "kind": "math"
+    },
+    "blocks": [
+     {
+      "id": "understanding",
+      "kind": "explanation",
+      "references": [],
+      "relates_to": [],
+      "text": "Soruda istenen hedefi belirle.",
+      "title": null
+     },
+     {
+      "id": "strategy",
+      "kind": "explanation",
+      "references": [],
+      "relates_to": [],
+      "text": "Önce modeli çöz, sonra hedefi hesapla.",
+      "title": null
+     },
+     {
+      "assumptions": [],
+      "conclusions": [],
+      "explanation": "Alan bir üçgendir.",
+      "id": "step_1",
+      "inputs": [],
+      "kind": "derivation_step",
+      "method_ref": null,
+      "narration_ref": null,
+      "operation": "unknown",
+      "operation_origin": "unknown",
+      "outputs": [
+       {
+        "id": "step_1_0",
+        "kind": "block"
+       }
+      ],
+      "preconditions": [],
+      "references": [],
+      "relates_to": [],
+      "step_index": 1,
+      "title": "Alanı yaz"
+     },
+     {
+      "id": "step_1_0",
+      "kind": "expression",
+      "latex": "\\frac{1}{2}",
+      "references": [],
+      "relates_to": [
+       "step_1"
+      ]
+     }
+    ],
+    "narration": [],
+    "objectives": [
+     "istenen hedefi bulmak"
+    ],
+    "references": [
+     {
+      "key": "concept_target",
+      "kind": "concept",
+      "review": "unreviewed"
+     },
+     {
+      "key": "strategy_target",
+      "kind": "method",
+      "review": "unreviewed"
+     }
+    ],
+    "takeaway": "Ara değer ile istenen cevap farklı olabilir."
+   },
+   "context": {
+    "academic_year": null,
+    "exam": null,
+    "grade": null,
+    "language": "tr",
+    "references": [],
+    "source_exam": null,
+    "stage": null,
+    "subject": "mathematics",
+    "system": null
+   },
+   "lesson_id": "hedef_desteklenmiyor",
+   "problem": {
+    "assumptions": [],
+    "boundary_conditions": [],
+    "candidate_models": [],
+    "constraints": [],
+    "entities": [],
+    "experiment": null,
+    "figures": [],
+    "graphs": [],
+    "initial_conditions": [],
+    "known": [],
+    "narrative": [
+     {
+      "end": 42,
+      "id": "seg_1",
+      "provenance": "source_text",
+      "role": "requested",
+      "start": 0
+     }
+    ],
+    "notes": [],
+    "observations": [],
+    "premises": [],
+    "principles": [],
+    "relations": [],
+    "schema_version": "1.0.0",
+    "source_revision": 1,
+    "subject": "mathematics",
+    "tables": [],
+    "target": {
+     "expression": null,
+     "integer_only": false,
+     "kind": "unresolved",
+     "latex": null,
+     "markers": [],
+     "origin": "unresolved",
+     "source": null,
+     "variable": null
+    },
+    "uncertainties": [],
+    "unknown": []
+   },
+   "provenance": {
+    "model": "fixture",
+    "provider": "fixture"
+   },
+   "schema": {
+    "name": "teacherai.lesson_plan",
+    "version": "2.2.0"
+   },
+   "source_decision": "ready_with_noncritical_uncertainty",
+   "source_id": "source_hedef_desteklenmiyor",
+   "source_revision": 1,
+   "verification": {
+    "block_checks": [
+     {
+      "dimension": "transformation",
+      "evidence": [],
+      "id": "none:step_1",
+      "mapping": "mapped",
+      "outcome": "not_checked",
+      "reason": "no_verifier_for_step",
+      "scope": "block",
+      "target": "step_1",
+      "verifier": "none"
+     },
+     {
+      "dimension": "source_consistency",
+      "evidence": [],
+      "id": "integrity:source",
+      "mapping": "unmapped",
+      "outcome": "partially_checked",
+      "reason": "structural_source_check",
+      "scope": "lesson",
+      "target": null,
+      "verifier": "integrity"
+     }
+    ],
+    "calculation": "unsupported",
+    "checked_claims": [],
+    "curriculum": "not_checked",
+    "engine": "sympy",
+    "method": "not_checked",
+    "pedagogy": "not_checked",
+    "scientific": "unsupported",
+    "source_consistency": "partially_checked",
+    "structural": "passed",
+    "target": {
+     "claim_role": "none",
+     "given": [],
+     "intermediate": [],
+     "option_origin": "none",
+     "outcome": "unsupported",
+     "provider_claim": [],
+     "reason": "target_unresolved",
+     "requested": [],
+     "selected_option": null,
+     "target": {
+      "expression": null,
+      "integer_only": false,
+      "kind": "unresolved",
+      "latex": null,
+      "markers": [],
+      "origin": "unresolved",
+      "source": null,
+      "variable": null
+     }
+    }
+   }
+  },
+  "panels": [
+   {
+    "blocks": [
+     "understanding"
+    ]
+   },
+   {
+    "blocks": [
+     "strategy"
+    ]
+   },
+   {
+    "blocks": [
+     "step_1",
+     "step_1_0"
+    ]
+   }
+  ]
+ }
+]

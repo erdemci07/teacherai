@@ -1,8 +1,9 @@
-import type { EducationalDraft, LessonView, Table } from '../lib/education.generated.ts';
+import type { BlockCheck, EducationalDraft, LessonView, Table, VerificationReport } from '../lib/education.generated.ts';
 import { MathExpression } from '../solve/MathExpression.tsx';
 
 type Answer = NonNullable<EducationalDraft['answer']>;
 type Block = EducationalDraft['blocks'][number];
+type Outcome = BlockCheck['outcome'];
 
 function DataTable({ table }: { table: Table }) {
   return <table><thead><tr>{table.headers.map((column, i) => <th key={i} scope="col">{column}</th>)}</tr></thead>
@@ -23,7 +24,34 @@ function AnswerContent({ answer }: { answer: Answer }) {
 const labels = {warning: 'Dikkat', hint: 'İpucu', checkpoint: 'Kendini sına', definition: 'Kavram',
   explanation: '', result: 'Sonuç', summary: 'Özet'};
 
-function BlockContent({ block }: { block: Block }) {
+// TA-004: Adım durumu yalnızca sunucu kontrollerinden türetilir. Desteklenmeyen veya kontrol edilmeyen adım
+// "geçti" olarak gösterilmez; çelişki her zaman öne çıkar.
+const stepLabels: Record<Outcome, string> = {
+  passed: 'Bu adım matematik motoruyla kontrol edildi.',
+  partially_checked: 'Bu adım kısmen kontrol edildi.',
+  failed: 'Bu adımda bir çelişki bulundu.',
+  unsupported: 'Bu adım için otomatik kontrol yok.',
+  not_checked: 'Bu adım otomatik kontrol edilmedi.',
+  not_applicable: '',
+};
+
+export function stepOutcome(checks: BlockCheck[], ids: string[]): Outcome {
+  const outcomes = checks.filter(check => check.scope === 'block' && check.target && ids.includes(check.target)).map(check => check.outcome);
+  if (outcomes.includes('failed')) return 'failed';
+  if (outcomes.length && outcomes.every(value => value === 'passed')) return 'passed';
+  if (outcomes.some(value => value === 'passed' || value === 'partially_checked')) return 'partially_checked';
+  if (outcomes.includes('unsupported')) return 'unsupported';
+  return 'not_checked';
+}
+
+const targetLabels: Partial<Record<Outcome, string>> = {
+  passed: 'Sorunun istediği sonuç bağımsız olarak hesaplandı.',
+  partially_checked: 'Sorunun istediği sonuç kısmen kontrol edildi.',
+  unsupported: 'Sorunun istediği sonuç otomatik doğrulanamadı.',
+  not_checked: 'Sorunun istediği sonuç kontrol edilmedi.',
+};
+
+function BlockContent({ block, verification }: { block: Block; verification: VerificationReport }) {
   switch (block.kind) {
     case 'expression': return <MathExpression latex={block.latex} />;
     case 'calculation': return <><MathExpression latex={block.expression} /><AnswerContent answer={block.result} /></>;
@@ -32,6 +60,12 @@ function BlockContent({ block }: { block: Block }) {
     case 'visual': return <figure><figcaption>{block.description}</figcaption>
       {block.visual_type === 'number_line' ? <p>Sayı doğrusunda soldan sağa: {block.positions?.join(' · ')}</p>
         : <small>{block.visual_type === 'unsupported' ? 'Bu görsel türü henüz gösterilemiyor.' : 'Kaynak sorudaki şekle bak.'}</small>}</figure>;
+    case 'derivation_step': {
+      const ids = [block.id, ...(block.outputs ?? []).filter(ref => ref.kind === 'block').map(ref => ref.id)];
+      const outcome = stepOutcome(verification.block_checks ?? [], ids);
+      return <>{block.title && <strong>{block.title}</strong>}<p>{block.explanation}</p>
+        {stepLabels[outcome] && <small data-step-check={outcome}>{stepLabels[outcome]}</small>}</>;
+    }
     default: return <>{(block.title || labels[block.kind]) && <strong>{block.title || labels[block.kind]}</strong>}<p>{block.text}</p></>;
   }
 }
@@ -46,12 +80,14 @@ export function EducationBoard({ view }: { view: LessonView }) {
   const scientific = {passed: 'Bilimsel içerik kontrol edildi.', partially_checked: 'Bilimsel içeriğin yalnızca bir bölümü kontrol edildi.',
     failed: 'Bilimsel kontrol başarısız.', unsupported: 'Bu alanda bilimsel içerik henüz otomatik doğrulanmıyor.',
     not_applicable: '', not_checked: 'Bilimsel içerik kontrol edilmedi.'}[verification.scientific];
+  const target = verification.target ? targetLabels[verification.target.outcome] : undefined;
   return <article aria-label="Ders anlatımı">
     {view.panels.map(panel => <section key={panel.blocks[0]}>{panel.blocks.map(id => {
       const block = blocks.get(id);
-      return block && <BlockContent key={id} block={block} />;
+      return block && <BlockContent key={id} block={block} verification={verification} />;
     })}</section>)}
-    {content.answer && <section><strong>Cevap</strong><AnswerContent answer={content.answer} /></section>}
+    {content.answer && <section><strong>Cevap</strong><AnswerContent answer={content.answer} />
+      {target && <small data-target-check={verification.target?.outcome}>{target}</small>}</section>}
     <p>{content.takeaway}</p><small>{calculation} {scientific} Müfredat ve öğretim yöntemi değerlendirilmedi.</small>
   </article>;
 }
