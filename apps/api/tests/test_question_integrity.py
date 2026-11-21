@@ -277,7 +277,9 @@ def test_clarification_api_is_owned_revision_checked_and_idempotent():
         stored = students.owned(user, lesson["lesson_plan_id"])
         assert stored.lesson_data["lesson"]["source_analysis"]["integrity"]["revision"] == 2
         view = client.get(f"/api/v1/lessons/{lesson['lesson_plan_id']}/v2").json()["data"]["lesson"]
-        assert view["schema"]["version"] == "2.1.0" and view["source_revision"] == 2
+        # TA-004: projeksiyon 2.2.0'dır; kaynak revizyonu problem modeline de taşınır.
+        assert view["schema"]["version"] == "2.2.0" and view["source_revision"] == 2
+        assert view["problem"]["source_revision"] == 2
         assert view["verification"]["source_consistency"] == "partially_checked"
         assert view["verification"]["scientific"] != "passed"
     with TestClient(app) as anonymous:

@@ -9,7 +9,9 @@ def plan(original="3x + 7 = 19",final="x = 4",steps=None):
 
 def choice_plan(final="C) 3", final_expr="k = 3"):
     p=plan("x = 3",final_expr)
-    p.source_analysis.question_text="k kaçtır?"
+    # TA-004: soru verilen modeldeki değişkeni sormalı. Eski fikstür modelde olmayan "k"yı soruyordu;
+    # bu artık çözülmemiş hedeftir ve seçenek x'in değerine bağlanmaz (test_reasoning_targets.py).
+    p.source_analysis.question_text="x kaçtır?"
     p.source_analysis.mathematical_expressions=["x = 3"]
     p.source_analysis.answer_choices=["A) 1","B) 2","C) 3","D) 4"]
     p.content.final_answer=final

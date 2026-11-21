@@ -6,6 +6,7 @@ from apps.api.app.features.vision.schemas import VisionAnalysis
 
 from ..education.policy import TeachingPolicy
 from ..integrity.engine import symbols_of
+from ..reasoning.target import target_for
 from ..memory.schemas import TeachingContext
 
 CompactionLevel = Literal["normal", "emergency"]
@@ -72,6 +73,8 @@ def build_lesson_generation_context(
             "relevant_visual_facts": list(visual.relevant_visual_facts) if essential else _bounded_items(visual.relevant_visual_facts, visual_fact_limit, VISUAL_TEXT_LIMIT),
             "relationships": list(visual.relationships) if essential else _bounded_items(visual.relationships, relationship_limit, VISUAL_TEXT_LIMIT),
             "description": _limit_text(visual.description, VISUAL_TEXT_LIMIT) if level == "normal" and visual.visual_relevance == "essential" and not visual.relationships else None,
+            # TA-004: zorunlu görselin olguları yoksa sağlayıcıya şekil bilgisi uydurmaması açıkça bildirilir.
+            "visual_evidence": "missing" if essential and not (visual.relevant_visual_facts or visual.relationships or visual.description) else None,
         }
     )
 
@@ -150,8 +153,12 @@ def _integrity_payload(analysis: VisionAnalysis, strategy: str | None) -> dict[s
     integrity = analysis.integrity
     if integrity is None:
         return None
+    target = target_for(analysis, integrity)
     return _without_empty({
         "source_revision": analysis.revision,
+        # TA-004: istenen hedef aynı ders çağrısında bildirilir; ek sağlayıcı çağrısı yoktur.
+        "answer_target": _without_empty({"kind": target.kind, "expression": target.expression,
+                                         "integer_only": target.integer_only or None}) if target.origin == "deterministic" else None,
         "intent": integrity.intent.kind,
         "answer_strategy": strategy,
         "intent_markers": [marker.marker for marker in integrity.intent.markers],

@@ -133,6 +133,46 @@ def equation(value):
     return sp.Eq(to_sympy(node.operands[0], budget), to_sympy(node.operands[1], budget), evaluate=False)
 
 
+_RELATIONS = {"<": sp.StrictLessThan, "<=": sp.LessThan, ">": sp.StrictGreaterThan, ">=": sp.GreaterThan}
+
+
+def is_inequality(value) -> bool:
+    try:
+        node = _parse(value)
+    except MathParseError:
+        return False
+    return isinstance(node, tree.Rel) and all(op in _RELATIONS for op in node.ops)
+
+
+_FLIPPED = {"<": ">", "<=": ">=", ">": "<", ">=": "<="}
+
+
+def relation_set(value, variable, flip: bool = False):
+    """Tek değişkenli eşitsizliğin (zincir dahil) gerçel çözüm kümesi. TA-004.
+
+    Yalnızca <, ≤, >, ≥ desteklenir; ≠ ve eşitlik karışımı desteklenmez. Küme sembolik olarak
+    SymPy ``solveset`` ile, yalıtılmış işçide hesaplanır. ``flip`` yönü ters çevrilmiş ilişkiyi çözer
+    (eşitsizlik yönü hatasını adlandırmak için).
+    """
+    node = _parse(value)
+    if not isinstance(node, tree.Rel) or not all(op in _RELATIONS for op in node.ops):
+        raise MathParseError("expected inequality")
+    budget = _Budget()
+    operands = [to_sympy(item, budget) for item in node.operands]
+    result = sp.S.Reals
+    for op, left, right in zip(node.ops, operands, operands[1:]):
+        relation = _RELATIONS[_FLIPPED[op] if flip else op](left, right, evaluate=False)
+        if relation.free_symbols - {variable}:
+            raise MathParseError("unexpected variables")
+        result = sp.Intersection(result, sp.solveset(relation, variable, domain=sp.S.Reals))
+    return result
+
+
+def denominators(expr):
+    """Sıfır olmaması gereken paydalar (negatif üslü kuvvetlerin tabanları)."""
+    return [item.base for item in expr.atoms(sp.Pow) if item.exp.is_number and item.exp.is_negative]
+
+
 def solutions(value, variable):
     result = set()
     for branch in branches(value):
