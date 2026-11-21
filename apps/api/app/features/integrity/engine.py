@@ -36,7 +36,8 @@ from .expression import (
     parse,
     symbols,
 )
-from .language import detect_intent, parse_choices
+from .language import casefold_tr, detect_intent, parse_choices
+from .materiality import classify as classify_legacy
 
 MAX_PROVIDER_UNCERTAINTIES = 8
 MAX_LEGACY_UNCERTAINTIES = 6
@@ -389,20 +390,41 @@ def evaluate(analysis, state: EvaluationState = EvaluationState()) -> IntegrityR
             impact=impact, resolution=resolution, origin="vision", evidence=evidence, region=region,  # type: ignore[arg-type]
         ))
 
-    # 7. Eski serbest metin belirsizlikleri: kategori tutulur, tek başına çözümü durdurmaz.
-    if not structured:
-        for index, text in enumerate(analysis.ocr_uncertainties[:MAX_LEGACY_UNCERTAINTIES]):
-            if not text.strip():
-                continue
-            uncertainties.append(SourceUncertainty(
-                id=f"l{index + 1}", category=_legacy_category(text), impact="noncritical", resolution="unresolved",  # type: ignore[arg-type]
-                origin="legacy_text", evidence=["legacy_uncertainty"], note=text.strip()[:256],
-            ))
+    # 7. Eski serbest metin belirsizlikleri (TA-004 önemlilik köprüsü). Şüphe ifadesi, kategori ve kaynakta
+    # ilgili yapının bulunması birlikte gerekir; anahtar kelime tek başına engel değildir. Yapılandırılmış
+    # bir belirsizlikle aynı kategori/öğeye düşen not yinelenmez. TA-003 öncesi kayıtlarda (``legacy``) not
+    # önemsiz kalır; görsel artık mevcut olmadığından yeni engel oluşturulmaz.
+    for index, text in enumerate(analysis.ocr_uncertainties[:MAX_LEGACY_UNCERTAINTIES]):
+        if not text.strip():
+            continue
+        finding = classify_legacy(text, analysis, intent)
+        duplicate = any(item.origin in {"vision", "deterministic"} and item.category == finding.category
+                        and (finding.element is None or item.element in (None, finding.element)) for item in uncertainties)
+        if duplicate and finding.level != "harmless":
+            _check(checks, "legacy_uncertainty_merged", element=finding.element)
+            continue
+        material = finding.level == "material" and state.origin != "legacy"
+        evidence = ["legacy_uncertainty", {"material": "legacy_uncertainty_material", "harmless": "legacy_uncertainty_formatting",
+                                           "nonconsequential": "legacy_uncertainty_context_absent",
+                                           "insufficient": "legacy_uncertainty_unclassified"}[finding.level]]
+        category = finding.category if finding.category != "text" else _legacy_category(text)
+        uncertainties.append(SourceUncertainty(
+            id=f"l{index + 1}", category=category, element=finding.element if material else None,  # type: ignore[arg-type]
+            recognized=finding.recognized if material else None, impact="material" if material else "noncritical",
+            resolution="unresolved", origin="legacy_text", evidence=evidence, note=text.strip()[:256],  # type: ignore[arg-type]
+        ))
 
-    # 8. Görsel bağlam
+    # 8. Görsel bağlam (TA-004): zorunlu görselin olguları eksikse önce metnin yeterliliğine bakılır.
     visual = analysis.visual_elements
     if visual.visual_relevance == "essential" and not (visual.relevant_visual_facts or visual.relationships or visual.description):
         _check(checks, "essential_visual_without_facts", element="visual")
+        if text_suffices_without_visual(analysis, expressions):
+            _check(checks, "essential_visual_text_sufficient", element="visual")
+        elif state.origin != "legacy":
+            uncertainties.append(SourceUncertainty(
+                id="d_visual_missing", category="diagram", element="visual", impact="material", resolution="unresolved",
+                origin="deterministic", evidence=["essential_visual_without_facts", "essential_visual_insufficient"],
+            ))
 
     uncertainties[:] = [_overlay(item, state.prior) for item in uncertainties][:16]
     for item in uncertainties:
@@ -435,6 +457,34 @@ def _decide(uncertainties: list[SourceUncertainty], checks: list[IntegrityCheck]
     if uncertainties or any(check.code != "clean" for check in checks):
         return "ready_with_noncritical_uncertainty", "none"
     return "ready", "none"
+
+
+_VISUAL_REFERENCE = re.compile(r"şekil|şekle|grafi|tablo|görsel|diyagram|çizim|yukarıda|aşağıda verilen")
+
+
+def text_suffices_without_visual(analysis, expressions: list[SourceExpression]) -> bool:
+    """Zorunlu görselin olguları yokken metin problemi tek başına tanımlıyor mu? (TA-004)
+
+    Metinde verilen bir ilişki (denklem veya eşitsizlik) varsa bilgi metindedir. Metin görsele atıf
+    yapmıyor ve sayısal veri içeriyorsa da yeterli sayılır. Metin veriyi görselden istiyorsa yeterli değildir.
+    """
+    given = [item for item in expressions if item.role == "given" and item.status == "parsed" and item.canonical
+             and any(op in item.canonical for op in ("=", "<", ">"))]
+    if given:
+        return True
+    text = casefold_tr(analysis.question_text or "")
+    return not _VISUAL_REFERENCE.search(text) and bool(re.search(r"\d", text))
+
+
+def visual_facts_from_recheck(items: list[SourceUncertainty], readings: dict[int, tuple[bool, str]]) -> list[str]:
+    """Eksik zorunlu görsel için hedefli okumanın verdiği olgular. Tek okumadır; doğrulama sayılmaz."""
+    for position, item in enumerate(items, start=1):
+        if item.id == "d_visual_missing":
+            legible, reading = readings.get(position, (False, ""))
+            reading = reading.strip()[:400]
+            if legible and reading:
+                return [reading]
+    return []
 
 
 def _contains_mixed(node) -> bool:
