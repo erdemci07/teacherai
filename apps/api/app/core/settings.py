@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+from . import model_catalog
 from .operations import DEFAULT_LIMITS, Operation, validate_effort
 
 Price = Annotated[float, Field(ge=0, allow_inf_nan=False)]
@@ -122,10 +123,8 @@ class Settings(BaseSettings):
             op: self.max_output_tokens_by_operation.get(op, self.max_output_tokens or limit)
             for op, limit in DEFAULT_LIMITS.items()
         }
-        models = {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
-                  Operation.INTERACTION: self.openai_interaction_model}
         for op, effort in self.reasoning_effort_by_operation.items():
-            validate_effort(models[op], effort)
+            validate_effort(self.model_for(op), effort)
         return self
 
     def provider_call_budget(self, activity: str) -> int | None:
@@ -137,9 +136,57 @@ class Settings(BaseSettings):
         }.get(activity)
 
     app_check_mode: Literal["off", "monitor", "enforce"] = "off"
-    pricing_version: str | None = None
-    # Verified USD per million tokens: input, cached input, output.
-    model_prices: dict[str, tuple[Price, Price, Price]] = {}
+    # TA-005B: fiyatlar ve sürüm tek kaynaktan (core/model_catalog.json) gelir. TEACHERAI_MODEL_PRICES /
+    # TEACHERAI_PRICING_VERSION yalnız açık geçersiz kılmadır. Doğrulanmış USD / milyon token: girdi, önbellekli, çıktı.
+    pricing_version: str | None = Field(default_factory=model_catalog.pricing_version)
+    model_prices: dict[str, tuple[Price, Price, Price]] = Field(default_factory=model_catalog.prices)
+    # TA-005B: işlem bazında sağlayıcı. Fallback yoktur: bir sağlayıcı hata verirse diğerine geçilmez.
+    provider_vision: Literal["openai", "anthropic"] = "openai"
+    provider_lesson: Literal["openai", "anthropic"] = "openai"
+    provider_interaction: Literal["openai", "anthropic"] = "openai"
+    anthropic_api_key: str | None = Field(default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TEACHERAI_ANTHROPIC_API_KEY"))
+    # Varsayılan model yoktur; Anthropic'e atanan işlem modeli açıkça verilmeden başlamaz.
+    anthropic_lesson_model: str | None = None
+    # Öğrenci görselleri ikinci bir işleyiciye ancak gizlilik metni ve veri işleme sözleşmesi kararından
+    # sonra gönderilebilir (ADR TA-005B). Bayrak yoksa Vision Anthropic'e atanamaz.
+    allow_student_images_to_anthropic: bool = False
+
+    def provider_for(self, operation: Operation) -> str:
+        return {Operation.VISION: self.provider_vision, Operation.LESSONS: self.provider_lesson,
+                Operation.INTERACTION: self.provider_interaction}[Operation(operation)]
+
+    def model_for(self, operation: Operation) -> str | None:
+        operation = Operation(operation)
+        if self.provider_for(operation) == "anthropic":
+            return {Operation.LESSONS: self.anthropic_lesson_model}.get(operation)
+        return {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
+                Operation.INTERACTION: self.openai_interaction_model}[operation]
+
+    @model_validator(mode="after")
+    def providers(self):
+        """Hatalı sağlayıcı yapılandırması uygulamayı başlatmaz."""
+        from .providers import SUPPORTED_OPERATIONS
+
+        if self.provider_vision == "anthropic" and not self.allow_student_images_to_anthropic:
+            raise ValueError("Vision Anthropic'e atanamaz: TEACHERAI_ALLOW_STUDENT_IMAGES_TO_ANTHROPIC=true gerekli "
+                             "(gizlilik metni ve veri işleme sözleşmesi kararı).")
+        for operation in Operation:
+            provider = self.provider_for(operation)
+            if operation not in SUPPORTED_OPERATIONS[provider]:
+                raise ValueError(f"{provider} sağlayıcısı {operation} işlemini desteklemiyor "
+                                 f"(TEACHERAI_PROVIDER_{'LESSON' if operation == Operation.LESSONS else operation.upper()}).")
+            if provider == "anthropic":
+                if not self.model_for(operation):
+                    raise ValueError(f"Anthropic'e atanan {operation} işlemi için model verilmedi (TEACHERAI_ANTHROPIC_LESSON_MODEL).")
+                if not self.anthropic_api_key:
+                    raise ValueError("ANTHROPIC_API_KEY tanımlı değil; Anthropic'e atanmış işlem var.")
+        if self.environment in {"production", "staging"}:
+            if any(self.provider_for(op) == "openai" for op in Operation) and not self.openai_api_key:
+                raise ValueError("OPENAI_API_KEY tanımlı değil; OpenAI'ye atanmış işlem var.")
+            unpriced = sorted({model for op in Operation if (model := self.model_for(op))} - set(self.model_prices))
+            if unpriced or not self.pricing_version:
+                raise ValueError(f"Fiyatı tanımsız model production'da kullanılamaz: {', '.join(unpriced) or 'pricing_version yok'}.")
+        return self
     public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
     public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))
     share_og_image_path: str = "/teacherai-share-og.svg"

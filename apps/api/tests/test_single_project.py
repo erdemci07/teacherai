@@ -13,7 +13,9 @@ def test_no_default_project_and_production_requires_equal_ids():
     for ids in ({}, {"firebase_project_id": "teacherai-07"}, {"firebase_project_id": "teacherai-07", "firebase_auth_project_id": "other"}):
         with pytest.raises(ValidationError):
             Settings(_env_file=None, environment="production", **ids)
-    ok = Settings(_env_file=None, environment="production", firebase_project_id="teacherai-07", firebase_auth_project_id="teacherai-07")
+    # TA-005B: production'da OpenAI'ye atanmış işlem varken anahtar da zorunludur (tests/test_provider_config.py).
+    ok = Settings(_env_file=None, environment="production", firebase_project_id="teacherai-07", firebase_auth_project_id="teacherai-07",
+                  openai_api_key="fixture-key")
     assert ok.firebase_project_id == ok.firebase_auth_project_id == "teacherai-07"
 
 

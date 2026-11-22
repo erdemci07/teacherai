@@ -12,7 +12,7 @@ Bu dizin, mevcut modeller (`gpt-4.1-mini`) ile aday model (`gpt-6-luna`) arasın
 - manifest: `python -m scripts.answer_key manifest`
 - öğretmen anahtarı: `evals/datasets/original-24.answers.json`. Şablonu `python -m scripts.answer_key template` üretir.
 
-`--dry-run` hiçbir çağrı yapmaz. Plan, üst tahmin ve onay sonrası komutu yazar. Fiyatlar `evals/config/models.json` dosyasından okunur. Ham çıktılar `evals/runs/` altına (Git dışı) yazılır. Ayrıntı: [docs/evals/TA-005-luna.md](../docs/evals/TA-005-luna.md).
+`--dry-run` hiçbir çağrı yapmaz. Plan, üst tahmin ve onay sonrası komutu yazar. Fiyatlar `apps/api/app/core/model_catalog.json` dosyasından (TA-005B: uygulama ile ortak tek kaynak) okunur. Ham çıktılar `evals/runs/` altına (Git dışı) yazılır. Ayrıntı: [docs/evals/TA-005-luna.md](../docs/evals/TA-005-luna.md).
 
 ## Soru bütünlüğü matrisi (TA-003)
 

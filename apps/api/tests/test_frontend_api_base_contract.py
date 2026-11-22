@@ -22,8 +22,11 @@ def test_frontend_api_helpers_use_configured_api_base() -> None:
 
 
 def test_deploy_script_resolves_absolute_cloud_run_api_before_static_build() -> None:
-    script = Path("scripts/deploy-production.ps1").read_text(encoding="utf-8")
+    # TA-005B: sıra scripts/deploy_plan.py adım tablosundadır: API dağıtımı ve URL, web build'inden önce gelir.
+    from scripts import deploy_plan
 
-    assert '$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"' in script
-    assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"')
-    assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"') < script.index("npm run build:web")
+    steps = [action.__name__ for _, action in deploy_plan.STEPS]
+    assert steps.index("step_deploy") < steps.index("step_revision") < steps.index("step_url") < steps.index("step_web_build")
+    plan = Path("scripts/deploy_plan.py").read_text(encoding="utf-8")
+    assert '"NEXT_PUBLIC_API_BASE_URL": ctx.state["api_base"]' in plan
+    assert """ctx.state["api_base"] = f"{ctx.state['url']}/api/v1\"""" in plan

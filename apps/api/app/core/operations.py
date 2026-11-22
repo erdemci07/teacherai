@@ -6,6 +6,8 @@ bilinmeyen bir ad sessizce varsayılana düşmez, ValueError fırlatır.
 
 from enum import StrEnum
 
+from .model_catalog import reasoning_levels
+
 
 class Operation(StrEnum):
     VISION = "vision"
@@ -15,15 +17,10 @@ class Operation(StrEnum):
 
 DEFAULT_LIMITS = {Operation.VISION: 4096, Operation.INTERACTION: 4096, Operation.LESSONS: 16384}
 
-# Model başına desteklenen reasoning.effort değerleri. Kaynak: OpenAI model
-# sayfaları (developers.openai.com/api/docs/models/<model>), 20 Kasım 2026'da
-# okundu. Listede olmayan model reasoning parametresi almaz (ör. gpt-4.1-mini).
-# Yeni bir sağlayıcı veya model eklendiğinde yalnızca bu tablo genişletilir.
-_OPENAI_REASONING = frozenset({"none", "low", "medium", "high", "xhigh", "max"})
-REASONING_LEVELS = {
-    "gpt-6-luna": _OPENAI_REASONING,
-    "gpt-5.6-terra": _OPENAI_REASONING,
-}
+# Model başına desteklenen reasoning.effort değerleri (TA-005B: model_catalog.json, tek kaynak). Kaynak:
+# OpenAI model sayfaları (developers.openai.com/api/docs/models/<model>), 20 Kasım 2026'da okundu.
+# Listede olmayan model reasoning parametresi almaz (ör. gpt-4.1-mini).
+REASONING_LEVELS = reasoning_levels()
 
 
 def validate_effort(model, effort):

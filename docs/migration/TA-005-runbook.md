@@ -7,18 +7,18 @@ Değişkenler:
 ```
 SRC=math-ai-07
 DST=teacherai-07
-REGION=us-east4      # K2 kararına göre değişebilir
+REGION=<K2>          # DST Cloud Run bölgesi; öneri europe-west1 (eur3 seçilirse). SRC servisi us-east4'te kalır.
 DB_LOCATION=<K2>     # örn. eur3
 ```
 
 ## 0. Karar kapıları (adım 2'den önce)
 
-| Kapı | Durum (denetim) | Gerekli karar |
+| Kapı | Durum (TA-005 denetimi; TA-005B: canlı sayılar **beklemede**) | Gerekli karar |
 | --- | --- | --- |
-| K1 Auth | (b) kanıtı güçlü: bütün web uygulamaları ve `authDomain` SRC'de. Sayılar doğrulanmadı. | Erdem `audit_projects` betiğini çalıştırır. Kesişim > 0 ise (c) kolu uygulanır ve **durulur**. |
-| K2 Firestore konumu | DST'de veritabanı yok. SRC **eur3**'te, Cloud Run us-east4'te. | Konum seçimi. Konum sonradan **değiştirilemez**. |
-| K3 Blaze | DST Spark planında | Ücretli yükseltme onayı |
-| K4 run.app bağlantıları | Olası (26 Ağustos'ta ~3 saatlik pencere). Bugünkü bağlantılar run.app'e 302 ile gidiyor. | Eski serviste en az 30 gün yönlendirme |
+| K1 Auth | (b) kanıtı güçlü: bütün web uygulamaları ve `authDomain` SRC'de. Kullanıcı sayıları ve UID kesişimi **doğrulanamadı**: `TA-005-audit-live.md` yok. | Erdem `audit_projects` betiğini çalıştırır. Kesişim > 0 ise (c) kolu uygulanır ve **durulur**. |
+| K2 Firestore konumu | DST'de veritabanı yok. SRC **eur3**'te, Cloud Run us-east4'te. Dağıtım betiğinde bölge kodda sabit değil: `scripts/deploy-production.json` içinde `region: null`. | Konum seçimi. Konum sonradan **değiştirilemez**. Öneri: eur3 + Cloud Run europe-west1. Karar verilince `deploy-production.json` ve `firebase.json` `run.region` birlikte güncellenir. |
+| K3 Blaze | DST Spark planında. Dağıtım planı billing kapalıysa hiçbir değişiklik yapmadan durur. | Ücretli yükseltme onayı |
+| K4 run.app bağlantıları | Olası (26 Ağustos'ta ~3 saatlik pencere). Bugünkü bağlantılar run.app'e 302 ile gidiyor. Paylaşım sayısı ve tarih aralığı **doğrulanamadı**. | Eski serviste en az 30 gün yönlendirme. Sahipsiz eski paylaşımların taşınıp taşınmayacağı (`--copy-ownerless-shares`) |
 | Hedef | Denetime göre SRC'de her şey var; DST'de yalnız Hosting sitesi var | Aşağıdaki not |
 
 **Hedefin yeniden değerlendirilmesi (bilgi notu, karar Erdem'in).** DST'ye taşımak şunları gerektirir: Auth dışa/içe aktarımı (kullanıcılar yeniden oturum açar), yeni Firestore veritabanı ve veri kopyası, yeni Secret Manager, Artifact Registry ve Cloud Run kaynakları. Tersi yönde, yani her şeyi SRC'de toplamak, yalnız Hosting'in taşınmasını gerektirir. Ancak `teacherai-07.web.app` alan adı DST projesine bağlıdır ve taşınamaz. Alan adını korumak için ya DST'de bir yönlendirme sitesi kalmalı ya da özel alan adı kullanılmalıdır. Bu runbook verilen hedefe (DST) göre yazıldı.
@@ -57,7 +57,7 @@ Kaynaklar:
 | 2.4 | `gcloud artifacts repositories create teacherai --repository-format=docker --location=$REGION --project=$DST` | `gcloud artifacts repositories list --project=$DST` [R] | `… repositories delete teacherai` |
 | 2.5 | Yeni bir OpenAI projesi ve harcama limiti oluştur (OpenAI Console). Ardından `printf %s "$NEW_KEY" \| gcloud secrets create openai-api-key --data-file=- --replication-policy=automatic --project=$DST`. Anahtar SRC'den **kopyalanmaz**. | `gcloud secrets versions list openai-api-key --project=$DST` [R] → 1 etkin | Sürümü devre dışı bırak. OpenAI anahtarını iptal et. |
 | 2.6 | `gcloud iam service-accounts create teacherai-api-runtime --project=$DST` ve gerekli rollerin bağlanması (aşağıdaki tablo) | `gcloud projects get-iam-policy $DST` [R] | Hesabı veya bağları sil |
-| 2.7 | Cloud Run servisi: `scripts/deploy-production.ps1` adım 6–7 (ayar eşliği tablosu aşağıda) | `gcloud run services describe teacherai-api --region=$REGION --project=$DST` [R] | `gcloud run services delete` |
+| 2.7 | Cloud Run servisi: önce `.\scripts\deploy-production.ps1 -Mode Bootstrap -Region $REGION` (yalnız plan), onaydan sonra aynı komut `-Execute` ile. Hosting yayını ayrıca `-PublishHosting` ister (adım 4.5). Ayar eşliği tablosu aşağıda. | `gcloud run services describe teacherai-api --region=$REGION --project=$DST` [R] | `gcloud run services delete` |
 | 2.8 | Kurallar, indeksler ve TTL: `firebase deploy --only firestore --project $DST` | `gcloud firestore indexes composite list` ve `gcloud firestore fields ttls list --project=$DST` [R]. Beklenen: 1 bileşik indeks, 6 TTL. | Önceki kural sürümüne Console'dan dön |
 | 2.9 | App Check: API etkinleştirme, web uygulaması kaydı, reCAPTCHA Enterprise anahtarı. Önce `TEACHERAI_APP_CHECK_MODE=monitor`. | Günlükte doğrulama oranı | Modu `off` yap |
 | 2.10 | K1(b) ise DST'de bir web uygulaması oluştur (`firebase apps:create WEB "TeacherAI Web" --project $DST`). Auth sağlayıcılarını (e-posta/parola, Google), yetkili alan adlarını ve e-posta şablonlarını yeniden yapılandır. | `firebase apps:sdkconfig` [R] → `authDomain: $DST.firebaseapp.com` | Uygulamayı sil |
@@ -88,26 +88,43 @@ Resmî olarak doğrulanan tek şey şudur: Google varsayılan Compute hesabını
 | Secret | `OPENAI_API_KEY ← openai-api-key:latest` | aynı ad, **yeni anahtar** |
 | Geri bildirim e-posta değişkenleri | var | Erdem karar verir (Resend anahtarı DST'de yok) |
 
-Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.ps1` içindeki `$Region` birlikte değiştirilir. Sözleşme testi ikisini aynı tutar.
+K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `firebase.json` içindeki `run.region` birlikte değiştirilir. Bugün `region` boştur (`null`); bölgede kodda varsayılan yoktur ve karar yazılana kadar `-Region` zorunludur. Dağıtım planı rewrite bölgesi farklıysa hiçbir değişiklik yapmadan durur.
+
+### 2.7a: dağıtım betiğinin modları (TA-005B)
+
+| Mod | Ne zaman | Fark |
+| --- | --- | --- |
+| `-Mode Bootstrap` | Servis DST'de yok (ilk kurulum) | `--allow-unauthenticated` ile oluşturur |
+| `-Mode Update` | Servis var | IAM'e dokunmaz |
+
+- Mod, servisin gerçek varlığıyla uyuşmazsa betik hiçbir değişiklik yapmadan durur.
+- Varsayılan yalnız plandır (`-PlanOnly`); dış komut çalışmaz.
+- Sıra: yerel kapılar → ön koşullar (yalnız kontrol) → yapılandırma → image build ve digest → Cloud Run (digest ile) → hazır revizyon ve digest eşliği → `/health` → URL → web Firebase yapılandırması → web build → rewrite → Hosting (yalnız `-PublishHosting`).
+- Geri alma için hazır revizyon adı ve image digest'i çıktıda yazılır: `gcloud run services update-traffic teacherai-api --to-revisions=<önceki>=100 --region=$REGION --project=$DST`.
 
 ## 3. Prova
 
-1. **[W]** Anlık görüntüyü kopyala. Önce kuru koşu:
+1. **[W]** Anlık görüntüyü kopyala. Geçişten önce SRC yetkilidir (`--authority source`). Kopya, yetkili tarafın (SRC) Auth UID listesini okur; sahibi orada olmayan kullanıcı belgesi yazılmaz. Önce kuru koşu:
    ```
-   python -m scripts.migration.copy_firestore --source $SRC --target $DST
+   python -m scripts.migration.copy_firestore --source $SRC --target $DST --authority source
    ```
    Sonra gerçek kopya:
    ```
-   python -m scripts.migration.copy_firestore --execute --source $SRC --target $DST --confirm-target $DST
+   python -m scripts.migration.copy_firestore --execute --source $SRC --target $DST --authority source --confirm-target $DST
    ```
-2. **[R]** Doğrula:
+   Çıktıdaki `blocked_deleted_owner`, `blocked_owner_not_in_auth`, `blocked_no_owner` ve `blocked_ownerless_share` sayıları kayda geçirilir. **Sahipsiz eski paylaşımlar** (`blocked_ownerless_share`) varsayılan olarak taşınmaz; taşınıp taşınmayacağına Erdem karar verir (`--copy-ownerless-shares`). Çakışmada ezilen hedef içeriğinin özeti `conflicts` listesindedir.
+2. **[R]** İki yönlü doğrula:
    ```
-   python -m scripts.migration.copy_firestore --verify --source $SRC --target $DST --auth-uids target
+   python -m scripts.migration.copy_firestore --verify --source $SRC --target $DST --authority source --auth-uids target --report-out fark.json
    ```
-   Beklenen: her koleksiyonda `missing: 0` ve `different: 0`. Sahiplik satırlarında `owner_missing` K1 koluna göre değerlendirilir. K1(b)'de Auth içe aktarımından önce `owner_missing` olması beklenir.
+   Beklenen: her koleksiyon ve alt koleksiyon satırında `only_source`, `only_target` ve `different` yok; `deleted_owner_in_target` yok. K1(b)'de Auth içe aktarımından önce `owner_not_in_auth` olması beklenir. `fark.json` belge yolu içermez (yalnız sha256 özetleri); yine de repoya girmez.
 3. **[W, onaylı]** Önizleme kanalında yeni web build'i: `NEXT_PUBLIC_API_BASE_URL=<DST Cloud Run URL>/api/v1` ve DST web yapılandırmasıyla `npm run build:web`, ardından `firebase hosting:channel:deploy ta005-prova --expires 3d --project $DST`. Önizleme alan adı CORS listesine geçici olarak eklenir.
 4. **Duman testleri** (önizleme kanalında, test hesabıyla): giriş, foto analiz, ders, etkileşim, paylaşım (`/s/…` rewrite), hesap silme ve makbuz sorgusu, kota sınırı.
-5. Gerekirse prova verisini sil: yalnız DST'de, `copy_firestore --verify` sayılarıyla eşleşen test belgeleri.
+5. Gerekirse prova verisini sil. Silme yalnız son 1 saat içinde üretilmiş `--verify` raporunda görülen ve o andan beri değişmemiş hedef belgelerine uygulanır. Önce kuru koşu, sonra `--execute`:
+   ```
+   python -m scripts.migration.copy_firestore --prune --source $SRC --target $DST --authority source --confirm-prune $DST --prune-from fark.json [--execute]
+   ```
+   Budama adayı: yalnız hedefte olan belge (yetkili taraf kaynaksa) veya sahibinin silme kaydı bulunan hedef belgesi. Raporda olmayan ya da değişmiş belge silinmez, sayılır.
 
 ## 4. Kontrollü geçiş
 
@@ -116,7 +133,7 @@ Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.
 | 4.1 | Duyuru (zaman penceresi, beklenen kesinti: yazma kapalı ~30 dk) | — | — |
 | 4.2 | Eski serviste salt okunur mod: `gcloud run services update teacherai-api --region=us-east4 --project=$SRC --update-env-vars TEACHERAI_MAINTENANCE_MODE=read_only` | [W] | `POST` istekleri 503 + `Retry-After` döner. Web bakım mesajı gösterir. |
 | 4.3 | K1(b): `firebase auth:import auth-$SRC.json --hash-algo=SCRYPT --hash-key=<…> --salt-separator=<…> --rounds=<…> --mem-cost=<…> --project $DST`. Parametreler SRC Console → Authentication → kullanıcı menüsü → "Password hash parameters" ekranından alınır ve repoya girmez. | [W] yalnız Erdem | Kullanıcı sayısı eşit. UID'ler korunur. Token iptal zamanları **taşınmaz**, kullanıcılar yeniden oturum açar. |
-| 4.4 | Son fark kopyası `--execute` ve ardından `--verify` | [W] / [R] | `missing: 0`, `different: 0`, `owner_missing: 0` |
+| 4.4 | Son fark kopyası `--execute --authority source` ve ardından `--verify` | [W] / [R] | `only_source`, `different`, `owner_not_in_auth` ve `deleted_owner_in_target` yok |
 | 4.5 | Yeni web build'i (DST API URL'si ve DST web yapılandırması) ve `firebase deploy --only hosting --project $DST` | [W] | `/s/<id>` 200 döner, adres Hosting'de kalır |
 | 4.6 | Yeni serviste yazmayı aç (`TEACHERAI_MAINTENANCE_MODE=off`, varsayılan) | [W] | Yeni ders kaydı DST'de |
 | 4.7 | İzleme (ilk 24 saat): 5xx oranı, p95 gecikme, `ai_global_budget_exhausted` / `usage_limit` hataları, `account_deletion` sonuçları | [R] | Cloud Run metrikleri ve günlükler |
@@ -132,11 +149,11 @@ Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.
   Veri kaybı olmaz.
 - **Yazma açıldıktan sonra:**
   1. Yeni serviste `read_only` modunu aç.
-  2. Farkı geri kopyala:
+  2. Farkı geri kopyala. Geçişten sonra DST yetkilidir; betikte DST kaynak olduğu için `--authority source` verilir. SRC'de silme kaydı olan kullanıcının verisi SRC'ye geri yazılmaz (iki taraftaki silme kayıtlarının birleşimi uygulanır):
      ```
-     python -m scripts.migration.copy_firestore --execute --source $DST --target $SRC --confirm-target $SRC --allow-reverse
+     python -m scripts.migration.copy_firestore --execute --source $DST --target $SRC --authority source --confirm-target $SRC --allow-reverse
      ```
-  3. `--verify` ile denetle.
+  3. `--verify --authority source` ile denetle. SRC'de yalnız orada kalan belgeler `only_target` görünür ve otomatik silinmez.
   4. Hosting'i geri al ve eski serviste yazmayı aç.
 
   K1(b)'de DST'de yeni oluşan Auth hesapları SRC'ye otomatik dönmez. Bu hesaplar için ayrı bir dışa/içe aktarım gerekir.

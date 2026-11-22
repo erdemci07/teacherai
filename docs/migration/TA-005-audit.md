@@ -140,3 +140,17 @@ Bu dönemlerin canlıya dağıtılıp dağıtılmadığı ve hangi dönemde kaç
 - **K2 — teacherai-07'de Firestore var mı? Yok.** API etkin değil, veritabanı yok, konum henüz seçilmedi. Kaynak veritabanı **eur3**'tedir. Karşılaştırma için [runbook §2](TA-005-runbook.md#2-hedef-hazırlığı-w-onaylı) bölümüne bakın. Karar Erdem'indir.
 - **K3 — teacherai-07 Blaze planında mı? Hayır, Spark.** `billingEnabled=false`. Cloud Run, Secret Manager ve Artifact Registry için Blaze'e geçmek gerekir. Bu ücretli bir adımdır ve onay ister.
 - **K4 — run.app paylaşım bağlantıları dağıtılmış mı? Doğrulanamadı; kod geçmişine göre olası.** Yaklaşık üç saatlik bir pencerede run.app tabanlı bağlantı üretilebiliyordu. Bugünkü bütün bağlantılar da Hosting üzerinden run.app'e 302 ile yönleniyor, yani arama motorları ve önbellekler run.app adresini görmüş olabilir. Eski serviste en az 30 gün `TEACHERAI_LEGACY_REDIRECT_BASE` ile 301 yönlendirmesi tutulmalıdır. Ek bulgu: 25–26 Ağustos'ta üretilmiş olabilecek `math-ai-07.web.app/s/…` bağlantıları bugün zaten kırık. Bunlar için math-ai-07 sitesine bir yönlendirme dağıtımı ayrı bir [W] adımıdır.
+
+## TA-005B durumu (22 Kasım 2026): beklemede
+
+`docs/migration/TA-005-audit-live.md` bu fazda da oluşmadı. Betik bu oturumda çalıştırılmadı; yalnız Erdem kendi oturumunda çalıştırır (bkz. "Kapsam ve eksik kalan kısım"). Bu yüzden TA-005 hipotezi **ne doğrulandı ne çürütüldü**:
+
+> Canlı servis 28 Ağustos öncesi kodla, `development` modunda ve `TEACHERAI_FIREBASE_ENABLED` tanımsız çalışıyor. O kodda yalnız paylaşımlar Firestore'a yazılır; profiller, geri bildirimler ve pratikler bellekte tutulur. 1 Eylül web paketinde Firebase yapılandırması gömülü olmadığı için giriş çalışmıyor.
+
+Hipotezi sınayacak sayılar şunlardır:
+
+- `shared_solutions` dışındaki koleksiyonlarda belge sayısı. Sıfıra yakınsa hipotez güçlenir; değilse çürür.
+- Auth kullanıcı sayısı ve son oluşturulma tarihi. 1 Eylül sonrası kullanıcı varsa giriş çalışıyordur.
+- `shared_solutions.created_at` aralığı ve `owner_id` taşımayan kayıt sayısı.
+
+Çıktı geldiğinde UID, e-posta ve telefon numarası içermediği denetlenecek. Biri varsa dosya commit'lenmez, maskeleme düzeltilir. Bu belgede "doğrulanamadı" yazan bütün satırlar o zaman güncellenir.

@@ -1,6 +1,6 @@
 # TA-005: proje kimliği Cloud Build'in yerleşik $PROJECT_ID değişkeninden gelir (gcloud builds submit --project).
-substitutions:
-  _REGION: "us-east4"
+# TA-005B: bölge ve etiket sabit değildir; scripts/deploy_plan.py bunları --substitutions=_REGION=…,_TAG=… ile verir
+# ve Cloud Run'a etiketle değil, bu build'in ürettiği digest ile dağıtır. MUST_MATCH eksik değişkende build'i durdurur.
 steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -9,9 +9,12 @@ steps:
         "-f",
         "docker/api/Dockerfile",
         "-t",
-        "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:latest",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:${_TAG}",
         "."
       ]
 
 images:
-  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:latest"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:${_TAG}"
+
+options:
+  substitutionOption: MUST_MATCH

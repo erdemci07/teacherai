@@ -3,7 +3,10 @@ import logging
 from pathlib import Path
 from time import perf_counter
 
-from apps.api.app.core.gateway import parse_response
+from apps.api.app.core.ai_port import ProviderRequest
+from apps.api.app.core.openai_adapter import OpenAIAdapter
+from apps.api.app.core.operations import Operation
+from apps.api.app.core.gateway import invoke
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -41,6 +44,12 @@ class OpenAILessonProvider:
         self.max_context_bytes = max_context_bytes
         self.prompt = (Path(__file__).parent / "prompts" / "lesson_plan.txt").read_text(encoding="utf-8")
 
+    def _client(self):
+        return AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
+
+    def _adapter(self, client):
+        return OpenAIAdapter(client)
+
     async def generate_lesson_plan(
         self,
         analysis: VisionAnalysis,
@@ -55,7 +64,7 @@ class OpenAILessonProvider:
             raise error
 
         context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
-        client = AsyncOpenAI(api_key=self.api_key, timeout=self.timeout, max_retries=0)
+        client = self._client()
         try:
             response = await self._request_lesson(client, context, "lessons.correction" if correction_feedback else "lessons.initial")
         except AuthenticationError as exc:
@@ -133,19 +142,9 @@ class OpenAILessonProvider:
                 "answer_strategy_reason": context.metrics.answer_strategy_reason,
             },
         )
-        return await parse_response(
-            client,
-            "lessons",
-            timeout=self.timeout + 2,
-            purpose=purpose,
-            validate=normalize_lesson_draft_response,
-            model=self.model,
-            input=[
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": context.serialized},
-            ],
-            text_format=LessonDraftResponse,
-        )
+        request = ProviderRequest(Operation.LESSONS, self.model, user=context.serialized, system=self.prompt,
+                                  schema=LessonDraftResponse, timeout=self.timeout + 2)
+        return await invoke(self._adapter(client), request, validate=normalize_lesson_draft_response, purpose=purpose)
 
     def _build_budgeted_context(self, analysis: VisionAnalysis, correction_feedback: str | None, teaching_context, level: str) -> BuiltLessonContext:
         context = build_lesson_generation_context(analysis, correction_feedback, teaching_context, level)  # type: ignore[arg-type]
@@ -188,3 +187,30 @@ class OpenAILessonProvider:
             request_id or "unknown",
             round((perf_counter() - started) * 1000),
         )
+
+
+class _NoClient:
+    async def close(self):
+        return None
+
+
+class AnthropicLessonProvider(OpenAILessonProvider):
+    """TA-005B §8: aynı ders bağlamı, istem ve doğrulama; yalnız adaptör farklıdır.
+
+    OpenAI SDK hata eşlemesi burada devreye girmez; Anthropic aktarım hataları adaptörde sonuç sınıfına
+    (``provider_error``, ``timeout``) indirgenir ve ortak katmanda AIOutcomeError olur.
+    """
+
+    name = "anthropic"
+
+    def __init__(self, api_key, model, timeout_seconds, max_context_bytes=24_000, transport=None):
+        super().__init__(api_key, model, timeout_seconds, max_context_bytes)
+        self.transport = transport
+
+    def _client(self):
+        return _NoClient()
+
+    def _adapter(self, client):
+        from apps.api.app.core.anthropic_adapter import AnthropicAdapter
+
+        return AnthropicAdapter(self.api_key, transport=self.transport)

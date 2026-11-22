@@ -1,4 +1,7 @@
-from apps.api.app.core.gateway import parse_response
+from apps.api.app.core.ai_port import ProviderRequest
+from apps.api.app.core.gateway import invoke
+from apps.api.app.core.openai_adapter import OpenAIAdapter
+from apps.api.app.core.operations import Operation
 import asyncio, json
 from pathlib import Path
 from openai import (
@@ -99,20 +102,10 @@ class OpenAIInteractionProvider:
             }
         if not fits_context_budget(payload, self.context_budget_bytes):
             raise InteractionContextTooLargeError
-        r = await parse_response(
-            client,
-            "interaction",
-            timeout=self.timeout + 2,
-            model=self.model,
-            input=[
-                {"role": "system", "content": self.prompt},
-                {
-                    "role": "user",
-                    "content": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
-                },
-            ],
-            text_format=AdaptiveDraft,
-        )
+        request = ProviderRequest(Operation.INTERACTION, self.model,
+                                  user=json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+                                  system=self.prompt, schema=AdaptiveDraft, timeout=self.timeout + 2)
+        r = await invoke(OpenAIAdapter(client), request)
         return r.output_parsed
 
 

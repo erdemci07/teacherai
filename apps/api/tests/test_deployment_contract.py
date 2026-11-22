@@ -31,46 +31,32 @@ def test_firebase_project_and_cloudbuild_contract() -> None:
     assert firebaserc["projects"]["default"] == "teacherai-07"
     assert "docker/api/Dockerfile" in cloudbuild
     # Proje kimliği Cloud Build'in --project ile verilen $PROJECT_ID değişkeninden gelir; dosyaya yazılmaz.
-    assert "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:latest" in cloudbuild
+    # TA-005B: bölge ve etiket dağıtım planından gelir; :latest yerine build'in digest'i dağıtılır.
+    assert "${_REGION}-docker.pkg.dev/$PROJECT_ID/teacherai/teacherai-api:${_TAG}" in cloudbuild
+    assert ":latest" not in cloudbuild and "us-east4" not in cloudbuild
+    assert "substitutionOption: MUST_MATCH" in cloudbuild
 
 
-def test_production_deploy_script_keeps_safety_gates_and_secret_source() -> None:
-    script = Path("scripts/deploy-production.ps1").read_text(encoding="utf-8")
+def test_production_deploy_plan_keeps_safety_gates_and_secret_source() -> None:
+    # TA-005B: mantık scripts/deploy_plan.py'ye taşındı; PowerShell yalnız sarmalayıcı. Sıra ve kapılar
+    # test_deploy_plan.py'de davranışla sınanır; burada kaynak metindeki kapılar korunur.
+    plan = Path("scripts/deploy_plan.py").read_text(encoding="utf-8")
+    config = json.loads(Path("scripts/deploy-production.json").read_text(encoding="utf-8"))
 
-    for required in (
-        '$ProjectId = "teacherai-07"',
-        '$FirebaseProjectId = $ProjectId',
-        '$Region = "us-east4"',
-        '$ServiceName = "teacherai-api"',
-        "git branch --show-current",
-        "git fetch origin main",
-        "pytest -q apps/api/tests",
-        "--service-account $RuntimeServiceAccount",
-        "--max-instances $MaxInstances",
-        "TEACHERAI_ENVIRONMENT=production",
-        "TEACHERAI_FIREBASE_AUTH_PROJECT_ID=$ProjectId",
-        "gcloud builds submit",
-        "gcloud run deploy",
-        '--set-secrets "OPENAI_API_KEY=openai-api-key:latest"',
-        'Where-Object { $_.source -eq "/s/**" }',
-        "gcloud run services describe $ServiceName",
-        '$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"',
-        "npm run build:web",
-        "apps\\web\\out\\index.html",
-        "Invoke-RestMethod",
-        "firebase deploy --only hosting",
-        "--project $FirebaseProjectId",
-    ):
-        assert required in script
-
-    assert script.index("gcloud run services describe $ServiceName") < script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"')
-    assert script.index('$env:NEXT_PUBLIC_API_BASE_URL = "$ApiUrl/api/v1"') < script.index("npm run build:web")
-
-    assert "--async" not in script
-
-    for forbidden in ("git push", "git stash", "gcloud secrets versions add", "--set-env-vars OPENAI_API_KEY",
-                      "gcloud config set project", "firebase use"):
-        assert forbidden not in script
+    assert config["project_id"] == "teacherai-07" and config["service"] == "teacherai-api"
+    assert config["secret"] == {"env": "OPENAI_API_KEY", "name": "openai-api-key", "version": "latest"}
+    for required in ('"branch", "--show-current"', '"fetch", "origin", "main"', '"pytest", "-q", "apps/api/tests"',
+                     '"--service-account"', '"--max-instances"', "TEACHERAI_ENVIRONMENT=production",
+                     "TEACHERAI_FIREBASE_ENABLED=true", "TEACHERAI_FIREBASE_AUTH_PROJECT_ID=", '"builds", "submit"',
+                     '"run", "deploy"', '"--set-secrets"', '"/s/**"', '"npm", "run", "build:web"',
+                     "apps/web/out/index.html", "/api/v1/health", '"firebase", "deploy", "--only", "hosting"'):
+        assert required in plan
+    assert "--async" not in plan
+    for forbidden in ("git push", "git stash", "secrets versions add", "secrets create", "services enable",
+                      "repositories create", "service-accounts create", "add-iam-policy-binding",
+                      "gcloud config set project", "firebase use", "billing projects link"):
+        assert forbidden not in plan
+        assert forbidden not in Path("scripts/deploy-production.ps1").read_text(encoding="utf-8")
 
 
 LEGACY = "math-ai" + "-07"

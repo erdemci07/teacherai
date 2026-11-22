@@ -16,6 +16,7 @@ from apps.api.app.features.account.service import (
 from apps.api.app.features.auth.dependencies import AuthenticationRequired
 from apps.api.app.features.interactions.exceptions import InteractionError
 from apps.api.app.features.lessons.exceptions import LessonError
+from apps.api.app.features.mathai.isolated import MathAIUnavailable
 from apps.api.app.features.shares.exceptions import ShareError
 from apps.api.app.features.vision.exceptions import VisionError
 from apps.api.app.schemas.responses import ErrorResponse
@@ -49,6 +50,14 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(GlobalBudgetExhausted)
     async def global_budget_handler(request: Request, exc: GlobalBudgetExhausted) -> JSONResponse:
         return JSONResponse(status_code=503, content=ErrorResponse(error="ai_global_budget_exhausted", detail="Öğretmen servisi bugünlük kapasitesine ulaştı. Lütfen daha sonra tekrar dene.", request_id=getattr(request.state, "request_id", None)).model_dump())
+
+    @app.exception_handler(MathAIUnavailable)
+    async def mathai_unavailable(request: Request, exc: MathAIUnavailable) -> JSONResponse:
+        # TA-005B: mathai_busy (Retry-After), mathai_timeout, mathai_error ayrı kodlardır.
+        detail = {"mathai_busy": "Hesap denetimi şu anda yoğun; birkaç saniye sonra tekrar dene."}.get(
+            exc.code, "Hesap denetimi şu anda tamamlanamadı.")
+        return JSONResponse(status_code=503, headers=exc.headers, content=ErrorResponse(
+            error=exc.code, detail=detail, request_id=getattr(request.state, "request_id", None)).model_dump())
 
     @app.exception_handler(ProviderCallBudgetExhausted)
     async def call_budget_handler(request: Request, exc: ProviderCallBudgetExhausted) -> JSONResponse:

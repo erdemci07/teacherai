@@ -13,15 +13,21 @@ class StudentService:
         self.memory = memory
 
     def profile(self, user, body):
+        """Yalnız kimliği doğrulanmış kullanıcının kendi profili (belge kimliği = token UID'si)."""
+        existing = self.repository.get_profile(user.uid)
         value = StudentProfile(
             student_id=user.uid,
             display_name=body.display_name,
             exam_goal=body.exam_goal,
             grade=body.grade,
             email=user.email,
+            **({"created_at": existing.created_at} if existing is not None else {}),
         )
         self.repository.save_profile(value)
         return value
+
+    def get_profile(self, user):
+        return self.repository.get_profile(user.uid)
 
     def grade(self, user):
         """Profildeki sınıf (TA-005). Yoksa None; sınıf sorudan tahmin edilmez."""
@@ -33,6 +39,7 @@ class StudentService:
     def save_lesson(self, user, result):
         lesson = result.lesson
         source = lesson.source_analysis
+        grade = result.education_context.grade if result.education_context is not None else None
         record = LessonRecord(
             server_generated=True,
             lesson_id=lesson.lesson_plan_id,
@@ -45,6 +52,8 @@ class StudentService:
             question_summary=source.question_text[:500],
             final_answer=lesson.content.final_answer,
             verification_status=result.verification.status,
+            grade=grade.value if grade is not None else None,
+            grade_origin=grade.origin if grade is not None else None,
             lesson_data=result.model_dump(
                 mode="json",
                 by_alias=True,
