@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+from . import model_catalog
 from .operations import DEFAULT_LIMITS, Operation, validate_effort
 
 Price = Annotated[float, Field(ge=0, allow_inf_nan=False)]
@@ -137,9 +138,40 @@ class Settings(BaseSettings):
         }.get(activity)
 
     app_check_mode: Literal["off", "monitor", "enforce"] = "off"
-    pricing_version: str | None = None
-    # Verified USD per million tokens: input, cached input, output.
-    model_prices: dict[str, tuple[Price, Price, Price]] = {}
+    # TA-005B: fiyatlar ve sürüm tek kaynaktan (core/model_catalog.json) gelir. TEACHERAI_MODEL_PRICES /
+    # TEACHERAI_PRICING_VERSION yalnız açık geçersiz kılmadır. Doğrulanmış USD / milyon token: girdi, önbellekli, çıktı.
+    pricing_version: str | None = Field(default_factory=model_catalog.pricing_version)
+    model_prices: dict[str, tuple[Price, Price, Price]] = Field(default_factory=model_catalog.prices)
+    # TA-005B: işlem bazında sağlayıcı. Fallback yoktur: bir sağlayıcı hata verirse diğerine geçilmez.
+    provider_vision: Literal["openai", "anthropic"] = "openai"
+    provider_lesson: Literal["openai", "anthropic"] = "openai"
+    provider_interaction: Literal["openai", "anthropic"] = "openai"
+
+    def provider_for(self, operation: Operation) -> str:
+        return {Operation.VISION: self.provider_vision, Operation.LESSONS: self.provider_lesson,
+                Operation.INTERACTION: self.provider_interaction}[Operation(operation)]
+
+    def model_for(self, operation: Operation) -> str:
+        return {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
+                Operation.INTERACTION: self.openai_interaction_model}[Operation(operation)]
+
+    @model_validator(mode="after")
+    def providers(self):
+        """Hatalı sağlayıcı yapılandırması uygulamayı başlatmaz."""
+        from .providers import SUPPORTED_OPERATIONS
+
+        for operation in Operation:
+            provider = self.provider_for(operation)
+            if operation not in SUPPORTED_OPERATIONS[provider]:
+                raise ValueError(f"{provider} sağlayıcısı {operation} işlemini desteklemiyor "
+                                 f"(TEACHERAI_PROVIDER_{'LESSON' if operation == Operation.LESSONS else operation.upper()}).")
+        if self.environment in {"production", "staging"}:
+            if any(self.provider_for(op) == "openai" for op in Operation) and not self.openai_api_key:
+                raise ValueError("OPENAI_API_KEY tanımlı değil; OpenAI'ye atanmış işlem var.")
+            unpriced = sorted({self.model_for(op) for op in Operation} - set(self.model_prices))
+            if unpriced or not self.pricing_version:
+                raise ValueError(f"Fiyatı tanımsız model production'da kullanılamaz: {', '.join(unpriced) or 'pricing_version yok'}.")
+        return self
     public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
     public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))
     share_og_image_path: str = "/teacherai-share-og.svg"

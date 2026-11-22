@@ -68,7 +68,8 @@ def test_smoke_generator_is_deterministic():
     ],
 )
 def test_no_network_without_full_paid_authorisation(argv):
-    settings = Settings(openai_api_key="fixture-key")
+    # TA-005B: fiyatlar varsayılan olarak model_catalog.json'dan gelir; "fiyat yok" durumu açıkça kurulur.
+    settings = Settings(openai_api_key="fixture-key", model_prices={}, pricing_version=None)
     with pytest.raises(SystemExit) as stopped:
         evaluate_models.main(argv, settings=settings, client_factory=never_called)
     assert stopped.value.code == 2

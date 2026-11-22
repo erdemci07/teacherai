@@ -10,7 +10,7 @@ türetilmiş cevap başarı ölçütü yapılmaz. Paket ``reading`` alanı okuma
 sağlayıcıya hiçbir zaman gönderilmez.
 
 Ücretli koşu yalnız --allow-paid, --max-usd ve --max-calls birlikte verildiğinde başlar. Fiyatlar
-``evals/config/models.json`` dosyasından okunur. Ön tahmin üst değerdir. Her sorudan önce kalan bütçe
+``apps/api/app/core/model_catalog.json`` dosyasından okunur. Ön tahmin üst değerdir. Her sorudan önce kalan bütçe
 denetlenir; tavan aşılacaksa koşu durur. Ham çıktılar ``evals/runs/`` altına (Git dışı) yazılır.
 """
 
@@ -25,7 +25,7 @@ from time import perf_counter
 
 from scripts.answer_key import IMAGES, MANIFEST, PACK, ROOT, load_key
 
-MODELS = ROOT / "evals/config/models.json"
+MODELS = ROOT / "apps/api/app/core/model_catalog.json"  # TA-005B: tek fiyat kaynağı
 RUNS = ROOT / "evals/runs"
 VISION_PROMPT = ROOT / "apps/api/app/features/vision/prompts/question_analysis.txt"
 LESSON_PROMPT_DIR = ROOT / "apps/api/app/features/lessons/prompts"
@@ -35,7 +35,8 @@ MAX_CALLS = {"vision": 2, "lessons": 3}
 
 def load_pricing(path: Path = MODELS) -> tuple[str, dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    prices = {model: (p["input"], p["cached_input"], p["output"]) for model, p in data["usd_per_million_tokens"].items()}
+    prices = {model: (m["usd_per_million_tokens"]["input"], m["usd_per_million_tokens"]["cached_input"],
+                      m["usd_per_million_tokens"]["output"]) for model, m in data["models"].items()}
     return data["pricing_version"], prices
 
 

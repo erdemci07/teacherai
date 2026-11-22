@@ -24,7 +24,7 @@ Kaynaklar:
 - https://developers.openai.com/api/docs/deprecations
 - https://developers.openai.com/api/docs/models/gpt-6-luna
 
-Değerler `evals/config/models.json` dosyasındadır, kodda yer almaz.
+Değerler TA-005B ile `apps/api/app/core/model_catalog.json` dosyasına taşındı (uygulama ve değerlendirme için tek kaynak), kodda yer almaz.
 
 ## Kuru koşu çıktısı
 
