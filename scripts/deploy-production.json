@@ -1,0 +1,23 @@
+{
+  "project_id": "teacherai-07",
+  "service": "teacherai-api",
+  "repository": "teacherai",
+  "runtime_service_account": "teacherai-api-runtime",
+  "region": null,
+  "region_decision": "K2 bekliyor (docs/migration/TA-005-runbook.md §0). Öneri: Firestore eur3 + Cloud Run europe-west1. Karar verilince bu alan ve firebase.json run.region birlikte güncellenir.",
+  "max_instances": 20,
+  "min_instances": 0,
+  "concurrency": 80,
+  "timeout_seconds": 300,
+  "cpu": "1",
+  "memory": "512Mi",
+  "secret": {"env": "OPENAI_API_KEY", "name": "openai-api-key", "version": "latest"},
+  "required_apis": [
+    "run.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "secretmanager.googleapis.com",
+    "firestore.googleapis.com",
+    "iam.googleapis.com"
+  ]
+}

@@ -7,7 +7,7 @@ Değişkenler:
 ```
 SRC=math-ai-07
 DST=teacherai-07
-REGION=us-east4      # K2 kararına göre değişebilir
+REGION=<K2>          # DST Cloud Run bölgesi; öneri europe-west1 (eur3 seçilirse). SRC servisi us-east4'te kalır.
 DB_LOCATION=<K2>     # örn. eur3
 ```
 
@@ -57,7 +57,7 @@ Kaynaklar:
 | 2.4 | `gcloud artifacts repositories create teacherai --repository-format=docker --location=$REGION --project=$DST` | `gcloud artifacts repositories list --project=$DST` [R] | `… repositories delete teacherai` |
 | 2.5 | Yeni bir OpenAI projesi ve harcama limiti oluştur (OpenAI Console). Ardından `printf %s "$NEW_KEY" \| gcloud secrets create openai-api-key --data-file=- --replication-policy=automatic --project=$DST`. Anahtar SRC'den **kopyalanmaz**. | `gcloud secrets versions list openai-api-key --project=$DST` [R] → 1 etkin | Sürümü devre dışı bırak. OpenAI anahtarını iptal et. |
 | 2.6 | `gcloud iam service-accounts create teacherai-api-runtime --project=$DST` ve gerekli rollerin bağlanması (aşağıdaki tablo) | `gcloud projects get-iam-policy $DST` [R] | Hesabı veya bağları sil |
-| 2.7 | Cloud Run servisi: `scripts/deploy-production.ps1` adım 6–7 (ayar eşliği tablosu aşağıda) | `gcloud run services describe teacherai-api --region=$REGION --project=$DST` [R] | `gcloud run services delete` |
+| 2.7 | Cloud Run servisi: önce `.\scripts\deploy-production.ps1 -Mode Bootstrap -Region $REGION` (yalnız plan), onaydan sonra aynı komut `-Execute` ile. Hosting yayını ayrıca `-PublishHosting` ister (adım 4.5). Ayar eşliği tablosu aşağıda. | `gcloud run services describe teacherai-api --region=$REGION --project=$DST` [R] | `gcloud run services delete` |
 | 2.8 | Kurallar, indeksler ve TTL: `firebase deploy --only firestore --project $DST` | `gcloud firestore indexes composite list` ve `gcloud firestore fields ttls list --project=$DST` [R]. Beklenen: 1 bileşik indeks, 6 TTL. | Önceki kural sürümüne Console'dan dön |
 | 2.9 | App Check: API etkinleştirme, web uygulaması kaydı, reCAPTCHA Enterprise anahtarı. Önce `TEACHERAI_APP_CHECK_MODE=monitor`. | Günlükte doğrulama oranı | Modu `off` yap |
 | 2.10 | K1(b) ise DST'de bir web uygulaması oluştur (`firebase apps:create WEB "TeacherAI Web" --project $DST`). Auth sağlayıcılarını (e-posta/parola, Google), yetkili alan adlarını ve e-posta şablonlarını yeniden yapılandır. | `firebase apps:sdkconfig` [R] → `authDomain: $DST.firebaseapp.com` | Uygulamayı sil |
@@ -88,7 +88,19 @@ Resmî olarak doğrulanan tek şey şudur: Google varsayılan Compute hesabını
 | Secret | `OPENAI_API_KEY ← openai-api-key:latest` | aynı ad, **yeni anahtar** |
 | Geri bildirim e-posta değişkenleri | var | Erdem karar verir (Resend anahtarı DST'de yok) |
 
-Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.ps1` içindeki `$Region` birlikte değiştirilir. Sözleşme testi ikisini aynı tutar.
+K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `firebase.json` içindeki `run.region` birlikte değiştirilir. Bugün `region` boştur (`null`); bölgede kodda varsayılan yoktur ve karar yazılana kadar `-Region` zorunludur. Dağıtım planı rewrite bölgesi farklıysa hiçbir değişiklik yapmadan durur.
+
+### 2.7a: dağıtım betiğinin modları (TA-005B)
+
+| Mod | Ne zaman | Fark |
+| --- | --- | --- |
+| `-Mode Bootstrap` | Servis DST'de yok (ilk kurulum) | `--allow-unauthenticated` ile oluşturur |
+| `-Mode Update` | Servis var | IAM'e dokunmaz |
+
+- Mod, servisin gerçek varlığıyla uyuşmazsa betik hiçbir değişiklik yapmadan durur.
+- Varsayılan yalnız plandır (`-PlanOnly`); dış komut çalışmaz.
+- Sıra: yerel kapılar → ön koşullar (yalnız kontrol) → yapılandırma → image build ve digest → Cloud Run (digest ile) → hazır revizyon ve digest eşliği → `/health` → URL → web Firebase yapılandırması → web build → rewrite → Hosting (yalnız `-PublishHosting`).
+- Geri alma için hazır revizyon adı ve image digest'i çıktıda yazılır: `gcloud run services update-traffic teacherai-api --to-revisions=<önceki>=100 --region=$REGION --project=$DST`.
 
 ## 3. Prova
 
