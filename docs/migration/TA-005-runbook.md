@@ -13,12 +13,12 @@ DB_LOCATION=<K2>     # örn. eur3
 
 ## 0. Karar kapıları (adım 2'den önce)
 
-| Kapı | Durum (denetim) | Gerekli karar |
+| Kapı | Durum (TA-005 denetimi; TA-005B: canlı sayılar **beklemede**) | Gerekli karar |
 | --- | --- | --- |
-| K1 Auth | (b) kanıtı güçlü: bütün web uygulamaları ve `authDomain` SRC'de. Sayılar doğrulanmadı. | Erdem `audit_projects` betiğini çalıştırır. Kesişim > 0 ise (c) kolu uygulanır ve **durulur**. |
-| K2 Firestore konumu | DST'de veritabanı yok. SRC **eur3**'te, Cloud Run us-east4'te. | Konum seçimi. Konum sonradan **değiştirilemez**. |
-| K3 Blaze | DST Spark planında | Ücretli yükseltme onayı |
-| K4 run.app bağlantıları | Olası (26 Ağustos'ta ~3 saatlik pencere). Bugünkü bağlantılar run.app'e 302 ile gidiyor. | Eski serviste en az 30 gün yönlendirme |
+| K1 Auth | (b) kanıtı güçlü: bütün web uygulamaları ve `authDomain` SRC'de. Kullanıcı sayıları ve UID kesişimi **doğrulanamadı**: `TA-005-audit-live.md` yok. | Erdem `audit_projects` betiğini çalıştırır. Kesişim > 0 ise (c) kolu uygulanır ve **durulur**. |
+| K2 Firestore konumu | DST'de veritabanı yok. SRC **eur3**'te, Cloud Run us-east4'te. Dağıtım betiğinde bölge kodda sabit değil: `scripts/deploy-production.json` içinde `region: null`. | Konum seçimi. Konum sonradan **değiştirilemez**. Öneri: eur3 + Cloud Run europe-west1. Karar verilince `deploy-production.json` ve `firebase.json` `run.region` birlikte güncellenir. |
+| K3 Blaze | DST Spark planında. Dağıtım planı billing kapalıysa hiçbir değişiklik yapmadan durur. | Ücretli yükseltme onayı |
+| K4 run.app bağlantıları | Olası (26 Ağustos'ta ~3 saatlik pencere). Bugünkü bağlantılar run.app'e 302 ile gidiyor. Paylaşım sayısı ve tarih aralığı **doğrulanamadı**. | Eski serviste en az 30 gün yönlendirme. Sahipsiz eski paylaşımların taşınıp taşınmayacağı (`--copy-ownerless-shares`) |
 | Hedef | Denetime göre SRC'de her şey var; DST'de yalnız Hosting sitesi var | Aşağıdaki not |
 
 **Hedefin yeniden değerlendirilmesi (bilgi notu, karar Erdem'in).** DST'ye taşımak şunları gerektirir: Auth dışa/içe aktarımı (kullanıcılar yeniden oturum açar), yeni Firestore veritabanı ve veri kopyası, yeni Secret Manager, Artifact Registry ve Cloud Run kaynakları. Tersi yönde, yani her şeyi SRC'de toplamak, yalnız Hosting'in taşınmasını gerektirir. Ancak `teacherai-07.web.app` alan adı DST projesine bağlıdır ve taşınamaz. Alan adını korumak için ya DST'de bir yönlendirme sitesi kalmalı ya da özel alan adı kullanılmalıdır. Bu runbook verilen hedefe (DST) göre yazıldı.

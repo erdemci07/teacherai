@@ -12,6 +12,7 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Yalnızca sözleşme ve çevrimdışı fikstür | Fizik, kimya, biyoloji ve fen dersleri v2 ile temsil edilir ve çevrimdışı testlerde gösterilir. Bu alanlarda tanıma, ders üretimi, öğrenci akışında doğrulama ve pratik **çalışmaz**. Üretim isteği 422 `subject_generation_unavailable` alır. |
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
 | Uygulandı (TA-005) | 8. sınıf matematik için kaynaklı kazanım kaydı (MEB 2018) ve taslak yöntem politikası; yalnız onaylı politika yöntem denetimi uygular, sınıf bilgisi beyan veya profilden gelir. Değişkensiz ifadelerde ve eşitsizlik uç değerinde şıkları gizleyerek çözme. Bakım modu, eski bağlantı yönlendirmesi, tek proje ayarları ve Firestore kopya betiği. Ayrıntı: [TA-005 raporu](phase-reports/TA-005.md). |
+| Uygulandı (TA-005B) | Sağlayıcıdan bağımsız AI portu; davranışı bayt bayt koruyan OpenAI adaptörü; yalnız ders işlemini destekleyen Anthropic adaptörü (varsayılan sağlayıcı her işlemde `openai`). Tek fiyat/yetenek kataloğu. Yöntem denetiminde güçlü (AST) ve zayıf (metin) kanıt ayrımı. Profilde sınıf seçimi ve derste sınıfın anlık kaydı. MathAI eşzamanlılık sınırı ve `mathai_busy`/`mathai_timeout`/`mathai_error`. Kopya betiğinde iki yönlü uzlaştırma ve silinmiş verinin hortlamasını önleme. Bootstrap/Update modlu, digest ile dağıtım planı. Ayrıntı: [TA-005B raporu](phase-reports/TA-005B.md). |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
 | Ertelendi | Aşağıdaki yol haritasındaki TA-005 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
@@ -26,8 +27,8 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-002 | Ortak eğitim çekirdeği, LessonPlan v2 | Tamamlandı |
 | TA-003 | Soru bütünlüğü ve görsel zekâ | Tamamlandı |
 | TA-004 | Akıl yürütme ve doğrulama çekirdeği | Tamamlandı |
-| TA-005 | Tek proje geçişine hazırlık, kimya düzeltmeleri, gizli şık stratejisi, 8. sınıf yöntem kaydı, değerlendirme altyapısı | Bu dal (canlı taşıma ve gerçek model koşusu onay bekliyor) |
-| TA-005B | Sağlayıcıdan bağımsız AI geçidi (Anthropic adaptörü), profil formunda sınıf alanı | Planlandı |
+| TA-005 | Tek proje geçişine hazırlık, kimya düzeltmeleri, gizli şık stratejisi, 8. sınıf yöntem kaydı, değerlendirme altyapısı | Tamamlandı (canlı taşıma ve gerçek model koşusu onay bekliyor) |
+| TA-005B | Geçiş araçlarının güvenliği, ilk dağıtım planı, yöntem denetimi, sınıf bilgisi, MathAI dayanıklılığı, sağlayıcıdan bağımsız AI geçidi | Bu dal (canlı denetim çıktısı ve gerçek model koşusu bekliyor) |
 | TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
 | TA-007 | Uzman öğretmen bilgisi | Planlandı |
 | TA-008 | İleri matematik ve geometri | Planlandı |
@@ -90,7 +91,7 @@ Kabul sonuçları, istemci geçişi, yapılandırma ve açık konular [TA-001](p
 
 ## AI maliyet ve sonuç sözleşmesi (TA-001B)
 
-- Her sağlayıcı çağrısı `core/gateway.py` üzerinden geçer. Çıktı sınırı işlem başına ayarlanır (`TEACHERAI_MAX_OUTPUT_TOKENS_BY_OPERATION`, varsayılan 4096 / 4096 / 16384). Reasoning düzeyi yalnızca destekleyen modelde gönderilir (`TEACHERAI_REASONING_EFFORT_BY_OPERATION`).
+- Her sağlayıcı çağrısı `core/gateway.py` üzerinden geçer. TA-005B'den beri geçit sağlayıcıdan bağımsızdır: adaptörler (`core/openai_adapter.py`, `core/anthropic_adapter.py`) yalnız geçidin tek kullanımlık geçiş belgesiyle çağrılabilir; kota, bütçe, tavan, rezervasyon, şema doğrulaması ve günlük ortak katmandadır. Fiyatlar `core/model_catalog.json` dosyasındadır ([ADR TA-005B](architecture/adr-ta-005b-provider-gateway.md)). Çıktı sınırı işlem başına ayarlanır (`TEACHERAI_MAX_OUTPUT_TOKENS_BY_OPERATION`, varsayılan 4096 / 4096 / 16384). Reasoning düzeyi yalnızca destekleyen modelde gönderilir (`TEACHERAI_REASONING_EFFORT_BY_OPERATION`).
 - Sonuç sınıfları ve hata kodları: `completed`, `incomplete_max_tokens` (502 `ai_output_truncated`), `incomplete_other` (422 `ai_output_filtered` veya 502 `ai_output_incomplete`), `refusal` (422 `ai_refused`), `invalid_output` (502 `ai_invalid_output`), `timeout` (504 `ai_timeout`), `provider_error` (mevcut kodlar). Başarısız sonuçta hiçbir kayıt kalıcı hale gelmez. `ai_usage` günlüğü `outcome` alanını taşır.
 - Kullanıcı başına günlük sınırların yanında küresel günlük bütçe uygulanır (`TEACHERAI_GLOBAL_DAILY_PAID_OPERATIONS`, `…_PROVIDER_CALLS`, `…_OUTPUT_TOKENS`). Bütçe tek `ai_global_usage/{gün}` belgesinde, kullanıcı sayacıyla aynı işlemde ayrılır. `0` ilgili yolu kapatır. Aşımda 503 `ai_global_budget_exhausted` döner. Bu sınırlar kesin bir USD tavanı değildir.
 - Aynı `Idempotency-Key` ile tekrar gelen istek 409 `duplicate_request` alır ve ücretli işlem ikinci kez çalışmaz. İstemci, sonucu bilinmeyen denemeyi aynı anahtarla tekrarlar. Bu “en fazla bir kez çalıştırma” güvencesidir, önceki yanıt saklanmaz.

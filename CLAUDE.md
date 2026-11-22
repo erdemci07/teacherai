@@ -1,6 +1,6 @@
 # TeacherAI
 
-Ortak proje ilkeleri ve çalışan sözleşme için [proje bağlamını](docs/PROJECT_CONTEXT.md), son doğrulama için [TA-005 raporunu](docs/phase-reports/TA-005.md), önceki [TA-004](docs/phase-reports/TA-004.md), [TA-003](docs/phase-reports/TA-003.md), [TA-002](docs/phase-reports/TA-002.md), [TA-001B](docs/phase-reports/TA-001B.md) ve [TA-001](docs/phase-reports/TA-001.md) raporlarını kullanın. Kararlar [ADR TA-002](docs/architecture/adr-ta-002-education-core.md), [ADR TA-003](docs/architecture/adr-ta-003-question-integrity.md), [ADR TA-004](docs/architecture/adr-ta-004-reasoning-verification.md) ve [ADR TA-005](docs/architecture/adr-ta-005-single-project.md) içindedir. Canlı proje geçişi [runbook](docs/migration/TA-005-runbook.md) ile ve yalnız onayla yapılır. Web değişikliklerinde apps/web/AGENTS.md talimatları da geçerlidir.
+Ortak proje ilkeleri ve çalışan sözleşme için [proje bağlamını](docs/PROJECT_CONTEXT.md), son doğrulama için [TA-005B raporunu](docs/phase-reports/TA-005B.md), önceki [TA-005](docs/phase-reports/TA-005.md), [TA-004](docs/phase-reports/TA-004.md), [TA-003](docs/phase-reports/TA-003.md), [TA-002](docs/phase-reports/TA-002.md), [TA-001B](docs/phase-reports/TA-001B.md) ve [TA-001](docs/phase-reports/TA-001.md) raporlarını kullanın. Kararlar [ADR TA-002](docs/architecture/adr-ta-002-education-core.md), [ADR TA-003](docs/architecture/adr-ta-003-question-integrity.md), [ADR TA-004](docs/architecture/adr-ta-004-reasoning-verification.md) ve [ADR TA-005](docs/architecture/adr-ta-005-single-project.md) ve [ADR TA-005B](docs/architecture/adr-ta-005b-provider-gateway.md) içindedir. Canlı proje geçişi [runbook](docs/migration/TA-005-runbook.md) ile ve yalnız onayla yapılır. Web değişikliklerinde apps/web/AGENTS.md talimatları da geçerlidir.
 
 Doğruluk ilkesi (TA-003): TeacherAI şu beş boyutu ayrı ayrı değerlendirir ve birini diğerinin kanıtı saymaz:
 
@@ -18,7 +18,7 @@ Değişmez kurallar:
 - Üretime deploy, Firebase/GCP ayarı, billing ve canlı veri işlemi yapılmaz. Toplu veri betikleri yalnızca emülatörde denenir.
 - Test, lint kuralı veya uyarı bastırılmaz.
 - Kullanıcıya bağlı her yeni kalıcı yazma, aynı Firestore işleminde hesap silme işaretini denetler (`apps/api/app/features/account/guard.py`) ve bir sahip alanı taşır.
-- Sağlayıcı çağrıları yalnızca `apps/api/app/core/gateway.py` üzerinden yapılır. İşlem adları `core/operations.py` içindeki `Operation` enum’undan gelir.
+- Sağlayıcı çağrıları yalnızca `apps/api/app/core/gateway.py` üzerinden yapılır; adaptörler geçidin geçiş belgesi olmadan çağrılamaz. İşlem adları `core/operations.py` içindeki `Operation` enum’undan gelir.
 - Eğitim sözleşmesinin kaynağı `apps/api/app/features/education/` altındaki Pydantic modelleridir. Model değişince `python -m scripts.education_contracts` çalıştırılır. Üretilen `education.generated.ts` ve `docs/contracts/education-v2.schema.json` elle düzenlenmez. CI `--check` ile eskimiş dosyayı reddeder.
 - Ek sağlayıcı çağrıları mantıksal istek tavanına tabidir (`Settings.provider_call_budget`). Yeni yeniden deneme döngüsü bu tavanı aşamaz; zorunlu ek çağrı eklenmez.
 - Matematik ifadeleri yalnızca `features/integrity/expression.py` ayrıştırıcısıyla işlenir; `eval`, `exec`, `ast.parse`, `sympify` kullanılmaz.
