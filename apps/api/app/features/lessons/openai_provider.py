@@ -3,7 +3,10 @@ import logging
 from pathlib import Path
 from time import perf_counter
 
-from apps.api.app.core.gateway import parse_response
+from apps.api.app.core.ai_port import ProviderRequest
+from apps.api.app.core.openai_adapter import OpenAIAdapter
+from apps.api.app.core.operations import Operation
+from apps.api.app.core.gateway import invoke
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -133,19 +136,9 @@ class OpenAILessonProvider:
                 "answer_strategy_reason": context.metrics.answer_strategy_reason,
             },
         )
-        return await parse_response(
-            client,
-            "lessons",
-            timeout=self.timeout + 2,
-            purpose=purpose,
-            validate=normalize_lesson_draft_response,
-            model=self.model,
-            input=[
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": context.serialized},
-            ],
-            text_format=LessonDraftResponse,
-        )
+        request = ProviderRequest(Operation.LESSONS, self.model, user=context.serialized, system=self.prompt,
+                                  schema=LessonDraftResponse, timeout=self.timeout + 2)
+        return await invoke(OpenAIAdapter(client), request, validate=normalize_lesson_draft_response, purpose=purpose)
 
     def _build_budgeted_context(self, analysis: VisionAnalysis, correction_feedback: str | None, teaching_context, level: str) -> BuiltLessonContext:
         context = build_lesson_generation_context(analysis, correction_feedback, teaching_context, level)  # type: ignore[arg-type]

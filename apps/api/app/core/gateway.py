@@ -1,14 +1,16 @@
-"""Yapılandırılmış Responses çağrıları için ortak sınır.
+"""Yapılandırılmış sağlayıcı çağrıları için ortak sınır (TA-001B; TA-005B'de sağlayıcıdan bağımsız).
 
 Buradan yalnızca izin verilen üst veri çıkar. Her sağlayıcı çağrısı:
-1. işleme özel sınırla çıktı rezervasyonu yapar,
-2. SDK'nın ham yanıtını alır; durum ve refusal kontrolü yapılandırılmış
-   ayrıştırmadan önce yapılır (kesilen JSON böylece doğru sınıflanır),
-3. tam olarak bir sonuca (ai_outcomes.Outcome) düşer ve tek ai_usage satırı yazar,
-4. rezervasyonu en fazla bir kez, sonuç kuralına göre iade eder.
+1. mantıksal istek tavanını denetler ve işleme özel sınırla çıktı rezervasyonu yapar,
+2. adaptöre (``core/ai_port.py``) yalnız bu çağrı için geçerli bir geçiş belgesiyle gider; adaptör ham
+   yanıtı tek sonuca indirir (kesilen JSON böylece şema doğrulamasından önce doğru sınıflanır),
+3. başarıda çıktıyı hedef şemaya ve isteğe bağlı doğrulayıcıya göre burada doğrular,
+4. tam olarak bir sonuca (ai_outcomes.Outcome) düşer ve tek ai_usage satırı yazar,
+5. rezervasyonu en fazla bir kez, sonuç kuralına göre iade eder.
+Kota, idempotency ve hesap silme denetimi ``core/admission.py`` ve ``core/usage.py`` ile bu katmandadır;
+adaptör bunları atlayamaz.
 """
 
-import asyncio
 import json
 import logging
 from contextvars import ContextVar
@@ -16,7 +18,6 @@ from dataclasses import dataclass, field
 from time import perf_counter
 from typing import Any, Callable
 
-from openai import APIError, APITimeoutError
 from starlette.concurrency import run_in_threadpool
 
 from .ai_outcomes import (
@@ -30,6 +31,7 @@ from .ai_outcomes import (
     AITimeoutError,
     Outcome,
 )
+from .ai_port import ProviderAdapter, ProviderRequest, Usage, issue
 from .operations import Operation, validate_effort
 from .settings import get_settings
 
@@ -81,46 +83,32 @@ def end_accounting(token):
     _current.reset(token)
 
 
-def _classify(body: dict, text_format, validate: Callable | None):
-    """Ham Responses gövdesini tek bir sonuca indirger; başarıda ayrıştırılmış çıktıyı döndürür."""
-    status = body.get("status")
-    if status == "incomplete":
-        reason = (body.get("incomplete_details") or {}).get("reason")
-        if reason == "max_output_tokens":
-            raise AIOutputTruncatedError(reason)
-        if reason == "content_filter":
-            raise AIOutputFilteredError(reason)
-        raise AIOutputIncompleteError(reason or "unknown")
-    texts, refused = [], False
-    for item in body.get("output") or []:
-        if item.get("type") != "message":
-            continue
-        for part in item.get("content") or []:
-            if part.get("type") == "refusal":
-                refused = True
-            elif part.get("type") == "output_text":
-                texts.append(part.get("text") or "")
-    if refused:
-        raise AIRefusalError("refusal")
-    if status != "completed":
-        raise AIOutcomeError(str(status or "missing_status"))
-    if not texts:
-        raise AIInvalidOutputError("missing_output")
+def _raise_for(outcome: Outcome, reason: str | None):
+    if outcome == Outcome.INCOMPLETE_MAX_TOKENS:
+        raise AIOutputTruncatedError(reason)
+    if outcome == Outcome.INCOMPLETE_OTHER:
+        raise (AIOutputFilteredError if reason == "content_filter" else AIOutputIncompleteError)(reason or "unknown")
+    if outcome == Outcome.REFUSAL:
+        raise AIRefusalError(reason or "refusal")
+    if outcome == Outcome.INVALID_OUTPUT:
+        raise AIInvalidOutputError(reason)
+    if outcome == Outcome.TIMEOUT:
+        raise AITimeoutError(reason)
+    raise AIOutcomeError(reason)
+
+
+def _validated(text: str, schema, validate: Callable | None):
     try:
-        parsed = text_format.model_validate_json(texts[-1]) if text_format else texts[-1]
+        parsed = schema.model_validate_json(text) if schema else text
         return validate(parsed) if validate else parsed
     except Exception as exc:
         raise AIInvalidOutputError(type(exc).__name__) from exc
 
 
-def _usage_fields(usage: dict) -> dict:
-    return {
-        "input_tokens": usage.get("input_tokens"),
-        "output_tokens": usage.get("output_tokens"),
-        "total_tokens": usage.get("total_tokens"),
-        "cached_tokens": (usage.get("input_tokens_details") or {}).get("cached_tokens"),
-        "reasoning_tokens": (usage.get("output_tokens_details") or {}).get("reasoning_tokens"),
-    }
+def _usage_fields(usage: Usage) -> dict:
+    total = usage.input + usage.output if usage.input is not None and usage.output is not None else None
+    return {"input_tokens": usage.input, "output_tokens": usage.output, "total_tokens": total,
+            "cached_tokens": usage.cached_input, "reasoning_tokens": usage.reasoning}
 
 
 def _price(event, settings):
@@ -128,7 +116,7 @@ def _price(event, settings):
     if not (rates and settings.pricing_version):
         return
     if any(event[k] is None for k in ("input_tokens", "cached_tokens", "output_tokens")):
-        return
+        return  # bilinmeyen kullanımın maliyeti uydurulmaz
     cached = event["cached_tokens"]
     event["estimated_usd"] = (
         (event["input_tokens"] - cached) * rates[0] + cached * rates[1] + event["output_tokens"] * rates[2]
@@ -136,11 +124,12 @@ def _price(event, settings):
     event["pricing_version"] = settings.pricing_version
 
 
-async def parse_response(client, operation, *, timeout: float | None = None, validate: Callable | None = None,
-                         purpose: str = "primary", **params):
+async def invoke(adapter: ProviderAdapter, request: ProviderRequest, *, validate: Callable | None = None,
+                 purpose: str = "primary") -> ProviderReply:
+    """Ortak katman: tavan, rezervasyon, reasoning, geçiş belgesi, şema doğrulaması, günlük ve iade."""
     scope = _current.get()
     settings = scope.settings if scope else get_settings()
-    operation = Operation(operation)
+    operation = Operation(request.operation)
     if scope and scope.max_calls is not None and scope.calls >= scope.max_calls:
         logger.info(json.dumps({"event": "ai_call_budget_exhausted", "request_id": scope.request_id,
                                 "operation": operation, "purpose": purpose, "calls": scope.calls,
@@ -149,9 +138,9 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
     limit = settings.max_output_tokens_by_operation[operation]
     effort = settings.reasoning_effort_by_operation.get(operation)
     if effort:
-        validate_effort(params["model"], effort)
-        params["reasoning"] = {"effort": effort}
-    text_format = params.get("text_format")
+        validate_effort(request.model, effort)
+    request = ProviderRequest(operation, request.model, request.user, request.system, request.schema,
+                              request.timeout, limit, effort or None)
     attempt = scope.calls if scope else 0
     reservation = None
     if scope:
@@ -163,30 +152,28 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
         "request_id": scope.request_id if scope else None,
         "operation": operation,
         "purpose": purpose,
-        "provider": "openai",
-        "model": params["model"],
+        "provider": adapter.name,
+        "model": request.model,
         "retry_count": attempt,
         "reserved_output_tokens": limit,
         "status": "error",
         "outcome": Outcome.PROVIDER_ERROR,
     }
-    usage: dict = {}
+    usage: Usage = Usage()
     try:
-        try:
-            call = client.responses.with_raw_response.parse(**params, max_output_tokens=limit, store=False)
-            raw = await (asyncio.wait_for(call, timeout) if timeout else call)
-        except (APITimeoutError, TimeoutError) as exc:
-            raise AITimeoutError(type(exc).__name__) from exc
-        body = raw.http_response.json()
-        usage = body.get("usage") or {}
-        event.update(_usage_fields(usage))
-        event["provider_request_id"] = raw.request_id
-        event["model"] = body.get("model") or params["model"]
-        event["status"] = body.get("status") or "unknown"
-        _price(event, settings)
-        parsed = _classify(body, text_format, validate)
+        result = await adapter.send(request, issue(request))
+        if result.outcome != Outcome.TIMEOUT:
+            usage = result.usage
+            event.update(_usage_fields(usage))
+            event["provider_request_id"] = result.provider_request_id
+            event["model"] = result.model or request.model
+            event["status"] = result.status or "unknown"
+            _price(event, settings)
+        if result.outcome != Outcome.COMPLETED:
+            _raise_for(result.outcome, result.reason)
+        parsed = _validated(result.text, request.schema, validate)
         event["outcome"] = Outcome.COMPLETED
-        reply = ProviderReply(parsed, body.get("id"), event["model"], event["status"], usage)
+        reply = ProviderReply(parsed, result.response_id, event["model"], event["status"], result.raw_usage)
     except AIOutcomeError as exc:
         event["outcome"] = exc.outcome
         event["error_type"] = type(exc).__name__
@@ -197,9 +184,7 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
         raise
     except BaseException as exc:
         event["error_type"] = type(exc).__name__
-        if isinstance(exc, APIError):
-            event["http_status"] = getattr(exc, "status_code", None)
-            event["provider_request_id"] = getattr(exc, "request_id", None)
+        event.update(getattr(adapter, "error_details", lambda _: {})(exc))
         await _settle(scope, reservation, limit, Outcome.PROVIDER_ERROR, usage, event)
         _emit(event, started)
         raise
@@ -211,9 +196,19 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
     return reply
 
 
-async def _settle(scope, reservation, limit, outcome, usage, event, strict=False):
+async def parse_response(client, operation, *, timeout: float | None = None, validate: Callable | None = None,
+                         purpose: str = "primary", **params):
+    """TA-001B uyumluluk girişi: OpenAI istemcisi ve Responses parametreleri alır, ``invoke``'a çevirir."""
+    from .openai_adapter import OpenAIAdapter
+
+    adapter = OpenAIAdapter(client, raw_input=params["input"]) if "input" in params else OpenAIAdapter(client)
+    request = ProviderRequest(Operation(operation), params["model"], schema=params.get("text_format"), timeout=timeout)
+    return await invoke(adapter, request, validate=validate, purpose=purpose)
+
+
+async def _settle(scope, reservation, limit, outcome, usage: Usage, event, strict=False):
     """Kullanılmayan rezervasyonu bir kez iade eder; tüketimi bilinmeyen sonuçta korur."""
-    output = usage.get("output_tokens")
+    output = usage.output
     if not reservation or outcome in KEEP_RESERVATION or output is None:
         event["reservation"] = "kept" if reservation else "none"
         return

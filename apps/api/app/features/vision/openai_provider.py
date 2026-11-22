@@ -1,11 +1,13 @@
 import asyncio
-import base64
 import logging
 from pathlib import Path
 from time import perf_counter
 
 from apps.api.app.core.ai_outcomes import AIOutcomeError
-from apps.api.app.core.gateway import ProviderCallBudgetExhausted, parse_response
+from apps.api.app.core.ai_port import ImagePart, ProviderRequest, TextPart
+from apps.api.app.core.gateway import ProviderCallBudgetExhausted, invoke
+from apps.api.app.core.openai_adapter import OpenAIAdapter
+from apps.api.app.core.operations import Operation
 from apps.api.app.core.usage import UsageLimitExceeded
 from apps.api.app.features.account.guard import AccountDeletionInProgress
 from apps.api.app.features.vision.exceptions import (
@@ -47,24 +49,16 @@ class OpenAIVisionProvider:
         self._recheck_prompt = (Path(__file__).parent / "prompts" / "targeted_recheck.txt").read_text(encoding="utf-8")
 
     async def analyze_image(self, image: bytes, media_type: str, request_id: str | None = None) -> ProviderResult:
-        content = [
-            {"type": "input_text", "text": self._prompt},
-            {"type": "input_image", "image_url": self._data_url(image, media_type), "detail": "high"},
-        ]
+        content = (TextPart(self._prompt), ImagePart(image, media_type, "high"))
         response = await self._call(content, VisionProviderAnalysis, "vision.initial", request_id)
         # Şema doğrulaması gateway'de yapılır; burada yalnız doğrulanmış çıktı vardır.
         return ProviderResult(analysis=response.output_parsed, provider=self.name, model=self._model, response_id=response.id)
 
     async def recheck(self, images: list[tuple[bytes, str]], items: str, request_id: str | None = None) -> RecheckResponse:
         """Belirsiz parçaları hedefli olarak yeniden okur. Aynı gateway, kota ve bütçe sınırından geçer."""
-        content = [{"type": "input_text", "text": f"{self._recheck_prompt}\n\n{items}"}]
-        content.extend({"type": "input_image", "image_url": self._data_url(data, kind), "detail": "high"} for data, kind in images[:2])
+        content = (TextPart(f"{self._recheck_prompt}\n\n{items}"), *(ImagePart(data, kind, "high") for data, kind in images[:2]))
         response = await self._call(content, RecheckResponse, "vision.recheck", request_id)
         return response.output_parsed
-
-    @staticmethod
-    def _data_url(image: bytes, media_type: str) -> str:
-        return f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
 
     async def _call(self, content, text_format, purpose: str, request_id: str | None):
         started = perf_counter()
@@ -74,15 +68,9 @@ class OpenAIVisionProvider:
             raise error
         client = (self._client_factory or AsyncOpenAI)(api_key=self._api_key, timeout=self._timeout_seconds, max_retries=0)
         try:
-            return await parse_response(
-                client,
-                "vision",
-                timeout=self._timeout_seconds + 2,
-                purpose=purpose,
-                model=self._model,
-                input=[{"role": "user", "content": content}],
-                text_format=text_format,
-            )
+            request = ProviderRequest(Operation.VISION, self._model, user=content, schema=text_format,
+                                      timeout=self._timeout_seconds + 2)
+            return await invoke(OpenAIAdapter(client), request, purpose=purpose)
         except AuthenticationError as exc:
             self._log_failure(exc, request_id, started)
             raise ProviderAuthenticationError from exc
