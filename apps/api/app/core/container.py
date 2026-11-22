@@ -18,7 +18,7 @@ from apps.api.app.features.feedback.service import FeedbackService
 from apps.api.app.features.interactions.openai_provider import OpenAIInteractionProvider
 from apps.api.app.features.interactions.service import InteractionService
 from apps.api.app.features.interactions.store import InMemoryPracticeStore
-from apps.api.app.features.lessons.openai_provider import OpenAILessonProvider
+from apps.api.app.features.lessons.openai_provider import AnthropicLessonProvider, OpenAILessonProvider
 from apps.api.app.features.lessons.service import LessonService
 from apps.api.app.features.mathai.isolated import IsolatedMathAI
 from apps.api.app.features.memory.engine import MemoryEngine
@@ -116,7 +116,7 @@ def build_container(settings: Settings | None = None) -> Container:
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
         interaction_service=InteractionService(OpenAIInteractionProvider(resolved_settings.openai_api_key, resolved_settings.openai_interaction_model, resolved_settings.interaction_provider_timeout_seconds), IsolatedMathAI(), practice_store),
-        lesson_service=LessonService(OpenAILessonProvider(resolved_settings.openai_api_key, resolved_settings.openai_lesson_model, resolved_settings.lesson_provider_timeout_seconds, resolved_settings.lesson_context_max_bytes), IsolatedMathAI(), BoardPlanner()),
+        lesson_service=LessonService(_lesson_provider(resolved_settings), IsolatedMathAI(), BoardPlanner()),
         vision_service=VisionService(
             provider=vision_provider,
             storage=LocalTemporaryImageStorage(resolved_settings.upload_temp_directory),
@@ -125,3 +125,12 @@ def build_container(settings: Settings | None = None) -> Container:
             recheck_limit=resolved_settings.vision_max_rechecks,
         ),
     )
+
+
+def _lesson_provider(settings):
+    """TA-005B: işlem bazında sağlayıcı; Settings desteklenmeyen atamayı başlangıçta reddeder. Fallback yok."""
+    if settings.provider_lesson == "anthropic":
+        return AnthropicLessonProvider(settings.anthropic_api_key, settings.anthropic_lesson_model,
+                                       settings.lesson_provider_timeout_seconds, settings.lesson_context_max_bytes)
+    return OpenAILessonProvider(settings.openai_api_key, settings.openai_lesson_model,
+                                settings.lesson_provider_timeout_seconds, settings.lesson_context_max_bytes)

@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from unittest.mock import Mock
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
@@ -32,13 +33,34 @@ PRODUCTION = {"_env_file": None, "environment": "production", "firebase_project_
 
 # --- yapılandırma ---
 
-@pytest.mark.parametrize("field", ["provider_vision", "provider_lesson", "provider_interaction"])
+@pytest.mark.parametrize("field", ["provider_vision", "provider_interaction"])
 def test_unsupported_provider_assignment_stops_startup(field):
-    assert SUPPORTED_OPERATIONS["anthropic"] == frozenset()  # Anthropic adaptörü bu fazda yok
+    assert SUPPORTED_OPERATIONS["anthropic"] == frozenset({Operation.LESSONS})  # şema uyumu: yalnız ders
     with pytest.raises(ValidationError, match="desteklemiyor"):
-        Settings(_env_file=None, **{field: "anthropic"})
+        Settings(_env_file=None, allow_student_images_to_anthropic=True, anthropic_api_key="k", **{field: "anthropic"})
     with pytest.raises(ValidationError):
         Settings(_env_file=None, **{field: "gemini"})
+
+
+def test_anthropic_lesson_needs_explicit_model_key_and_price():
+    base = {"_env_file": None, "provider_lesson": "anthropic"}
+    with pytest.raises(ValidationError, match="model verilmedi"):
+        Settings(**base, anthropic_api_key="k")
+    with pytest.raises(ValidationError, match="ANTHROPIC_API_KEY"):
+        Settings(**base, anthropic_lesson_model="claude-sonnet-5-5")
+    ok = Settings(**base, anthropic_api_key="k", anthropic_lesson_model="claude-sonnet-5-5")
+    assert ok.model_for(Operation.LESSONS) == "claude-sonnet-5-5" and ok.provider_for(Operation.VISION) == "openai"
+    with pytest.raises(ValidationError, match="Fiyatı tanımsız"):
+        Settings(**PRODUCTION, openai_api_key="k", provider_lesson="anthropic", anthropic_api_key="k",
+                 anthropic_lesson_model="claude-haiku-5-5")  # kademeli fiyat katalogda yok
+    with pytest.raises(ValidationError, match="reasoning"):
+        Settings(**base, anthropic_api_key="k", anthropic_lesson_model="claude-sonnet-5-5",
+                 reasoning_effort_by_operation={"lessons": "low"})
+
+
+def test_vision_to_anthropic_requires_student_image_flag():
+    with pytest.raises(ValidationError, match="ALLOW_STUDENT_IMAGES_TO_ANTHROPIC"):
+        Settings(_env_file=None, provider_vision="anthropic", anthropic_api_key="k")
 
 
 def test_default_provider_is_openai_without_fallback():
@@ -91,17 +113,29 @@ class RecordingClient:
         self.responses = type("R", (), {"with_raw_response": type("W", (), {"parse": staticmethod(parse)})()})()
 
 
+def make_adapter(name, order):
+    if name == "openai":
+        return adapter_classes()[name](RecordingClient(order))
+
+    def handler(request):
+        order.append("provider")
+        return httpx.Response(200, json={"id": "msg", "model": "m", "stop_reason": "end_turn",
+                                         "content": [{"type": "text", "text": "{}"}], "usage": {}})
+
+    return adapter_classes()[name]("k", transport=httpx.MockTransport(handler))
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("name", sorted(adapter_classes()))
 async def test_every_adapter_refuses_calls_that_bypass_the_gateway(name):
     order = []
-    adapter = adapter_classes()[name](RecordingClient(order))
-    request = ProviderRequest(Operation.VISION, "fixture")
+    adapter = make_adapter(name, order)
+    request = ProviderRequest(Operation.LESSONS, "fixture")
     with pytest.raises(AdmissionRequired):
         await adapter.send(request, None)
     with pytest.raises(AdmissionRequired):
         Admission(request, _issuer=object())
-    other = issue(ProviderRequest(Operation.VISION, "fixture"))
+    other = issue(ProviderRequest(Operation.LESSONS, "fixture"))
     with pytest.raises(AdmissionRequired):
         await adapter.send(request, other)  # başka isteğin belgesi
     used = issue(request)
@@ -117,12 +151,12 @@ async def test_gateway_reserves_and_counts_before_any_adapter_call(name):
     order = []
     tracker = Mock()
     tracker.reserve_output.side_effect = lambda uid, limit: order.append("reserve") or "reservation"
-    adapter = adapter_classes()[name](RecordingClient(order))
+    adapter = make_adapter(name, order)
     token = begin_accounting("req", Settings(_env_file=None), tracker, "uid", max_calls=1)
     try:
-        await invoke(adapter, ProviderRequest(Operation.VISION, "fixture"))
+        await invoke(adapter, ProviderRequest(Operation.LESSONS, "fixture"))
         with pytest.raises(ProviderCallBudgetExhausted):
-            await invoke(adapter, ProviderRequest(Operation.VISION, "fixture"))
+            await invoke(adapter, ProviderRequest(Operation.LESSONS, "fixture"))
     finally:
         end_accounting(token)
     assert order == ["reserve", "provider"]  # rezervasyon önce; tavan dolunca adaptöre gidilmez

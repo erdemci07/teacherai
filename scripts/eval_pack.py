@@ -36,7 +36,8 @@ MAX_CALLS = {"vision": 2, "lessons": 3}
 def load_pricing(path: Path = MODELS) -> tuple[str, dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
     prices = {model: (m["usd_per_million_tokens"]["input"], m["usd_per_million_tokens"]["cached_input"],
-                      m["usd_per_million_tokens"]["output"]) for model, m in data["models"].items()}
+                      m["usd_per_million_tokens"]["output"]) for model, m in data["models"].items()
+              if m.get("usd_per_million_tokens")}  # fiyatsız model (ör. kademeli fiyat) maliyetlenmez
     return data["pricing_version"], prices
 
 
@@ -146,9 +147,12 @@ def summarize(rows: list[dict]) -> dict:
 class Services:
     """Gerçek üretim yolu. Testler bu sınıfın yerine sahte bir nesne verir."""
 
-    def __init__(self, settings, vision_model, lesson_model, effort):
+    def __init__(self, settings, vision_model, lesson_model, effort, lesson_provider="openai"):
         from apps.api.app.features.board.planner import BoardPlanner
-        from apps.api.app.features.lessons.openai_provider import OpenAILessonProvider
+        from apps.api.app.features.lessons.openai_provider import (
+            AnthropicLessonProvider,
+            OpenAILessonProvider,
+        )
         from apps.api.app.features.lessons.service import LessonService
         from apps.api.app.features.mathai.service import MathAIService
         from apps.api.app.features.vision.openai_provider import OpenAIVisionProvider
@@ -160,8 +164,11 @@ class Services:
         self.vision = VisionService(OpenAIVisionProvider(key, vision_model, settings.vision_provider_timeout_seconds),
                                     LocalTemporaryImageStorage(Path(self.temp.name)), settings.max_upload_size_bytes, False,
                                     recheck_limit=settings.vision_max_rechecks)
-        self.lessons = LessonService(OpenAILessonProvider(key, lesson_model, settings.lesson_provider_timeout_seconds),
-                                     MathAIService(), BoardPlanner())
+        # TA-005B: Anthropic yalnız ders işlemini destekler; Vision OpenAI'de kalır.
+        lessons = (AnthropicLessonProvider(settings.anthropic_api_key, lesson_model, settings.lesson_provider_timeout_seconds)
+                   if lesson_provider == "anthropic" else
+                   OpenAILessonProvider(key, lesson_model, settings.lesson_provider_timeout_seconds))
+        self.lessons = LessonService(lessons, MathAIService(), BoardPlanner())
 
     async def analyze(self, image: Path, request_id: str):
         from starlette.datastructures import Headers, UploadFile
@@ -227,8 +234,9 @@ async def run_question(item: dict, services, settings, teacher: dict) -> dict:
 
 def command(args) -> str:
     effort = f" --reasoning-effort {args.reasoning_effort}" if args.reasoning_effort else ""
-    return (f"python -m scripts.evaluate_models pack --allow-paid --max-usd <onaylı USD> --max-calls <üst sınır> "
-            f"--model {args.model}{effort}" + (f" --lesson-model {args.lesson_model}" if args.lesson_model else ""))
+    return ("python -m scripts.evaluate_models pack --allow-paid --max-usd <onaylı USD> --max-calls <üst sınır>"
+            + (f" --model {args.model}" if args.model else "") + effort + (f" --lesson-model {args.lesson_model}" if args.lesson_model else "")
+            + (" --provider anthropic" if getattr(args, "provider", "openai") == "anthropic" else ""))
 
 
 async def run(args, settings, services_factory=Services, out_root: Path = RUNS) -> int:
@@ -238,6 +246,8 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     vision_model, lesson_model = args.model or settings.openai_vision_model, args.lesson_model or settings.openai_lesson_model
     if args.reasoning_effort:
         validate_effort(vision_model, args.reasoning_effort)
+    if getattr(args, "provider", "openai") == "anthropic":
+        print("Sağlayıcı: ders Anthropic, Vision OpenAI (Anthropic Vision şeması uyumsuz; scripts/anthropic_schema_compat.py).")
     runs, missing = plan()
     estimate = upper_usd(runs, vision_model, lesson_model, prices)
     calls = len(runs) * (MAX_CALLS["vision"] + MAX_CALLS["lessons"])
@@ -261,7 +271,8 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     efforts = {Operation.VISION: args.reasoning_effort} if args.reasoning_effort else {}
     run_settings = settings.model_copy(update={"pricing_version": version, "model_prices": prices,
                                                "reasoning_effort_by_operation": efforts})
-    services = services_factory(run_settings, vision_model, lesson_model, args.reasoning_effort)
+    extra = {"lesson_provider": "anthropic"} if getattr(args, "provider", "openai") == "anthropic" else {}
+    services = services_factory(run_settings, vision_model, lesson_model, args.reasoning_effort, **extra)
     teacher = {entry.id: entry.model_dump() for entry in key.entries} if key else {}
     per_question = estimate / len(runs)
     rows, spent, used, stopped = [], 0.0, 0, None

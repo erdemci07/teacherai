@@ -123,10 +123,8 @@ class Settings(BaseSettings):
             op: self.max_output_tokens_by_operation.get(op, self.max_output_tokens or limit)
             for op, limit in DEFAULT_LIMITS.items()
         }
-        models = {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
-                  Operation.INTERACTION: self.openai_interaction_model}
         for op, effort in self.reasoning_effort_by_operation.items():
-            validate_effort(models[op], effort)
+            validate_effort(self.model_for(op), effort)
         return self
 
     def provider_call_budget(self, activity: str) -> int | None:
@@ -146,29 +144,46 @@ class Settings(BaseSettings):
     provider_vision: Literal["openai", "anthropic"] = "openai"
     provider_lesson: Literal["openai", "anthropic"] = "openai"
     provider_interaction: Literal["openai", "anthropic"] = "openai"
+    anthropic_api_key: str | None = Field(default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TEACHERAI_ANTHROPIC_API_KEY"))
+    # Varsayılan model yoktur; Anthropic'e atanan işlem modeli açıkça verilmeden başlamaz.
+    anthropic_lesson_model: str | None = None
+    # Öğrenci görselleri ikinci bir işleyiciye ancak gizlilik metni ve veri işleme sözleşmesi kararından
+    # sonra gönderilebilir (ADR TA-005B). Bayrak yoksa Vision Anthropic'e atanamaz.
+    allow_student_images_to_anthropic: bool = False
 
     def provider_for(self, operation: Operation) -> str:
         return {Operation.VISION: self.provider_vision, Operation.LESSONS: self.provider_lesson,
                 Operation.INTERACTION: self.provider_interaction}[Operation(operation)]
 
-    def model_for(self, operation: Operation) -> str:
+    def model_for(self, operation: Operation) -> str | None:
+        operation = Operation(operation)
+        if self.provider_for(operation) == "anthropic":
+            return {Operation.LESSONS: self.anthropic_lesson_model}.get(operation)
         return {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
-                Operation.INTERACTION: self.openai_interaction_model}[Operation(operation)]
+                Operation.INTERACTION: self.openai_interaction_model}[operation]
 
     @model_validator(mode="after")
     def providers(self):
         """Hatalı sağlayıcı yapılandırması uygulamayı başlatmaz."""
         from .providers import SUPPORTED_OPERATIONS
 
+        if self.provider_vision == "anthropic" and not self.allow_student_images_to_anthropic:
+            raise ValueError("Vision Anthropic'e atanamaz: TEACHERAI_ALLOW_STUDENT_IMAGES_TO_ANTHROPIC=true gerekli "
+                             "(gizlilik metni ve veri işleme sözleşmesi kararı).")
         for operation in Operation:
             provider = self.provider_for(operation)
             if operation not in SUPPORTED_OPERATIONS[provider]:
                 raise ValueError(f"{provider} sağlayıcısı {operation} işlemini desteklemiyor "
                                  f"(TEACHERAI_PROVIDER_{'LESSON' if operation == Operation.LESSONS else operation.upper()}).")
+            if provider == "anthropic":
+                if not self.model_for(operation):
+                    raise ValueError(f"Anthropic'e atanan {operation} işlemi için model verilmedi (TEACHERAI_ANTHROPIC_LESSON_MODEL).")
+                if not self.anthropic_api_key:
+                    raise ValueError("ANTHROPIC_API_KEY tanımlı değil; Anthropic'e atanmış işlem var.")
         if self.environment in {"production", "staging"}:
             if any(self.provider_for(op) == "openai" for op in Operation) and not self.openai_api_key:
                 raise ValueError("OPENAI_API_KEY tanımlı değil; OpenAI'ye atanmış işlem var.")
-            unpriced = sorted({self.model_for(op) for op in Operation} - set(self.model_prices))
+            unpriced = sorted({model for op in Operation if (model := self.model_for(op))} - set(self.model_prices))
             if unpriced or not self.pricing_version:
                 raise ValueError(f"Fiyatı tanımsız model production'da kullanılamaz: {', '.join(unpriced) or 'pricing_version yok'}.")
         return self

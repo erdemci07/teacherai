@@ -481,8 +481,10 @@ def main(argv=None, settings=None, client_factory=None, out_root=ROOT / "eval-re
     if args.mode == "pack":
         from scripts import eval_pack
 
-        if args.provider == "anthropic":
-            parser().error("Anthropic adaptörü TA-005B'ye kaldı. Çağrı yapılmadı.")
+        if args.provider == "anthropic" and not args.lesson_model:
+            parser().error("--provider anthropic için --lesson-model zorunludur (varsayılan Anthropic modeli yok). Çağrı yapılmadı.")
+        if args.provider == "anthropic" and not args.dry_run and not settings.anthropic_api_key:
+            parser().error("--provider anthropic için ANTHROPIC_API_KEY gerekli. Çağrı yapılmadı.")
         if not args.dry_run:
             missing = [flag for flag, value in (("--allow-paid", args.allow_paid), ("--max-usd", args.max_usd),
                                                 ("--max-calls", args.max_calls)) if not value]
