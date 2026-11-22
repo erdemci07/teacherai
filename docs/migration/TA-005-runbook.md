@@ -92,22 +92,27 @@ Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.
 
 ## 3. Prova
 
-1. **[W]** Anlık görüntüyü kopyala. Önce kuru koşu:
+1. **[W]** Anlık görüntüyü kopyala. Geçişten önce SRC yetkilidir (`--authority source`). Kopya, yetkili tarafın (SRC) Auth UID listesini okur; sahibi orada olmayan kullanıcı belgesi yazılmaz. Önce kuru koşu:
    ```
-   python -m scripts.migration.copy_firestore --source $SRC --target $DST
+   python -m scripts.migration.copy_firestore --source $SRC --target $DST --authority source
    ```
    Sonra gerçek kopya:
    ```
-   python -m scripts.migration.copy_firestore --execute --source $SRC --target $DST --confirm-target $DST
+   python -m scripts.migration.copy_firestore --execute --source $SRC --target $DST --authority source --confirm-target $DST
    ```
-2. **[R]** Doğrula:
+   Çıktıdaki `blocked_deleted_owner`, `blocked_owner_not_in_auth`, `blocked_no_owner` ve `blocked_ownerless_share` sayıları kayda geçirilir. **Sahipsiz eski paylaşımlar** (`blocked_ownerless_share`) varsayılan olarak taşınmaz; taşınıp taşınmayacağına Erdem karar verir (`--copy-ownerless-shares`). Çakışmada ezilen hedef içeriğinin özeti `conflicts` listesindedir.
+2. **[R]** İki yönlü doğrula:
    ```
-   python -m scripts.migration.copy_firestore --verify --source $SRC --target $DST --auth-uids target
+   python -m scripts.migration.copy_firestore --verify --source $SRC --target $DST --authority source --auth-uids target --report-out fark.json
    ```
-   Beklenen: her koleksiyonda `missing: 0` ve `different: 0`. Sahiplik satırlarında `owner_missing` K1 koluna göre değerlendirilir. K1(b)'de Auth içe aktarımından önce `owner_missing` olması beklenir.
+   Beklenen: her koleksiyon ve alt koleksiyon satırında `only_source`, `only_target` ve `different` yok; `deleted_owner_in_target` yok. K1(b)'de Auth içe aktarımından önce `owner_not_in_auth` olması beklenir. `fark.json` belge yolu içermez (yalnız sha256 özetleri); yine de repoya girmez.
 3. **[W, onaylı]** Önizleme kanalında yeni web build'i: `NEXT_PUBLIC_API_BASE_URL=<DST Cloud Run URL>/api/v1` ve DST web yapılandırmasıyla `npm run build:web`, ardından `firebase hosting:channel:deploy ta005-prova --expires 3d --project $DST`. Önizleme alan adı CORS listesine geçici olarak eklenir.
 4. **Duman testleri** (önizleme kanalında, test hesabıyla): giriş, foto analiz, ders, etkileşim, paylaşım (`/s/…` rewrite), hesap silme ve makbuz sorgusu, kota sınırı.
-5. Gerekirse prova verisini sil: yalnız DST'de, `copy_firestore --verify` sayılarıyla eşleşen test belgeleri.
+5. Gerekirse prova verisini sil. Silme yalnız son 1 saat içinde üretilmiş `--verify` raporunda görülen ve o andan beri değişmemiş hedef belgelerine uygulanır. Önce kuru koşu, sonra `--execute`:
+   ```
+   python -m scripts.migration.copy_firestore --prune --source $SRC --target $DST --authority source --confirm-prune $DST --prune-from fark.json [--execute]
+   ```
+   Budama adayı: yalnız hedefte olan belge (yetkili taraf kaynaksa) veya sahibinin silme kaydı bulunan hedef belgesi. Raporda olmayan ya da değişmiş belge silinmez, sayılır.
 
 ## 4. Kontrollü geçiş
 
@@ -116,7 +121,7 @@ Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.
 | 4.1 | Duyuru (zaman penceresi, beklenen kesinti: yazma kapalı ~30 dk) | — | — |
 | 4.2 | Eski serviste salt okunur mod: `gcloud run services update teacherai-api --region=us-east4 --project=$SRC --update-env-vars TEACHERAI_MAINTENANCE_MODE=read_only` | [W] | `POST` istekleri 503 + `Retry-After` döner. Web bakım mesajı gösterir. |
 | 4.3 | K1(b): `firebase auth:import auth-$SRC.json --hash-algo=SCRYPT --hash-key=<…> --salt-separator=<…> --rounds=<…> --mem-cost=<…> --project $DST`. Parametreler SRC Console → Authentication → kullanıcı menüsü → "Password hash parameters" ekranından alınır ve repoya girmez. | [W] yalnız Erdem | Kullanıcı sayısı eşit. UID'ler korunur. Token iptal zamanları **taşınmaz**, kullanıcılar yeniden oturum açar. |
-| 4.4 | Son fark kopyası `--execute` ve ardından `--verify` | [W] / [R] | `missing: 0`, `different: 0`, `owner_missing: 0` |
+| 4.4 | Son fark kopyası `--execute --authority source` ve ardından `--verify` | [W] / [R] | `only_source`, `different`, `owner_not_in_auth` ve `deleted_owner_in_target` yok |
 | 4.5 | Yeni web build'i (DST API URL'si ve DST web yapılandırması) ve `firebase deploy --only hosting --project $DST` | [W] | `/s/<id>` 200 döner, adres Hosting'de kalır |
 | 4.6 | Yeni serviste yazmayı aç (`TEACHERAI_MAINTENANCE_MODE=off`, varsayılan) | [W] | Yeni ders kaydı DST'de |
 | 4.7 | İzleme (ilk 24 saat): 5xx oranı, p95 gecikme, `ai_global_budget_exhausted` / `usage_limit` hataları, `account_deletion` sonuçları | [R] | Cloud Run metrikleri ve günlükler |
@@ -132,11 +137,11 @@ Bölge değişirse `firebase.json` içindeki `run.region` ve `deploy-production.
   Veri kaybı olmaz.
 - **Yazma açıldıktan sonra:**
   1. Yeni serviste `read_only` modunu aç.
-  2. Farkı geri kopyala:
+  2. Farkı geri kopyala. Geçişten sonra DST yetkilidir; betikte DST kaynak olduğu için `--authority source` verilir. SRC'de silme kaydı olan kullanıcının verisi SRC'ye geri yazılmaz (iki taraftaki silme kayıtlarının birleşimi uygulanır):
      ```
-     python -m scripts.migration.copy_firestore --execute --source $DST --target $SRC --confirm-target $SRC --allow-reverse
+     python -m scripts.migration.copy_firestore --execute --source $DST --target $SRC --authority source --confirm-target $SRC --allow-reverse
      ```
-  3. `--verify` ile denetle.
+  3. `--verify --authority source` ile denetle. SRC'de yalnız orada kalan belgeler `only_target` görünür ve otomatik silinmez.
   4. Hosting'i geri al ve eski serviste yazmayı aç.
 
   K1(b)'de DST'de yeni oluşan Auth hesapları SRC'ye otomatik dönmez. Bu hesaplar için ayrı bir dışa/içe aktarım gerekir.

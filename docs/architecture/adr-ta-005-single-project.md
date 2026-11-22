@@ -35,9 +35,15 @@ Paylaşım kısayolu Hosting'den run.app'e 302 ile gidiyor. Canlı servis `TEACH
    - Varsayılan çalışma kuru koşudur. Yazmak için `--execute --confirm-target <aynı>` gerekir. Hedef eski projeyse ayrıca `--allow-reverse` gerekir.
    - Koleksiyonlar açık bir izin listesiyle seçilir ve her birinin kopyalanma gerekçesi yazılıdır.
    - Kimlikler, alt koleksiyonlar ve tipler korunur.
-   - Kopya artımlıdır: `updated_at` veya kanonik özet karşılaştırılır.
-   - `--verify` yalnızca sayı döndürür: sayılar, özet farkları ve sahiplik.
-   - Betik iki yönde de çalışır.
+   - Kopya artımlıdır. Eşitlik yalnız tip etiketli kanonik içerik özetiyle kanıtlanır; TA-005'teki `updated_at` kısayolu TA-005B'de kaldırıldı (aynı damga, farklı içerik "aynı" sayılıyordu).
+   - `--verify` iki yönlüdür ve yalnızca sayı döndürür: yalnız kaynakta, yalnız hedefte, farklı, aynı, sahipsiz, Auth'ta olmayan sahip ve silinmiş hesaba ait kalan belge.
+   - Betik iki yönde de çalışır. TA-005B uzlaştırma kuralları:
+     - `--authority source|target` zorunludur, varsayılanı yoktur.
+     - İki taraftaki `account_deletions` kayıtlarının birleşimindeki UID'nin verisi hiçbir yöne yazılmaz.
+     - Silme kaydı TTL ile kaybolmuş olabileceği için kullanıcıya ait belge, sahibi yetkili tarafın Auth'unda yoksa yazılmaz.
+     - Çakışmada yetkili tarafın değeri kazanır; ezilen ya da yazılmayan içeriğin özeti raporlanır.
+     - Hedefte fazla belge otomatik silinmez. Budama yalnız `--prune --confirm-prune <hedef> --prune-from <rapor>` ile, son 1 saatte aynı kaynak/hedef için üretilmiş `--verify` raporunda görülmüş ve o andan beri özeti değişmemiş belgelere uygulanır.
+     - Bilinen sınır: kopya, silme kayıtlarını başlangıçta bir kez okur. Kopya sırasında başlayan bir silme, iki tarafın da bakım modunda (`read_only`) olmasına dayanır.
 6. **Denetim betiği** (`scripts/migration/audit_projects.py`).
    - Yalnızca okuyan gcloud fiillerine kod düzeyinde izin verir.
    - Auth kullanıcılarını sunucu taraflı alan maskesiyle ister.
