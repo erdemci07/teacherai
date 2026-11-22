@@ -17,6 +17,7 @@ Ağaç kaynak gösterimini korur (``Group``, ``Frac``, ``Root`` ayrı düğümle
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Literal
@@ -31,6 +32,9 @@ MAX_EXACT_EXPONENT = 10
 MAX_EXACT_BITS = 256
 
 FUNCTIONS = {"sin", "cos", "tan", "cot", "log", "ln"}
+# Yalnız yapı tarama kipinde (``parse(..., constructs=True)``, TA-005B yöntem denetimi) tanınanlar.
+CONSTRUCT_FUNCTIONS = {"sec", "csc", "arcsin", "arccos", "arctan"}
+CONSTRUCT_WORD_LIMIT = 4  # yapı kipinde kısa harf dizileri (4ac, ABC) tek harfli sembollere bölünür
 LATEX_RELATIONS = {"le": "<=", "leq": "<=", "ge": ">=", "geq": ">=", "ne": "!=", "neq": "!=", "lt": "<", "gt": ">"}
 LATEX_OPERATORS = {"cdot": "*", "times": "*", "div": "/", "pm": "±"}
 LATEX_BARS = {"lvert", "rvert", "vert", "mid"}
@@ -120,7 +124,23 @@ class Rel:
     operands: tuple["Node", ...]
 
 
-Node = Num | Sym | Const | Neg | Bin | Frac | Mixed | Pow | Root | Abs | Group | Func | Rel
+@dataclass(frozen=True)
+class Diff:
+    """Yalnız yapı kipinde: ``dx`` veya ``\\partial x`` diferansiyeli."""
+
+    var: str
+
+
+@dataclass(frozen=True)
+class Calculus:
+    """Yalnız yapı kipinde: türev (Leibniz veya ``f'(x)``), integral ve limit işleci."""
+
+    kind: Literal["derivative", "integral", "limit"]
+    arg: "Node | None" = None
+    fn: str | None = None
+
+
+Node = Num | Sym | Const | Neg | Bin | Frac | Mixed | Pow | Root | Abs | Group | Func | Rel | Diff | Calculus
 
 
 @dataclass(frozen=True)
@@ -262,7 +282,35 @@ def _comma_decimals(text: str) -> tuple[bool, str | None]:
     return True, None
 
 
-def _tokenize(text: str, notes: list[Note]) -> tuple[list[_Tok], bool, str | None]:
+def _skip_script(text: str, i: int) -> int:
+    """Yapı kipinde ``\\lim_{x \\to 2}`` ve ``\\int_0^1`` sınırlarını atlar; sınır içeriği ayrıştırılmaz."""
+    n = len(text)
+    while True:
+        while i < n and text[i].isspace():
+            i += 1
+        if i >= n or text[i] not in "_^":
+            return i
+        i += 1
+        while i < n and text[i].isspace():
+            i += 1
+        if i < n and text[i] == "{":
+            depth = 0
+            while i < n:
+                depth += {"{": 1, "}": -1}.get(text[i], 0)
+                i += 1
+                if depth == 0:
+                    break
+            if depth:
+                raise _Invalid("unbalanced_delimiter")
+        elif i < n and text[i] == "\\":
+            i += 1
+            while i < n and text[i].isalpha():
+                i += 1
+        elif i < n:
+            i += 1
+
+
+def _tokenize(text: str, notes: list[Note], constructs: bool = False) -> tuple[list[_Tok], bool, str | None]:
     comma_decimal, ambiguous_decimal = _comma_decimals(text)
     tokens: list[_Tok] = []
     latex_context = "\\" in text
@@ -306,7 +354,13 @@ def _tokenize(text: str, notes: list[Note]) -> tuple[list[_Tok], bool, str | Non
             while j < n and text[j].isalpha():
                 j += 1
             word = text[i:j]
-            if word in FUNCTIONS:
+            if constructs and (word in CONSTRUCT_FUNCTIONS or word in FUNCTIONS):
+                tokens.append(_Tok("func", word))
+            elif constructs and len(word) == 2 and word[0] == "d" and word[1].islower():
+                tokens.append(_Tok("diff", word[1]))
+            elif constructs and 1 < len(word) <= CONSTRUCT_WORD_LIMIT and word not in {"sqrt", "abs", "Abs", "pi"}:
+                tokens.extend(_Tok("sym", letter) for letter in word)
+            elif word in FUNCTIONS:
                 tokens.append(_Tok("func", word))
             elif word == "sqrt":
                 tokens.append(_Tok("sqrt", word, "plain"))
@@ -331,6 +385,27 @@ def _tokenize(text: str, notes: list[Note]) -> tuple[list[_Tok], bool, str | Non
                 raise _Unsupported("latex_command")
             i = j
             if command in {"left", "right", "big", "Big", "bigl", "bigr"}:
+                continue
+            if constructs and command in {"lim", "int"}:
+                i = _skip_script(text, i)
+                tokens.append(_Tok(command, command))
+                continue
+            if constructs and command == "partial":
+                while i < n and text[i].isspace():
+                    i += 1
+                if i >= n or not text[i].isalpha():
+                    raise _Invalid("operand_missing")
+                tokens.append(_Tok("diff", text[i]))
+                i += 1
+                continue
+            if constructs and command == "prime":
+                tokens.append(_Tok("prime", "'"))
+                continue
+            if constructs and command == "Delta":
+                tokens.append(_Tok("sym", "Δ"))
+                continue
+            if constructs and command in CONSTRUCT_FUNCTIONS:
+                tokens.append(_Tok("func", command))
                 continue
             if command == "frac":
                 tokens.append(_Tok("frac", command))
@@ -360,6 +435,10 @@ def _tokenize(text: str, notes: list[Note]) -> tuple[list[_Tok], bool, str | Non
             "[": ("lbracket", "["), "]": ("rbracket", "]"), "{": ("lbrace", "{"), "}": ("rbrace", "}"),
             "|": ("bar", "|"), ",": ("comma", ","), "!": ("bang", "!"), "_": ("under", "_"), "^": ("caret", "^"),
         }
+        if constructs and ch in "'′":
+            tokens.append(_Tok("prime", "'"))
+            i += 1
+            continue
         if ch in simple:
             kind, value = simple[ch]
             tokens.append(_Tok(kind, value))
@@ -383,7 +462,8 @@ def _digit_run(text: str, start: int) -> int:
 
 
 class _Parser:
-    def __init__(self, tokens: list[_Tok], latex_context: bool):
+    def __init__(self, tokens: list[_Tok], latex_context: bool, constructs: bool = False):
+        self.constructs = constructs
         self.tokens = tokens
         self.pos = 0
         self.depth = 0
@@ -465,6 +545,8 @@ class _Parser:
             return False
         if token.kind == "bar":
             return self.abs_depth == 0
+        if self.constructs and token.kind in {"diff", "lim", "int"}:
+            return True
         return token.kind in {"num", "sym", "const", "lparen", "lbracket", "frac", "sqrt", "func"} or (
             token.kind == "lbrace" and self.latex_context
         )
@@ -556,9 +638,45 @@ class _Parser:
 
     def postfix(self) -> Node:
         atom = self.atom()
+        if self.constructs and isinstance(atom, Sym):
+            atom = self._primed(atom)
         if (token := self.peek()) is not None and token.kind == "bang":
             raise _Unsupported("factorial")
         return atom
+
+    def _primes(self) -> int:
+        """``'``, ``^\\prime`` veya ``^{\\prime\\prime}`` biçimindeki üs işaretlerini tüketir."""
+        count = 0
+        while True:
+            token, after = self.peek(), self.peek(1)
+            if token is not None and token.kind == "prime":
+                self.take()
+                count += 1
+            elif token is not None and token.kind == "caret" and after is not None and after.kind == "prime":
+                self.pos += 2
+                count += 1
+            elif (token is not None and token.kind == "caret" and after is not None and after.kind == "lbrace"
+                  and (inner := self.peek(2)) is not None and inner.kind == "prime"):
+                self.pos += 2
+                while (token := self.peek()) is not None and token.kind == "prime":
+                    self.take()
+                    count += 1
+                self.expect("rbrace", "unbalanced_delimiter")
+            else:
+                return count
+
+    def _primed(self, symbol: Sym) -> Node:
+        """Küçük harfli fonksiyon sembolü + üs işareti + argüman türevdir (``f'(x)``).
+
+        Büyük harfli nokta adı (``A'``, ``A^{\\prime}``) türev değildir; ad olarak kalır.
+        """
+        count = self._primes()
+        if not count:
+            return symbol
+        if symbol.name.islower() and (token := self.peek()) is not None and token.kind == "lparen":
+            group = self.atom()
+            return self.node(Calculus("derivative", group.arg if isinstance(group, Group) else group, symbol.name))
+        return self.node(Sym(symbol.name + "′" * count, symbol.sub))
 
     def braced(self, reason: str) -> Node:
         self.expect("lbrace", reason)
@@ -632,7 +750,22 @@ class _Parser:
             if not (self.peek() and self.peek().kind == "lbrace"):
                 raise _Invalid("fraction_operand_missing")
             den = self.braced("fraction_operand_missing")
+            if self.constructs and _leibniz(num, den):
+                return self.node(Calculus("derivative", None, None))
             return self.node(Frac(num, den))
+        if self.constructs and kind == "diff":
+            self.take()
+            return self.node(Diff(token.text))
+        if self.constructs and kind in {"lim", "int"}:
+            self.take()
+            if self.peek() is None:
+                raise _Invalid("operand_missing")
+            self.enter()
+            try:
+                arg = self.power() if kind == "lim" else self.term()
+            finally:
+                self.leave()
+            return self.node(Calculus("limit" if kind == "lim" else "integral", arg))
         if kind == "sqrt":
             self.take()
             index = None
@@ -720,25 +853,47 @@ def _leftmost(node: Node) -> Node:
     return node
 
 
+def _head(node: Node) -> Node:
+    while isinstance(node, Bin | Pow | Group):
+        node = node.left if isinstance(node, Bin) else node.base if isinstance(node, Pow) else node.arg
+    return node
+
+
+def _leibniz(num: Node, den: Node) -> bool:
+    """``\\frac{d}{dx}``, ``\\frac{dy}{dx}``, ``\\frac{d^2y}{dx^2}``, ``\\frac{\\partial f}{\\partial x}``."""
+    head = _head(num)
+    return isinstance(_head(den), Diff) and (isinstance(head, Diff) or head == Sym("d"))
+
+
 def _rightmost(node: Node) -> Node:
     while isinstance(node, Bin):
         node = node.right
     return node
 
 
-def parse(value: str) -> ParseResult:
-    """Kaynak gösterimi ayrıştırır. Asla istisna yaymaz; durum ve neden döndürür."""
+def parse(value: str, constructs: bool = False) -> ParseResult:
+    """Kaynak gösterimi ayrıştırır. Asla istisna yaymaz; durum ve neden döndürür.
+
+    ``constructs=True`` yalnız yöntem denetiminin yapı taraması içindir (TA-005B): türev, integral, limit,
+    üs işareti, ``\\Delta``, derece işareti ve kısa harf dizileri tanınır. Bu kipin ağacı değerlendirme,
+    seçenek eşleme veya MathAI için kullanılmaz; varsayılan kip değişmez.
+    """
     source = value if isinstance(value, str) else ""
     if not source.strip():
         return ParseResult(source, "invalid", reason="empty")
     if len(source) > MAX_SOURCE_CHARS:
         return ParseResult(source, "unsupported", reason="length_budget")
     text, notes = normalize(source)
+    if constructs:
+        degree = re.sub(r"\^\s*(?:\{\s*\\circ\s*\}|\\circ)|°", "", text)
+        if degree != text:
+            notes.append(Note("degree_mark", "°", ""))
+            text = degree
     try:
-        tokens, latex_context, ambiguous_decimal = _tokenize(text, notes)
+        tokens, latex_context, ambiguous_decimal = _tokenize(text, notes, constructs)
         if not tokens:
             return ParseResult(source, "invalid", reason="empty", notes=tuple(notes))
-        parser = _Parser(tokens, latex_context)
+        parser = _Parser(tokens, latex_context, constructs)
         tree = parser.parse()
     except _Unsupported as exc:
         return ParseResult(source, "unsupported", reason=str(exc), notes=tuple(notes))
@@ -1053,6 +1208,8 @@ def _children(node: Node) -> tuple[Node, ...]:
         return (node.arg,) + ((node.base,) if node.base is not None else ())
     if isinstance(node, Rel):
         return node.operands
+    if isinstance(node, Calculus):
+        return (node.arg,) if node.arg is not None else ()
     return ()
 
 

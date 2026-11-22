@@ -1,6 +1,8 @@
 """TA-005 müfredat ve yöntem kaydı. Fikstür kaydı kullanılır; testler gerçek taslağa bağlı değildir.
 Sahte ders sağlayıcısı kullanılır; ağ çağrısı yoktur."""
 
+from types import SimpleNamespace
+
 import pytest
 from pydantic import ValidationError
 
@@ -43,9 +45,13 @@ CLEAN = [Step(id="step_1", type="transformation", title="Sabiti çıkar", explan
          Step(id="step_2", type="result", title="Böl", explanation="İki tarafı 3'e böl.",
               expressions=[Expression(type="equation", latex="x = 4")])]
 # Türev adımı açıklama türündedir; hesap adımları aynı kalır, böylece yalnızca yöntem denetimi başarısız olur.
+# TA-005B: türev ifadenin AST'sinde (f'(x)) bulunur; düz metindeki "türev" sözü tek başına güçlü kanıt değildir.
 DERIVATIVE = [Step(id="step_1", type="explanation", title="Türev al",
-                   explanation="Sol tarafın x'e göre türevini alırsak eğim 3 olur; buradan x'i bulalım.", expressions=[]),
+                   explanation="Sol tarafın x'e göre türevini alırsak eğim 3 olur; buradan x'i bulalım.",
+                   expressions=[Expression(type="equation", latex="f'(x) = 3")]),
               *[step.model_copy(update={"id": f"step_{i + 2}"}) for i, step in enumerate(CLEAN)]]
+# Aynı söz yalnız düz metinde: zayıf kanıt, düzeltme turu yok.
+PROSE_ONLY = [DERIVATIVE[0].model_copy(update={"expressions": []}), *DERIVATIVE[1:]]
 
 
 class Provider:
@@ -169,3 +175,87 @@ def test_request_and_profile_accept_optional_grade():
     assert GenerateLessonRequest(analysis_id="a1").grade is None
     with pytest.raises(ValidationError):
         GenerateLessonRequest(analysis_id="a1", grade=3)
+
+
+# --- TA-005B: kanıt düzeyleri ---
+
+def plan_with(*steps):
+    """method_check yalnız adımları ve kaynak analizi okur."""
+    return SimpleNamespace(content=SimpleNamespace(steps=list(steps)), source_analysis=linear_analysis())
+
+
+class NoChecks:
+    checks = []
+
+
+def prose_step(text):
+    return Step(id="step_1", type="explanation", title="Açıklama", explanation=text, expressions=[])
+
+
+def latex_step(latex):
+    return Step(id="step_1", type="transformation", title="Adım", explanation="Devam edelim.",
+                expressions=[Expression(type="equation", latex=latex)])
+
+
+@pytest.mark.parametrize("step", [
+    prose_step("Türev kullanmadan çözelim."),
+    prose_step("Aracın hız limiti 90 km/sa."),
+    latex_step(r"A^{\prime}(3,-2)"),
+    prose_step(r"A^{\prime}(3,-2) noktası A'nın görüntüsüdür."),
+    latex_step(r"\Delta ABC"),
+    prose_step(r"\Delta ABC üçgeninde açıları toplayalım."),
+    prose_step("Bu bir sinüs eğrisi değil."),
+    prose_step("Hiçbir integral ya da logaritma gerekmez."),
+])
+def test_known_false_alarms_are_not_forbidden_operations(step):
+    rows = reg.step_operations(plan_with(step), NoChecks())
+    assert rows[0][1] == ["explain"] or not set(rows[0][1]) & set(reg.PROSE)
+    assert rows[0][2] == []  # olumsuzlanan veya ilgisiz söz zayıf kanıt da değildir
+    check = reg.method_check(plan_with(step), NoChecks(), 8, fixture_registry_all())
+    assert check.state != "failed" and check.reason != "prose_mention_unverified"
+
+
+@pytest.mark.parametrize(("latex", "construct"), [
+    ("f'(x)=2x", "derivative"), (r"\log_2 8", "logarithm"), (r"\sin 30^\circ", "trigonometry"),
+    (r"x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}", "quadratic_formula"), (r"\frac{dy}{dx} = 3x^2", "derivative"),
+    (r"\int_0^1 2x\,dx", "integral"), (r"\lim_{x \to 2} \frac{x^2-4}{x-2}", "limit"), (r"\ln e", "logarithm"),
+    (r"\Delta = (-5)^2 - 4 \cdot 1 \cdot 6", "quadratic_formula"), (r"\sqrt{-4}", "complex_number"),
+    (r"i^2 = -1", "complex_number"), (r"\frac{d}{dx}(x^2) = 2x", "derivative"),
+])
+def test_real_uses_are_strong_evidence_and_fail(latex, construct):
+    assert construct in reg.ast_constructs(latex)
+    check = reg.method_check(plan_with(latex_step(latex)), NoChecks(), 8, fixture_registry_all())
+    assert (check.state, check.reason, check.operations) == ("failed", "forbidden_operation", [construct])
+
+
+@pytest.mark.parametrize("latex", [
+    "A'(2, 5)", r"A^{\prime}", "B''", r"\Delta ABC", "x^2 - 4xy + 4y^2", "(a-b)^2 = a^2 - 2ab + b^2",
+    r"|AB| = \sqrt{3^2 + 4^2}", r"\frac{d}{2}", "y' = 2", r"A^{\prime}(3,-2)", r"\Delta = 12",
+    r"\sqrt{-x}", "x^2 = 9",
+])
+def test_geometry_and_transformation_expressions_are_not_strong_evidence(latex):
+    assert reg.ast_constructs(latex) == set()
+
+
+def test_prose_only_mention_is_partially_checked_with_reason():
+    check = reg.method_check(plan_with(prose_step("Burada sol tarafın türevini alırız.")), NoChecks(), 8, fixture_registry_all())
+    assert (check.state, check.reason, check.operations, check.step) == (
+        "partially_checked", "prose_mention_unverified", ["derivative"], "step_1")
+    before = reg.prose_constructs("Türev almadan önce sadeleştir.")
+    assert before == {"derivative"}  # "…madan önce" olumsuzlama değildir
+
+
+@pytest.mark.asyncio
+async def test_prose_mention_never_triggers_paid_correction(approved):
+    provider = Provider(PROSE_ONLY)
+    result = await generate(provider)
+    assert len(provider.feedback) == 1 and not result.correction_attempted  # ek çağrı yok
+    assert (result.method_check.state, result.method_check.reason) == ("partially_checked", "prose_mention_unverified")
+
+
+def fixture_registry_all():
+    """Bütün yapıları yasaklayan onaylı fikstür ``genel`` politikası (taslak politikalar onaylanmaz)."""
+    registry = fixture_registry()
+    general = registry.policies[0].model_copy(update={"forbidden_operations": [
+        type(registry.policies[0].forbidden_operations[0])(operation=name, reason="fikstür") for name in reg.PROSE]})
+    return registry.model_copy(update={"policies": [general, *registry.policies[1:]]})
