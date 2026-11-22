@@ -10,6 +10,8 @@ from .schemas import StudentProfile, ProfileInput, LessonRecord, SaveLessonReque
 from .service import StudentService
 router=APIRouter(prefix="/students/me",tags=["students"])
 User=Annotated[AuthenticatedUser,Depends(require_user)];Active=Annotated[AuthenticatedUser,Depends(active_user)];Service=Annotated[StudentService,Depends(get_student_service)]
+@router.get("/profile",response_model=ApiResponse[StudentProfile|None])
+def read_profile(user:User,service:Service):return ApiResponse(data=service.get_profile(user))
 @router.put("/profile",response_model=ApiResponse[StudentProfile])
 def profile(body:ProfileInput,user:Active,service:Service):return ApiResponse(data=service.profile(user,body))
 @router.post("/lessons",response_model=ApiResponse[LessonRecord])

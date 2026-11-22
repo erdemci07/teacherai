@@ -1,4 +1,5 @@
 from datetime import datetime,timezone
+from typing import Literal
 from pydantic import BaseModel,Field
 from apps.api.app.features.lessons.service import GeneratedLesson
 class StudentProfile(BaseModel):
@@ -7,6 +8,8 @@ class ProfileInput(BaseModel):display_name:str=Field(min_length=1,max_length=80)
 class LessonRecord(BaseModel):
     server_generated: bool = False
     lesson_id:str;student_id:str;created_at:datetime=Field(default_factory=lambda:datetime.now(timezone.utc));subject:str;exam_context:str|None;topic:str;subtopic:str|None;difficulty:str;question_summary:str;final_answer:str;verification_status:str;lesson_data:dict
+    # TA-005B: ders üretildiği andaki sınıf ve kaynağı. Profil sonradan değişse de eski ders değişmez.
+    grade:int|None=Field(None,ge=5,le=12);grade_origin:Literal["declared","profile"]|None=None
 class LessonReference(BaseModel):
     """Old clients may send result. Its ID is the only field used."""
     lesson_id: str | None = Field(None, min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")
