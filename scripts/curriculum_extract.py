@@ -60,6 +60,11 @@ LAYOUTS = {
     "tymm-2026.fizik.9-12": Layout("FİZ.", 3, (), "ÜNİTE", (9, 10, 11, 12)),
     "tymm-2026.kimya.9-12": Layout("KİM.", 3, (), "TEMA", (9, 10, 11, 12)),
     "tymm-2026.biyoloji.9-12": Layout("BİY.", 3, (), "TEMA", (9, 10, 11, 12)),
+    # TA-007: fen lisesi izleği. (Temel Düzey "TD." bölümü denendi; başlıklar güvenilir çıkmadığı için kayda alınmadı.)
+    "meb-2018.fen-lisesi-matematik.9-12": Layout("", 4, (2, 3), grades=(9, 10, 11, 12)),
+    "meb-2018.fen-lisesi-fizik.9-12": Layout("", 4, (2, 3), grades=(9, 10, 11, 12)),
+    "meb-2018.fen-lisesi-kimya.9-12": Layout("", 4, (2, 3), grades=(9, 10, 11, 12)),
+    "meb-2018.fen-lisesi-biyoloji.9-12": Layout("", 4, (2, 3), grades=(9, 10, 11, 12)),
 }
 
 # Başlık metni bu işaretlerden birinde biter (süre, kavram listesi, açıklama veya sonraki kod).
@@ -83,7 +88,9 @@ def pages_of(text: str) -> list[int]:
 def _title(raw: str) -> str | None:
     raw = " ".join(raw.split())
     raw = TITLE_END.split(raw, maxsplit=1)[0]
-    raw = re.split(r"\s+(?=[A-ZÇĞİÖŞÜ]\.\d|\d+\.\d+\.)", raw, maxsplit=1)[0].strip(" :-–")
+    # Sonraki kod başlığa karışmaz: "M.8.1.1", "9.1.1." ve TA-007'de iki harfli önek "TD.11.1".
+    raw = re.split(r"\s+(?=[A-ZÇĞİÖŞÜ]{1,2}\.\s?\d|\d+\.\d+\.)", raw, maxsplit=1)[0].strip(" :-–")
+    raw = re.split(r"\s+(?:Toplam|TOPLAM)\b", raw, maxsplit=1)[0]  # tablo satırı sonu
     raw = re.split(r"\s+\d", raw, maxsplit=1)[0]  # tablo hücresindeki sayılar başlık değildir
     words = raw.split()
     if not words or len(words) > 12 or not words[0][:1].isupper():
@@ -94,7 +101,8 @@ def _title(raw: str) -> str | None:
 def extract(program_id: str, text: str) -> dict:
     layout = LAYOUTS[program_id]
     prefix = re.escape(layout.prefix)
-    gap = r"\s?" if layout.prefix else ""  # 2018 PDF'inde "M. 8.1." yazım hatası var
+    # 2018 PDF'inde "M. 8.1." yazım hatası var. Öneksiz düzende "TD. 12.2.1" gibi önekli kodlar alınmaz.
+    gap = r"\s?" if layout.prefix else r"(?<![A-Z]\.\s)"
     code = re.compile(rf"(?<![\w.]){prefix}{gap}((?:\d{{1,2}}\.)+\d{{1,2}})(?:\.(?=[^\s\d.])|\.?(?=\s))")
     marks = pages_of(text)
     outcomes: dict[str, dict] = {}
@@ -153,7 +161,8 @@ def _key(code: str):
 
 
 SUBJECTS = {"matematik": "mathematics", "fen-bilimleri": "science", "fizik": "physics", "kimya": "chemistry",
-            "biyoloji": "biology"}
+            "biyoloji": "biology", "temel-duzey-matematik": "mathematics", "fen-lisesi-matematik": "mathematics",
+            "fen-lisesi-fizik": "physics", "fen-lisesi-kimya": "chemistry", "fen-lisesi-biyoloji": "biology"}
 GEOMETRY = re.compile(r"geometri|üçgen|çember|dörtgen|çokgen|katı cisim|\bdönüşüm(?:ler)?\b|prizma|\baçılar\b"
                       r"|\buzay\b|daire|\beşlik\b|benzerlik|cisim", re.IGNORECASE)
 NOT_GEOMETRY = re.compile(r"fonksiyon|formül|trigonometri", re.IGNORECASE)

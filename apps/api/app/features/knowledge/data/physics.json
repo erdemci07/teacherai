@@ -1,194 +1,2383 @@
 {
-  "schema_name": "teacherai.knowledge_registry",
-  "version": "1.0.0",
-  "subject": "physics",
-  "entries": [
-    {"id": "phys.mass-weight", "version": 1, "subject": "physics", "topic": "kuvvet_ve_hareket", "kind": "definition",
-     "title_tr": "Kütle ve ağırlık",
-     "statement_tr": "Kütle cismin eylemsizliğinin ölçüsüdür ve bulunduğu yere bağlı değildir; ağırlık cisme etki eden kütle çekim kuvvetidir ve yerel çekim ivmesine bağlıdır.",
-     "representation": "W=mg",
-     "quantities": [{"symbol": "m", "name_tr": "kütle", "si_unit": "kg"}, {"symbol": "W", "name_tr": "ağırlık", "si_unit": "N"}, {"symbol": "g", "name_tr": "çekim ivmesi", "si_unit": "m/s^2"}],
-     "conditions_tr": ["W = mg, cisim yerel çekim alanında ve yerin dönüşünün etkisi ihmal edildiğinde kullanılır."],
-     "misconceptions_tr": ["Kütleyi Newton, ağırlığı kilogram ile ifade etmek.", "Ay'da kütlenin azaldığını sanmak."],
-     "outcome_refs": ["meb-2018.fen-bilimleri.3-8::F.7.3.1.2"],
-     "visuals": ["vector_diagram"],
-     "verifiers": [{"verifier": "reasoning.units.dimension", "checks_tr": "mg çarpımının kuvvet boyutunda olduğu. Doğru yasanın seçildiğini kanıtlamaz."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "5.4 Mass and Weight", "url": "https://openstax.org/books/university-physics-volume-1/pages/5-4-mass-and-weight", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.newton-first-law", "version": 1, "subject": "physics", "topic": "newton_yasalari", "kind": "law",
-     "title_tr": "Newton'ın birinci yasası (eylemsizlik)",
-     "statement_tr": "Üzerine etki eden net kuvvet sıfır olan bir cisim duruyorsa durmaya, hareket ediyorsa sabit hızla doğrusal hareketine devam eder.",
-     "conditions_tr": ["Eylemsiz (ivmesiz) gözlem çerçevesinde geçerlidir."],
-     "misconceptions_tr": ["Hareketin sürmesi için sürekli kuvvet gerektiğini sanmak."],
-     "outcome_refs": ["meb-2018.fizik.9-12::9.3.3.1"],
-     "visuals": ["free_body_diagram"],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "5.2 Newton's First Law", "url": "https://openstax.org/books/university-physics-volume-1/pages/5-2-newtons-first-law", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.newton-second-law", "version": 1, "subject": "physics", "topic": "newton_yasalari", "kind": "law",
-     "title_tr": "Newton'ın ikinci yasası",
-     "statement_tr": "Bir cismin ivmesi ona etki eden net kuvvetle aynı yöndedir; büyüklüğü net kuvvetle doğru, kütleyle ters orantılıdır.",
-     "representation": "\\vec F_{net}=m\\vec a",
-     "quantities": [{"symbol": "F_net", "name_tr": "net kuvvet", "si_unit": "N"}, {"symbol": "m", "name_tr": "kütle", "si_unit": "kg"}, {"symbol": "a", "name_tr": "ivme", "si_unit": "m/s^2"}],
-     "conditions_tr": ["Eylemsiz çerçeve.", "Kütlesi değişmeyen sistem.", "Kuvvetler vektörel toplanır."],
-     "exceptions_tr": ["Işık hızına yakın hızlarda göreli düzeltme gerekir."],
-     "misconceptions_tr": ["Tek bir kuvveti net kuvvet sanmak.", "Hız ile ivmenin her zaman aynı yönde olduğunu düşünmek."],
-     "outcome_refs": ["meb-2018.fizik.9-12::9.3.3.2", "meb-2018.fizik.9-12::11.1.3.2"],
-     "visuals": ["free_body_diagram", "vector_diagram"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Verilen nicelikler ve birimlerle F = ma hesabı."},
-                   {"verifier": "reasoning.formula.dimensions", "checks_tr": "Formül iki tarafının boyut uyumu."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "5.3 Newton's Second Law", "url": "https://openstax.org/books/university-physics-volume-1/pages/5-3-newtons-second-law", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.newton-third-law", "version": 1, "subject": "physics", "topic": "newton_yasalari", "kind": "law",
-     "title_tr": "Newton'ın üçüncü yasası (etki-tepki)",
-     "statement_tr": "İki cisim etkileştiğinde birbirlerine eşit büyüklükte ve zıt yönde kuvvet uygular; bu kuvvetler farklı cisimlere etki ettiği için birbirini dengelemez.",
-     "conditions_tr": ["Etki ve tepki aynı etkileşim türündendir ve farklı cisimlere etki eder."],
-     "misconceptions_tr": ["Masadaki kitapta ağırlık ile normal kuvveti etki-tepki çifti saymak."],
-     "visuals": ["free_body_diagram"],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "5.5 Newton’s Third Law", "url": "https://openstax.org/books/university-physics-volume-1/pages/5-5-newtons-third-law", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.free-body-diagram", "version": 1, "subject": "physics", "topic": "newton_yasalari", "kind": "method",
-     "title_tr": "Serbest cisim diyagramı",
-     "statement_tr": "İncelenen tek cisim ayrı çizilir ve yalnız ona etki eden dış kuvvetler, uygulama noktası ve yönüyle gösterilir; cismin başka cisimlere uyguladığı kuvvetler çizilmez.",
-     "misconceptions_tr": ["Hız veya ivmeyi kuvvet oku olarak çizmek.", "'Hareket kuvveti' gibi var olmayan bir kuvvet eklemek."],
-     "visuals": ["free_body_diagram"],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "5.7 Drawing Free-Body Diagrams", "url": "https://openstax.org/books/university-physics-volume-1/pages/5-7-drawing-free-body-diagrams", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.constant-acceleration", "version": 1, "subject": "physics", "topic": "kinematik", "kind": "relationship",
-     "title_tr": "Sabit ivmeli hareket denklemleri",
-     "statement_tr": "İvme sabitken hız zamanla doğrusal değişir ve konum, ilk hız, ivme ve zamanla ilişkilendirilen kinematik denklemlerle bulunur.",
-     "representation": "v=v_0+at,\\ x=x_0+v_0t+\\tfrac12at^2,\\ v^2=v_0^2+2a(x-x_0)",
-     "conditions_tr": ["İvme hareket boyunca sabit.", "Tek boyutlu hareket (veya her eksende ayrı uygulanır)."],
-     "exceptions_tr": ["Hava direncinin hıza bağlı olduğu hareketlerde ivme sabit değildir."],
-     "misconceptions_tr": ["İvme değişen harekette bu denklemleri kullanmak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.1.2"],
-     "visuals": ["coordinate_graph", "equation"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Sayısal yerine koyma ve birimli sonuç."},
-                   {"verifier": "reasoning.formula.graph_slope", "checks_tr": "Hız-zaman grafiğinde eğimden ivme."},
-                   {"verifier": "reasoning.formula.graph_area", "checks_tr": "Hız-zaman grafiği altındaki alandan yer değiştirme."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "3.4 Motion with Constant Acceleration", "url": "https://openstax.org/books/university-physics-volume-1/pages/3-4-motion-with-constant-acceleration", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.free-fall", "version": 1, "subject": "physics", "topic": "kinematik", "kind": "relationship",
-     "title_tr": "Serbest düşme",
-     "statement_tr": "Yer yüzeyine yakın bölgede hava direnci ihmal edildiğinde bütün cisimler kütlelerinden bağımsız olarak aynı sabit ivmeyle düşer.",
-     "conditions_tr": ["Hava direnci ihmal edilir.", "Yükseklik, çekim ivmesinin değişmeyeceği kadar küçüktür."],
-     "misconceptions_tr": ["Ağır cismin daha hızlı düştüğünü sanmak."],
-     "related": ["phys.constant-acceleration", "phys.standard-gravity"],
-     "visuals": ["coordinate_graph"],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "3.5 Free Fall", "url": "https://openstax.org/books/university-physics-volume-1/pages/3-5-free-fall", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.standard-gravity", "version": 1, "subject": "physics", "topic": "kinematik", "kind": "fact",
-     "title_tr": "Standart yerçekimi ivmesi",
-     "statement_tr": "Standart yerçekimi ivmesi gₙ uzlaşımla 9,806 65 m/s² olarak tanımlanmış tam bir değerdir; bir yerdeki gerçek çekim ivmesi enlem ve yüksekliğe göre bundan farklıdır.",
-     "quantities": [{"symbol": "g_n", "name_tr": "standart yerçekimi ivmesi", "si_unit": "m/s^2"}],
-     "misconceptions_tr": ["Soru g = 10 m/s² verdiğinde bunun ölçülmüş bir değer olduğunu sanmak."],
-     "simplifications": [{"level": "9-12. sınıf soruları", "text_tr": "Sorular çoğunlukla g = 10 m/s² alır.", "omits_tr": "Yerel ivmenin konuma bağlı değişimi ve standart değerin uzlaşımsal olması."}],
-     "verifiers": [{"verifier": "reasoning.units.conversion", "checks_tr": "İvme birimleri arasında dönüşüm."}],
-     "provenance": [{"source_id": "nist.codata", "section": "CODATA Value: standard acceleration of gravity", "url": "https://physics.nist.gov/cgi-bin/cuu/Value?gn", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.work-energy-theorem", "version": 1, "subject": "physics", "topic": "enerji", "kind": "theorem",
-     "title_tr": "İş-enerji teoremi",
-     "statement_tr": "Bir cisme etki eden net kuvvetin yaptığı iş cismin kinetik enerjisindeki değişime eşittir.",
-     "representation": "W_{net}=\\Delta K",
-     "conditions_tr": ["Parçacık (veya katı cisim öteleme) modeli."],
-     "misconceptions_tr": ["Yalnız bir kuvvetin işini net iş saymak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.2.2"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Sayısal iş ve kinetik enerji hesabı."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "7.3 Work-Energy Theorem", "url": "https://openstax.org/books/university-physics-volume-1/pages/7-3-work-energy-theorem", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.mechanical-energy-conservation", "version": 1, "subject": "physics", "topic": "enerji", "kind": "law",
-     "title_tr": "Mekanik enerjinin korunumu",
-     "statement_tr": "Yalnız korunumlu kuvvetlerin iş yaptığı bir sistemde kinetik ve potansiyel enerjinin toplamı sabit kalır. Toplam enerji her zaman korunur; mekanik enerji ise sürtünme gibi kuvvetlerle ısıya dönüşebilir.",
-     "representation": "K_1+U_1=K_2+U_2",
-     "conditions_tr": ["Korunumlu olmayan kuvvetlerin (sürtünme, hava direnci) işi sıfır veya ihmal edilir."],
-     "misconceptions_tr": ["Sürtünmeli hareketlerde de mekanik enerjinin korunduğunu sanmak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.2.4", "meb-2018.fizik.9-12::9.4.3.1"],
-     "related": ["phys.work-energy-theorem"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Enerji denkleminin sayısal çözümü. Sürtünmenin ihmal edilebilir olduğunu kanıtlamaz."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "8.3 Conservation of Energy", "url": "https://openstax.org/books/university-physics-volume-1/pages/8-3-conservation-of-energy", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.momentum-conservation", "version": 1, "subject": "physics", "topic": "momentum", "kind": "law",
-     "title_tr": "Çizgisel momentumun korunumu",
-     "statement_tr": "Dış kuvvetlerin bileşkesi sıfır olan (yalıtılmış) bir sistemin toplam çizgisel momentumu korunur; çarpışmanın esnek olması gerekmez.",
-     "representation": "\\sum \\vec p_{önce}=\\sum \\vec p_{sonra}",
-     "conditions_tr": ["Sistem üzerindeki net dış kuvvet sıfır (veya çarpışma süresince ihmal edilebilir)."],
-     "misconceptions_tr": ["Momentum korunuyorsa kinetik enerjinin de korunduğunu sanmak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.12.1.4", "meb-2018.fizik.9-12::11.1.7.4"],
-     "visuals": ["vector_diagram"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Momentum denkleminin sayısal çözümü."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "9.3 Conservation of Linear Momentum", "url": "https://openstax.org/books/university-physics-volume-1/pages/9-3-conservation-of-linear-momentum", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.ohms-law", "version": 1, "subject": "physics", "topic": "elektrik", "kind": "law",
-     "title_tr": "Ohm yasası",
-     "statement_tr": "Ohmik bir iletkende sıcaklık sabitken uçlar arasındaki potansiyel farkı ile akım doğru orantılıdır; oran iletkenin direncidir.",
-     "representation": "V=IR",
-     "quantities": [{"symbol": "V", "name_tr": "potansiyel farkı", "si_unit": "V"}, {"symbol": "I", "name_tr": "akım", "si_unit": "A"}, {"symbol": "R", "name_tr": "direnç", "si_unit": "Ω"}],
-     "conditions_tr": ["Ohmik iletken.", "Sıcaklık sabit."],
-     "exceptions_tr": ["Diyot, ampul teli (ısındıkça) gibi ohmik olmayan elemanlarda V-I ilişkisi doğrusal değildir."],
-     "misconceptions_tr": ["R = V/I ifadesinden direncin gerilime bağlı olduğunu sanmak.", "Akımın devrede 'harcandığını' düşünmek."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.3.3", "meb-2018.fizik.9-12::10.1.2.1"],
-     "visuals": ["circuit", "coordinate_graph"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "V = IR hesabı ve birimli sonuç."},
-                   {"verifier": "reasoning.evidence.constant_ratio", "checks_tr": "Ölçüm tablosunda V/I oranının sabit olup olmadığı (ohmik davranış verisi)."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-2", "section": "9.4 Ohm's Law", "url": "https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.resistivity", "version": 1, "subject": "physics", "topic": "elektrik", "kind": "relationship",
-     "title_tr": "Direncin bağlı olduğu değişkenler",
-     "statement_tr": "Düzgün bir iletkenin direnci boyuyla doğru, kesit alanıyla ters orantılıdır ve malzemenin özdirencine bağlıdır.",
-     "representation": "R=\\rho\\frac{L}{A}",
-     "conditions_tr": ["Kesiti boyunca düzgün iletken.", "Özdirenç sıcaklıkla değişir."],
-     "misconceptions_tr": ["Kalın telin direncinin daha büyük olduğunu sanmak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.3.1"],
-     "verifiers": [{"verifier": "reasoning.formula.dimensions", "checks_tr": "ρL/A ifadesinin ohm boyutunda olduğu."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-2", "section": "9.3 Resistivity and Resistance", "url": "https://openstax.org/books/university-physics-volume-2/pages/9-3-resistivity-and-resistance", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.series-parallel", "version": 1, "subject": "physics", "topic": "elektrik", "kind": "relationship",
-     "title_tr": "Seri ve paralel dirençler",
-     "statement_tr": "Seri bağlı dirençlerden aynı akım geçer ve eşdeğer direnç dirençlerin toplamıdır; paralel bağlı dirençlerin uçlarındaki gerilim aynıdır ve eşdeğer direncin tersi terslerin toplamıdır.",
-     "representation": "R_s=\\sum R_i,\\ \\frac{1}{R_p}=\\sum\\frac{1}{R_i}",
-     "conditions_tr": ["Bağlantı telleri ideal (dirençsiz)."],
-     "misconceptions_tr": ["Paralel eşdeğer direncin en küçük dirençten büyük olabileceğini sanmak."],
-     "outcome_refs": ["tymm-2026.fizik.9-12::FIZ.10.3.4"],
-     "visuals": ["circuit"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "Eşdeğer direnç hesabı (devre şemasının doğru okunduğunu kanıtlamaz)."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-2", "section": "10.2 Resistors in Series and Parallel", "url": "https://openstax.org/books/university-physics-volume-2/pages/10-2-resistors-in-series-and-parallel", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.density", "version": 1, "subject": "physics", "topic": "madde_ve_ozellikleri", "kind": "definition",
-     "title_tr": "Özkütle (yoğunluk)",
-     "statement_tr": "Özkütle birim hacimdeki kütledir ve aynı koşullarda bir maddeyi ayırt etmeye yarar.",
-     "representation": "\\rho=\\frac{m}{V}",
-     "quantities": [{"symbol": "ρ", "name_tr": "özkütle", "si_unit": "kg/m^3"}],
-     "conditions_tr": ["Sıcaklık ve basınç belirtilmelidir; özellikle gazlarda özkütle bunlarla değişir."],
-     "misconceptions_tr": ["Büyük cismin özkütlesinin daha büyük olduğunu sanmak."],
-     "outcome_refs": ["meb-2018.fizik.9-12::9.2.1.1"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "m/V hesabı ve birim dönüşümü."}, {"verifier": "reasoning.units.conversion", "checks_tr": "g/cm³ ile kg/m³ dönüşümü."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "14.1 Fluids, Density, and Pressure", "url": "https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.pressure", "version": 1, "subject": "physics", "topic": "basinc", "kind": "relationship",
-     "title_tr": "Basınç ve durgun sıvı basıncı",
-     "statement_tr": "Basınç birim yüzeye dik etki eden kuvvettir. Durgun ve sıkıştırılamaz bir sıvıda derinlik arttıkça basınç ρgh kadar artar; bu artış kabın biçimine bağlı değildir.",
-     "representation": "P=\\frac{F}{A},\\ P=P_0+\\rho g h",
-     "conditions_tr": ["Kuvvet yüzeye dik bileşeniyle alınır.", "Sıvı durgun, sıkıştırılamaz ve özkütlesi sabit."],
-     "misconceptions_tr": ["Sıvı basıncının kaptaki sıvı miktarına bağlı olduğunu sanmak."],
-     "outcome_refs": ["meb-2018.fen-bilimleri.3-8::F.8.3.1.1"],
-     "visuals": ["vector_diagram"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "F/A ve ρgh hesabı."}, {"verifier": "reasoning.units.dimension", "checks_tr": "Sonucun pascal boyutunda olduğu."}],
-     "provenance": [{"source_id": "openstax.university-physics-volume-1", "section": "14.1 Fluids, Density, and Pressure", "url": "https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.si-base-units", "version": 1, "subject": "physics", "topic": "olcme", "kind": "definition",
-     "title_tr": "SI ve yedi temel birim",
-     "statement_tr": "SI, değerleri tam olarak sabitlenmiş yedi tanımlayıcı sabite dayanır; saniye, metre, kilogram, amper, kelvin, mol ve kandela temel birimlerdir ve diğer birimler bunlardan türetilir.",
-     "misconceptions_tr": ["Kilogramın hâlâ bir metal örnekle tanımlandığını sanmak."],
-     "verifiers": [{"verifier": "reasoning.units.conversion", "checks_tr": "Önekli ve türetilmiş birimler arasında dönüşüm."}, {"verifier": "reasoning.units.dimension", "checks_tr": "Birimin temel boyutlara ayrıştırılması."}],
-     "provenance": [{"source_id": "bipm.si-brochure-9", "section": "§2.2 Definition of the SI; §2.3.1 Base units", "url": "https://www.bipm.org/documents/20126/41483022/SI-Brochure-9-EN.pdf", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "phys.planetary-gravity", "version": 1, "subject": "physics", "topic": "kutle_cekimi", "kind": "fact",
-     "title_tr": "Gezegenlerde yüzey çekim ivmesi farklıdır",
-     "statement_tr": "Bir gök cisminin yüzeyindeki çekim ivmesi kütlesine ve yarıçapına bağlıdır; bu yüzden aynı cismin ağırlığı farklı gezegenlerde farklı, kütlesi aynıdır.",
-     "conditions_tr": ["Yüzey çekimi değeri ortalama yarıçap için verilir."],
-     "misconceptions_tr": ["Uzayda (yörüngede) çekim kuvvetinin sıfır olduğunu sanmak."],
-     "outcome_refs": ["meb-2018.fizik.9-12::12.1.4.2"],
-     "related": ["phys.mass-weight"],
-     "provenance": [{"source_id": "nasa.planetary-fact-sheet", "section": "Planetary Fact Sheet (Gravity satırı)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"}
-  ]
+ "schema_name": "teacherai.knowledge_registry",
+ "version": "1.0.0",
+ "subject": "physics",
+ "entries": [
+  {
+   "id": "phys.mass-weight",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet_ve_hareket",
+   "kind": "definition",
+   "title_tr": "Kütle ve ağırlık",
+   "statement_tr": "Kütle cismin eylemsizliğinin ölçüsüdür ve bulunduğu yere bağlı değildir; ağırlık cisme etki eden kütle çekim kuvvetidir ve yerel çekim ivmesine bağlıdır.",
+   "representation": "W=mg",
+   "quantities": [
+    {
+     "symbol": "m",
+     "name_tr": "kütle",
+     "si_unit": "kg"
+    },
+    {
+     "symbol": "W",
+     "name_tr": "ağırlık",
+     "si_unit": "N"
+    },
+    {
+     "symbol": "g",
+     "name_tr": "çekim ivmesi",
+     "si_unit": "m/s^2"
+    }
+   ],
+   "conditions_tr": [
+    "W = mg, cisim yerel çekim alanında ve yerin dönüşünün etkisi ihmal edildiğinde kullanılır."
+   ],
+   "misconceptions_tr": [
+    "Kütleyi Newton, ağırlığı kilogram ile ifade etmek.",
+    "Ay'da kütlenin azaldığını sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fen-bilimleri.3-8::F.7.3.1.2"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.dimension",
+     "checks_tr": "mg çarpımının kuvvet boyutunda olduğu. Doğru yasanın seçildiğini kanıtlamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.4 Mass and Weight",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-4-mass-and-weight",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.newton-first-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "newton_yasalari",
+   "kind": "law",
+   "title_tr": "Newton'ın birinci yasası (eylemsizlik)",
+   "statement_tr": "Üzerine etki eden net kuvvet sıfır olan bir cisim duruyorsa durmaya, hareket ediyorsa sabit hızla doğrusal hareketine devam eder.",
+   "conditions_tr": [
+    "Eylemsiz (ivmesiz) gözlem çerçevesinde geçerlidir."
+   ],
+   "misconceptions_tr": [
+    "Hareketin sürmesi için sürekli kuvvet gerektiğini sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.3.3.1"
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.2 Newton's First Law",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-2-newtons-first-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.newton-second-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "newton_yasalari",
+   "kind": "law",
+   "title_tr": "Newton'ın ikinci yasası",
+   "statement_tr": "Bir cismin ivmesi ona etki eden net kuvvetle aynı yöndedir; büyüklüğü net kuvvetle doğru, kütleyle ters orantılıdır.",
+   "representation": "\\vec F_{net}=m\\vec a",
+   "quantities": [
+    {
+     "symbol": "F_net",
+     "name_tr": "net kuvvet",
+     "si_unit": "N"
+    },
+    {
+     "symbol": "m",
+     "name_tr": "kütle",
+     "si_unit": "kg"
+    },
+    {
+     "symbol": "a",
+     "name_tr": "ivme",
+     "si_unit": "m/s^2"
+    }
+   ],
+   "conditions_tr": [
+    "Eylemsiz çerçeve.",
+    "Kütlesi değişmeyen sistem.",
+    "Kuvvetler vektörel toplanır."
+   ],
+   "exceptions_tr": [
+    "Işık hızına yakın hızlarda göreli düzeltme gerekir."
+   ],
+   "misconceptions_tr": [
+    "Tek bir kuvveti net kuvvet sanmak.",
+    "Hız ile ivmenin her zaman aynı yönde olduğunu düşünmek."
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.3.3.2",
+    "meb-2018.fizik.9-12::11.1.3.2"
+   ],
+   "visuals": [
+    "free_body_diagram",
+    "vector_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Verilen nicelikler ve birimlerle F = ma hesabı."
+    },
+    {
+     "verifier": "reasoning.formula.dimensions",
+     "checks_tr": "Formül iki tarafının boyut uyumu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.3 Newton's Second Law",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-3-newtons-second-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.newton-third-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "newton_yasalari",
+   "kind": "law",
+   "title_tr": "Newton'ın üçüncü yasası (etki-tepki)",
+   "statement_tr": "İki cisim etkileştiğinde birbirlerine eşit büyüklükte ve zıt yönde kuvvet uygular; bu kuvvetler farklı cisimlere etki ettiği için birbirini dengelemez.",
+   "conditions_tr": [
+    "Etki ve tepki aynı etkileşim türündendir ve farklı cisimlere etki eder."
+   ],
+   "misconceptions_tr": [
+    "Masadaki kitapta ağırlık ile normal kuvveti etki-tepki çifti saymak."
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.5 Newton’s Third Law",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-5-newtons-third-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.free-body-diagram",
+   "version": 1,
+   "subject": "physics",
+   "topic": "newton_yasalari",
+   "kind": "method",
+   "title_tr": "Serbest cisim diyagramı",
+   "statement_tr": "İncelenen tek cisim ayrı çizilir ve yalnız ona etki eden dış kuvvetler, uygulama noktası ve yönüyle gösterilir; cismin başka cisimlere uyguladığı kuvvetler çizilmez.",
+   "misconceptions_tr": [
+    "Hız veya ivmeyi kuvvet oku olarak çizmek.",
+    "'Hareket kuvveti' gibi var olmayan bir kuvvet eklemek."
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.7 Drawing Free-Body Diagrams",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-7-drawing-free-body-diagrams",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.constant-acceleration",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "relationship",
+   "title_tr": "Sabit ivmeli hareket denklemleri",
+   "statement_tr": "İvme sabitken hız zamanla doğrusal değişir ve konum, ilk hız, ivme ve zamanla ilişkilendirilen kinematik denklemlerle bulunur.",
+   "representation": "v=v_0+at,\\ x=x_0+v_0t+\\tfrac12at^2,\\ v^2=v_0^2+2a(x-x_0)",
+   "conditions_tr": [
+    "İvme hareket boyunca sabit.",
+    "Tek boyutlu hareket (veya her eksende ayrı uygulanır)."
+   ],
+   "exceptions_tr": [
+    "Hava direncinin hıza bağlı olduğu hareketlerde ivme sabit değildir."
+   ],
+   "misconceptions_tr": [
+    "İvme değişen harekette bu denklemleri kullanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.1.2"
+   ],
+   "visuals": [
+    "coordinate_graph",
+    "equation"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Sayısal yerine koyma ve birimli sonuç."
+    },
+    {
+     "verifier": "reasoning.formula.graph_slope",
+     "checks_tr": "Hız-zaman grafiğinde eğimden ivme."
+    },
+    {
+     "verifier": "reasoning.formula.graph_area",
+     "checks_tr": "Hız-zaman grafiği altındaki alandan yer değiştirme."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.4 Motion with Constant Acceleration",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-4-motion-with-constant-acceleration",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.free-fall",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "relationship",
+   "title_tr": "Serbest düşme",
+   "statement_tr": "Yer yüzeyine yakın bölgede hava direnci ihmal edildiğinde bütün cisimler kütlelerinden bağımsız olarak aynı sabit ivmeyle düşer.",
+   "conditions_tr": [
+    "Hava direnci ihmal edilir.",
+    "Yükseklik, çekim ivmesinin değişmeyeceği kadar küçüktür."
+   ],
+   "misconceptions_tr": [
+    "Ağır cismin daha hızlı düştüğünü sanmak."
+   ],
+   "related": [
+    "phys.constant-acceleration",
+    "phys.standard-gravity"
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.5 Free Fall",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-5-free-fall",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.standard-gravity",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "fact",
+   "title_tr": "Standart yerçekimi ivmesi",
+   "statement_tr": "Standart yerçekimi ivmesi gₙ uzlaşımla 9,806 65 m/s² olarak tanımlanmış tam bir değerdir; bir yerdeki gerçek çekim ivmesi enlem ve yüksekliğe göre bundan farklıdır.",
+   "quantities": [
+    {
+     "symbol": "g_n",
+     "name_tr": "standart yerçekimi ivmesi",
+     "si_unit": "m/s^2"
+    }
+   ],
+   "misconceptions_tr": [
+    "Soru g = 10 m/s² verdiğinde bunun ölçülmüş bir değer olduğunu sanmak."
+   ],
+   "simplifications": [
+    {
+     "level": "9-12. sınıf soruları",
+     "text_tr": "Sorular çoğunlukla g = 10 m/s² alır.",
+     "omits_tr": "Yerel ivmenin konuma bağlı değişimi ve standart değerin uzlaşımsal olması."
+    }
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.conversion",
+     "checks_tr": "İvme birimleri arasında dönüşüm."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "nist.codata",
+     "section": "CODATA Value: standard acceleration of gravity",
+     "url": "https://physics.nist.gov/cgi-bin/cuu/Value?gn",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. NIST değeri uzlaşımsal sabittir; veri kullanım koşulu doğrulanmadı, yalnız başvuru.",
+    "license_versions": [],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.work-energy-theorem",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "theorem",
+   "title_tr": "İş-enerji teoremi",
+   "statement_tr": "Bir cisme etki eden net kuvvetin yaptığı iş cismin kinetik enerjisindeki değişime eşittir.",
+   "representation": "W_{net}=\\Delta K",
+   "conditions_tr": [
+    "Parçacık (veya katı cisim öteleme) modeli."
+   ],
+   "misconceptions_tr": [
+    "Yalnız bir kuvvetin işini net iş saymak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.2.2"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Sayısal iş ve kinetik enerji hesabı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "7.3 Work-Energy Theorem",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/7-3-work-energy-theorem",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.mechanical-energy-conservation",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "law",
+   "title_tr": "Mekanik enerjinin korunumu",
+   "statement_tr": "Yalnız korunumlu kuvvetlerin iş yaptığı bir sistemde kinetik ve potansiyel enerjinin toplamı sabit kalır. Toplam enerji her zaman korunur; mekanik enerji ise sürtünme gibi kuvvetlerle ısıya dönüşebilir.",
+   "representation": "K_1+U_1=K_2+U_2",
+   "conditions_tr": [
+    "Korunumlu olmayan kuvvetlerin (sürtünme, hava direnci) işi sıfır veya ihmal edilir."
+   ],
+   "misconceptions_tr": [
+    "Sürtünmeli hareketlerde de mekanik enerjinin korunduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.2.4",
+    "meb-2018.fizik.9-12::9.4.3.1"
+   ],
+   "related": [
+    "phys.work-energy-theorem"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Enerji denkleminin sayısal çözümü. Sürtünmenin ihmal edilebilir olduğunu kanıtlamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "8.3 Conservation of Energy",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/8-3-conservation-of-energy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.momentum-conservation",
+   "version": 1,
+   "subject": "physics",
+   "topic": "momentum",
+   "kind": "law",
+   "title_tr": "Çizgisel momentumun korunumu",
+   "statement_tr": "Dış kuvvetlerin bileşkesi sıfır olan (yalıtılmış) bir sistemin toplam çizgisel momentumu korunur; çarpışmanın esnek olması gerekmez.",
+   "representation": "\\sum \\vec p_{önce}=\\sum \\vec p_{sonra}",
+   "conditions_tr": [
+    "Sistem üzerindeki net dış kuvvet sıfır (veya çarpışma süresince ihmal edilebilir)."
+   ],
+   "misconceptions_tr": [
+    "Momentum korunuyorsa kinetik enerjinin de korunduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.12.1.4",
+    "meb-2018.fizik.9-12::11.1.7.4"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Momentum denkleminin sayısal çözümü."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "9.3 Conservation of Linear Momentum",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/9-3-conservation-of-linear-momentum",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.ohms-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "law",
+   "title_tr": "Ohm yasası",
+   "statement_tr": "Ohmik bir iletkende sıcaklık sabitken uçlar arasındaki potansiyel farkı ile akım doğru orantılıdır; oran iletkenin direncidir.",
+   "representation": "V=IR",
+   "quantities": [
+    {
+     "symbol": "V",
+     "name_tr": "potansiyel farkı",
+     "si_unit": "V"
+    },
+    {
+     "symbol": "I",
+     "name_tr": "akım",
+     "si_unit": "A"
+    },
+    {
+     "symbol": "R",
+     "name_tr": "direnç",
+     "si_unit": "Ω"
+    }
+   ],
+   "conditions_tr": [
+    "Ohmik iletken.",
+    "Sıcaklık sabit."
+   ],
+   "exceptions_tr": [
+    "Diyot, ampul teli (ısındıkça) gibi ohmik olmayan elemanlarda V-I ilişkisi doğrusal değildir."
+   ],
+   "misconceptions_tr": [
+    "R = V/I ifadesinden direncin gerilime bağlı olduğunu sanmak.",
+    "Akımın devrede 'harcandığını' düşünmek."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.3.3",
+    "meb-2018.fizik.9-12::10.1.2.1"
+   ],
+   "visuals": [
+    "circuit",
+    "coordinate_graph"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "V = IR hesabı ve birimli sonuç."
+    },
+    {
+     "verifier": "reasoning.evidence.constant_ratio",
+     "checks_tr": "Ölçüm tablosunda V/I oranının sabit olup olmadığı (ohmik davranış verisi)."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "9.4 Ohm's Law",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.resistivity",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "relationship",
+   "title_tr": "Direncin bağlı olduğu değişkenler",
+   "statement_tr": "Düzgün bir iletkenin direnci boyuyla doğru, kesit alanıyla ters orantılıdır ve malzemenin özdirencine bağlıdır.",
+   "representation": "R=\\rho\\frac{L}{A}",
+   "conditions_tr": [
+    "Kesiti boyunca düzgün iletken.",
+    "Özdirenç sıcaklıkla değişir."
+   ],
+   "misconceptions_tr": [
+    "Kalın telin direncinin daha büyük olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.3.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.dimensions",
+     "checks_tr": "ρL/A ifadesinin ohm boyutunda olduğu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "9.3 Resistivity and Resistance",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/9-3-resistivity-and-resistance",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.series-parallel",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "relationship",
+   "title_tr": "Seri ve paralel dirençler",
+   "statement_tr": "Seri bağlı dirençlerden aynı akım geçer ve eşdeğer direnç dirençlerin toplamıdır; paralel bağlı dirençlerin uçlarındaki gerilim aynıdır ve eşdeğer direncin tersi terslerin toplamıdır.",
+   "representation": "R_s=\\sum R_i,\\ \\frac{1}{R_p}=\\sum\\frac{1}{R_i}",
+   "conditions_tr": [
+    "Bağlantı telleri ideal (dirençsiz)."
+   ],
+   "misconceptions_tr": [
+    "Paralel eşdeğer direncin en küçük dirençten büyük olabileceğini sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.3.4"
+   ],
+   "visuals": [
+    "circuit"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "Eşdeğer direnç hesabı (devre şemasının doğru okunduğunu kanıtlamaz)."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "10.2 Resistors in Series and Parallel",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/10-2-resistors-in-series-and-parallel",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.density",
+   "version": 1,
+   "subject": "physics",
+   "topic": "madde_ve_ozellikleri",
+   "kind": "definition",
+   "title_tr": "Özkütle (yoğunluk)",
+   "statement_tr": "Özkütle birim hacimdeki kütledir ve aynı koşullarda bir maddeyi ayırt etmeye yarar.",
+   "representation": "\\rho=\\frac{m}{V}",
+   "quantities": [
+    {
+     "symbol": "ρ",
+     "name_tr": "özkütle",
+     "si_unit": "kg/m^3"
+    }
+   ],
+   "conditions_tr": [
+    "Sıcaklık ve basınç belirtilmelidir; özellikle gazlarda özkütle bunlarla değişir."
+   ],
+   "misconceptions_tr": [
+    "Büyük cismin özkütlesinin daha büyük olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.2.1.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "m/V hesabı ve birim dönüşümü."
+    },
+    {
+     "verifier": "reasoning.units.conversion",
+     "checks_tr": "g/cm³ ile kg/m³ dönüşümü."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "14.1 Fluids, Density, and Pressure",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.pressure",
+   "version": 2,
+   "subject": "physics",
+   "topic": "basinc",
+   "kind": "relationship",
+   "title_tr": "Basınç ve durgun sıvı basıncı",
+   "statement_tr": "Basınç, bir yüzeye dik etki eden kuvvetin büyüklüğünün yüzey alanına oranıdır. Durgun ve sıkıştırılamaz bir sıvıda derinlik arttıkça basınç ρgh kadar artar; bu artış kabın biçimine bağlı değildir.",
+   "representation": "P=\\frac{F}{A},\\ P=P_0+\\rho g h",
+   "conditions_tr": [
+    "Kuvvet yüzeye dik bileşeniyle alınır.",
+    "Sıvı durgun, sıkıştırılamaz ve özkütlesi sabit."
+   ],
+   "misconceptions_tr": [
+    "Sıvı basıncının kaptaki sıvı miktarına bağlı olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fen-bilimleri.3-8::F.8.3.1.1"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "F/A ve ρgh hesabı."
+    },
+    {
+     "verifier": "reasoning.units.dimension",
+     "checks_tr": "Sonucun pascal boyutunda olduğu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "14.1 Fluids, Density, and Pressure",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Basınç kuvvet olarak değil, dik kuvvetin birim alana oranı olarak tanımlandı.",
+     "changed_fields": [
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Basınç birim yüzeye dik etki eden kuvvettir. Durgun ve sıkıştırılamaz bir sıvıda derinlik arttıkça basınç ρgh kadar artar; bu artış kabın biçimine bağlı değildir.\"}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "phys.si-base-units",
+   "version": 1,
+   "subject": "physics",
+   "topic": "olcme",
+   "kind": "definition",
+   "title_tr": "SI ve yedi temel birim",
+   "statement_tr": "SI, değerleri tam olarak sabitlenmiş yedi tanımlayıcı sabite dayanır; saniye, metre, kilogram, amper, kelvin, mol ve kandela temel birimlerdir ve diğer birimler bunlardan türetilir.",
+   "misconceptions_tr": [
+    "Kilogramın hâlâ bir metal örnekle tanımlandığını sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.conversion",
+     "checks_tr": "Önekli ve türetilmiş birimler arasında dönüşüm."
+    },
+    {
+     "verifier": "reasoning.units.dimension",
+     "checks_tr": "Birimin temel boyutlara ayrıştırılması."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "bipm.si-brochure-9",
+     "section": "§2.2 Definition of the SI; §2.3.1 Base units",
+     "url": "https://www.bipm.org/documents/20126/41483022/SI-Brochure-9-EN.pdf",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. BIPM SI Broşürü yalnız başvuru; tanımlanmış sabitler bilimsel olgudur.",
+    "license_versions": [
+     "CC BY 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "phys.planetary-gravity",
+   "version": 2,
+   "subject": "physics",
+   "topic": "kutle_cekimi",
+   "kind": "fact",
+   "title_tr": "Gezegenlerde yüzey çekim ivmesi farklıdır",
+   "statement_tr": "Bir gök cisminin yüzeyindeki çekim ivmesi kütlesine ve yarıçapına bağlıdır; bu yüzden aynı cismin ağırlığı farklı gezegenlerde farklı, kütlesi aynıdır.",
+   "conditions_tr": [
+    "Yüzey çekimi değeri ortalama yarıçap için verilir."
+   ],
+   "misconceptions_tr": [
+    "Uzayda (yörüngede) çekim kuvvetinin sıfır olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::12.1.4.2"
+   ],
+   "related": [
+    "phys.mass-weight"
+   ],
+   "provenance": [
+    {
+     "source_id": "nasa.planetary-fact-sheet",
+     "section": "Planetary Fact Sheet (Gravity satırı)",
+     "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. NASA tablo verisi yalnız başvuru; veri kullanım koşulu doğrulanmadı.",
+    "license_versions": [],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "assumptions_tr": [
+    "Gök cismi yaklaşık küresel ve kütle dağılımı küresel simetrik kabul edilir; dönme etkisi ihmal edilir."
+   ],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Küresel simetri ve dönmenin ihmali varsayımı eklendi.",
+     "changed_fields": [
+      "assumptions_tr"
+     ],
+     "previous_json": "{\"assumptions_tr\": null}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "phys.scalars-vectors",
+   "version": 1,
+   "subject": "physics",
+   "topic": "vektorler",
+   "kind": "definition",
+   "title_tr": "Skaler ve vektörel nicelikler",
+   "statement_tr": "Skaler nicelik yalnız büyüklükle (kütle, zaman), vektörel nicelik büyüklük ve yönle (yer değiştirme, kuvvet) belirtilir; vektörler bileşenleriyle toplanır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "2.1 Scalars and Vectors",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/2-1-scalars-and-vectors",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Vektörlerin büyüklüklerini doğrudan toplamak."
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.1.1"
+   ]
+  },
+  {
+   "id": "phys.average-velocity",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "definition",
+   "title_tr": "Yer değiştirme ve ortalama hız",
+   "statement_tr": "Ortalama hız, yer değiştirmenin geçen süreye oranıdır ve yönlüdür; ortalama sürat ise alınan yolun süreye oranıdır. Başladığı yere dönen cismin ortalama hızı sıfırdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.1 Position, Displacement, and Average Velocity",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-1-position-displacement-and-average-velocity",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "\\bar v=\\frac{\\Delta x}{\\Delta t}",
+   "misconceptions_tr": [
+    "Ortalama hızı ortalama süratle aynı saymak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.graph_slope",
+     "checks_tr": "Konum-zaman grafiğinden eğim."
+    }
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "quantities": [
+    {
+     "symbol": "v",
+     "name_tr": "hız",
+     "si_unit": "m/s"
+    }
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.3.1.2"
+   ]
+  },
+  {
+   "id": "phys.projectile-motion",
+   "version": 1,
+   "subject": "physics",
+   "topic": "iki_boyutta_hareket",
+   "kind": "relationship",
+   "title_tr": "Eğik atış",
+   "statement_tr": "Hava direnci ihmal edildiğinde eğik atışta yatay hız sabittir, düşey hareket yerçekimi ivmesiyle sabit ivmelidir; iki bileşen birbirinden bağımsız incelenir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "4.3 Projectile Motion",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/4-3-projectile-motion",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Hava direnci ihmal edilir.",
+    "Yerçekimi ivmesi sabit ve düşey kabul edilir."
+   ],
+   "misconceptions_tr": [
+    "Tepe noktasında hızın sıfır olduğunu sanmak (yatay bileşen sürer)."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "visuals": [
+    "vector_diagram",
+    "coordinate_graph"
+   ],
+   "related": [
+    "phys.constant-acceleration"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.1.5"
+   ]
+  },
+  {
+   "id": "phys.uniform-circular-motion",
+   "version": 1,
+   "subject": "physics",
+   "topic": "cembersel_hareket",
+   "kind": "relationship",
+   "title_tr": "Düzgün çembersel hareket",
+   "statement_tr": "Sabit süratle çembersel harekette hız vektörünün yönü sürekli değişir; ivme merkeze doğrudur ve büyüklüğü v²/r'dir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "4.4 Uniform and Nonuniform Circular Motion",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/4-4-uniform-and-nonuniform-circular-motion",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "a_c=\\frac{v^2}{r}",
+   "conditions_tr": [
+    "Sürat sabit (düzgün)."
+   ],
+   "misconceptions_tr": [
+    "Sürat sabit olduğu için ivmenin sıfır olduğunu sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::12.1.1"
+   ]
+  },
+  {
+   "id": "phys.friction",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "relationship",
+   "title_tr": "Sürtünme kuvveti",
+   "statement_tr": "Kinetik sürtünme kuvveti yaklaşık olarak normal kuvvetle orantılıdır (f = μₖN) ve kayma yönüne zıttır; statik sürtünme gerektiği kadar büyür ve en çok μₛN değerine ulaşır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "6.2 Friction",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/6-2-friction",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "f_k=\\mu_k N",
+   "conditions_tr": [
+    "Ampirik yaklaşımdır; yüzeyler ve hızla değişebilir."
+   ],
+   "misconceptions_tr": [
+    "Sürtünmenin her zaman harekete zıt yönde olduğunu sanmak (yürümede ileri yönde olabilir).",
+    "Statik sürtünmeyi hep μₛN saymak."
+   ],
+   "levels": [
+    "9. sınıf",
+    "11. sınıf"
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::9.3.4"
+   ]
+  },
+  {
+   "id": "phys.centripetal-force",
+   "version": 1,
+   "subject": "physics",
+   "topic": "cembersel_hareket",
+   "kind": "relationship",
+   "title_tr": "Merkezcil kuvvet",
+   "statement_tr": "Çembersel hareket için gereken net merkezcil kuvvet mv²/r'dir; bu ayrı bir kuvvet türü değil, gerilme, sürtünme veya kütle çekimi gibi kuvvetlerin merkeze doğru bileşkesidir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "6.3 Centripetal Force",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/6-3-centripetal-force",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "F_c=\\frac{mv^2}{r}",
+   "misconceptions_tr": [
+    "Serbest cisim diyagramına ayrıca 'merkezcil kuvvet' eklemek."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "related": [
+    "phys.uniform-circular-motion",
+    "phys.newton-second-law"
+   ]
+  },
+  {
+   "id": "phys.work",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "definition",
+   "title_tr": "İş",
+   "statement_tr": "Sabit bir kuvvetin yaptığı iş W = F·d·cos θ'dır; kuvvetin yer değiştirmeye dik bileşeni iş yapmaz ve iş negatif olabilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "7.1 Work",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/7-1-work",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "W=Fd\\cos\\theta",
+   "conditions_tr": [
+    "Kuvvet sabit ve yer değiştirme doğrusal kabul edilir."
+   ],
+   "misconceptions_tr": [
+    "Yük taşıyarak yatayda sabit hızla yürürken taşıyıcı kuvvetin iş yaptığını sanmak."
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "W = Fd cos θ hesabı."
+    }
+   ],
+   "quantities": [
+    {
+     "symbol": "W",
+     "name_tr": "iş",
+     "si_unit": "J"
+    }
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.4.1.2",
+    "tymm-2026.fizik.9-12::FIZ.10.2.2"
+   ]
+  },
+  {
+   "id": "phys.kinetic-energy",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "definition",
+   "title_tr": "Kinetik enerji",
+   "statement_tr": "Kütlesi m, sürati v olan cismin kinetik enerjisi ½mv²'dir; sürat iki katına çıkınca kinetik enerji dört katına çıkar.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "7.2 Kinetic Energy",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "K=\\tfrac12 mv^2",
+   "conditions_tr": [
+    "Klasik (göreli olmayan) hızlar için."
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "½mv² hesabı ve birim."
+    }
+   ],
+   "quantities": [
+    {
+     "symbol": "K",
+     "name_tr": "kinetik enerji",
+     "si_unit": "J"
+    }
+   ]
+  },
+  {
+   "id": "phys.power",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "definition",
+   "title_tr": "Güç",
+   "statement_tr": "Güç birim zamanda yapılan iş veya aktarılan enerjidir: P = W/t; sabit kuvvet ve hız için P = F·v·cos θ.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "7.4 Power",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/7-4-power",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "P=\\frac{W}{t}",
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.dimension",
+     "checks_tr": "Watt boyutu."
+    }
+   ],
+   "quantities": [
+    {
+     "symbol": "P",
+     "name_tr": "güç",
+     "si_unit": "W"
+    }
+   ],
+   "outcome_refs": [
+    "meb-2018.fizik.9-12::9.4.1.2"
+   ]
+  },
+  {
+   "id": "phys.impulse",
+   "version": 1,
+   "subject": "physics",
+   "topic": "momentum",
+   "kind": "theorem",
+   "title_tr": "İtme ve momentum değişimi",
+   "statement_tr": "Bir cisme uygulanan net kuvvetin itmesi momentumundaki değişime eşittir: J = FΔt = Δp (kuvvet sabitse).",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "9.2 Impulse and Collisions",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/9-2-impulse-and-collisions",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "\\vec J=\\Delta\\vec p",
+   "conditions_tr": [
+    "F sabit değilse itme kuvvet-zaman grafiğinin altındaki alandır."
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.graph_area",
+     "checks_tr": "Kuvvet-zaman grafiğinin altındaki alan."
+    }
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.12.1.3"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.1.7"
+   ]
+  },
+  {
+   "id": "phys.collisions",
+   "version": 1,
+   "subject": "physics",
+   "topic": "momentum",
+   "kind": "relationship",
+   "title_tr": "Esnek ve esnek olmayan çarpışma",
+   "statement_tr": "Yalıtılmış sistemde her çarpışmada momentum korunur; kinetik enerji yalnız esnek çarpışmada korunur, tamamen esnek olmayan çarpışmada cisimler birlikte hareket eder.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "9.4 Types of Collisions",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Sistem üzerindeki net dış kuvvet ihmal edilebilir."
+   ],
+   "misconceptions_tr": [
+    "Kinetik enerjinin her çarpışmada korunduğunu sanmak."
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "related": [
+    "phys.momentum-conservation"
+   ]
+  },
+  {
+   "id": "phys.static-equilibrium",
+   "version": 1,
+   "subject": "physics",
+   "topic": "denge",
+   "kind": "law",
+   "title_tr": "Statik denge koşulları",
+   "statement_tr": "Bir katı cisim statik dengedeyse üzerine etki eden net kuvvet sıfırdır ve herhangi bir noktaya göre net tork sıfırdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "12.1 Conditions for Static Equilibrium",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/12-1-conditions-for-static-equilibrium",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Katı (biçimi değişmeyen) cisim ve eylemsiz çerçeve."
+   ],
+   "misconceptions_tr": [
+    "Net kuvvet sıfırsa dönmenin de olmayacağını sanmak."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.12.1.2"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.1.9"
+   ]
+  },
+  {
+   "id": "phys.universal-gravitation",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kutle_cekimi",
+   "kind": "law",
+   "title_tr": "Evrensel kütle çekim yasası",
+   "statement_tr": "İki noktasal kütle birbirini kütlelerin çarpımıyla doğru, aralarındaki uzaklığın karesiyle ters orantılı bir kuvvetle çeker: F = Gm₁m₂/r².",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "13.1 Newton's Law of Universal Gravitation",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/13-1-newtons-law-of-universal-gravitation",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "F=G\\frac{m_1m_2}{r^2}",
+   "conditions_tr": [
+    "Noktasal kütleler veya küresel simetrik cisimler (r merkezler arası uzaklık)."
+   ],
+   "exceptions_tr": [
+    "Çok güçlü alanlarda ve yüksek hızlarda genel görelilik gerekir."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.dimensions",
+     "checks_tr": "Formülün newton boyutunda olduğu."
+    }
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::12.1.4"
+   ]
+  },
+  {
+   "id": "phys.pascal-principle",
+   "version": 1,
+   "subject": "physics",
+   "topic": "akiskanlar",
+   "kind": "law",
+   "title_tr": "Pascal ilkesi",
+   "statement_tr": "Kapalı ve sıkıştırılamaz bir akışkana uygulanan basınç değişimi akışkanın her noktasına ve kabın çeperlerine azalmadan iletilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "14.3 Pascal's Principle and Hydraulics",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/14-3-pascals-principle-and-hydraulics",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Kapalı kap, durgun ve sıkıştırılamaz akışkan."
+   ],
+   "misconceptions_tr": [
+    "Hidrolik düzenekte enerjinin de çoğaldığını sanmak."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "related": [
+    "phys.pressure"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.2.1"
+   ]
+  },
+  {
+   "id": "phys.archimedes",
+   "version": 1,
+   "subject": "physics",
+   "topic": "akiskanlar",
+   "kind": "law",
+   "title_tr": "Arşimet ilkesi (kaldırma kuvveti)",
+   "statement_tr": "Bir akışkana tamamen veya kısmen batmış cisme, yer değiştirdiği akışkanın ağırlığına eşit, yukarı yönlü bir kaldırma kuvveti etki eder.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "14.4 Archimedes’ Principle and Buoyancy",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "F_k=\\rho_{akışkan}\\,V_{batan}\\,g",
+   "conditions_tr": [
+    "Akışkan durgun ve yerçekimi alanında."
+   ],
+   "misconceptions_tr": [
+    "Kaldırma kuvvetinin cismin kendi özkütlesine bağlı olduğunu sanmak."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "ρVg hesabı."
+    }
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.9.3.5"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.2.2"
+   ]
+  },
+  {
+   "id": "phys.simple-harmonic-motion",
+   "version": 1,
+   "subject": "physics",
+   "topic": "titresim",
+   "kind": "relationship",
+   "title_tr": "Basit harmonik hareket",
+   "statement_tr": "Geri çağırıcı kuvvet yer değiştirmeyle orantılı ve zıt yönlüyse (F = −kx) hareket basit harmoniktir; yay-kütle sisteminin periyodu 2π√(m/k)'dir ve genliğe bağlı değildir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "15.1 Simple Harmonic Motion",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/15-1-simple-harmonic-motion",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "T=2\\pi\\sqrt{m/k}",
+   "conditions_tr": [
+    "Yay ideal (Hooke yasası) ve sönüm ihmal edilir."
+   ],
+   "exceptions_tr": [
+    "Sarkaçta periyodun genlikten bağımsızlığı yalnız küçük açılar için yaklaşık geçerlidir."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::12.2.1"
+   ]
+  },
+  {
+   "id": "phys.wave-speed",
+   "version": 1,
+   "subject": "physics",
+   "topic": "dalgalar",
+   "kind": "relationship",
+   "title_tr": "Dalga hızı, frekans ve dalga boyu",
+   "statement_tr": "Periyodik bir dalgada v = λf'dir. Dalganın hızı ortamın özelliklerine bağlıdır; ortam değişmeden kaynağın frekansı değişirse dalga boyu değişir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "16.2 Mathematics of Waves",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/16-2-mathematics-of-waves",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "v=\\lambda f",
+   "misconceptions_tr": [
+    "Frekans artınca aynı ortamda dalga hızının arttığını sanmak."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "quantities": [
+    {
+     "symbol": "λ",
+     "name_tr": "dalga boyu",
+     "si_unit": "m"
+    },
+    {
+     "symbol": "f",
+     "name_tr": "frekans",
+     "si_unit": "Hz"
+    }
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.3.1"
+   ]
+  },
+  {
+   "id": "phys.sound-waves",
+   "version": 1,
+   "subject": "physics",
+   "topic": "dalgalar",
+   "kind": "fact",
+   "title_tr": "Ses dalgaları",
+   "statement_tr": "Ses, ortam taneciklerinin titreşimiyle yayılan mekanik bir boyuna dalgadır; boşlukta yayılmaz ve hızı ortama (ve gazlarda sıcaklığa) bağlıdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "17.1 Sound Waves",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/17-1-sound-waves",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Sesin boşlukta yayıldığını sanmak."
+   ],
+   "levels": [
+    "8. sınıf",
+    "10. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.3.4"
+   ]
+  },
+  {
+   "id": "phys.thermal-equilibrium",
+   "version": 1,
+   "subject": "physics",
+   "topic": "isi_sicaklik",
+   "kind": "law",
+   "title_tr": "Isıl denge (termodinamiğin sıfırıncı yasası)",
+   "statement_tr": "Farklı sıcaklıktaki cisimler ısıl temasta bırakılırsa enerji ısı olarak sıcaktan soğuğa aktarılır ve sıcaklıklar eşitlenir; iki sistem üçüncü bir sistemle ısıl dengedeyse birbirleriyle de dengededir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "1.1 Temperature and Thermal Equilibrium",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/1-1-temperature-and-thermal-equilibrium",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Sistem çevreyle ısı alışverişi yapmıyorsa son sıcaklık iki sıcaklık arasında kalır."
+   ],
+   "misconceptions_tr": [
+    "Isı ile sıcaklığı aynı kavram saymak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.9.4.1"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::9.5.3"
+   ]
+  },
+  {
+   "id": "phys.specific-heat",
+   "version": 1,
+   "subject": "physics",
+   "topic": "isi_sicaklik",
+   "kind": "relationship",
+   "title_tr": "Öz ısı ve ısı alışverişi",
+   "statement_tr": "Hâl değişimi olmadan bir maddenin sıcaklığını ΔT kadar değiştirmek için gereken ısı Q = mcΔT'dir; c maddenin öz ısısıdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "1.4 Heat Transfer, Specific Heat, and Calorimetry",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/1-4-heat-transfer-specific-heat-and-calorimetry",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "Q=mc\\Delta T",
+   "conditions_tr": [
+    "Hâl değişimi yok; c sıcaklık aralığında yaklaşık sabit."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "mcΔT hesabı ve birim."
+    }
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::9.5.1"
+   ]
+  },
+  {
+   "id": "phys.latent-heat",
+   "version": 1,
+   "subject": "physics",
+   "topic": "isi_sicaklik",
+   "kind": "relationship",
+   "title_tr": "Hâl değişimi ve gizli ısı",
+   "statement_tr": "Saf bir madde hâl değiştirirken sıcaklığı sabit kalır; gereken ısı Q = mL'dir ve L maddeye ve hâl değişimine özgüdür.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "1.5 Phase Changes",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/1-5-phase-changes",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "Q=mL",
+   "conditions_tr": [
+    "Saf madde ve sabit basınç."
+   ],
+   "misconceptions_tr": [
+    "Kaynayan suya ısı verildikçe sıcaklığının arttığını sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::9.5.2"
+   ]
+  },
+  {
+   "id": "phys.first-law-thermodynamics",
+   "version": 1,
+   "subject": "physics",
+   "topic": "termodinamik",
+   "kind": "law",
+   "title_tr": "Termodinamiğin birinci yasası",
+   "statement_tr": "Bir sistemin iç enerjisindeki değişim, sisteme verilen ısı ile sistemin yaptığı iş arasındaki farka eşittir: ΔU = Q − W. Bu, enerjinin korunumunun ısıl biçimidir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "3.3 First Law of Thermodynamics",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/3-3-first-law-of-thermodynamics",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "\\Delta U=Q-W",
+   "conditions_tr": [
+    "İşaret kuralı belirtilmelidir (burada W sistemin yaptığı iştir)."
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ]
+  },
+  {
+   "id": "phys.coulomb-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrostatik",
+   "kind": "law",
+   "title_tr": "Coulomb yasası",
+   "statement_tr": "İki noktasal yük arasındaki elektriksel kuvvet yüklerin çarpımıyla doğru, aralarındaki uzaklığın karesiyle ters orantılıdır; aynı işaretli yükler iter, zıt işaretliler çeker.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "5.3 Coulomb's Law",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/5-3-coulombs-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "F=k\\frac{|q_1q_2|}{r^2}",
+   "conditions_tr": [
+    "Noktasal (veya küresel simetrik) ve durgun yükler; boşluk veya hava."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.dimensions",
+     "checks_tr": "Newton boyutu."
+    }
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.2.1"
+   ]
+  },
+  {
+   "id": "phys.electric-current",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "definition",
+   "title_tr": "Elektrik akımı",
+   "statement_tr": "Elektrik akımı bir kesitten birim zamanda geçen yük miktarıdır: I = ΔQ/Δt. Uzlaşımsal akım yönü pozitif yükün hareket yönüdür; metallerde elektronlar ters yönde hareket eder.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "9.1 Electrical Current",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/9-1-electrical-current",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "I=\\frac{\\Delta Q}{\\Delta t}",
+   "misconceptions_tr": [
+    "Akımın devrede 'tükendiğini' sanmak."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "quantities": [
+    {
+     "symbol": "I",
+     "name_tr": "akım",
+     "si_unit": "A"
+    }
+   ],
+   "outcome_refs": [
+    "tymm-2026.fizik.9-12::FIZ.10.3.2"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.1.1"
+   ]
+  },
+  {
+   "id": "phys.electric-power",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "relationship",
+   "title_tr": "Elektriksel güç",
+   "statement_tr": "Bir devre elemanının harcadığı güç P = VI'dır; ohmik bir dirençte bu P = I²R = V²/R olarak da yazılabilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "9.5 Electrical Energy and Power",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/9-5-electrical-energy-and-power",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "P=VI",
+   "conditions_tr": [
+    "I²R ve V²/R biçimleri yalnız ohmik dirençler için."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "P = VI hesabı."
+    }
+   ],
+   "related": [
+    "phys.ohms-law"
+   ]
+  },
+  {
+   "id": "phys.kirchhoff-rules",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "law",
+   "title_tr": "Kirchhoff kuralları",
+   "statement_tr": "Bir düğüm noktasına gelen akımların toplamı çıkan akımların toplamına eşittir (yükün korunumu); kapalı bir ilmek boyunca potansiyel değişimlerinin toplamı sıfırdır (enerjinin korunumu).",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "10.3 Kirchhoff's Rules",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/10-3-kirchhoffs-rules",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Toplu elemanlı devre ve zamanla hızlı değişmeyen akımlar."
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "visuals": [
+    "circuit"
+   ],
+   "related": [
+    "phys.series-parallel"
+   ]
+  },
+  {
+   "id": "phys.magnetic-field-lines",
+   "version": 1,
+   "subject": "physics",
+   "topic": "manyetizma",
+   "kind": "fact",
+   "title_tr": "Manyetik alan çizgileri",
+   "statement_tr": "Manyetik alan çizgileri mıknatısın dışında kuzey kutbundan güney kutbuna yönelir ve kapalı eğriler oluşturur; çizgiler sıklaştıkça alan güçlenir ve hiçbir zaman kesişmez.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "11.2 Magnetic Fields and Lines",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/11-2-magnetic-fields-and-lines",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Manyetik kutupların ayrı ayrı bulunabileceğini sanmak."
+   ],
+   "levels": [
+    "10. sınıf"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.1.3"
+   ]
+  },
+  {
+   "id": "phys.faraday-law",
+   "version": 1,
+   "subject": "physics",
+   "topic": "manyetizma",
+   "kind": "law",
+   "title_tr": "Faraday indüksiyon yasası",
+   "statement_tr": "Bir devreden geçen manyetik akının değişmesi devrede bir elektromotor kuvvet indükler; büyüklüğü akı değişim hızıyla orantılıdır ve yönü değişime karşı koyacak biçimdedir (Lenz).",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "13.1 Faraday’s Law",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/13-1-faradays-law",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "\\varepsilon=-N\\frac{\\Delta\\Phi}{\\Delta t}",
+   "conditions_tr": [
+    "Akı değişmelidir; sabit akı EMK indüklemez."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::11.2.4"
+   ]
+  },
+  {
+   "id": "phys.law-of-reflection",
+   "version": 1,
+   "subject": "physics",
+   "topic": "optik",
+   "kind": "law",
+   "title_tr": "Yansıma yasası",
+   "statement_tr": "Yansımada gelme açısı yansıma açısına eşittir ve gelen ışın, yansıyan ışın ve yüzey normali aynı düzlemdedir; açılar normalden ölçülür.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-3",
+     "section": "1.2 The Law of Reflection",
+     "url": "https://openstax.org/books/university-physics-volume-3/pages/1-2-the-law-of-reflection",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Açılar yüzey normaline göre ölçülür."
+   ],
+   "misconceptions_tr": [
+    "Açıları yüzeyden ölçmek."
+   ],
+   "levels": [
+    "7. sınıf",
+    "10. sınıf"
+   ],
+   "visuals": [
+    "vector_diagram"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.4.3"
+   ]
+  },
+  {
+   "id": "phys.refraction-snell",
+   "version": 1,
+   "subject": "physics",
+   "topic": "optik",
+   "kind": "law",
+   "title_tr": "Kırılma ve Snell yasası",
+   "statement_tr": "Işık bir ortamdan diğerine geçerken hızı değiştiği için yön değiştirir: n₁ sin θ₁ = n₂ sin θ₂; yoğun ortama geçen ışık normale yaklaşır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-3",
+     "section": "1.3 Refraction",
+     "url": "https://openstax.org/books/university-physics-volume-3/pages/1-3-refraction",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "n_1\\sin\\theta_1=n_2\\sin\\theta_2",
+   "conditions_tr": [
+    "Açılar normalden ölçülür; ortamlar saydam ve izotrop."
+   ],
+   "exceptions_tr": [
+    "Kritik açıdan büyük gelme açısında tam yansıma olur."
+   ],
+   "levels": [
+    "7. sınıf",
+    "10-11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.4.6"
+   ]
+  },
+  {
+   "id": "phys.thin-lens",
+   "version": 1,
+   "subject": "physics",
+   "topic": "optik",
+   "kind": "relationship",
+   "title_tr": "İnce mercek denklemi",
+   "statement_tr": "İnce bir mercekte cisim uzaklığı, görüntü uzaklığı ve odak uzaklığı 1/f = 1/d₀ + 1/dᵢ ile ilişkilidir; işaret kuralı (ince kenarlı/kalın kenarlı, gerçek/sanal) belirtilmelidir.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-3",
+     "section": "2.4 Thin Lenses",
+     "url": "https://openstax.org/books/university-physics-volume-3/pages/2-4-thin-lenses",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "\\frac1f=\\frac1{d_o}+\\frac1{d_i}",
+   "conditions_tr": [
+    "Mercek ince ve ışınlar eksene yakın (paraksiyal)."
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::10.4.7"
+   ]
+  },
+  {
+   "id": "phys.photoelectric-effect",
+   "version": 1,
+   "subject": "physics",
+   "topic": "modern_fizik",
+   "kind": "relationship",
+   "title_tr": "Fotoelektrik olay",
+   "statement_tr": "Metal yüzeyden elektron sökülmesi ışığın frekansına bağlıdır: fotonun enerjisi hf, iş fonksiyonundan büyükse elektron sökülür; ışık şiddeti sökülen elektron sayısını, frekans en büyük kinetik enerjiyi belirler.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-3",
+     "section": "6.2 Photoelectric Effect",
+     "url": "https://openstax.org/books/university-physics-volume-3/pages/6-2-photoelectric-effect",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "K_{max}=hf-\\phi",
+   "misconceptions_tr": [
+    "Şiddeti artırmanın eşik altı frekansta elektron sökeceğini sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::12.5.3"
+   ]
+  },
+  {
+   "id": "phys.radioactive-decay",
+   "version": 1,
+   "subject": "physics",
+   "topic": "modern_fizik",
+   "kind": "relationship",
+   "title_tr": "Radyoaktif bozunma ve yarı ömür",
+   "statement_tr": "Radyoaktif bozunma rastgeledir; büyük bir örnekte bozunmamış çekirdek sayısı her yarı ömürde yarıya iner. Yarı ömür sıcaklık ve basınçtan pratikte bağımsızdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-3",
+     "section": "10.3 Radioactive Decay",
+     "url": "https://openstax.org/books/university-physics-volume-3/pages/10-3-radioactive-decay",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "N=N_0(1/2)^{t/T_{1/2}}",
+   "conditions_tr": [
+    "İstatistiksel yasa; çok sayıda çekirdek için geçerli."
+   ],
+   "misconceptions_tr": [
+    "İki yarı ömür sonunda hiç çekirdek kalmadığını sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.fizik.9-12::12.4.3"
+   ]
+  }
+ ]
 }

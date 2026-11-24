@@ -58,6 +58,6 @@ test('TA-005 yöntem ve müfredat rozetleri yalnızca sunucu kaydı sonucunu gö
     dimension: 'method', verifier: 'registry', outcome: 'failed', reason: 'forbidden_operation', evidence: []}];
   const html = render(view);
   assert.match(html, /data-policy-check="method" data-state="failed"[^>]*>Yöntem: bu sınıf düzeyine uygun yöntem doğrulanamadı/);
-  assert.match(html, /data-policy-check="curriculum" data-state="passed"[^>]*>Müfredat: konu kaynaklı bir kazanıma eşlendi/);
+  assert.match(html, /data-policy-check="curriculum" data-state="passed"[^>]*>Müfredat: konu, sınıfının resmî programındaki bir kazanıma eşlendi/ /* TA-007: v2 müfredat denetimi */);
   assert.doesNotMatch(html, /Bu adımda bir çelişki bulundu/);  // yöntem uygunsuzluğu hesap çelişkisi değildir
 });

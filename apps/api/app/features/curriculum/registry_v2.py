@@ -78,6 +78,7 @@ def migrate_v1_policies(registry: CurriculumRegistry) -> list[MethodPolicyV2]:
         preferred_representations=list(policy.preferred_representations),
         outcome_ids=[legacy_global_id(ref) for ref in policy.outcome_ids], status=policy.status,
         authored_by=policy.authored_by, approved_by=policy.approved_by, legacy_id=policy.id,
+        approved_on=policy.approved_on, approval_digest=policy.approval_digest,
     ) for policy in registry.policies]
 
 
@@ -181,7 +182,7 @@ def validate(catalog: CurriculumCatalog, units: list[UnitRecord], outcomes: list
                 problems.append(f"Kazanım kendine bağlanamaz: {item.id}")
     for cycle in _cycles({item.id: list(item.prerequisites) for item in outcomes}):
         problems.append("Ön koşul döngüsü: " + " → ".join(cycle))
-    seen_rules: dict[tuple[str, int, Subject], str] = {}
+    seen_rules: dict[tuple[str, int, Subject, str], str] = {}
     for rule in catalog.application:
         for ref in rule.program_ids:
             program = programs.get(ref)
@@ -190,10 +191,12 @@ def validate(catalog: CurriculumCatalog, units: list[UnitRecord], outcomes: list
                 continue
             if program.framework != rule.framework:
                 problems.append(f"Uygulama kuralı çerçeve uyuşmazlığı: {rule.academic_year} {ref}")
+            if program.track != "general" and program.track != rule.track:
+                problems.append(f"İzleğe özgü program başka izleğin kuralında: {rule.academic_year} {ref}")
             if not set(rule.grades) <= set(program.document_grades):
                 problems.append(f"Uygulama kuralı belgenin sınıfları dışında: {rule.academic_year} {ref}")
             for grade in rule.grades:
-                key = (rule.academic_year, grade, program.subject)
+                key = (rule.academic_year, grade, program.subject, rule.track)
                 if key in seen_rules and seen_rules[key] != ref:
                     problems.append(f"Aynı yıl/sınıf/alan için iki program: {key}")
                 seen_rules[key] = ref
@@ -267,9 +270,10 @@ def program_subject(subject: Subject) -> Subject:
     return Subject.MATHEMATICS if subject == Subject.GEOMETRY else subject
 
 
-def scheduled(registry: CurriculumRegistryV2, subject: Subject, academic_year: str, grade: int):
-    """(kurallar, programlar) — o yıl o sınıfta o alanda uygulanan."""
-    rules = [rule for rule in registry.catalog.application if rule.academic_year == academic_year and grade in rule.grades]
+def scheduled(registry: CurriculumRegistryV2, subject: Subject, academic_year: str, grade: int, track: str = "general"):
+    """(kurallar, programlar) — o yıl o sınıfta o alanda ve izlekte uygulanan."""
+    rules = [rule for rule in registry.catalog.application
+             if rule.academic_year == academic_year and grade in rule.grades and rule.track == track]
     programs = sorted({ref for rule in rules for ref in rule.program_ids if registry.programs[ref].subject == subject})
     return rules, programs
 
@@ -281,33 +285,59 @@ def exam_scope(registry: CurriculumRegistryV2, exam: str | None, academic_year: 
                  if scope.exam == exam and scope.academic_year == academic_year), None)
 
 
+def _track_choice(registry, subject, year, grades, track):
+    """İzlek kararı. Fen lisesi/temel düzey programı yalnız açık beyanla seçilir; beyan yoksa genel program
+    kullanılır ve izleğe özgü farklı program varsa bu açıkça gerekçe olarak yazılır."""
+    general = [scheduled(registry, subject, year, value) for value in grades]
+    general_rules = [rule for rules, _ in general for rule in rules]
+    general_programs = sorted({ref for _, programs in general for ref in programs})
+    if track in {"science_high_school", "basic_level"}:
+        specific = [scheduled(registry, subject, year, value, track) for value in grades]
+        programs = sorted({ref for _, items in specific for ref in items})
+        if programs:
+            return [rule for rules, _ in specific for rule in rules], programs, ["track_specific_program"]
+        return general_rules, general_programs, ["track_rule_missing_general_used"] if general_programs else []
+    others = sorted({ref for value in grades for other in ("science_high_school", "basic_level")
+                     for ref in scheduled(registry, subject, year, value, other)[1]})
+    differs = bool(set(others) - set(general_programs))
+    return general_rules, general_programs, ["track_unspecified_general_assumed"] if differs and general_programs else []
+
+
 def resolve(registry: CurriculumRegistryV2, subject: Subject, grade: int | None, *, today: date,
             academic_year: str | None = None, learner_status: str | None = None, exam: str | None = None,
-            program_id: str | None = None) -> CurriculumResolution:
+            program_id: str | None = None, exams: list[str] | None = None, track: str | None = None) -> CurriculumResolution:
     year = academic_year or academic_year_for(today)
+    goals = list(dict.fromkeys([*(exams or []), *([exam] if exam else [])]))
     base = {"subject": subject, "academic_year": year, "academic_year_origin": "declared" if academic_year else "server_clock",
-            "grade": grade if learner_status != "graduate" else None, "learner_status": learner_status, "exam": exam}
+            "grade": grade if learner_status != "graduate" else None, "learner_status": learner_status,
+            "exam": goals[0] if goals else None, "exams": goals, "track": track}
     subject = program_subject(subject)
     if subject not in PROGRAM_SUBJECTS:
         return CurriculumResolution(status="unresolved", reasons=["subject_unsupported"], **base)
-    scope = exam_scope(registry, exam, year)
-    scope_reason = [] if exam is None else ["exam_scope_verified" if scope and scope.status == "verified" else "exam_scope_unverified"]
-    scope_id = scope.id if scope else None
+    scopes = [exam_scope(registry, goal, year) for goal in goals]
+    scope_ids = [item.id for item in scopes if item is not None]
+    verified = [item for item in scopes if item is not None and item.status == "verified"]
+    scope_reason = []
+    if goals:
+        scope_reason.append("exam_scope_verified" if len(verified) == len(goals) else "exam_scope_unverified")
+    if len(goals) > 1:
+        scope_reason.append("multiple_exam_goals")
+    scope_id = scope_ids[0] if scope_ids else None
+    base |= {"exam_scope_ids": scope_ids}
     if learner_status == "graduate":
-        # Mezun öğrenci 12. sınıf öğrencisi sayılmaz: yalnız doğrulanmış sınav kapsamı programı belirler.
-        if scope is None or scope.status != "verified":
+        # Mezun öğrenci 12. sınıf öğrencisi sayılmaz: yalnız bütün hedefleri doğrulanmış sınav kapsamı programı belirler.
+        if not goals or len(verified) != len(goals):
             candidates = sorted(item.id for item in registry.programs.values()
-                                if item.subject == subject and item.stage == "ortaogretim")
-            return CurriculumResolution(status="ambiguous" if exam else "unresolved", exam_scope_id=scope_id,
-                                        candidate_program_ids=candidates if exam else [],
-                                        reasons=["graduate_exam_scope", *scope_reason] if exam else ["graduate_exam_scope", "grade_unknown"],
+                                if item.subject == subject and item.stage == "ortaogretim" and item.track == "general")
+            return CurriculumResolution(status="ambiguous" if goals else "unresolved", exam_scope_id=scope_id,
+                                        candidate_program_ids=candidates if goals else [],
+                                        reasons=["graduate_exam_scope", *scope_reason] if goals else ["graduate_exam_scope", "grade_unknown"],
                                         **base)
     if grade is None and learner_status != "graduate":
         return CurriculumResolution(status="unresolved", reasons=["grade_unknown", *scope_reason], exam_scope_id=scope_id, **base)
-    grades = scope.grades if learner_status == "graduate" else [grade]
-    rules = [rule for value in grades for rule in scheduled(registry, subject, year, value)[0]]
-    programs = sorted({ref for value in grades for ref in scheduled(registry, subject, year, value)[1]})
-    reasons = list(scope_reason)
+    grades = sorted({value for item in verified for value in item.grades}) if learner_status == "graduate" else [grade]
+    rules, programs, track_reasons = _track_choice(registry, subject, year, grades, track)
+    reasons = [*scope_reason, *track_reasons]
     if any(rule.evidence == "by_exclusion" for rule in rules if set(rule.program_ids) & set(programs)):
         reasons.append("by_exclusion")
     if program_id is not None:

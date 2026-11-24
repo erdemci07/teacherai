@@ -39,3 +39,6 @@ Bu klasör, öğretmenlerin TeacherAI'ye yöntem, yaygın hata ve özgün soru k
 | `visual_strategy` | Tahta, şema, grafik kullanımı |
 | `scientific_condition` | Önemli bilimsel koşul ve istisna |
 | `example_question` | Özgün soru ve bağımsız cevap anahtarı |
+| `scientific_exception` | İstisna, karşı örnek, sınır (TA-007; koşuldan ayrı) |
+
+TA-007: doldurulmuş Word formlarının dönüştürülmesi ve yönetişim aşamaları için [içe aktarma kılavuzu](TA-007-import-guide.md) ve [inceleme akışı](../governance/TA-007-review-workflow.md).

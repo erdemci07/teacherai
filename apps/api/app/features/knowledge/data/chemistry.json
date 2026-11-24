@@ -1,157 +1,1883 @@
 {
-  "schema_name": "teacherai.knowledge_registry",
-  "version": "1.0.0",
-  "subject": "chemistry",
-  "entries": [
-    {"id": "chem.atom-ion-molecule", "version": 1, "subject": "chemistry", "topic": "kimyasal_turler", "kind": "definition",
-     "title_tr": "Atom, iyon ve molekül",
-     "statement_tr": "Atom bir elementin kimyasal özelliğini taşıyan en küçük birimdir; iyon elektron kazanmış veya kaybetmiş, net yükü olan tanecik; molekül ise kovalent bağlarla birbirine bağlı iki veya daha çok atomdan oluşan nötr tanecikdir.",
-     "misconceptions_tr": ["NaCl katısını tek tek NaCl moleküllerinden oluşmuş sanmak (iyonik örgüdür).", "Katyonun proton kazandığını düşünmek."],
-     "visuals": ["molecular_structure"],
-     "verifiers": [{"verifier": "reasoning.chemistry.parse_species", "checks_tr": "Formülün bileşimi ve yükü (yazım düzeyinde)."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "2.3 Atomic Structure and Symbolism", "url": "https://openstax.org/books/chemistry-2e/pages/2-3-atomic-structure-and-symbolism", "verified_on": "2026-11-24"},
-                    {"source_id": "openstax.chemistry-2e", "section": "2.4 Chemical Formulas", "url": "https://openstax.org/books/chemistry-2e/pages/2-4-chemical-formulas", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.mass-conservation", "version": 1, "subject": "chemistry", "topic": "kimyanin_temel_kanunlari", "kind": "law",
-     "title_tr": "Kütlenin korunumu",
-     "statement_tr": "Kapalı bir sistemde gerçekleşen kimyasal tepkimede tepkimeye girenlerin toplam kütlesi ürünlerin toplam kütlesine eşittir; atomlar yeniden düzenlenir, yok olmaz ve oluşmaz.",
-     "conditions_tr": ["Kapalı sistem (gaz çıkışı veya girişi yok).", "Kimyasal tepkime; çekirdek tepkimelerinde kütle-enerji dönüşümü ayrıca ele alınır."],
-     "misconceptions_tr": ["Yanan kâğıdın kütlesinin 'yok olduğunu' sanmak (ürünler gaz olarak sistemden çıkar)."],
-     "outcome_refs": ["meb-2018.fen-bilimleri.3-8::F.8.4.3.1"],
-     "verifiers": [{"verifier": "reasoning.chemistry.balance", "checks_tr": "Denklemde her elementin atom sayısının iki tarafta eşit olduğu."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "2.1 Early Ideas in Atomic Theory", "url": "https://openstax.org/books/chemistry-2e/pages/2-1-early-ideas-in-atomic-theory", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.mole-avogadro", "version": 1, "subject": "chemistry", "topic": "mol_kavrami", "kind": "definition",
-     "title_tr": "Mol ve Avogadro sabiti",
-     "statement_tr": "Bir mol tam olarak 6,022 140 76 × 10²³ tanecik içerir; bu sayı 2019'dan beri SI'de tanımla sabitlenmiş Avogadro sayısıdır. Taneciğin türü (atom, molekül, iyon) her zaman belirtilmelidir.",
-     "quantities": [{"symbol": "N_A", "name_tr": "Avogadro sabiti", "si_unit": "mol^-1"}, {"symbol": "n", "name_tr": "madde miktarı", "si_unit": "mol"}],
-     "misconceptions_tr": ["1 mol O₂ ile 1 mol O atomunu aynı sanmak."],
-     "outcome_refs": ["meb-2018.kimya.9-12::10.1.2.1"],
-     "verifiers": [{"verifier": "reasoning.chemistry.stoichiometry", "checks_tr": "Formülden element miktarı (mol) hesabı."}],
-     "provenance": [{"source_id": "bipm.si-brochure-9", "section": "§2.3.1 Base units (mol)", "url": "https://www.bipm.org/documents/20126/41483022/SI-Brochure-9-EN.pdf", "verified_on": "2026-11-24"},
-                    {"source_id": "openstax.chemistry-2e", "section": "3.1 Formula Mass and the Mole Concept", "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.molar-mass", "version": 1, "subject": "chemistry", "topic": "mol_kavrami", "kind": "relationship",
-     "title_tr": "Mol kütlesi",
-     "statement_tr": "Bir maddenin mol kütlesi bir molünün gram cinsinden kütlesidir; kütle, mol sayısı ve mol kütlesi n = m/M ile ilişkilidir.",
-     "representation": "n=\\frac{m}{M}",
-     "quantities": [{"symbol": "M", "name_tr": "mol kütlesi", "si_unit": "kg/mol"}],
-     "misconceptions_tr": ["Mol kütlesi ile tek bir molekülün kütlesini karıştırmak."],
-     "outcome_refs": ["meb-2018.kimya.9-12::10.1.4.1"],
-     "verifiers": [{"verifier": "reasoning.units.dimension", "checks_tr": "m/M oranının mol boyutunda olduğu."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "3.1 Formula Mass and the Mole Concept", "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.balancing", "version": 1, "subject": "chemistry", "topic": "kimyasal_tepkimeler", "kind": "relationship",
-     "title_tr": "Denklem denkleştirme",
-     "statement_tr": "Denkleştirilmiş bir kimyasal denklemde her elementin atom sayısı iki tarafta eşittir; denkleştirme yalnız katsayılar değiştirilerek yapılır, formüllerdeki alt indisler değiştirilmez.",
-     "misconceptions_tr": ["H₂O'yu H₂O₂ yaparak oksijeni denkleştirmek."],
-     "outcome_refs": ["meb-2018.kimya.9-12::10.1.3.1", "tymm-2026.kimya.9-12::KIM.10.1.6"],
-     "related": ["chem.mass-conservation", "chem.balance-not-feasibility"],
-     "visuals": ["chemical_equation"],
-     "verifiers": [{"verifier": "reasoning.chemistry.balance", "checks_tr": "Atom ve yük dengesi ile en küçük tam sayı katsayılar. Tepkimenin gerçekleştiğini kanıtlamaz."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "4.1 Writing and Balancing Chemical Equations", "url": "https://openstax.org/books/chemistry-2e/pages/4-1-writing-and-balancing-chemical-equations", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.charge-conservation", "version": 1, "subject": "chemistry", "topic": "kimyasal_tepkimeler", "kind": "law",
-     "title_tr": "İyonik denklemlerde yükün korunumu",
-     "statement_tr": "Net iyon denkleminde atomların yanında toplam elektrik yükü de iki tarafta eşit olmalıdır; redoks tepkimelerinde verilen ve alınan elektron sayıları eşittir.",
-     "conditions_tr": ["Denklem iyonik türlerle yazılmıştır."],
-     "misconceptions_tr": ["Yalnız atomları sayıp yük dengesini atlamak."],
-     "visuals": ["chemical_equation"],
-     "verifiers": [{"verifier": "reasoning.chemistry.balance", "checks_tr": "İki taraftaki toplam yükün eşitliği."}, {"verifier": "reasoning.chemistry.redox_electrons", "checks_tr": "Yükseltgenme basamağı değişiminden elektron sayısı."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "4.1 Writing and Balancing Chemical Equations", "url": "https://openstax.org/books/chemistry-2e/pages/4-1-writing-and-balancing-chemical-equations", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.balance-not-feasibility", "version": 1, "subject": "chemistry", "topic": "kimyasal_tepkimeler", "kind": "fact",
-     "title_tr": "Denkleşen denklem tepkimenin gerçekleştiğini göstermez",
-     "statement_tr": "Bir denklemin denkleştirilebilmesi yalnız atom ve yük korunumunu gösterir; tepkimenin belirli koşullarda kendiliğinden yürüyüp yürümediği termodinamiğe (Gibbs serbest enerjisi), ne kadar hızlı yürüdüğü kinetiğe bağlıdır.",
-     "conditions_tr": ["Kendiliğindenlik sıcaklık, basınç ve derişime bağlıdır."],
-     "misconceptions_tr": ["Her denkleşen denklemin laboratuvarda gerçekleşeceğini sanmak.", "Kendiliğinden tepkimenin hızlı olması gerektiğini düşünmek."],
-     "related": ["chem.balancing"],
-     "verifiers": [],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "16.4 Free Energy", "url": "https://openstax.org/books/chemistry-2e/pages/16-4-free-energy", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.stoichiometry", "version": 1, "subject": "chemistry", "topic": "kimyasal_hesaplamalar", "kind": "relationship",
-     "title_tr": "Stokiyometrik oranlar",
-     "statement_tr": "Denkleştirilmiş denklemin katsayıları türlerin mol oranlarını verir; kütle hesabı mol üzerinden yapılır.",
-     "conditions_tr": ["Denklem denkleştirilmiş olmalı.", "Tepkimenin tam yürüdüğü varsayımı açıkça belirtilir."],
-     "misconceptions_tr": ["Katsayıları kütle oranı sanmak."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.10.1.7", "meb-2018.kimya.9-12::10.1.4.1"],
-     "related": ["chem.balancing", "chem.limiting-reactant"],
-     "verifiers": [{"verifier": "reasoning.chemistry.stoichiometry", "checks_tr": "Verilen mol miktarından istenen türün mol miktarı."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "4.3 Reaction Stoichiometry", "url": "https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.limiting-reactant", "version": 1, "subject": "chemistry", "topic": "kimyasal_hesaplamalar", "kind": "relationship",
-     "title_tr": "Sınırlayıcı bileşen",
-     "statement_tr": "Tepkimeye girenler stokiyometrik oranda değilse ilk tükenen bileşen oluşabilecek ürün miktarını belirler; artan bileşen tepkime sonunda kalır.",
-     "conditions_tr": ["Tepkime tam yürür kabul edilir; gerçek verim kuramsal verimden düşük olabilir."],
-     "misconceptions_tr": ["Kütlesi küçük olan bileşeni sınırlayıcı sanmak."],
-     "verifiers": [{"verifier": "reasoning.chemistry.limiting_reactant", "checks_tr": "Sınırlayıcı türün ve oluşan ürün miktarının hesabı."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "4.4 Reaction Yields", "url": "https://openstax.org/books/chemistry-2e/pages/4-4-reaction-yields", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.molarity", "version": 1, "subject": "chemistry", "topic": "cozeltiler", "kind": "definition",
-     "title_tr": "Molar derişim",
-     "statement_tr": "Molarite, bir litre çözeltide çözünmüş maddenin mol sayısıdır; payda çözücünün değil çözeltinin hacmidir.",
-     "representation": "M=\\frac{n_{çözünen}}{V_{çözelti}}",
-     "conditions_tr": ["Hacim sıcaklıkla değiştiği için molarite sıcaklığa bağlıdır."],
-     "misconceptions_tr": ["Çözücü hacmini kullanmak."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.10.2.7", "meb-2018.kimya.9-12::11.3.2.1"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "n/V hesabı ve birim dönüşümü (mL → L)."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "3.3 Molarity", "url": "https://openstax.org/books/chemistry-2e/pages/3-3-molarity", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.dynamic-equilibrium", "version": 1, "subject": "chemistry", "topic": "kimyasal_denge", "kind": "definition",
-     "title_tr": "Dinamik denge",
-     "statement_tr": "Kapalı bir sistemde tersinir bir tepkimenin ileri ve geri hızları eşitlendiğinde derişimler sabit kalır; tepkimeler durmaz ve derişimlerin eşit olması gerekmez.",
-     "conditions_tr": ["Kapalı sistem.", "Sabit sıcaklık."],
-     "misconceptions_tr": ["Dengede tepkimenin durduğunu sanmak.", "Dengede giren ve ürün derişimlerinin eşit olduğunu düşünmek."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.11.2.4", "meb-2018.kimya.9-12::11.6.1.1"],
-     "visuals": ["coordinate_graph"],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "13.1 Chemical Equilibria", "url": "https://openstax.org/books/chemistry-2e/pages/13-1-chemical-equilibria", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.equilibrium-constant", "version": 1, "subject": "chemistry", "topic": "kimyasal_denge", "kind": "relationship",
-     "title_tr": "Denge sabiti sıcaklığa bağlıdır",
-     "statement_tr": "Belirli bir tepkime için denge sabiti yalnız sıcaklıkla değişir; derişim, basınç veya katalizör değişimi denge sabitini değiştirmez.",
-     "conditions_tr": ["Denge ifadesinde saf katı ve sıvılar yer almaz."],
-     "misconceptions_tr": ["Ürün eklemenin K değerini değiştirdiğini sanmak."],
-     "related": ["chem.dynamic-equilibrium", "chem.le-chatelier"],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "13.2 Equilibrium Constants", "url": "https://openstax.org/books/chemistry-2e/pages/13-2-equilibrium-constants", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.le-chatelier", "version": 1, "subject": "chemistry", "topic": "kimyasal_denge", "kind": "law",
-     "title_tr": "Le Châtelier ilkesi",
-     "statement_tr": "Dengedeki bir sisteme derişim, basınç veya sıcaklık değişikliği uygulandığında sistem bu etkiyi azaltacak yönde yeni bir dengeye kayar; katalizör dengeyi kaydırmaz, yalnız dengeye ulaşmayı hızlandırır.",
-     "conditions_tr": ["Nitel tahmin aracıdır; nicel sonuç denge sabitiyle hesaplanır.", "Basınç etkisi gaz mol sayısının değiştiği tepkimelerde görülür."],
-     "misconceptions_tr": ["Soy gaz eklemenin (sabit hacimde) dengeyi kaydırdığını sanmak.", "Katalizörün ürün miktarını artırdığını düşünmek."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.11.2.5", "meb-2018.kimya.9-12::11.6.2.1"],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "13.3 Shifting Equilibria: Le Châtelier’s Principle", "url": "https://openstax.org/books/chemistry-2e/pages/13-3-shifting-equilibria-le-chateliers-principle", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.reaction-rate-factors", "version": 1, "subject": "chemistry", "topic": "tepkime_hizi", "kind": "relationship",
-     "title_tr": "Tepkime hızını etkileyen etmenler",
-     "statement_tr": "Tepkime hızı tepkimeye girenlerin doğasına, derişimine, sıcaklığa, temas yüzeyine ve katalizöre bağlıdır.",
-     "conditions_tr": ["Etmenler birbirinden bağımsız değişkenler olarak denenmelidir."],
-     "misconceptions_tr": ["Sıcaklık artışının yalnız endotermik tepkimeleri hızlandırdığını sanmak."],
-     "verifiers": [{"verifier": "reasoning.evidence.controlled_comparison", "checks_tr": "Deney gruplarında yalnız bir değişkenin değiştirildiği."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "12.2 Factors Affecting Reaction Rates", "url": "https://openstax.org/books/chemistry-2e/pages/12-2-factors-affecting-reaction-rates", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.ideal-gas-law", "version": 1, "subject": "chemistry", "topic": "gazlar", "kind": "law",
-     "title_tr": "İdeal gaz yasası",
-     "statement_tr": "İdeal bir gazın basıncı, hacmi, mol sayısı ve mutlak sıcaklığı PV = nRT ile ilişkilidir.",
-     "representation": "PV=nRT",
-     "quantities": [{"symbol": "T", "name_tr": "mutlak sıcaklık", "si_unit": "K"}, {"symbol": "R", "name_tr": "gaz sabiti", "si_unit": "J/(mol·K)"}],
-     "conditions_tr": ["Düşük basınç ve görece yüksek sıcaklıkta gerçek gazlar ideale yaklaşır.", "Sıcaklık kelvin cinsindendir."],
-     "exceptions_tr": ["Yüksek basınç ve düşük sıcaklıkta tanecik hacmi ve tanecikler arası çekim nedeniyle sapma görülür."],
-     "misconceptions_tr": ["Sıcaklığı santigrat derece olarak yerine koymak."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.10.1.10", "meb-2018.kimya.9-12::11.2.2.1"],
-     "verifiers": [{"verifier": "reasoning.formula.evaluate", "checks_tr": "PV = nRT hesabı ve birim tutarlılığı. Gazın ideal davrandığını kanıtlamaz."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "9.2 Relating Pressure, Volume, Amount, and Temperature: The Ideal Gas Law", "url": "https://openstax.org/books/chemistry-2e/pages/9-2-relating-pressure-volume-amount-and-temperature-the-ideal-gas-law", "verified_on": "2026-11-24"},
-                    {"source_id": "openstax.chemistry-2e", "section": "9.6 Non-Ideal Gas Behavior", "url": "https://openstax.org/books/chemistry-2e/pages/9-6-non-ideal-gas-behavior", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "chem.ph", "version": 1, "subject": "chemistry", "topic": "asitler_ve_bazlar", "kind": "definition",
-     "title_tr": "pH ve pOH",
-     "statement_tr": "pH, hidronyum iyonu derişiminin 10 tabanında logaritmasının negatifidir; 25 °C'de saf su ve sulu çözeltilerde pH + pOH = 14 olur.",
-     "representation": "pH=-\\log[\\mathrm{H_3O^+}]",
-     "conditions_tr": ["pH + pOH = 14 ilişkisi 25 °C içindir; suyun iyonlaşma sabiti sıcaklıkla değişir."],
-     "misconceptions_tr": ["pH 7'nin her sıcaklıkta nötr olduğunu sanmak.", "pH'nin bir birim azalmasının derişimi bir birim artırdığını düşünmek (on kat artar)."],
-     "outcome_refs": ["tymm-2026.kimya.9-12::KIM.11.2.9", "meb-2018.kimya.9-12::11.6.3.1"],
-     "verifiers": [{"verifier": "mathai.constant_expression", "checks_tr": "Logaritmik ifadenin sayısal değeri."}],
-     "provenance": [{"source_id": "openstax.chemistry-2e", "section": "14.2 pH and pOH", "url": "https://openstax.org/books/chemistry-2e/pages/14-2-ph-and-poh", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"}
-  ]
+ "schema_name": "teacherai.knowledge_registry",
+ "version": "1.0.0",
+ "subject": "chemistry",
+ "entries": [
+  {
+   "id": "chem.atom-ion-molecule",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_turler",
+   "kind": "definition",
+   "title_tr": "Atom, iyon ve molekül",
+   "statement_tr": "Atom bir elementin kimyasal özelliğini taşıyan en küçük birimdir; iyon elektron kazanmış veya kaybetmiş, net yükü olan tanecik; molekül ise kovalent bağlarla birbirine bağlı iki veya daha çok atomdan oluşan nötr tanecikdir.",
+   "misconceptions_tr": [
+    "NaCl katısını tek tek NaCl moleküllerinden oluşmuş sanmak (iyonik örgüdür).",
+    "Katyonun proton kazandığını düşünmek."
+   ],
+   "visuals": [
+    "molecular_structure"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.parse_species",
+     "checks_tr": "Formülün bileşimi ve yükü (yazım düzeyinde)."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "2.3 Atomic Structure and Symbolism",
+     "url": "https://openstax.org/books/chemistry-2e/pages/2-3-atomic-structure-and-symbolism",
+     "verified_on": "2026-11-24"
+    },
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "2.4 Chemical Formulas",
+     "url": "https://openstax.org/books/chemistry-2e/pages/2-4-chemical-formulas",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.mass-conservation",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyanin_temel_kanunlari",
+   "kind": "law",
+   "title_tr": "Kütlenin korunumu",
+   "statement_tr": "Kapalı bir sistemde gerçekleşen kimyasal tepkimede tepkimeye girenlerin toplam kütlesi ürünlerin toplam kütlesine eşittir; atomlar yeniden düzenlenir, yok olmaz ve oluşmaz.",
+   "conditions_tr": [
+    "Kapalı sistem (gaz çıkışı veya girişi yok).",
+    "Kimyasal tepkime; çekirdek tepkimelerinde kütle-enerji dönüşümü ayrıca ele alınır."
+   ],
+   "misconceptions_tr": [
+    "Yanan kâğıdın kütlesinin 'yok olduğunu' sanmak (ürünler gaz olarak sistemden çıkar)."
+   ],
+   "outcome_refs": [
+    "meb-2018.fen-bilimleri.3-8::F.8.4.3.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.balance",
+     "checks_tr": "Denklemde her elementin atom sayısının iki tarafta eşit olduğu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "2.1 Early Ideas in Atomic Theory",
+     "url": "https://openstax.org/books/chemistry-2e/pages/2-1-early-ideas-in-atomic-theory",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.mole-avogadro",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "mol_kavrami",
+   "kind": "definition",
+   "title_tr": "Mol ve Avogadro sabiti",
+   "statement_tr": "Bir mol tam olarak 6,022 140 76 × 10²³ tanecik içerir; bu sayı 2019'dan beri SI'de tanımla sabitlenmiş Avogadro sayısıdır. Taneciğin türü (atom, molekül, iyon) her zaman belirtilmelidir.",
+   "quantities": [
+    {
+     "symbol": "N_A",
+     "name_tr": "Avogadro sabiti",
+     "si_unit": "mol^-1"
+    },
+    {
+     "symbol": "n",
+     "name_tr": "madde miktarı",
+     "si_unit": "mol"
+    }
+   ],
+   "misconceptions_tr": [
+    "1 mol O₂ ile 1 mol O atomunu aynı sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.kimya.9-12::10.1.2.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.stoichiometry",
+     "checks_tr": "Formülden element miktarı (mol) hesabı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "bipm.si-brochure-9",
+     "section": "§2.3.1 Base units (mol)",
+     "url": "https://www.bipm.org/documents/20126/41483022/SI-Brochure-9-EN.pdf",
+     "verified_on": "2026-11-24"
+    },
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "3.1 Formula Mass and the Mole Concept",
+     "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. BIPM SI Broşürü yalnız başvuru; tanımlanmış sabitler bilimsel olgudur. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY 4.0",
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.molar-mass",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "mol_kavrami",
+   "kind": "relationship",
+   "title_tr": "Mol kütlesi",
+   "statement_tr": "Bir maddenin mol kütlesi bir molünün gram cinsinden kütlesidir; kütle, mol sayısı ve mol kütlesi n = m/M ile ilişkilidir.",
+   "representation": "n=\\frac{m}{M}",
+   "quantities": [
+    {
+     "symbol": "M",
+     "name_tr": "mol kütlesi",
+     "si_unit": "kg/mol"
+    }
+   ],
+   "misconceptions_tr": [
+    "Mol kütlesi ile tek bir molekülün kütlesini karıştırmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.kimya.9-12::10.1.4.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.dimension",
+     "checks_tr": "m/M oranının mol boyutunda olduğu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "3.1 Formula Mass and the Mole Concept",
+     "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.balancing",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_tepkimeler",
+   "kind": "relationship",
+   "title_tr": "Denklem denkleştirme",
+   "statement_tr": "Denkleştirilmiş bir kimyasal denklemde her elementin atom sayısı iki tarafta eşittir; denkleştirme yalnız katsayılar değiştirilerek yapılır, formüllerdeki alt indisler değiştirilmez.",
+   "misconceptions_tr": [
+    "H₂O'yu H₂O₂ yaparak oksijeni denkleştirmek."
+   ],
+   "outcome_refs": [
+    "meb-2018.kimya.9-12::10.1.3.1",
+    "tymm-2026.kimya.9-12::KIM.10.1.6"
+   ],
+   "related": [
+    "chem.mass-conservation",
+    "chem.balance-not-feasibility"
+   ],
+   "visuals": [
+    "chemical_equation"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.balance",
+     "checks_tr": "Atom ve yük dengesi ile en küçük tam sayı katsayılar. Tepkimenin gerçekleştiğini kanıtlamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.1 Writing and Balancing Chemical Equations",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-1-writing-and-balancing-chemical-equations",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.charge-conservation",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_tepkimeler",
+   "kind": "law",
+   "title_tr": "İyonik denklemlerde yükün korunumu",
+   "statement_tr": "Net iyon denkleminde atomların yanında toplam elektrik yükü de iki tarafta eşit olmalıdır; redoks tepkimelerinde verilen ve alınan elektron sayıları eşittir.",
+   "conditions_tr": [
+    "Denklem iyonik türlerle yazılmıştır."
+   ],
+   "misconceptions_tr": [
+    "Yalnız atomları sayıp yük dengesini atlamak."
+   ],
+   "visuals": [
+    "chemical_equation"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.balance",
+     "checks_tr": "İki taraftaki toplam yükün eşitliği."
+    },
+    {
+     "verifier": "reasoning.chemistry.redox_electrons",
+     "checks_tr": "Yükseltgenme basamağı değişiminden elektron sayısı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.1 Writing and Balancing Chemical Equations",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-1-writing-and-balancing-chemical-equations",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.balance-not-feasibility",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_tepkimeler",
+   "kind": "fact",
+   "title_tr": "Denkleşen denklem tepkimenin gerçekleştiğini göstermez",
+   "statement_tr": "Bir denklemin denkleştirilebilmesi yalnız atom ve yük korunumunu gösterir; tepkimenin belirli koşullarda kendiliğinden yürüyüp yürümediği termodinamiğe (Gibbs serbest enerjisi), ne kadar hızlı yürüdüğü kinetiğe bağlıdır.",
+   "conditions_tr": [
+    "Kendiliğindenlik sıcaklık, basınç ve derişime bağlıdır."
+   ],
+   "misconceptions_tr": [
+    "Her denkleşen denklemin laboratuvarda gerçekleşeceğini sanmak.",
+    "Kendiliğinden tepkimenin hızlı olması gerektiğini düşünmek."
+   ],
+   "related": [
+    "chem.balancing"
+   ],
+   "verifiers": [],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "16.4 Free Energy",
+     "url": "https://openstax.org/books/chemistry-2e/pages/16-4-free-energy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.stoichiometry",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_hesaplamalar",
+   "kind": "relationship",
+   "title_tr": "Stokiyometrik oranlar",
+   "statement_tr": "Denkleştirilmiş denklemin katsayıları türlerin mol oranlarını verir; kütle hesabı mol üzerinden yapılır.",
+   "conditions_tr": [
+    "Denklem denkleştirilmiş olmalı.",
+    "Tepkimenin tam yürüdüğü varsayımı açıkça belirtilir."
+   ],
+   "misconceptions_tr": [
+    "Katsayıları kütle oranı sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.10.1.7",
+    "meb-2018.kimya.9-12::10.1.4.1"
+   ],
+   "related": [
+    "chem.balancing",
+    "chem.limiting-reactant"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.stoichiometry",
+     "checks_tr": "Verilen mol miktarından istenen türün mol miktarı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.3 Reaction Stoichiometry",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.limiting-reactant",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_hesaplamalar",
+   "kind": "relationship",
+   "title_tr": "Sınırlayıcı bileşen",
+   "statement_tr": "Tepkimeye girenler stokiyometrik oranda değilse ilk tükenen bileşen oluşabilecek ürün miktarını belirler; artan bileşen tepkime sonunda kalır.",
+   "conditions_tr": [
+    "Tepkime tam yürür kabul edilir; gerçek verim kuramsal verimden düşük olabilir."
+   ],
+   "misconceptions_tr": [
+    "Kütlesi küçük olan bileşeni sınırlayıcı sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.limiting_reactant",
+     "checks_tr": "Sınırlayıcı türün ve oluşan ürün miktarının hesabı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.4 Reaction Yields",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-4-reaction-yields",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.molarity",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "cozeltiler",
+   "kind": "definition",
+   "title_tr": "Molar derişim",
+   "statement_tr": "Molarite, bir litre çözeltide çözünmüş maddenin mol sayısıdır; payda çözücünün değil çözeltinin hacmidir.",
+   "representation": "M=\\frac{n_{çözünen}}{V_{çözelti}}",
+   "conditions_tr": [
+    "Hacim sıcaklıkla değiştiği için molarite sıcaklığa bağlıdır."
+   ],
+   "misconceptions_tr": [
+    "Çözücü hacmini kullanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.10.2.7",
+    "meb-2018.kimya.9-12::11.3.2.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "n/V hesabı ve birim dönüşümü (mL → L)."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "3.3 Molarity",
+     "url": "https://openstax.org/books/chemistry-2e/pages/3-3-molarity",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.dynamic-equilibrium",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_denge",
+   "kind": "definition",
+   "title_tr": "Dinamik denge",
+   "statement_tr": "Kapalı bir sistemde tersinir bir tepkimenin ileri ve geri hızları eşitlendiğinde derişimler sabit kalır; tepkimeler durmaz ve derişimlerin eşit olması gerekmez.",
+   "conditions_tr": [
+    "Kapalı sistem.",
+    "Sabit sıcaklık."
+   ],
+   "misconceptions_tr": [
+    "Dengede tepkimenin durduğunu sanmak.",
+    "Dengede giren ve ürün derişimlerinin eşit olduğunu düşünmek."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.11.2.4",
+    "meb-2018.kimya.9-12::11.6.1.1"
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "13.1 Chemical Equilibria",
+     "url": "https://openstax.org/books/chemistry-2e/pages/13-1-chemical-equilibria",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.equilibrium-constant",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_denge",
+   "kind": "relationship",
+   "title_tr": "Denge sabiti sıcaklığa bağlıdır",
+   "statement_tr": "Belirli bir tepkime için denge sabiti yalnız sıcaklıkla değişir; derişim, basınç veya katalizör değişimi denge sabitini değiştirmez.",
+   "conditions_tr": [
+    "Denge ifadesinde saf katı ve sıvılar yer almaz."
+   ],
+   "misconceptions_tr": [
+    "Ürün eklemenin K değerini değiştirdiğini sanmak."
+   ],
+   "related": [
+    "chem.dynamic-equilibrium",
+    "chem.le-chatelier"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "13.2 Equilibrium Constants",
+     "url": "https://openstax.org/books/chemistry-2e/pages/13-2-equilibrium-constants",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.le-chatelier",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_denge",
+   "kind": "law",
+   "title_tr": "Le Châtelier ilkesi",
+   "statement_tr": "Dengedeki bir sisteme derişim, basınç veya sıcaklık değişikliği uygulandığında sistem bu etkiyi azaltacak yönde yeni bir dengeye kayar; katalizör dengeyi kaydırmaz, yalnız dengeye ulaşmayı hızlandırır.",
+   "conditions_tr": [
+    "Nitel tahmin aracıdır; nicel sonuç denge sabitiyle hesaplanır.",
+    "Basınç etkisi gaz mol sayısının değiştiği tepkimelerde görülür."
+   ],
+   "misconceptions_tr": [
+    "Soy gaz eklemenin (sabit hacimde) dengeyi kaydırdığını sanmak.",
+    "Katalizörün ürün miktarını artırdığını düşünmek."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.11.2.5",
+    "meb-2018.kimya.9-12::11.6.2.1"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "13.3 Shifting Equilibria: Le Châtelier’s Principle",
+     "url": "https://openstax.org/books/chemistry-2e/pages/13-3-shifting-equilibria-le-chateliers-principle",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.reaction-rate-factors",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_hizi",
+   "kind": "relationship",
+   "title_tr": "Tepkime hızını etkileyen etmenler",
+   "statement_tr": "Tepkime hızı tepkimeye girenlerin doğasına, derişimine, sıcaklığa, temas yüzeyine ve katalizöre bağlıdır.",
+   "conditions_tr": [
+    "Etmenler birbirinden bağımsız değişkenler olarak denenmelidir."
+   ],
+   "misconceptions_tr": [
+    "Sıcaklık artışının yalnız endotermik tepkimeleri hızlandırdığını sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.evidence.controlled_comparison",
+     "checks_tr": "Deney gruplarında yalnız bir değişkenin değiştirildiği."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "12.2 Factors Affecting Reaction Rates",
+     "url": "https://openstax.org/books/chemistry-2e/pages/12-2-factors-affecting-reaction-rates",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.ideal-gas-law",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "gazlar",
+   "kind": "law",
+   "title_tr": "İdeal gaz yasası",
+   "statement_tr": "İdeal bir gazın basıncı, hacmi, mol sayısı ve mutlak sıcaklığı PV = nRT ile ilişkilidir.",
+   "representation": "PV=nRT",
+   "quantities": [
+    {
+     "symbol": "T",
+     "name_tr": "mutlak sıcaklık",
+     "si_unit": "K"
+    },
+    {
+     "symbol": "R",
+     "name_tr": "gaz sabiti",
+     "si_unit": "J/(mol·K)"
+    }
+   ],
+   "conditions_tr": [
+    "Düşük basınç ve görece yüksek sıcaklıkta gerçek gazlar ideale yaklaşır.",
+    "Sıcaklık kelvin cinsindendir."
+   ],
+   "exceptions_tr": [
+    "Yüksek basınç ve düşük sıcaklıkta tanecik hacmi ve tanecikler arası çekim nedeniyle sapma görülür."
+   ],
+   "misconceptions_tr": [
+    "Sıcaklığı santigrat derece olarak yerine koymak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.10.1.10",
+    "meb-2018.kimya.9-12::11.2.2.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "PV = nRT hesabı ve birim tutarlılığı. Gazın ideal davrandığını kanıtlamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "9.2 Relating Pressure, Volume, Amount, and Temperature: The Ideal Gas Law",
+     "url": "https://openstax.org/books/chemistry-2e/pages/9-2-relating-pressure-volume-amount-and-temperature-the-ideal-gas-law",
+     "verified_on": "2026-11-24"
+    },
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "9.6 Non-Ideal Gas Behavior",
+     "url": "https://openstax.org/books/chemistry-2e/pages/9-6-non-ideal-gas-behavior",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "chem.ph",
+   "version": 2,
+   "subject": "chemistry",
+   "topic": "asitler_ve_bazlar",
+   "kind": "definition",
+   "title_tr": "pH ve pOH",
+   "statement_tr": "pH, hidrojen iyonu (hidronyum) etkinliğinin 10 tabanında logaritmasının negatifidir. Seyreltik çözeltilerde okul düzeyinde etkinlik yerine mol/L cinsinden derişim kullanılır; 25 °C'de saf su ve sulu çözeltilerde pH + pOH = 14 olur.",
+   "representation": "pH=-\\log a_{\\mathrm{H^+}}\\approx-\\log[\\mathrm{H_3O^+}]",
+   "conditions_tr": [
+    "Derişimle hesap seyreltik çözelti yaklaşımıdır.",
+    "pH + pOH = 14 ilişkisi 25 °C içindir; suyun iyonlaşma sabiti sıcaklıkla değişir."
+   ],
+   "misconceptions_tr": [
+    "pH 7'nin her sıcaklıkta nötr olduğunu sanmak.",
+    "pH'nin bir birim azalmasının derişimi bir birim artırdığını düşünmek (on kat artar)."
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.11.2.9",
+    "meb-2018.kimya.9-12::11.6.3.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathai.constant_expression",
+     "checks_tr": "Logaritmik ifadenin sayısal değeri."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "14.2 pH and pOH",
+     "url": "https://openstax.org/books/chemistry-2e/pages/14-2-ph-and-poh",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Etkinlik tanımı ile okul düzeyindeki derişim yaklaşımı ayrıldı.",
+     "changed_fields": [
+      "conditions_tr",
+      "representation",
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"pH, hidronyum iyonu derişiminin 10 tabanında logaritmasının negatifidir; 25 °C'de saf su ve sulu çözeltilerde pH + pOH = 14 olur.\", \"representation\": \"pH=-\\\\log[\\\\mathrm{H_3O^+}]\", \"conditions_tr\": [\"pH + pOH = 14 ilişkisi 25 °C içindir; suyun iyonlaşma sabiti sıcaklıkla değişir.\"]}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "chem.isotopes",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "atomun_yapisi",
+   "kind": "definition",
+   "title_tr": "İzotop, atom numarası ve kütle numarası",
+   "statement_tr": "Atom numarası çekirdekteki proton sayısıdır ve elementi belirler; kütle numarası proton ve nötron sayılarının toplamıdır. Aynı elementin nötron sayısı farklı atomlarına izotop denir; izotopların kimyasal özellikleri çok benzerdir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "2.3 Atomic Structure and Symbolism",
+     "url": "https://openstax.org/books/chemistry-2e/pages/2-3-atomic-structure-and-symbolism",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "İzotopların farklı element olduğunu sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::9.2.2"
+   ]
+  },
+  {
+   "id": "chem.electron-configuration",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "atomun_yapisi",
+   "kind": "relationship",
+   "title_tr": "Elektron dizilimi",
+   "statement_tr": "Taban durumdaki atomda elektronlar orbitallere enerji sırasına göre yerleşir (Aufbau), bir orbitalde zıt spinli en çok iki elektron bulunur (Pauli) ve eş enerjili orbitallere önce teker teker yerleşir (Hund).",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "6.4 Electronic Structure of Atoms (Electron Configurations)",
+     "url": "https://openstax.org/books/chemistry-2e/pages/6-4-electronic-structure-of-atoms-electron-configurations",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Krom ve bakır gibi bazı geçiş elementlerinde dizilim beklenen sıradan sapar."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.1.2"
+   ]
+  },
+  {
+   "id": "chem.periodic-trends",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "periyodik_sistem",
+   "kind": "relationship",
+   "title_tr": "Periyodik özelliklerin değişimi",
+   "statement_tr": "Ana grup elementlerinde genel eğilim olarak atom yarıçapı periyotta soldan sağa azalır, grupta yukarıdan aşağı artar; birinci iyonlaşma enerjisi ve elektronegatiflik genellikle bunun tersine değişir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "6.5 Periodic Variations in Element Properties",
+     "url": "https://openstax.org/books/chemistry-2e/pages/6-5-periodic-variations-in-element-properties",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Eğilimler genel olup ana grup elementleri içindir."
+   ],
+   "exceptions_tr": [
+    "İyonlaşma enerjisinde 2A–3A ve 5A–6A gruplarında eğilimden sapmalar görülür."
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.1.3"
+   ]
+  },
+  {
+   "id": "chem.ionic-bond",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_baglar",
+   "kind": "definition",
+   "title_tr": "İyonik bağ",
+   "statement_tr": "İyonik bağ zıt yüklü iyonlar arasındaki elektrostatik çekimdir; genellikle metal ile ametal arasında elektron aktarımıyla oluşan iyonlar örgü yapısında düzenlenir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "7.1 Ionic Bonding",
+     "url": "https://openstax.org/books/chemistry-2e/pages/7-1-ionic-bonding",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "İyonik katının ayrı moleküllerden oluştuğunu sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "related": [
+    "chem.atom-ion-molecule"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::9.3.3"
+   ]
+  },
+  {
+   "id": "chem.covalent-bond-electronegativity",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_baglar",
+   "kind": "relationship",
+   "title_tr": "Kovalent bağ ve polarlık",
+   "statement_tr": "Kovalent bağda atomlar elektron çiftlerini ortaklaşa kullanır; atomların elektronegatiflikleri farklıysa elektronlar eşit paylaşılmaz ve bağ polar olur. Bağların polar olması molekülün polar olmasını garanti etmez.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "7.2 Covalent Bonding",
+     "url": "https://openstax.org/books/chemistry-2e/pages/7-2-covalent-bonding",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Polar bağlı her molekülün polar olduğunu sanmak (CO₂ apolar)."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.9.2.5"
+   ]
+  },
+  {
+   "id": "chem.lewis-octet",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_baglar",
+   "kind": "relationship",
+   "title_tr": "Lewis yapısı ve oktet kuralı",
+   "statement_tr": "Lewis yapısı değerlik elektronlarını nokta ve çizgilerle gösterir; ana grup atomları çoğunlukla değerlik kabuklarını sekiz elektrona tamamlayacak biçimde bağ yapar.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "7.3 Lewis Symbols and Structures",
+     "url": "https://openstax.org/books/chemistry-2e/pages/7-3-lewis-symbols-and-structures",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Oktet kuralı ana grup elementleri için bir eğilimdir."
+   ],
+   "exceptions_tr": [
+    "Hidrojen iki elektronla kararlıdır; bor eksik, üçüncü periyot ve sonrası elementler genişlemiş oktet oluşturabilir."
+   ],
+   "levels": [
+    "9. sınıf",
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.2.4"
+   ]
+  },
+  {
+   "id": "chem.vsepr-geometry",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "molekul_geometrisi",
+   "kind": "relationship",
+   "title_tr": "Molekül geometrisi (VSEPR)",
+   "statement_tr": "Merkez atom etrafındaki bağlayıcı ve ortaklanmamış elektron bölgeleri birbirini iter ve en uzak düzeni alır; ortaklanmamış çiftler bağ açılarını küçültür.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "7.6 Molecular Structure and Polarity",
+     "url": "https://openstax.org/books/chemistry-2e/pages/7-6-molecular-structure-and-polarity",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Ortaklanmamış çiftleri molekül şeklinde atom gibi saymak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "molecular_structure"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.2.5"
+   ]
+  },
+  {
+   "id": "chem.intermolecular-forces",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "etkilesimler",
+   "kind": "relationship",
+   "title_tr": "Moleküller arası kuvvetler",
+   "statement_tr": "Moleküller arası kuvvetler (London kuvvetleri, dipol-dipol, hidrojen bağı) kimyasal bağlardan çok zayıftır ve kaynama noktası gibi fiziksel özellikleri belirler.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "10.1 Intermolecular Forces",
+     "url": "https://openstax.org/books/chemistry-2e/pages/10-1-intermolecular-forces",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Hidrojen bağı, H atomunun F, O veya N'ye bağlı olduğu moleküllerde görülür."
+   ],
+   "misconceptions_tr": [
+    "Kaynamada kovalent bağların koptuğunu sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.9.2.7"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::9.3.4"
+   ]
+  },
+  {
+   "id": "chem.empirical-formula",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_hesaplamalar",
+   "kind": "relationship",
+   "title_tr": "Basit formül ve molekül formülü",
+   "statement_tr": "Basit formül bileşikteki atomların en küçük tam sayılı oranını, molekül formülü ise bir moleküldeki gerçek atom sayılarını verir; molekül formülü basit formülün tam sayı katıdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "3.2 Determining Empirical and Molecular Formulas",
+     "url": "https://openstax.org/books/chemistry-2e/pages/3-2-determining-empirical-and-molecular-formulas",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Basit formülü her zaman molekül formülü sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.2.2"
+   ]
+  },
+  {
+   "id": "chem.reaction-types",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "kimyasal_tepkimeler",
+   "kind": "definition",
+   "title_tr": "Tepkime türleri",
+   "statement_tr": "Çözeltideki tepkimeler çoğunlukla çökelme (çözünmeyen ürün), asit-baz (nötralleşme) ve indirgenme-yükseltgenme (elektron aktarımı) olarak sınıflandırılır; bir tepkime birden çok sınıfa girebilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.2 Classifying Chemical Reactions",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-2-classifying-chemical-reactions",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "10. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.10.1.3"
+   ]
+  },
+  {
+   "id": "chem.oxidation-number",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "redoks",
+   "kind": "definition",
+   "title_tr": "Yükseltgenme basamağı",
+   "statement_tr": "Yükseltgenme basamağı, bağlardaki elektronlar daha elektronegatif atoma verilmiş gibi düşünüldüğünde atoma düşen yüktür; yükseltgenmede artar, indirgenmede azalır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "4.2 Classifying Chemical Reactions",
+     "url": "https://openstax.org/books/chemistry-2e/pages/4-2-classifying-chemical-reactions",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Yükseltgenme basamağını gerçek iyon yükü sanmak."
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.redox_electrons",
+     "checks_tr": "Basamak değişiminden elektron sayısı."
+    }
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.1.5"
+   ]
+  },
+  {
+   "id": "chem.dilution",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "cozeltiler",
+   "kind": "relationship",
+   "title_tr": "Seyreltme",
+   "statement_tr": "Bir çözelti çözücü eklenerek seyreltildiğinde çözünen madde miktarı değişmez: M₁V₁ = M₂V₂.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "3.3 Molarity",
+     "url": "https://openstax.org/books/chemistry-2e/pages/3-3-molarity",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "M_1V_1=M_2V_2",
+   "conditions_tr": [
+    "Yalnız çözücü eklenir; tepkime veya çökelme yoktur."
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.evaluate",
+     "checks_tr": "M₁V₁ = M₂V₂ hesabı."
+    }
+   ],
+   "related": [
+    "chem.molarity"
+   ]
+  },
+  {
+   "id": "chem.solubility",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "cozeltiler",
+   "kind": "relationship",
+   "title_tr": "Çözünürlük",
+   "statement_tr": "Çözünürlük belirli sıcaklıkta belirli miktar çözücüde çözünebilen en fazla madde miktarıdır; katıların çözünürlüğü çoğunlukla sıcaklıkla artar, gazlarınki azalır ve gaz çözünürlüğü kısmi basınçla artar.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "11.3 Solubility",
+     "url": "https://openstax.org/books/chemistry-2e/pages/11-3-solubility",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Bazı katıların çözünürlüğü sıcaklıkla azalır."
+   ],
+   "misconceptions_tr": [
+    "'Benzer benzeri çözer' kuralını kesin yasa sanmak."
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.3.4"
+   ]
+  },
+  {
+   "id": "chem.colligative",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "cozeltiler",
+   "kind": "relationship",
+   "title_tr": "Koligatif özellikler",
+   "statement_tr": "Seyreltik çözeltilerde kaynama noktası yükselmesi ve donma noktası alçalması çözünenin türüne değil çözünmüş tanecik sayısına bağlıdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "11.4 Colligative Properties",
+     "url": "https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Seyreltik ve uçucu olmayan çözünen; iyonik çözünenlerde tanecik sayısı ayrışmaya göre hesaplanır."
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.10.2.8"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.3.3"
+   ]
+  },
+  {
+   "id": "chem.enthalpy",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_enerjisi",
+   "kind": "definition",
+   "title_tr": "Entalpi değişimi",
+   "statement_tr": "Sabit basınçta tepkimede alınan veya verilen ısı entalpi değişimidir (ΔH); ΔH < 0 ekzotermik, ΔH > 0 endotermik tepkimeyi gösterir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "5.3 Enthalpy",
+     "url": "https://openstax.org/books/chemistry-2e/pages/5-3-enthalpy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Sabit basınç."
+   ],
+   "misconceptions_tr": [
+    "Ekzotermik tepkimenin kendiliğinden ve hızlı olduğunu sanmak."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "related": [
+    "chem.balance-not-feasibility"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.4.1"
+   ]
+  },
+  {
+   "id": "chem.hess-law",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_enerjisi",
+   "kind": "law",
+   "title_tr": "Hess yasası",
+   "statement_tr": "Entalpi bir hâl fonksiyonu olduğundan bir tepkimenin ΔH değeri izlenen yoldan bağımsızdır; tepkimeler toplandığında entalpileri de toplanır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "5.3 Enthalpy",
+     "url": "https://openstax.org/books/chemistry-2e/pages/5-3-enthalpy",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Aynı başlangıç ve son hâlleri; tepkime ters çevrilince ΔH işaret değiştirir, katsayılarla çarpılınca ΔH de çarpılır."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.4.4"
+   ]
+  },
+  {
+   "id": "chem.rate-law",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_hizi",
+   "kind": "relationship",
+   "title_tr": "Hız yasası",
+   "statement_tr": "Tepkime hızı çoğu zaman tepkimeye girenlerin derişimlerinin üslerine bağlı bir hız yasasıyla ifade edilir; üsler (mertebeler) deneyle bulunur, denkleştirilmiş denklemdeki katsayılarla aynı olmak zorunda değildir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "12.3 Rate Laws",
+     "url": "https://openstax.org/books/chemistry-2e/pages/12-3-rate-laws",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Tek basamaklı (elementer) tepkimelerde mertebe katsayıya eşittir."
+   ],
+   "misconceptions_tr": [
+    "Mertebeyi denklem katsayısından okumak."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.5.1"
+   ]
+  },
+  {
+   "id": "chem.collision-activation",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_hizi",
+   "kind": "relationship",
+   "title_tr": "Çarpışma kuramı ve aktivasyon enerjisi",
+   "statement_tr": "Tepkime olması için tanecikler yeterli enerjiyle (aktivasyon enerjisi) ve uygun yönelimle çarpışmalıdır; sıcaklık artışı bu enerjiye sahip tanecik oranını artırır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "12.5 Collision Theory",
+     "url": "https://openstax.org/books/chemistry-2e/pages/12-5-collision-theory",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.5.2"
+   ]
+  },
+  {
+   "id": "chem.catalysis",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "tepkime_hizi",
+   "kind": "relationship",
+   "title_tr": "Katalizör",
+   "statement_tr": "Katalizör daha düşük aktivasyon enerjili alternatif bir yol sağlayarak tepkimeyi hızlandırır, tepkimede tükenmez ve ΔH'yi veya denge sabitini değiştirmez.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "12.7 Catalysis",
+     "url": "https://openstax.org/books/chemistry-2e/pages/12-7-catalysis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Katalizörün ürün miktarını artırdığını sanmak."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "related": [
+    "chem.le-chatelier",
+    "bio.enzymes"
+   ]
+  },
+  {
+   "id": "chem.bronsted-acid-base",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "asitler_ve_bazlar",
+   "kind": "definition",
+   "title_tr": "Brønsted-Lowry asit ve baz",
+   "statement_tr": "Brønsted-Lowry tanımında asit proton (H⁺) veren, baz proton alan türdür; her asit-baz tepkimesinde eşlenik asit-baz çiftleri oluşur.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "14.1 Brønsted-Lowry Acids and Bases",
+     "url": "https://openstax.org/books/chemistry-2e/pages/14-1-bronsted-lowry-acids-and-bases",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::10.3.1"
+   ]
+  },
+  {
+   "id": "chem.strong-weak-acids",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "asitler_ve_bazlar",
+   "kind": "relationship",
+   "title_tr": "Kuvvetli ve zayıf asitler",
+   "statement_tr": "Kuvvetli asitler suda tamamen, zayıf asitler kısmen iyonlaşır; asit kuvveti derişimle aynı şey değildir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "14.3 Relative Strengths of Acids and Bases",
+     "url": "https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Derişik asidi kuvvetli asit sanmak."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.11.2.9"
+   ]
+  },
+  {
+   "id": "chem.buffer",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "asitler_ve_bazlar",
+   "kind": "relationship",
+   "title_tr": "Tampon çözelti",
+   "statement_tr": "Zayıf bir asit ile eşlenik bazının (veya zayıf baz ile eşlenik asidinin) karışımı, az miktarda asit veya baz eklendiğinde pH değişimini sınırlar; tamponun bir kapasitesi vardır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "14.6 Buffers",
+     "url": "https://openstax.org/books/chemistry-2e/pages/14-6-buffers",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Eklenen asit veya baz miktarı tampon kapasitesini aşmamalıdır."
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ]
+  },
+  {
+   "id": "chem.titration",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "asitler_ve_bazlar",
+   "kind": "relationship",
+   "title_tr": "Asit-baz titrasyonu",
+   "statement_tr": "Titrasyonda derişimi bilinen bir çözelti, eşdeğerlik noktasına kadar eklenerek bilinmeyen derişim bulunur; kuvvetli asit-kuvvetli baz titrasyonunda eşdeğerlik noktasında pH 25 °C'de 7'dir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "14.7 Acid-Base Titrations",
+     "url": "https://openstax.org/books/chemistry-2e/pages/14-7-acid-base-titrations",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Zayıf asit-kuvvetli baz titrasyonunda eşdeğerlik noktası pH'ı 7'den büyüktür."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "outcome_refs": [
+    "tymm-2026.kimya.9-12::KIM.11.2.11"
+   ]
+  },
+  {
+   "id": "chem.galvanic-cell",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "elektrokimya",
+   "kind": "relationship",
+   "title_tr": "Galvanik hücre",
+   "statement_tr": "Galvanik hücrede kendiliğinden gerçekleşen redoks tepkimesinin enerjisi elektrik enerjisine dönüşür; yükseltgenme anotta, indirgenme katotta olur ve tuz köprüsü yük dengesini sağlar.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "17.2 Galvanic Cells",
+     "url": "https://openstax.org/books/chemistry-2e/pages/17-2-galvanic-cells",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Anodun her hücrede pozitif kutup olduğunu sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "circuit",
+    "chemical_equation"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.1.2"
+   ]
+  },
+  {
+   "id": "chem.cell-potential",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "elektrokimya",
+   "kind": "relationship",
+   "title_tr": "Standart elektrot potansiyeli",
+   "statement_tr": "Standart hücre potansiyeli katot ve anodun standart indirgenme potansiyellerinin farkıdır; pozitif hücre potansiyeli standart koşullarda tepkimenin kendiliğinden olduğunu gösterir.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "17.3 Electrode and Cell Potentials",
+     "url": "https://openstax.org/books/chemistry-2e/pages/17-3-electrode-and-cell-potentials",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "representation": "E^\\circ_{hücre}=E^\\circ_{katot}-E^\\circ_{anot}",
+   "conditions_tr": [
+    "Standart koşullar (1 M, 1 atm, genellikle 25 °C)."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.1.3"
+   ]
+  },
+  {
+   "id": "chem.electrolysis",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "elektrokimya",
+   "kind": "relationship",
+   "title_tr": "Elektroliz",
+   "statement_tr": "Elektrolizde dış bir güç kaynağı kendiliğinden olmayan bir redoks tepkimesini gerçekleştirir; yükseltgenme yine anotta, indirgenme katotta olur.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "17.7 Electrolysis",
+     "url": "https://openstax.org/books/chemistry-2e/pages/17-7-electrolysis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.1.5"
+   ]
+  },
+  {
+   "id": "chem.hydrocarbons",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "organik_kimya",
+   "kind": "definition",
+   "title_tr": "Hidrokarbonlar",
+   "statement_tr": "Hidrokarbonlar yalnız karbon ve hidrojenden oluşur; alkanlarda yalnız tekli, alkenlerde en az bir ikili, alkinlerde en az bir üçlü karbon-karbon bağı bulunur.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "20.1 Hydrocarbons",
+     "url": "https://openstax.org/books/chemistry-2e/pages/20-1-hydrocarbons",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "molecular_structure"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.3.1"
+   ]
+  },
+  {
+   "id": "chem.functional-groups",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "organik_kimya",
+   "kind": "definition",
+   "title_tr": "Fonksiyonel gruplar (alkol ve eter)",
+   "statement_tr": "Fonksiyonel grup, organik molekülün kimyasal davranışını belirleyen atom grubudur; alkollerde –OH, eterlerde iki karbona bağlı –O– bulunur.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "20.2 Alcohols and Ethers",
+     "url": "https://openstax.org/books/chemistry-2e/pages/20-2-alcohols-and-ethers",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "visuals": [
+    "molecular_structure"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::12.3.2"
+   ]
+  },
+  {
+   "id": "chem.kinetic-molecular",
+   "version": 1,
+   "subject": "chemistry",
+   "topic": "gazlar",
+   "kind": "relationship",
+   "title_tr": "Kinetik molekül kuramı",
+   "statement_tr": "Gaz tanecikleri sürekli ve rastgele hareket eder; ortalama kinetik enerjileri mutlak sıcaklıkla orantılıdır ve aynı sıcaklıkta hafif tanecikler ortalamada daha hızlıdır.",
+   "provenance": [
+    {
+     "source_id": "openstax.chemistry-2e",
+     "section": "9.5 The Kinetic-Molecular Theory",
+     "url": "https://openstax.org/books/chemistry-2e/pages/9-5-the-kinetic-molecular-theory",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "İdeal gaz varsayımları: tanecik hacmi ve tanecikler arası çekim ihmal edilir."
+   ],
+   "levels": [
+    "11. sınıf"
+   ],
+   "related": [
+    "chem.ideal-gas-law"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.kimya.9-12::11.2.3"
+   ]
+  }
+ ]
 }

@@ -49,6 +49,7 @@ jobs:
       - run: python -m scripts.knowledge_registry --check
       - run: python -m scripts.dataset_manifest --check
       - run: python -m scripts.teacher_contributions validate-all
+      - run: python -m scripts.teacher_contributions status
       - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0 (node24)
         with:
           distribution: temurin

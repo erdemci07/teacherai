@@ -1,0 +1,1046 @@
+{
+ "schema_name": "teacherai.knowledge_audit",
+ "version": "1.0.0",
+ "audit_id": "TA-007-draft-audit",
+ "audited_on": "2026-11-24",
+ "auditor": "claude-draft",
+ "notice_tr": "AI destekli denetimdir; insan uzman onayı değildir. Bütün girdiler taslak kalır.",
+ "rows": [
+  {
+   "entry_id": "bio.cell-theory",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.prokaryote-eukaryote",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.organelles",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.membrane-structure",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.passive-transport",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "missing_assumption",
+     "severity": "major",
+     "note_tr": "İyonlar için elektrokimyasal fark ve osmozun zar geçirgenliği koşulu eksik."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.active-transport",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "overgeneralization",
+     "severity": "minor",
+     "note_tr": "İkincil aktif taşıma (doğrudan ATP kullanmayan) ayrılmamış."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.enzymes",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "exception",
+     "severity": "minor",
+     "note_tr": "Ribozim istisnası ve denge konumunun değişmediği eksik."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.dna-structure",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.transcription",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "major",
+     "note_tr": "Transkripsiyon ürünü yalnız mRNA olarak verilmiş; tRNA/rRNA ve işleme dışarıda."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.translation",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.photosynthesis",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "overgeneralization",
+     "severity": "major",
+     "note_tr": "Bütün fotosentetik canlıların oksijen ürettiği izlenimi; oksijensiz fotosentez yok sayılmış."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.cellular-respiration",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.mendel-segregation",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "ambiguous_definition",
+     "severity": "major",
+     "note_tr": "Ayrılma ve bağımsız dağılım tek kayıtta karışmış; baskınlık türü ayrılmayı geçersiz kılıyor gibi okunabiliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.cell-division",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "bio.ecosystem-energy-flow",
+   "subject": "biology",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "level_suitability",
+     "severity": "info",
+     "note_tr": "%10 kuralı yalnız sadeleştirme notunda; ifade sabit yüzde olmadığını söyler."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.atom-ion-molecule",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "needs_expert",
+   "findings": [
+    {
+     "category": "ambiguous_definition",
+     "severity": "info",
+     "note_tr": "'En küçük birim' tanımı klasik; çok atomlu iyonlar ayrıca anılabilir. Uzman incelemesi önerilir."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.mass-conservation",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.mole-avogadro",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.molar-mass",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.balancing",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "verifier_limitation",
+     "severity": "info",
+     "note_tr": "Denkleşme tepkimenin gerçekleştiğini kanıtlamaz (kayıtta yazılı)."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.charge-conservation",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.balance-not-feasibility",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.stoichiometry",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.limiting-reactant",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.molarity",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.dynamic-equilibrium",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.equilibrium-constant",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "needs_expert",
+   "findings": [
+    {
+     "category": "missing_assumption",
+     "severity": "info",
+     "note_tr": "İdeal davranış ve standart hâl tanımı varsayımı örtük; uzman incelemesinde kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.le-chatelier",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.reaction-rate-factors",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.ideal-gas-law",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "chem.ph",
+   "subject": "chemistry",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "ambiguous_definition",
+     "severity": "minor",
+     "note_tr": "Etkinlik ile derişim yaklaşımı ayrılmamış."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.fraction-addition",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.division-by-zero",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.radical-product-rule",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.exponent-rules",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.equation-equivalence",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.extraneous-roots",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.rational-equation-domain",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.inequality-sign-reversal",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.function-definition",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.function-domain",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "overgeneralization",
+     "severity": "major",
+     "note_tr": "Payda ve çift kökün tek kısıtlar olduğu izlenimi (logaritma, tanjant, bağlam eksik)."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.linear-slope",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.pythagorean-theorem",
+   "subject": "geometry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "verifier_limitation",
+     "severity": "info",
+     "note_tr": "Sayısal denetim şeklin dik üçgen olduğunu kanıtlamaz (kayıtta yazılı)."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.triangle-angle-sum",
+   "subject": "geometry",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.quadratic-formula",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.classical-probability",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.independent-events",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "formula_applicability",
+     "severity": "major",
+     "note_tr": "Genel koşullu çarpma kuralı ile bağımsız olaylardaki marjinal çarpım ayrılmamış."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.differentiability",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.fundamental-theorem-calculus",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "math.polya-problem-solving",
+   "subject": "mathematics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "source_accuracy",
+     "severity": "major",
+     "note_tr": "Kaynak edinilmedi; kayıt kaynaksız ve çalışma zamanına kapalı kalır."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.mass-weight",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "verifier_limitation",
+     "severity": "info",
+     "note_tr": "Boyut denetimi doğru yasa seçimini kanıtlamaz (kayıtta yazılı)."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-first-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-second-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-third-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.free-body-diagram",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.constant-acceleration",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.free-fall",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.standard-gravity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "level_suitability",
+     "severity": "info",
+     "note_tr": "Okul sorularındaki g = 10 m/s² yaklaşımı sadeleştirme alanında; doğru ayrılmış."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.work-energy-theorem",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.mechanical-energy-conservation",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.momentum-conservation",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.ohms-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.resistivity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.series-parallel",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.density",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.pressure",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "major",
+     "note_tr": "Basınç 'dik kuvvet' olarak tanımlanmış; birim alana oran olduğu açık değil."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.si-base-units",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.planetary-gravity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "missing_assumption",
+     "severity": "minor",
+     "note_tr": "Küresel simetri ve dönmenin ihmali varsayımı yazılmamış."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.mass-weight",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.density",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.solid-pressure",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.chemical-reaction",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; koşullar, istisnalar ve düzey uzman incelemesinde yine kontrol edilmeli."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.dna-gene-chromosome",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "level_suitability",
+     "severity": "minor",
+     "note_tr": "'Bir gen = bir özellik' sadeleştirmesi bilimsel ifadeye karışmış."
+    }
+   ]
+  },
+  {
+   "entry_id": "sci.food-chain",
+   "subject": "science",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "exception",
+     "severity": "minor",
+     "note_tr": "Kemosentetik üreticiler yok sayılmış."
+    }
+   ]
+  }
+ ]
+}

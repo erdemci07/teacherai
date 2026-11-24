@@ -26,6 +26,8 @@ from .base import Contract, Identifier, Label, Subject, Text
 from .curriculum import ForbiddenOperation, MethodOperation
 
 Framework = Literal["meb_2018", "tymm"]
+# TA-007: okul izleği. Fen lisesi programı hiçbir zaman sessizce genel lise programı yerine kullanılmaz.
+Track = Literal["general", "science_high_school", "basic_level"]
 Terminology = Literal["kazanim", "ogrenme_ciktisi"]
 Exam = Literal["LGS", "TYT", "AYT"]
 Sha256 = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
@@ -92,6 +94,7 @@ class ProgramVersion(Contract):
     document: ProgramDocument
     expected_counts: list[ExpectedCount] = Field(default_factory=list, max_length=13)
     extraction_note: Text
+    track: Track = "general"
 
     @model_validator(mode="after")
     def coherent(self):
@@ -120,6 +123,7 @@ class ApplicationRule(Contract):
     # bu sınıf listede yoktur; önceki programın sürdüğü açıkça yazmaz.
     evidence: Literal["explicit", "by_exclusion"]
     citation: Citation
+    track: Track = "general"
 
     @model_validator(mode="after")
     def valid_year(self):
@@ -128,7 +132,17 @@ class ApplicationRule(Contract):
         return self
 
 
+ScopeStatus = Literal["verified", "derived", "unverified"]
+
+
 class ExamScope(Contract):
+    """Sınav kapsamı katmanlıdır: tarih, sınıf düzeyi, program sürümü ve kazanım düzeyi ayrı doğrulanır.
+
+    ``status`` geriye dönük uyum içindir ve sınıf düzeyi kapsamının doğrulanıp doğrulanmadığını söyler. Program
+    sürümü kapsamı ``derived`` ise uygulama takvimi kuralından türetilmiştir. Kazanım düzeyinde ayrıntılı liste
+    resmî olarak yayımlanmadıkça ``unverified`` kalır ve kapsam tarihten türetilmez.
+    """
+
     id: Identifier
     exam: Exam
     exam_year: int = Field(ge=2018, le=2100)
@@ -138,6 +152,11 @@ class ExamScope(Contract):
     grades: list[GradeValue] = Field(default_factory=list, max_length=13)
     citation: Citation | None = None
     note: Text
+    exam_date: date | None = None
+    date_status: Literal["verified", "unverified"] = "unverified"
+    date_citation: Citation | None = None
+    program_scope: ScopeStatus = "unverified"
+    outcome_scope: ScopeStatus = "unverified"
 
     @model_validator(mode="after")
     def verified_has_source(self):
@@ -145,7 +164,28 @@ class ExamScope(Contract):
             raise ValueError("Doğrulanmış kapsam kaynak taşır; doğrulanmamış taşımaz.")
         if self.status == "verified" and not self.grades:
             raise ValueError("Doğrulanmış kapsam sınıf düzeyini belirtir.")
+        if (self.date_status == "verified") != (self.date_citation is not None and self.exam_date is not None):
+            raise ValueError("Doğrulanmış sınav tarihi tarih ve kaynak taşır.")
+        if self.status != "verified" and self.program_scope != "unverified":
+            raise ValueError("Sınıf kapsamı doğrulanmadan program kapsamı türetilemez.")
+        if self.outcome_scope == "verified" and self.status != "verified":
+            raise ValueError("Kazanım kapsamı sınıf kapsamı olmadan doğrulanamaz.")
         return self
+
+
+class PendingProgram(Contract):
+    """Resmî olarak var olduğu bilinen ama kayda alınamayan program belgesi. İçerik uydurulmaz."""
+
+    id: Identifier
+    title: Label
+    url: Label
+    subject: Subject
+    framework: Framework
+    grades: list[GradeValue] = Field(min_length=1, max_length=13)
+    track: Track = "general"
+    reason: Literal["http_error", "inconsistent_codes", "extraction_unreliable", "not_downloaded"]
+    detail_tr: Text
+    checked_on: date
 
 
 class UnitRecord(Contract):
@@ -225,6 +265,10 @@ class MethodPolicyV2(Contract):
     authored_by: Literal["claude-draft", "teacher"]
     approved_by: Label | None = None
     legacy_id: Identifier | None = None
+    # TA-007: yetkili onay kanıtı. Tarih veya içerik özeti eksik ya da güncel içerikle uyuşmuyorsa politika
+    # çalışma zamanında etkin olmaz (``curriculum.methods``).
+    approved_on: date | None = None
+    approval_digest: Label | None = None
 
     @model_validator(mode="after")
     def approval_is_explicit(self):
@@ -257,6 +301,7 @@ class CurriculumCatalog(Contract):
     application: list[ApplicationRule] = Field(default_factory=list, max_length=512)
     exam_scopes: list[ExamScope] = Field(default_factory=list, max_length=256)
     policies: list[MethodPolicyV2] = Field(default_factory=list, max_length=1024)
+    pending_programs: list[PendingProgram] = Field(default_factory=list, max_length=256)
 
 
 ResolutionStatus = Literal["resolved", "ambiguous", "unresolved"]
@@ -264,6 +309,8 @@ ResolutionReason = Literal[
     "grade_unknown", "subject_unsupported", "schedule_unverified", "program_document_missing", "by_exclusion",
     "academic_year_transition", "graduate_exam_scope", "exam_scope_unverified", "exam_scope_verified",
     "explicit_program", "explicit_program_not_applicable", "multiple_programs", "no_program_for_grade",
+    "track_unspecified_general_assumed", "track_specific_program", "track_rule_missing_general_used",
+    "multiple_exam_goals",
 ]
 
 
@@ -277,6 +324,10 @@ class CurriculumResolution(Contract):
     grade: GradeValue | None = None
     learner_status: Literal["student", "graduate"] | None = None
     exam: Exam | None = None
+    # TA-007: birden çok sınav hedefi (ör. TYT ve AYT) kaybolmaz; ``exam`` ilk hedeftir (geriye dönük uyum).
+    exams: list[Exam] = Field(default_factory=list, max_length=3)
+    exam_scope_ids: list[Identifier] = Field(default_factory=list, max_length=3)
+    track: Track | None = None
     program_ids: list[Identifier] = Field(default_factory=list, max_length=8)
     candidate_program_ids: list[Identifier] = Field(default_factory=list, max_length=8)
     exam_scope_id: Identifier | None = None
@@ -289,6 +340,21 @@ class CurriculumResolution(Contract):
         return self
 
 
+class KnowledgeRef(Contract):
+    id: Identifier
+    version: int = Field(ge=1, le=1000)
+    content_digest: Label
+
+
+ExclusionReason = Literal["not_runtime_eligible", "exceeds_record_budget", "exceeds_total_budget", "limit_reached",
+                          "subject_mismatch"]
+
+
+class ExcludedKnowledge(Contract):
+    id: Identifier
+    reason: ExclusionReason
+
+
 class ContextOutcome(Contract):
     """İsteme giden kazanım özeti: resmî kod ve başlıklar. Resmî metin ve incelenmemiş betimleme gönderilmez."""
 
@@ -299,10 +365,28 @@ class ContextOutcome(Contract):
 
 
 class ContextKnowledge(Contract):
+    """Onaylı ve çalışma zamanına uygun bir bilgi girdisinin isteme giden biçimi. Koşul ve istisnalar kırpılmaz:
+    sığmayan girdi bütünüyle dışarıda bırakılır (TA-007)."""
+
     id: Identifier
+    version: int = Field(default=1, ge=1, le=1000)
+    kind: Label | None = None
     title_tr: Label
     statement_tr: Text
-    conditions_tr: list[Text] = Field(default_factory=list, max_length=6)
+    conditions_tr: list[Text] = Field(default_factory=list, max_length=12)
+    assumptions_tr: list[Text] = Field(default_factory=list, max_length=12)
+    exceptions_tr: list[Text] = Field(default_factory=list, max_length=12)
+    # İsteğe bağlı; bütçe gerektirirse çıkarılır ve köken kaydında "compacted" olarak işaretlenir.
+    misconceptions_tr: list[Text] = Field(default_factory=list, max_length=12)
+
+
+class ContextMethod(Contract):
+    """Yetkili öğretmen onaylı yöntem politikasının isteme giden özeti. Taslak politika gönderilmez."""
+
+    policy_id: Identifier
+    allowed_operations: list[MethodOperation] = Field(default_factory=list, max_length=64)
+    forbidden_operations: list[MethodOperation] = Field(default_factory=list, max_length=32)
+    preferred_representations: list[Label] = Field(default_factory=list, max_length=16)
 
 
 class CurriculumContextPayload(Contract):
@@ -314,7 +398,8 @@ class CurriculumContextPayload(Contract):
     academic_year: AcademicYear
     grade: GradeValue
     outcomes: list[ContextOutcome] = Field(default_factory=list, max_length=6)
-    knowledge: list[ContextKnowledge] = Field(default_factory=list, max_length=3)
+    knowledge: list[ContextKnowledge] = Field(default_factory=list, max_length=4)
+    methods: list[ContextMethod] = Field(default_factory=list, max_length=4)
     authority_tr: Text
 
 
@@ -326,9 +411,33 @@ class EducationalProvenance(Contract):
     knowledge_version: Label
     resolution: CurriculumResolution
     topic_key: Identifier | None = None
-    match: Literal["topic_key", "alias", "none"]
+    # "taxonomy" (TA-007): kazanım yalnız taksonomi deseniyle eşlendi (AI taslağı eşleme; incelenmedi).
+    match: Literal["topic_key", "alias", "taxonomy", "none"]
     outcome_ids: list[Identifier] = Field(default_factory=list, max_length=6)
-    knowledge_ids: list[Identifier] = Field(default_factory=list, max_length=3)
+    knowledge_ids: list[Identifier] = Field(default_factory=list, max_length=4)
     excluded_draft_knowledge: int = Field(ge=0, le=1000)
-    payload_bytes: int = Field(ge=0, le=4096)
+    payload_bytes: int = Field(ge=0, le=8192)
+    # Seçim anında isteme konması planlanan bağlam. Gerçekten gönderilen düzey ``transmission``'dadır.
     included_in_prompt: bool
+    # TA-007 alanları. Eski derslerde yoktur ve geriye dönük doldurulmaz.
+    selection_mode: Literal["deterministic_production"] | None = None
+    topic_mapping: Literal["structural", "single", "ambiguous", "none"] | None = None
+    topic_candidates: list[Identifier] = Field(default_factory=list, max_length=4)
+    knowledge_refs: list[KnowledgeRef] = Field(default_factory=list, max_length=4)
+    excluded_knowledge: list[ExcludedKnowledge] = Field(default_factory=list, max_length=32)
+    compacted_knowledge: list[Identifier] = Field(default_factory=list, max_length=4)
+    method_policy_ids: list[Identifier] = Field(default_factory=list, max_length=8)
+    inactive_method_policies: int = Field(default=0, ge=0, le=1024)
+    verification_capabilities: list[Identifier] = Field(default_factory=list, max_length=16)
+    # "normal": seçilen bağlam gönderildi; "emergency": acil sıkıştırmada müfredat/bilgi bağlamı gönderilmedi;
+    # "mixed": birden çok çağrıdan en az biri acil düzeydeydi. None: sağlayıcı düzey bildirmedi.
+    transmission: Literal["normal", "emergency", "mixed"] | None = None
+    transmitted_knowledge_ids: list[Identifier] = Field(default_factory=list, max_length=4)
+
+    @model_validator(mode="after")
+    def transmitted_subset(self):
+        if not set(self.transmitted_knowledge_ids) <= set(self.knowledge_ids):
+            raise ValueError("Gönderilen bilgi girdileri seçilenlerin alt kümesidir.")
+        if {item.id for item in self.knowledge_refs} - set(self.knowledge_ids):
+            raise ValueError("Bilgi sürüm kaydı seçilen girdilerle tutarlı olmalı.")
+        return self

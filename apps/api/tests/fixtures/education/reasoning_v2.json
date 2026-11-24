@@ -312,7 +312,8 @@
      "step_2"
     ]
    }
-  ]
+  ],
+  "provenance": null
  },
  {
   "created_at": "2026-01-01T00:00:00Z",
@@ -533,6 +534,7 @@
      "step_1_0"
     ]
    }
-  ]
+  ],
+  "provenance": null
  }
 ]

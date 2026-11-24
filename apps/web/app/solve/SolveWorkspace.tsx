@@ -18,6 +18,7 @@ import { LearningWorkspace } from './LearningWorkspace';
 import { SolutionFeedback } from './SolutionFeedback';
 import { ShareSolution } from './ShareSolution';
 import { BrandMark } from '../components/BrandMark';
+import { TopicContextNote } from './TopicContextNote';
 import { ERROR_MESSAGES } from '../lib/error-messages';
 import { IdempotencyKeys, outcomeOf } from '../lib/idempotency';
 
@@ -197,6 +198,7 @@ export function SolveWorkspace() {
       <p className="eyebrow">Matematik öğretmenin yanında</p>
       <h1>Matematik sorunu göster</h1>
       <p>Birlikte adım adım çözelim.</p>
+      <TopicContextNote />
       <div className="solveProgressPills" aria-label="Çözüm akışı">
         <span className={file ? 'done' : ''}>Görsel</span>
         <span className={analysis ? 'done' : busy ? 'active' : ''}>Analiz</span>

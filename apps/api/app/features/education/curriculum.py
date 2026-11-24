@@ -11,6 +11,7 @@ Sağlayıcı çıktısı müfredatı, yöntemi veya onayı belirleyemez: konu be
 işlemler sunucu sınıflandırmasından ve adım ifadelerinin belirlenimci taramasından gelir.
 """
 
+from datetime import date
 from typing import Literal
 
 from pydantic import Field, model_validator
@@ -65,6 +66,9 @@ class MethodPolicy(Contract):
     status: Literal["draft", "approved"]
     authored_by: Literal["claude-draft", "teacher"]
     approved_by: Label | None = None
+    # TA-007: onay tarihi ve onaylanan içeriğin özeti. Eksikse politika çalışma zamanında etkin olmaz.
+    approved_on: date | None = None
+    approval_digest: Label | None = None
 
     @model_validator(mode="after")
     def approval_is_explicit(self):
@@ -93,6 +97,19 @@ class CurriculumRegistry(Contract):
         return self
 
 
+class MethodEvidence(Contract):
+    """Bir adımdaki yöntem kanıtı. ``used`` güçlü (sunucu sınıflandırması + AST), ``mentioned`` zayıf (düz metin),
+    ``rejected`` olumsuzlanmış söz ("türev kullanmadan"). ``identifiable`` false: adım işlemi belirlenemedi.
+    ``unparsed`` > 0: ayrışmayan ifade; o ifade için yöntem doğrulama dışındadır."""
+
+    step: Identifier
+    used: list[MethodOperation] = Field(default_factory=list, max_length=16)
+    mentioned: list[Construct] = Field(default_factory=list, max_length=8)
+    rejected: list[Construct] = Field(default_factory=list, max_length=8)
+    identifiable: bool = True
+    unparsed: int = Field(default=0, ge=0, le=64)
+
+
 class PolicyCheck(Contract):
     """Sunucunun yöntem veya müfredat denetimi sonucu. Sağlayıcı bu alanı üretemez."""
 
@@ -106,3 +123,8 @@ class PolicyCheck(Contract):
     policy_ids: list[Identifier] = Field(default_factory=list, max_length=8)
     outcome_ids: list[Identifier] = Field(default_factory=list, max_length=32)
     detail: Text | None = None
+    # TA-007: adım başına yöntem kanıtı. Yalnız öğrenciye gösterilen adımlar incelenir; MathAI'nin iç çözücü
+    # işlemleri yöntem kanıtı değildir.
+    evidence: list[MethodEvidence] = Field(default_factory=list, max_length=64)
+    topic_candidates: list[Identifier] = Field(default_factory=list, max_length=4)
+    inactive_policy_ids: list[Identifier] = Field(default_factory=list, max_length=16)

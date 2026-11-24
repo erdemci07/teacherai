@@ -143,13 +143,79 @@ class VerifierLink(Contract):
     coverage: Literal["partial"] = "partial"
 
 
+ReviewStage = Literal["source_verification", "scientific", "pedagogical", "publication"]
+
+
 class ReviewRecord(Contract):
+    """Bir inceleme kararı. Sözdizimi geçerli bir başvuru gerçek inceleme kanıtı değildir: çalışma zamanı uygunluğu
+    ayrıca proje sahibinin yönettiği yetkili inceleyen kaydına (``ReviewerRegistryFile``) ve içerik özetine bakar."""
+
     reviewer: ReviewerRef
     role: ReviewerRole
     reviewed_on: date
     reviewed_version: int = Field(ge=1)
     decision: Decision
     rationale_tr: Text
+    stage: ReviewStage = "scientific"
+    # İncelenen bilimsel içeriğin sha256 özeti (``content_digest``). İçerik sonra değişirse onay bayatlar.
+    content_digest: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")] | None = None
+
+
+SourceUse = Literal["independent_fact", "teacher_original", "licensed_adaptation", "direct_quotation",
+                    "reference_citation", "unresolved"]
+
+
+class RightsRecord(Contract):
+    """Kayıt düzeyinde kaynak kullanım sınıfı ve hak kararı (TA-007).
+
+    - ``independent_fact``: bilimsel olgunun özgün anlatımı; kaynak yalnız doğrulama başvurusudur.
+    - ``teacher_original``: öğretmenin kendi özgün açıklaması (katkı izniyle).
+    - ``licensed_adaptation``: lisanslı kaynağın uyarlaması; içeri alma izni ve ticari uygunluk gerekir.
+    - ``direct_quotation``: doğrudan alıntı; yeniden dağıtım izni, atıf ve ticari uygunluk gerekir.
+    - ``reference_citation``: yalnız kaynak gösterimi; metin kullanılmaz.
+    - ``unresolved``: hak durumu çözülmedi; yetkili çalışma zamanı bağlamına giremez.
+
+    Karar (``decision``) yalnız yetkili proje sahibi tarafından verilir; AI taslağında her zaman ``pending``.
+    """
+
+    source_use: SourceUse
+    basis_tr: Text
+    source_editions: list[Label] = Field(default_factory=list, max_length=8)
+    license_versions: list[Label] = Field(default_factory=list, max_length=8)
+    attribution_tr: Text | None = None
+    commercial_use: Literal["eligible", "not_eligible", "unknown"] = "unknown"
+    redistribution_tr: Text | None = None
+    share_alike: bool = False
+    contribution_id: Identifier | None = None
+    decision: Literal["pending", "approved", "rejected"] = "pending"
+    decided_by: ReviewerRef | None = None
+    decided_on: date | None = None
+
+    @model_validator(mode="after")
+    def decision_is_attributed(self):
+        if (self.decision == "pending") != (self.decided_by is None):
+            raise ValueError("Hak kararı karar vereni taşır; bekleyen karar taşımaz.")
+        if self.decided_by is not None and not self.decided_by.startswith("owner:"):
+            raise ValueError("Hak kararı yalnız proje sahibi başvurusuyla verilir.")
+        if self.source_use in {"licensed_adaptation", "direct_quotation"} and not self.attribution_tr:
+            raise ValueError("Uyarlama ve alıntı atıf metni taşır.")
+        if self.source_use == "teacher_original" and self.contribution_id is None:
+            raise ValueError("Öğretmen özgün içeriği katkı kaydına bağlanır.")
+        if self.source_use == "unresolved" and self.decision == "approved":
+            raise ValueError("Çözülmemiş hak durumu onaylanamaz.")
+        return self
+
+
+class RevisionNote(Contract):
+    """Taslak düzeltmesi. Önceki değerler JSON metni olarak saklanır; köken ve inceleme geçmişi silinmez."""
+
+    version: int = Field(ge=2, le=1000)
+    revised_on: date
+    author: Literal["claude-draft", "teacher", "subject_expert"]
+    summary_tr: Text
+    changed_fields: list[Identifier] = Field(min_length=1, max_length=16)
+    previous_json: Text
+    audit_ref: Identifier | None = None
 
 
 class KnowledgeEntry(Contract):
@@ -168,7 +234,9 @@ class KnowledgeEntry(Contract):
     exceptions_tr: list[Text] = Field(default_factory=list, max_length=12)
     prerequisites: list[Identifier] = Field(default_factory=list, max_length=12)
     related: list[Identifier] = Field(default_factory=list, max_length=12)
+    # Yalnız kazanım cümlesi görülerek doğrulanan bağlar. Başlık düzeyindeki bağlar ``curriculum_topic_refs``'tedir.
     outcome_refs: list[Identifier] = Field(default_factory=list, max_length=16)
+    curriculum_topic_refs: list[Identifier] = Field(default_factory=list, max_length=16)
     structure_function: list[StructureFunction] = Field(default_factory=list, max_length=12)
     misconceptions_tr: list[Text] = Field(default_factory=list, max_length=12)
     simplifications: list[Simplification] = Field(default_factory=list, max_length=6)
@@ -179,6 +247,11 @@ class KnowledgeEntry(Contract):
     status: ReviewStatus
     reviews: list[ReviewRecord] = Field(default_factory=list, max_length=32)
     supersedes: Identifier | None = None
+    rights: RightsRecord = Field(default_factory=lambda: RightsRecord(
+        source_use="unresolved", basis_tr="Hak sınıflandırması yapılmadı."))
+    revisions: list[RevisionNote] = Field(default_factory=list, max_length=64)
+    # Öğrenci düzeyi: girdinin hangi sınıf/sınav düzeyinde anlatılabileceği (müfredat uygunluğu değildir).
+    levels: list[Label] = Field(default_factory=list, max_length=8)
 
     @model_validator(mode="after")
     def review_state_is_recorded(self):
@@ -194,13 +267,71 @@ class KnowledgeEntry(Contract):
                 raise ValueError("Onay yalnız öğretmen veya alan uzmanı incelemesiyle verilir.")
             if approval.reviewed_version != self.version:
                 raise ValueError("Onay bu sürüme ait olmalı.")
+            if approval.stage not in {"scientific", "publication"} or approval.content_digest is None:
+                raise ValueError("Onay bilimsel veya yayın aşamasında ve içerik özetiyle verilir.")
             if not self.provenance:
                 raise ValueError("Kaynaksız girdi onaylanamaz.")
+        if [note.version for note in self.revisions] != list(range(2, 2 + len(self.revisions))):
+            raise ValueError("Düzeltme notları 2'den başlayarak ardışık sürüm taşır.")
+        if self.revisions and self.revisions[-1].version != self.version:
+            raise ValueError("Son düzeltme notu girdinin sürümüyle aynı olmalı.")
         if self.subject == Subject.BIOLOGY and self.kind in {"law", "theorem"} and not self.conditions_tr:
             raise ValueError("Biyolojide yasa/teorem kaydı geçerlilik koşulunu yazar.")
         if self.kind == "law" and not self.conditions_tr:
             raise ValueError("Yasa kaydı geçerlilik koşulunu yazar.")
         return self
+
+
+SCIENTIFIC_FIELDS = ("version", "subject", "topic", "kind", "statement_tr", "representation", "quantities", "conditions_tr",
+                     "assumptions_tr", "exceptions_tr", "structure_function", "misconceptions_tr", "simplifications",
+                     "outcome_refs", "provenance", "levels")
+
+
+def content_digest(entry: "KnowledgeEntry") -> str:
+    """İncelenen bilimsel içeriğin kararlı özeti. İnceleme ve hak alanları özete girmez."""
+    import hashlib
+    import json
+
+    payload = entry.model_dump(mode="json", include=set(SCIENTIFIC_FIELDS))
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+class ReviewerAuthorization(Contract):
+    """Proje sahibinin doğruladığı inceleyen. Kimlik bilgisi tutulmaz; yalnız takma başvuru ve yetki kapsamı."""
+
+    reviewer: ReviewerRef
+    roles: list[ReviewerRole] = Field(min_length=1, max_length=3)
+    subjects: list[Subject] = Field(min_length=1, max_length=6)
+    stages: list[Literal["source_verification", "scientific", "pedagogical", "publication", "rights"]] = Field(min_length=1, max_length=5)
+    valid_from: date
+    valid_until: date | None = None
+    revoked_on: date | None = None
+    authorized_by: ReviewerRef
+    authorized_on: date
+    evidence_note_tr: Text
+
+    @model_validator(mode="after")
+    def owner_authorizes(self):
+        if not self.authorized_by.startswith("owner:"):
+            raise ValueError("Yetkiyi yalnız proje sahibi verir.")
+        if "rights" in self.stages and "project_owner" not in self.roles:
+            raise ValueError("Hak kararı yalnız proje sahibi rolüyle verilir.")
+        return self
+
+    def allows(self, stage: str, subject: Subject, role: str, on: date) -> bool:
+        if self.revoked_on is not None and on >= self.revoked_on:
+            return False
+        if on < self.valid_from or (self.valid_until is not None and on > self.valid_until):
+            return False
+        return stage in self.stages and role in self.roles and (subject in self.subjects or (
+            subject == Subject.GEOMETRY and Subject.MATHEMATICS in self.subjects))
+
+
+class ReviewerRegistryFile(Contract):
+    schema_name: Literal["teacherai.reviewer_registry"]
+    version: Literal["1.0.0"]
+    # Üretim kaydında boştur: gerçek öğretmen/uzman yetkilendirmesi yapılmadı.
+    reviewers: list[ReviewerAuthorization] = Field(default_factory=list, max_length=500)
 
 
 class SourceRegistryFile(Contract):

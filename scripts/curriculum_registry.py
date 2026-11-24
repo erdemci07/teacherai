@@ -1,6 +1,6 @@
 """Müfredat Kaydı v2 doğrulaması ve kapsam raporu (TA-006). Ağ ve sağlayıcı çağrısı yoktur.
 
-    python -m scripts.curriculum_registry          # kaydı doğrular, docs/curriculum/TA-006-coverage.md yazar
+    python -m scripts.curriculum_registry          # kaydı doğrular, docs/curriculum/TA-007-coverage.md yazar
     python -m scripts.curriculum_registry --check  # doğrular; rapor güncel değilse başarısız olur
 """
 
@@ -14,7 +14,7 @@ from apps.api.app.features.curriculum import registry as legacy
 from apps.api.app.features.curriculum import registry_v2
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs/curriculum/TA-006-coverage.md"
+REPORT = ROOT / "docs/curriculum/TA-007-coverage.md"
 SUBJECT_TR = {"mathematics": "Matematik", "science": "Fen Bilimleri", "physics": "Fizik", "chemistry": "Kimya",
               "biology": "Biyoloji"}
 FRAMEWORK_TR = {"meb_2018": "MEB 2018", "tymm": "Maarif Modeli (2026)"}
@@ -29,7 +29,7 @@ def render(registry: registry_v2.CurriculumRegistryV2) -> str:
     total = sum(row["actual"] for row in rows)
     disciplines = Counter(item.discipline.value for item in registry.outcomes.values())
     lines = [
-        "# TA-006 müfredat kapsam raporu",
+        "# TA-007 müfredat kapsam raporu",
         "",
         "Bu dosya `python -m scripts.curriculum_registry` ile üretilir; elle düzenlenmez. CI `--check` ile eskimiş raporu reddeder.",
         "",
@@ -64,6 +64,48 @@ def render(registry: registry_v2.CurriculumRegistryV2) -> str:
     for scope in registry.catalog.exam_scopes:
         lines.append(f"| `{scope.id}` | {scope.exam} | {scope.exam_year} | {'doğrulandı' if scope.status == 'verified' else 'doğrulanmadı'} | "
                      f"{', '.join(map(str, scope.grades)) or '—'} | {scope.note} |")
+    lines += ["", "## Sınav kapsam katmanları (TA-007)", "",
+              "Tarih, sınıf düzeyi, program sürümü ve kazanım düzeyi kapsam ayrı ayrı doğrulanır; biri diğerinin kanıtı değildir.", "",
+              "| Kimlik | Tarih | Tarih durumu | Sınıf/genel kapsam | Program kapsamı | Kazanım kapsamı |", "| --- | --- | --- | --- | --- | --- |"]
+    for scope in registry.catalog.exam_scopes:
+        lines.append(f"| `{scope.id}` | {scope.exam_date or '—'} | {scope.date_status} | {scope.status} | {scope.program_scope} | "
+                     f"{scope.outcome_scope} |")
+    lines += ["", "## İzlekler", "",
+              "Fen lisesi ve temel düzey programları yalnız açık okul türü beyanıyla seçilir; beyan yoksa genel program kullanılır ve",
+              "bu çözümlemede `track_unspecified_general_assumed` gerekçesiyle yazılır.", "",
+              "| Program | İzlek | Sınıflar |", "| --- | --- | --- |"]
+    for program in sorted(registry.programs.values(), key=lambda item: item.id):
+        lines.append(f"| `{program.id}` | {program.track} | {', '.join(map(str, program.covered_grades))} |")
+    lines += ["", "## Bekleyen programlar (kayda alınmadı)", "",
+              "| Kimlik | Başlık | Neden | Ayrıntı | Denetim tarihi |", "| --- | --- | --- | --- | --- |"]
+    for item in registry.catalog.pending_programs:
+        lines.append(f"| `{item.id}` | {item.title} | {item.reason} | {item.detail_tr} | {item.checked_on} |")
+    from apps.api.app.features.curriculum import topics
+    from apps.api.app.features.knowledge import registry as knowledge_registry
+
+    taxonomy = topics.coverage(registry, knowledge_registry.default_knowledge())
+    by_subject = ", ".join(f"{key} {value}" for key, value in taxonomy["by_subject"].items())
+    lines += ["", "## Konu taksonomisi kapsamı", "",
+              f"Taksonomi sürümü `{taxonomy['taxonomy_version']}`, {taxonomy['topics']} konu ({by_subject}). Eşlemeler AI",
+              "taslağıdır; incelenmeden müfredat denetimini tek başına geçirmez. Birden çok konuya düşen kazanımlar açıkça sayılır.", "",
+              "| Program | Kazanım | Bir konuya eşlenen | Eşlenmeyen | Birden çok konuya düşen |", "| --- | --- | --- | --- | --- |"]
+    for row in taxonomy["programs"]:
+        lines.append(f"| `{row['program_id']}` | {row['outcomes']} | {row['mapped']} | {row['outcomes'] - row['mapped']} | "
+                     f"{row['multiple_topics']} |")
+    known = sum(1 for row in rows if row["expected"] is not None)
+    unmapped = ", ".join(taxonomy["unmapped_knowledge_topics"]) or "yok"
+    explicit = sum(1 for rule in registry.catalog.application if rule.evidence == "explicit")
+    excluded = sum(1 for rule in registry.catalog.application if rule.evidence == "by_exclusion")
+    lines += ["", f"Eşlenmeyen bilgi konusu: {unmapped}.", "",
+              "## TA-006 → TA-007", "",
+              "| Ölçü | TA-006 | TA-007 |", "| --- | --- | --- |",
+              f"| Program sürümü | 12 | {len(registry.programs)} |",
+              f"| Kazanım/öğrenme çıktısı | 1591 | {total} |",
+              f"| Beklenen sayısı bilinen sınıf hücresi | 33 | {known} |",
+              f"| Beklenen sayısı bilinmeyen hücre | 11 | {len(rows) - known} |",
+              f"| Açık kanıtlı uygulama kuralı | — | {explicit} |",
+              f"| Dışlamayla uygulama kuralı | — | {excluded} |",
+              f"| Bekleyen program | — | {len(registry.catalog.pending_programs)} |", ""]
     lines += ["", "## Durum ayrımı", "",
               "| Düzey | Sayı |", "| --- | --- |",
               "| Şemada temsil edilebilir | 5–12. sınıf, 5 alan, iki çerçeve, sınırsız sürüm |",

@@ -37,12 +37,15 @@ async def generate(
     context = await run_in_threadpool(students.context, user, analysis.topic)
     # TA-005: sınıf öğrenci beyanından veya profilden gelir; sorudan tahmin edilmez.
     # TA-006: profil yalnız beyan yoksa ve tek okumayla alınır (sınıf, öğrenci/mezun durumu, sınav hedefi).
+    # TA-007: okul izleği ve ileri yöntem isteği yalnız açık beyandır; sorudan çıkarılmaz.
     if body.grade is not None:
-        grade, learner_status, exam_goal = Grade(value=body.grade, origin="declared"), None, None
+        grade, learner_status, exam_goal, track = Grade(value=body.grade, origin="declared"), None, None, body.school_track
     else:
-        grade, learner_status, exam_goal = await run_in_threadpool(students.learner, user)
+        grade, learner_status, exam_goal, track = await run_in_threadpool(students.learner, user)
+        track = body.school_track or track
     result = await service.generate(analysis, context, request.state.request_id, grade=grade,
-                                    learner_status=learner_status, exam_goal=exam_goal)
+                                    learner_status=learner_status, exam_goal=exam_goal, school_track=track,
+                                    advanced_method_requested=body.advanced_method_requested)
     await run_in_threadpool(students.save_lesson, user, result)
     return ApiResponse(data=result)
 
@@ -60,4 +63,5 @@ def read_v2(
     artifact = validated_math_lesson(stored.lesson, stored.verification, stored.education_context,
                                      (stored.method_check, stored.curriculum_check))
     response.headers["Cache-Control"] = "private, no-store"
-    return ApiResponse(data=LessonView(lesson=artifact, panels=plan_panels(artifact), created_at=record.created_at))
+    return ApiResponse(data=LessonView(lesson=artifact, panels=plan_panels(artifact), created_at=record.created_at,
+                                       provenance=stored.educational_provenance))

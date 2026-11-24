@@ -35,6 +35,10 @@ const REASONS: Record<string, string> = {
   explicit_program_not_applicable: 'Seçtiğin program bu yıl bu sınıfta uygulanmıyor görünüyor.',
   multiple_programs: 'Birden fazla program uygulanabilir.',
   no_program_for_grade: 'Bu sınıfta bu ders ayrı bir program olarak okutulmuyor.',
+  track_unspecified_general_assumed: 'Okul türünü seçmediğin için genel program kullanıldı; fen lisesindeysen okul türünü seç.',
+  track_specific_program: 'Seçtiğin okul türünün programı kullanılıyor.',
+  track_rule_missing_general_used: 'Seçtiğin okul türü için ayrı program doğrulanmadı; genel program kullanıldı.',
+  multiple_exam_goals: 'Birden çok sınav hedefi dikkate alındı.',
 };
 
 export function resolutionMessage(resolution: CurriculumResolution): { tone: 'ok' | 'warn'; text: string } {
@@ -61,8 +65,34 @@ export function subjectActions(modes: ModeSupport[]): SubjectAction[] {
 export const CURRENT_ACADEMIC_YEARS = ['2026-2027', '2025-2026'] as const;
 
 // Profildeki serbest sınav hedefinden tek ve açık sınav adı; "YKS" tek başına belirsizdir.
-export function examFromGoal(goal: string | null | undefined): 'LGS' | 'TYT' | 'AYT' | null {
-  const words = (goal ?? '').toLocaleUpperCase('tr-TR').split(/[^A-ZÇĞİÖŞÜ]+/);
-  const found = (['LGS', 'TYT', 'AYT'] as const).filter((exam) => words.includes(exam));
+export type ExamGoal = 'LGS' | 'TYT' | 'AYT';
+const EXAM_WORDS: Record<string, readonly ExamGoal[]> = { LGS: ['LGS'], TYT: ['TYT'], AYT: ['AYT'], YKS: ['TYT', 'AYT'] };
+// Türkçe çekim ekleri (sunucudaki ``topics.SUFFIX`` ile aynı amaç; tam liste değildir).
+const SUFFIX = /^(?:L[AE]R)?(?:[IİUÜ]|S[IİUÜ]|N[IİUÜ]N|[IİUÜ]N|Y?[AE]|[DT][AE]|[DT][AE]N|Y?L[AE]|[DT][IİUÜ]R|N[IİUÜ])?(?:N?[DT][AE]N?|N?[IİUÜ]N|Y?[AE]|K[Iİ]|L[AE]R)?$/;
+
+// TA-007: serbest metinden sınav hedefleri ("LGS'ye", "TYT ve AYT", "YKS" = TYT + AYT). Tanınmayan metin boş liste.
+export function examGoals(goal: string | null | undefined): ExamGoal[] {
+  const words = (goal ?? '').toLocaleUpperCase('tr-TR').replace(/['’]/g, '').split(/[^A-ZÇĞİÖŞÜ]+/);
+  const found: ExamGoal[] = [];
+  for (const word of words) {
+    for (const [key, exams] of Object.entries(EXAM_WORDS)) {
+      if (word === key || (word.startsWith(key) && SUFFIX.test(word.slice(key.length)))) {
+        for (const exam of exams) if (!found.includes(exam)) found.push(exam);
+      }
+    }
+  }
+  return found;
+}
+
+export function examFromGoal(goal: string | null | undefined): ExamGoal | null {
+  const found = examGoals(goal);
   return found.length === 1 ? found[0]! : null;
+}
+
+// TA-007: yetkili onaylı bilgi girdisi taslak olarak etiketlenmez; taslaklar ayrıca sayılır.
+export function knowledgeNote(tree: { knowledge_drafts: number; knowledge_approved?: number }): string {
+  const parts = [];
+  if ((tree.knowledge_approved ?? 0) > 0) parts.push(` Bu sınıfa bağlı ${tree.knowledge_approved} bilimsel bilgi girdisi öğretmen onaylıdır ve derslerde kullanılabilir.`);
+  if (tree.knowledge_drafts > 0) parts.push(` ${tree.knowledge_drafts} bilimsel bilgi taslağı öğretmen incelemesi bekliyor ve derslerde kullanılmıyor.`);
+  return parts.join('');
 }

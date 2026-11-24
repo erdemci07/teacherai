@@ -25,13 +25,14 @@ KEY = ROOT / "evals/datasets/original-24.answers.json"
 TEMPLATE = ROOT / "evals/datasets/original-24.answers.template.json"
 MANIFEST = ROOT / "evals/datasets/original-24.images.json"
 IMAGES = ROOT / "evals/local/images"
+VARIANTS = ROOT / "evals/ocr_variants/manifest.json"
 TRAP_TAGS = Literal["nested_radical_scope", "radical_scope", "exponent_precedence", "fraction_bar_scope", "choice_bait",
                     "negation", "intermediate_value", "unit_conversion", "graph_reading", "premise_combination", "sign"]
 
 
 class KeyEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    id: str = Field(pattern=r"^[MFKB][0-9]{2}$")
+    id: str = Field(pattern=r"^[MPCB][0-9]{2}$")
     expected_choice: str | None = Field(default=None, pattern=r"^[A-E]$")
     expected_value: str | None = Field(default=None, max_length=200)
     answer_origin: Literal["teacher"]
@@ -64,7 +65,9 @@ class ImageEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
     file: str = Field(pattern=r"^[A-Za-z0-9_.-]{1,120}\.(png|jpe?g|webp|heic)$")
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    question_id: str | None = Field(default=None, pattern=r"^[MFKB][0-9]{2}$")
+    question_id: str | None = Field(default=None, pattern=r"^[MPCB][0-9]{2}$")
+    # TA-007: OCR dayanıklılık varyantı ayrı örnek değildir; özgün soruya bağlıdır (ör. M01_light_blur.png → M01).
+    kind: Literal["ocr_variant"] | None = None
 
 
 def pack_ids() -> list[str]:
@@ -92,12 +95,19 @@ def template() -> dict:
 def manifest(images: Path = IMAGES) -> list[dict]:
     """Yerel görsellerin adı, sha256 değeri ve dosya adından okunan soru kimliği (ör. M03_kok.png → M03)."""
     rows = []
+    # TA-007: varyant türü dosya adından tahmin edilmez; yalnız içe aktarılan varyant manifestinden gelir.
+    listed = VARIANTS.exists() and json.loads(VARIANTS.read_text(encoding="utf-8")).get("variants", [])
+    variants = {item["file"] for item in listed or []}
     for path in sorted(images.glob("*")) if images.exists() else []:
         if not path.is_file() or path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".heic"}:
             continue
-        match = re.match(r"^([MFKB][0-9]{2})(?=[_.-])", path.name)
-        rows.append(ImageEntry(file=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-                               question_id=match.group(1) if match else None).model_dump())
+        match = re.match(r"^([MPCB][0-9]{2})(?=[_.-])", path.name)
+        qid = match.group(1) if match else None
+        row = ImageEntry(file=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest(), question_id=qid,
+                         kind="ocr_variant" if path.name in variants else None).model_dump()
+        if row["kind"] is None:
+            row.pop("kind")
+        rows.append(row)
     return rows
 
 

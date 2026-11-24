@@ -92,3 +92,7 @@ class GenerateLessonRequest(BaseModel):
     expected_revision: int | None = Field(None, ge=1, le=64)
     # TA-005: öğrencinin beyan ettiği sınıf (isteğe bağlı). Yoksa profildeki değer; o da yoksa yöntem not_checked.
     grade: int | None = Field(None, ge=5, le=12)
+    # TA-007: açık okul izleği beyanı (ör. fen lisesi). Yoksa profildeki değer; o da yoksa genel program.
+    school_track: Literal["general", "science_high_school", "basic_level"] | None = None
+    # TA-007: öğrenci düzey üstü yöntemi açıkça isterse yasak işlem "failed" değil "partially_checked" olur.
+    advanced_method_requested: bool = False

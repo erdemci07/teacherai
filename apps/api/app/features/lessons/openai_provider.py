@@ -89,6 +89,7 @@ class OpenAILessonProvider:
                     context.metrics.size_bytes,
                     emergency.metrics.size_bytes,
                 )
+                context = emergency  # köken kaydı: gerçekten gönderilen bağlam düzeyi
                 try:
                     response = await self._request_lesson(client, emergency, "lessons.context_retry")
                 except BadRequestError as retry_exc:
@@ -132,7 +133,8 @@ class OpenAILessonProvider:
             await client.close()
 
         # Normalizasyon gateway içinde çalışır; başarısızlığı invalid_output olarak sınıflanır.
-        return LessonProviderResult(response.output_parsed, self.name, self.model)
+        return LessonProviderResult(response.output_parsed, self.name, self.model,
+                                    context_level=context.metrics.context_compaction_level)
 
     async def _request_lesson(self, client: AsyncOpenAI, context: BuiltLessonContext, purpose: str = "lessons.initial"):
         logger.info(
@@ -247,6 +249,7 @@ class AnthropicLessonProvider(OpenAILessonProvider):
             logger.warning("Anthropic Lesson context exceeded; retrying with emergency compact context request_id=%s "
                            "first_size=%s retry_size=%s", request_id or "unknown", context.metrics.size_bytes,
                            emergency.metrics.size_bytes)
+            context = emergency  # köken kaydı: gerçekten gönderilen bağlam düzeyi
             try:
                 response = await self._request_lesson(None, emergency, "lessons.context_retry")
             except AIOutcomeError as retry:
@@ -256,7 +259,8 @@ class AnthropicLessonProvider(OpenAILessonProvider):
                 if mapped is retry:
                     raise
                 raise mapped from retry
-        return LessonProviderResult(response.output_parsed, self.name, self.model)
+        return LessonProviderResult(response.output_parsed, self.name, self.model,
+                                    context_level=context.metrics.context_compaction_level)
 
 
 def _failure(exc: AIOutcomeError) -> str | None:
