@@ -21,6 +21,8 @@ class StudentService:
             exam_goal=body.exam_goal,
             grade=body.grade,
             email=user.email,
+            learner_status=body.learner_status if "learner_status" in body.model_fields_set else (
+                existing.learner_status if existing is not None else None),
             **({"created_at": existing.created_at} if existing is not None else {}),
         )
         self.repository.save_profile(value)
@@ -35,6 +37,16 @@ class StudentService:
 
         profile = self.repository.get_profile(user.uid)
         return Grade(value=profile.grade, origin="profile") if profile is not None and profile.grade is not None else None
+
+    def learner(self, user):
+        """(sınıf, öğrenci/mezun durumu, sınav hedefi) tek profil okumasıyla. Hiçbiri sorudan tahmin edilmez."""
+        from ..education.domain import Grade
+
+        profile = self.repository.get_profile(user.uid)
+        if profile is None:
+            return None, None, None
+        grade = Grade(value=profile.grade, origin="profile") if profile.grade is not None else None
+        return grade, profile.learner_status, profile.exam_goal
 
     def save_lesson(self, user, result):
         lesson = result.lesson

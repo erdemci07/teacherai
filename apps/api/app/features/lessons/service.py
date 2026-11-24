@@ -1,5 +1,7 @@
 import logging
+from datetime import date, datetime, timezone
 from time import perf_counter
+from typing import Callable
 from uuid import uuid4
 
 from fastapi import HTTPException
@@ -10,9 +12,12 @@ from ..board.planner import BoardPlanner
 from ..board.schemas import BoardPlan
 from ...core.ai_outcomes import AIOutcomeError
 from ...core.gateway import ProviderCallBudgetExhausted, calls_remaining
+from ..curriculum import context as curriculum_context
 from ..curriculum.registry import correction_feedback, curriculum_check, method_check
 from ..education.curriculum import PolicyCheck
-from ..education.domain import EducationContext, Grade
+from ..education.curriculum_v2 import EducationalProvenance
+from ..education.domain import EducationContext, Grade, Reference
+from ..education.policy import TeachingPolicy
 from ..education.math_adapter import (
     require_math_question,
     resolved_context,
@@ -41,20 +46,47 @@ class GeneratedLesson(BaseModel):
     # TA-005: sunucunun sınıf düzeyi yöntem ve müfredat denetimi. Sınıf bilinmiyorsa not_checked.
     method_check: PolicyCheck | None = None
     curriculum_check: PolicyCheck | None = None
+    # TA-006: üretim anındaki müfredat/bilgi kaydı sürümü, program çözümlemesi ve seçilen kayıtlar. Eski
+    # derslerde yoktur; kayıt veya profil sonradan değişse de bu ders yeniden hesaplanmaz.
+    educational_provenance: EducationalProvenance | None = None
+
+
+def _today() -> date:
+    return datetime.now(timezone.utc).date()
+
+
+def with_curriculum(teaching_context, grade: Grade | None, payload):
+    """Seçilmiş müfredat bağlamı varsa sağlayıcıya TeachingPolicy olarak verilir; yoksa bağlam aynen kalır."""
+    if payload is None:
+        return teaching_context
+    if isinstance(teaching_context, TeachingPolicy):
+        return teaching_context.model_copy(update={"curriculum_context": payload, "grade": teaching_context.grade or grade})
+    return TeachingPolicy(learner=teaching_context, grade=grade, curriculum_context=payload)
 
 
 class LessonService:
-    def __init__(self, provider: LessonProvider, mathai: MathAIService, board_planner: BoardPlanner):
+    def __init__(self, provider: LessonProvider, mathai: MathAIService, board_planner: BoardPlanner,
+                 clock: Callable[[], date] = _today):
         self.provider = provider
         self.mathai = mathai
         self.board_planner = board_planner
+        self.clock = clock
 
     async def generate(self, analysis: VisionAnalysis, teaching_context=None, request_id: str | None = None,
-                       grade: Grade | None = None) -> GeneratedLesson:
+                       grade: Grade | None = None, learner_status: str | None = None,
+                       exam_goal: str | None = None) -> GeneratedLesson:
         resolved_request_id = request_id or analysis.request_id
         analysis = with_integrity(analysis)
         question = require_math_question(analysis)
         education_context = resolved_context(question, teaching_context).model_copy(update={"grade": grade})
+        # TA-006: belirlenimci ve sınırlı bağlam; ek sağlayıcı çağrısı veya Firestore okuması yoktur.
+        selected = curriculum_context.select(analysis, education_context.subject, grade.value if grade else None,
+                                             today=self.clock(), learner_status=learner_status, exam_goal=exam_goal)
+        if selected.outcome_ids:
+            references = [*education_context.references, Reference(kind="curriculum", key=selected.program_id),
+                          *(Reference(kind="outcome", key=item) for item in selected.outcome_ids)]
+            education_context = education_context.model_copy(update={"references": references[:64]})
+        teaching_context = with_curriculum(teaching_context, grade, selected.payload)
 
         started = perf_counter()
         correction = False
@@ -143,6 +175,7 @@ class LessonService:
             education_context=education_context,
             method_check=method,
             curriculum_check=curriculum,
+            educational_provenance=selected.provenance,
         )
 
     async def _plan(self, analysis, feedback, teaching_context=None, request_id: str | None = None):

@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import Field
 
 from ..memory.schemas import TeachingContext
+from .curriculum_v2 import CurriculumContextPayload
 from .domain import Contract, ContextValue, Grade, Identifier, Label
 
 
@@ -18,6 +19,8 @@ class TeachingPolicy(Contract):
     learner: TeachingContext | None = None
     grade: Grade | None = None
     rules: list[TeachingRule] = Field(default_factory=list, max_length=16)
+    # TA-006: sunucunun belirlenimci seçtiği sınırlı müfredat bağlamı (features/curriculum/context.py).
+    curriculum_context: CurriculumContextPayload | None = None
 
     def exam_context(self, profile_excerpt: str | None, inferred: str | None) -> ContextValue | None:
         if self.learner and profile_excerpt:

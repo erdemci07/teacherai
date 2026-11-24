@@ -938,6 +938,146 @@
       "title": "CurriculumRegistry",
       "type": "object"
     },
+    "CurriculumResolution": {
+      "additionalProperties": false,
+      "description": "Öğrenci bağlamından belirlenimci program seçimi. Belirsizlik açıkça temsil edilir.",
+      "properties": {
+        "academic_year": {
+          "pattern": "^20\\d\\d-20\\d\\d$",
+          "title": "Academic Year",
+          "type": "string"
+        },
+        "academic_year_origin": {
+          "enum": [
+            "declared",
+            "server_clock"
+          ],
+          "title": "Academic Year Origin",
+          "type": "string"
+        },
+        "candidate_program_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Candidate Program Ids",
+          "type": "array"
+        },
+        "exam": {
+          "anyOf": [
+            {
+              "enum": [
+                "LGS",
+                "TYT",
+                "AYT"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exam"
+        },
+        "exam_scope_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exam Scope Id"
+        },
+        "grade": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grade"
+        },
+        "learner_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "student",
+                "graduate"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Learner Status"
+        },
+        "program_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Program Ids",
+          "type": "array"
+        },
+        "reasons": {
+          "items": {
+            "enum": [
+              "grade_unknown",
+              "subject_unsupported",
+              "schedule_unverified",
+              "program_document_missing",
+              "by_exclusion",
+              "academic_year_transition",
+              "graduate_exam_scope",
+              "exam_scope_unverified",
+              "exam_scope_verified",
+              "explicit_program",
+              "explicit_program_not_applicable",
+              "multiple_programs",
+              "no_program_for_grade"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Reasons",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "resolved",
+            "ambiguous",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        }
+      },
+      "required": [
+        "status",
+        "subject",
+        "academic_year",
+        "academic_year_origin"
+      ],
+      "title": "CurriculumResolution",
+      "type": "object"
+    },
     "CurriculumSource": {
       "additionalProperties": false,
       "properties": {
@@ -1476,6 +1616,94 @@
         "takeaway"
       ],
       "title": "EducationalDraft",
+      "type": "object"
+    },
+    "EducationalProvenance": {
+      "additionalProperties": false,
+      "description": "Bir dersin üretildiği andaki eğitim bağlamının yeniden kurulabilir kaydı. Ders kaydıyla saklanır; kayıt\nveya profil sonradan değişse de eski ders yeniden hesaplanmaz.",
+      "properties": {
+        "curriculum_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Curriculum Version",
+          "type": "string"
+        },
+        "excluded_draft_knowledge": {
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Excluded Draft Knowledge",
+          "type": "integer"
+        },
+        "included_in_prompt": {
+          "title": "Included In Prompt",
+          "type": "boolean"
+        },
+        "knowledge_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Knowledge Ids",
+          "type": "array"
+        },
+        "knowledge_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Knowledge Version",
+          "type": "string"
+        },
+        "match": {
+          "enum": [
+            "topic_key",
+            "alias",
+            "none"
+          ],
+          "title": "Match",
+          "type": "string"
+        },
+        "outcome_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Outcome Ids",
+          "type": "array"
+        },
+        "payload_bytes": {
+          "maximum": 4096,
+          "minimum": 0,
+          "title": "Payload Bytes",
+          "type": "integer"
+        },
+        "resolution": {
+          "$ref": "#/$defs/CurriculumResolution"
+        },
+        "topic_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic Key"
+        }
+      },
+      "required": [
+        "curriculum_version",
+        "knowledge_version",
+        "resolution",
+        "match",
+        "excluded_draft_knowledge",
+        "payload_bytes",
+        "included_in_prompt"
+      ],
+      "title": "EducationalProvenance",
       "type": "object"
     },
     "Entity": {
@@ -2374,6 +2602,84 @@
       "title": "IntentMarker",
       "type": "object"
     },
+    "LessonIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "question_solving",
+            "topic_explanation",
+            "conversation",
+            "interactive_whiteboard",
+            "practice",
+            "student_feedback",
+            "voice_narration"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "outcome_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Outcome Ids",
+          "type": "array"
+        },
+        "presentations": {
+          "items": {
+            "enum": [
+              "steps",
+              "board",
+              "chat",
+              "voice"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Presentations",
+          "type": "array"
+        },
+        "source_analysis_id": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Analysis Id"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        },
+        "topic_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic Key"
+        }
+      },
+      "required": [
+        "mode",
+        "subject"
+      ],
+      "title": "LessonIntent",
+      "type": "object"
+    },
     "LessonPlanV2": {
       "additionalProperties": false,
       "properties": {
@@ -2700,6 +3006,62 @@
         "authored_by"
       ],
       "title": "MethodPolicy",
+      "type": "object"
+    },
+    "ModeSupport": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        },
+        "mode": {
+          "enum": [
+            "question_solving",
+            "topic_explanation",
+            "conversation",
+            "interactive_whiteboard",
+            "practice",
+            "student_feedback",
+            "voice_narration"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "planned_phase": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planned Phase"
+        },
+        "reason": {
+          "enum": [
+            "available",
+            "planned",
+            "subject_generation_unavailable"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        }
+      },
+      "required": [
+        "mode",
+        "subject",
+        "available",
+        "reason"
+      ],
+      "title": "ModeSupport",
       "type": "object"
     },
     "NarrationSegment": {

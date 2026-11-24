@@ -9,6 +9,7 @@ from apps.api.app.features.students.router import router as students_router
 from apps.api.app.features.feedback.router import router as feedback_router
 from apps.api.app.features.shares.router import router as shares_router
 from apps.api.app.features.account.router import router as account_router
+from apps.api.app.features.curriculum.router import router as curriculum_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -20,3 +21,4 @@ api_router.include_router(students_router)
 api_router.include_router(feedback_router)
 api_router.include_router(shares_router)
 api_router.include_router(account_router)
+api_router.include_router(curriculum_router)
