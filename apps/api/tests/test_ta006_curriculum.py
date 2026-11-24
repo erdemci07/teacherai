@@ -42,7 +42,11 @@ def test_inventory_matches_every_official_count_that_could_be_read(registry):
 
 def test_unknown_expected_counts_stay_unknown(registry):
     rows = {(row["program_id"], row["grade"]): row for row in r.coverage(registry)}
-    assert rows[("tymm-2026.kimya.9-12", 9)]["expected"] is None and rows[("tymm-2026.kimya.9-12", 9)]["missing"] is None
+    # TA-007: TYMM kimya 9 beklenen sayısı PDF'teki tablodan görsel olarak okundu (23) ve kayıtla eşleşti.
+    assert rows[("tymm-2026.kimya.9-12", 9)]["expected"] == 23 and rows[("tymm-2026.kimya.9-12", 9)]["missing"] == 0
+    # Doğrulanamayan sayı tahmin edilmez: fen lisesi matematiğinde tablo okunamadı, beklenen sayı bilinmiyor.
+    unknown = rows[("meb-2018.fen-lisesi-matematik.9-12", 9)]
+    assert unknown["expected"] is None and unknown["missing"] is None
     assert rows[("meb-2018.matematik.1-8", 8)]["missing"] == 0
 
 
@@ -64,7 +68,8 @@ def test_v1_migration_is_deterministic_and_preserves_29_outcomes_and_policies(re
 
 def test_same_official_code_in_different_programs_does_not_collide(registry):
     ids = sorted(identifier for (program, code), identifier in registry.by_code.items() if code == "9.1.1.1")
-    assert len(ids) == 4 and len(set(ids)) == 4
+    # TA-007: dört fen lisesi programı da aynı resmî kodu kullanır; küresel kimlikler yine çakışmaz.
+    assert len(ids) == 8 and len(set(ids)) == 8
     assert all(identifier.endswith("::9.1.1.1") for identifier in ids)
 
 
@@ -151,7 +156,8 @@ def test_2026_2027_mathematics_resolution(registry, grade, program):
     result = resolve(registry, grade=grade)
     assert result.status == "resolved" and result.program_ids == [program]
     assert result.academic_year == "2026-2027" and result.academic_year_origin == "server_clock"
-    assert ("by_exclusion" in result.reasons) == (grade == 8)
+    # TA-007: 2026-27'de 8. sınıfın 2018 programıyla süreceği resmî kaynakla doğrulandı (artık dışlamayla değil).
+    assert "by_exclusion" not in result.reasons
 
 
 def test_subject_isolation_and_geometry_uses_mathematics_program(registry):
@@ -185,7 +191,8 @@ def test_academic_year_transitions(registry):
     assert declared.status == "resolved" and declared.academic_year_origin == "declared"
     spring = resolve(registry, grade=6, today=date(2026, 3, 1))
     assert spring.academic_year == "2025-2026" and spring.reasons == ["program_document_missing"]
-    assert resolve(registry, grade=8, today=date(2026, 3, 1)).reasons == ["schedule_unverified"]
+    # TA-007: 2025-26 genelgesi 8. sınıfı yeni program listesine almadı; 2018 programı dışlamayla çözümlenir.
+    assert resolve(registry, grade=8, today=date(2026, 3, 1)).reasons == ["by_exclusion"]
     assert resolve(registry, grade=9, today=date(2027, 10, 1)).reasons == ["schedule_unverified"]
 
 
@@ -197,9 +204,13 @@ def test_explicit_program_not_matching_schedule_is_ambiguous(registry):
 
 def test_exam_scope_is_independent_of_school_curriculum(registry):
     student = resolve(registry, grade=8, exam="LGS")
-    assert student.status == "resolved" and student.exam_scope_id == "lgs-2027" and "exam_scope_unverified" in student.reasons
+    # TA-007: LGS 2027 kapsamı (8. sınıf, tarih) MEB duyurusuyla doğrulandı; kazanım düzeyi kapsam doğrulanmadı.
+    assert student.status == "resolved" and student.exam_scope_id == "lgs-2027" and "exam_scope_verified" in student.reasons
+    scope = next(item for item in registry.catalog.exam_scopes if item.id == "lgs-2027")
+    assert scope.outcome_scope == "unverified" and scope.date_status == "verified"
     outcome = registry.outcomes["meb-2018.matematik.1-8::M.8.2.2.1"]
-    assert r.exam_relevance(registry, outcome) == [{"scope_id": "lgs-2026", "basis": "grade_only_program_unverified"}]
+    assert r.exam_relevance(registry, outcome) == [{"scope_id": "lgs-2026", "basis": "grade_and_program"},
+                                                   {"scope_id": "lgs-2027", "basis": "grade_and_program"}]
     assert r.exam_relevance(registry, registry.outcomes["tymm-2026.matematik.5-8::MAT.7.2.2"]) == []
 
 
@@ -217,7 +228,7 @@ def test_curriculum_api_catalog_browse_and_resolve():
     app = create_app()
     with authenticated_client(app) as client:
         catalog = client.get("/api/v1/curriculum/catalog").json()["data"]
-        assert len(catalog["programs"]) == 12 and catalog["rights_notice"]
+        assert len(catalog["programs"]) == 16 and catalog["rights_notice"]  # TA-007: +4 fen lisesi programı
         physics = next(item for item in catalog["subjects"] if item["subject"] == "physics")
         assert not physics["capabilities"]["generation"]
         assert not any(mode["available"] for mode in physics["modes"])
