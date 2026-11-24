@@ -134,6 +134,20 @@ export type CurriculumRegistry = {
   policies?: Array<MethodPolicy>;
 };
 
+export type CurriculumResolution = {
+  status: "resolved" | "ambiguous" | "unresolved";
+  subject: Subject;
+  academic_year: string;
+  academic_year_origin: "declared" | "server_clock";
+  grade?: number | null;
+  learner_status?: "student" | "graduate" | null;
+  exam?: "LGS" | "TYT" | "AYT" | null;
+  program_ids?: Array<string>;
+  candidate_program_ids?: Array<string>;
+  exam_scope_id?: string | null;
+  reasons?: Array<"grade_unknown" | "subject_unsupported" | "schedule_unverified" | "program_document_missing" | "by_exclusion" | "academic_year_transition" | "graduate_exam_scope" | "exam_scope_unverified" | "exam_scope_verified" | "explicit_program" | "explicit_program_not_applicable" | "multiple_programs" | "no_program_for_grade">;
+};
+
 export type CurriculumSource = {
   document: string;
   url: string;
@@ -187,6 +201,19 @@ export type EducationalDraft = {
   answer?: MathAnswer | NumberAnswer | QuantityAnswer | ChoiceAnswer | TextAnswer | TableAnswer | null;
   takeaway: string;
   narration?: Array<NarrationSegment>;
+};
+
+export type EducationalProvenance = {
+  curriculum_version: string;
+  knowledge_version: string;
+  resolution: CurriculumResolution;
+  topic_key?: string | null;
+  match: "topic_key" | "alias" | "none";
+  outcome_ids?: Array<string>;
+  knowledge_ids?: Array<string>;
+  excluded_draft_knowledge: number;
+  payload_bytes: number;
+  included_in_prompt: boolean;
 };
 
 export type Entity = {
@@ -297,6 +324,15 @@ export type IntentMarker = {
   category: "negation" | "polarity" | "extremum" | "quantifier" | "possibility" | "count" | "operation";
 };
 
+export type LessonIntent = {
+  mode: "question_solving" | "topic_explanation" | "conversation" | "interactive_whiteboard" | "practice" | "student_feedback" | "voice_narration";
+  subject: Subject;
+  topic_key?: string | null;
+  outcome_ids?: Array<string>;
+  source_analysis_id?: string | null;
+  presentations?: Array<"steps" | "board" | "chat" | "voice">;
+};
+
 export type LessonPlanV2 = {
   schema: SchemaIdentity;
   lesson_id: string;
@@ -340,6 +376,14 @@ export type MethodPolicy = {
   status: "draft" | "approved";
   authored_by: "claude-draft" | "teacher";
   approved_by?: string | null;
+};
+
+export type ModeSupport = {
+  mode: "question_solving" | "topic_explanation" | "conversation" | "interactive_whiteboard" | "practice" | "student_feedback" | "voice_narration";
+  subject: Subject;
+  available: boolean;
+  planned_phase?: string | null;
+  reason: "available" | "planned" | "subject_generation_unavailable";
 };
 
 export type NarrationSegment = {

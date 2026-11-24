@@ -113,6 +113,10 @@ def build_lesson_generation_context(
             "student_exam": exam.model_dump() if exam and exam.origin == "profile" else None,
             "required_teaching_rules": [rule.model_dump() for rule in policy.rules] or None,
             "student_grade": policy.grade.model_dump() if policy.grade else None,
+            # TA-006: yalnız resmî kod/başlık ve onaylı bilgi; yoksa anahtar hiç eklenmez (istem değişmez).
+            # Acil sıkıştırmada isteğe bağlı olduğu için düşer.
+            "curriculum_context": policy.curriculum_context.model_dump(exclude_none=True)
+            if policy.curriculum_context and level == "normal" else None,
         }
     )
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))

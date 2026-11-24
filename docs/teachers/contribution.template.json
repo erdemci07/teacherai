@@ -1,0 +1,19 @@
+{
+  "schema_name": "teacherai.teacher_contribution",
+  "version": "1.0.0",
+  "contributor": "teacher:takma-ad",
+  "role": "teacher",
+  "subject": "mathematics",
+  "submitted_on": "2026-12-01",
+  "consent_use": true,
+  "consent_model_training": false,
+  "items": [
+    {"kind": "unfamiliar_question_approach", "topic": "konu_anahtari", "grades": [8], "outcome_ids": [], "knowledge_ids": [],
+     "text_tr": "Doldurulacak: öğrenciye ilk soracağınız soru ve neden."},
+    {"kind": "common_error", "topic": "konu_anahtari", "grades": [8], "text_tr": "Doldurulacak: hata, nedeni, nasıl fark ettirirsiniz."},
+    {"kind": "class_level_method", "topic": "konu_anahtari", "grades": [8], "text_tr": "Doldurulacak: bu sınıfta uygun yöntem ve uygun olmayan yöntem."},
+    {"kind": "example_question", "topic": "konu_anahtari", "grades": [8], "text_tr": "Doldurulacak: sorunun öğrettiği fikir.",
+     "example": {"question_tr": "Doldurulacak: özgün soru metni.", "answer_key_tr": "Doldurulacak: kendi çözümünüzle bağımsız cevap.",
+                 "solution_outline_tr": "Doldurulacak: kısa çözüm planı.", "original": true}}
+  ]
+}

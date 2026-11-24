@@ -36,8 +36,13 @@ async def generate(
         raise StaleQuestionRevisionError
     context = await run_in_threadpool(students.context, user, analysis.topic)
     # TA-005: sınıf öğrenci beyanından veya profilden gelir; sorudan tahmin edilmez.
-    grade = Grade(value=body.grade, origin="declared") if body.grade is not None else await run_in_threadpool(students.grade, user)
-    result = await service.generate(analysis, context, request.state.request_id, grade=grade)
+    # TA-006: profil yalnız beyan yoksa ve tek okumayla alınır (sınıf, öğrenci/mezun durumu, sınav hedefi).
+    if body.grade is not None:
+        grade, learner_status, exam_goal = Grade(value=body.grade, origin="declared"), None, None
+    else:
+        grade, learner_status, exam_goal = await run_in_threadpool(students.learner, user)
+    result = await service.generate(analysis, context, request.state.request_id, grade=grade,
+                                    learner_status=learner_status, exam_goal=exam_goal)
     await run_in_threadpool(students.save_lesson, user, result)
     return ApiResponse(data=result)
 

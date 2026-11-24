@@ -7,7 +7,12 @@ from pathlib import Path
 from pydantic.json_schema import models_json_schema
 
 from apps.api.app.features.education.curriculum import CurriculumRegistry, PolicyCheck
+from apps.api.app.features.education.curriculum_v2 import (
+    CurriculumResolution,
+    EducationalProvenance,
+)
 from apps.api.app.features.education.domain import Capabilities, QuestionUnderstanding
+from apps.api.app.features.education.lesson_intent import LessonIntent, ModeSupport
 from apps.api.app.features.education.presentation import LessonView
 from apps.api.app.features.education.source import ClarificationRequest, IntegrityReport
 from apps.api.app.features.mathai.schemas import ChoiceMatch
@@ -42,7 +47,7 @@ def ts_type(node):
 
 def outputs():
     roots = [LessonView, QuestionUnderstanding, Capabilities, IntegrityReport, ClarificationRequest, ChoiceMatch,
-             CurriculumRegistry, PolicyCheck]
+             CurriculumRegistry, PolicyCheck, CurriculumResolution, EducationalProvenance, LessonIntent, ModeSupport]
     _, schema = models_json_schema([(model, "serialization") for model in roots])
     schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
     schema["$ref"] = "#/$defs/LessonView"

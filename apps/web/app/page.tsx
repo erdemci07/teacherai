@@ -7,6 +7,15 @@ const teacherSteps = [
   { step: '03', title: 'Öğretmen gibi anlatır', text: 'Cevabın neden öyle olduğunu sade bir dille açıklar.' },
 ];
 
+// TA-006: yalnız bugün çalışan işlemler. FKB'de soru çözümü ve ders üretimi henüz açık değildir.
+const subjects = [
+  { key: 'mathematics', label: 'Matematik', note: 'Soru çözümü ve matematiksel denetim çalışır.' },
+  { key: 'physics', label: 'Fizik', note: 'Konuları incele; ders üretimi sonraki fazlarda.' },
+  { key: 'chemistry', label: 'Kimya', note: 'Konuları incele; ders üretimi sonraki fazlarda.' },
+  { key: 'biology', label: 'Biyoloji', note: 'Konuları incele; ders üretimi sonraki fazlarda.' },
+  { key: 'science', label: 'Fen Bilimleri', note: '5-8. sınıf konuları; ders üretimi sonraki fazlarda.' },
+];
+
 export default function Home() {
   return (
     <main className="mobileHome">
@@ -23,6 +32,20 @@ export default function Home() {
         <h2 id="home-solve-title">Sorunu göster, birlikte çözelim.</h2>
         <p>TeacherAI önce soruyu anlar, sonra çözümü adım adım ve nedenleriyle anlatır.</p>
         <Link className="primaryButton homeSolveButton" href="/solve">Soru Çözmeye Başla</Link>
+      </section>
+
+      <section className="taHomeSubjects taSurface" aria-labelledby="home-subjects-title">
+        <span className="eyebrow">Derslerin</span>
+        <h2 id="home-subjects-title">Konunu seç, programında gör.</h2>
+        <div className="taSubjectGrid">
+          {subjects.map((item) => (
+            <article key={item.key} className="taSubjectCard">
+              <strong>{item.label}</strong>
+              <small>{item.note}</small>
+              <Link href="/konular">Konuları incele</Link>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="homeHelperCard teacherFlowCard" aria-labelledby="teacherai-after-title">
