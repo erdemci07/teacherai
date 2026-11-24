@@ -54,7 +54,9 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(MathAIUnavailable)
     async def mathai_unavailable(request: Request, exc: MathAIUnavailable) -> JSONResponse:
         # TA-005B: mathai_busy (Retry-After), mathai_timeout, mathai_error ayrı kodlardır.
-        detail = {"mathai_busy": "Hesap denetimi şu anda yoğun; birkaç saniye sonra tekrar dene."}.get(
+        # TA-005C: mathai_startup_timeout (süreç başlatma gecikmesi) ayrıca ayrılır.
+        detail = {"mathai_busy": "Hesap denetimi şu anda yoğun; birkaç saniye sonra tekrar dene.",
+                  "mathai_startup_timeout": "Hesap denetimi başlatılamadı; birkaç saniye sonra tekrar dene."}.get(
             exc.code, "Hesap denetimi şu anda tamamlanamadı.")
         return JSONResponse(status_code=503, headers=exc.headers, content=ErrorResponse(
             error=exc.code, detail=detail, request_id=getattr(request.state, "request_id", None)).model_dump())

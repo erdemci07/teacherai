@@ -136,10 +136,20 @@ def test_same_updated_at_with_different_content_is_rewritten(projects):
     stamp = dt.datetime(2026, 11, 3, tzinfo=dt.UTC)
     source.document("lessons/l1").set({"student_id": "uid-1", "updated_at": stamp, "topic": "yeni"})
     target.document("lessons/l1").set({"student_id": "uid-1", "updated_at": stamp, "topic": "eski"})
-    assert run_verify(projects, ["lessons"])["collections"]["lessons"] == {"different": 1}
-    result = run_copy(projects, ["lessons"])
-    assert result["collections"]["lessons"] == {"conflict_overwrite": 1, "written": 1}
+    report = run_verify(projects, ["lessons"])
+    assert report["collections"]["lessons"] == {"different": 1}
     old = cf.digest({"student_id": "uid-1", "updated_at": stamp, "topic": "eski"})
+    new = cf.digest({"student_id": "uid-1", "updated_at": stamp, "topic": "yeni"})
+    # TA-005C: onaysız çakışma yazılmaz; ezme yalnız --verify raporundaki aynı özetlerle onaylanır.
+    held = run_copy(projects, ["lessons"])
+    assert held["collections"]["lessons"] == {"conflict_held_unapproved": 1}
+    assert target.document("lessons/l1").get().to_dict()["topic"] == "eski"
+    approved = {(c["path_sha256"], c["target_digest"], c["source_digest"])
+                for c in report["prune_manifest"]["overwrite_candidates"]}
+    assert approved == {(cf.path_hash("lessons/l1"), old, new)}
+    source_id, target_id, source, target = projects
+    result = cf.copy(source_id, target_id, ["lessons"], True, policy(), source=source, target=target, approved_overwrites=approved)
+    assert result["collections"]["lessons"] == {"conflict_overwrite": 1, "written": 1}
     assert result["conflicts"] == [{"collection": "lessons", "path_sha256": cf.path_hash("lessons/l1"),
                                     "replaced_target_digest": old}]
     assert target.document("lessons/l1").get().to_dict()["topic"] == "yeni"

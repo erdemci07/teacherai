@@ -1,10 +1,13 @@
-"""Uygulama şemalarının Anthropic yapılandırılmış çıktı kısıtlarıyla çevrimdışı uyumu (TA-005B §8).
+"""Uygulama şemalarının Anthropic yapılandırılmış çıktı kısıtlarıyla çevrimdışı uyumu (TA-005B §8, TA-005C §2).
 
     python -m scripts.anthropic_schema_compat          # rapor
     python -m scripts.anthropic_schema_compat --check  # destek tablosu rapora uymuyorsa çıkış 1
 
-Sağlayıcı çağrısı yoktur. Bir işlem yalnız bütün şemaları uyumluysa Anthropic'te desteklenir
-(``core/providers.SUPPORTED_OPERATIONS``).
+Sağlayıcı çağrısı yoktur. Her şema için iki satır yazılır: özgün sıkı şemanın uyumsuzlukları ve onaylı
+izdüşümün (``core/schema_compat.APPROVED_PROJECTIONS``) çıkardığı sınırlar ile bunları sunucuda uygulayan
+Pydantic alanı. Bir işlem yalnız bütün şemaları izdüşümden sonra uyumluysa Anthropic'te desteklenir
+(``core/providers.SUPPORTED_OPERATIONS``). Onaysız çıkarma, eskimiş onay satırı veya kalan uyumsuzluk
+``--check``'i başarısız kılar.
 """
 
 from __future__ import annotations
@@ -29,12 +32,29 @@ def schemas():
 
 
 def report():
-    from apps.api.app.core.schema_compat import incompatibilities, strict_schema
+    from apps.api.app.core.schema_compat import (
+        APPROVED_PROJECTIONS,
+        SchemaProjectionError,
+        anthropic_projection,
+        incompatibilities,
+        strict_schema,
+    )
 
     result = {}
     for operation, models in schemas().items():
-        rows = {name: incompatibilities(strict_schema(model)) for name, model in models.items()}
-        result[str(operation)] = {"compatible": not any(rows.values()), "schemas": rows}
+        rows = {}
+        for name, model in models.items():
+            row = {"original_issues": incompatibilities(strict_schema(model))}
+            try:
+                projection = anthropic_projection(model)
+                row["projected"] = [{"path": path, "keyword": key, "value": value,
+                                     "server_validation": APPROVED_PROJECTIONS[name][(path, key)]}
+                                    for path, key, value in projection.removed]
+                row["error"] = None
+            except SchemaProjectionError as error:
+                row["projected"], row["error"] = [], str(error)
+            rows[name] = row
+        result[str(operation)] = {"compatible": all(row["error"] is None for row in rows.values()), "schemas": rows}
     return result
 
 
@@ -46,14 +66,14 @@ def main(argv=None):
 
     result = report()
     for operation, row in result.items():
-        print(f"{operation}: {'uyumlu' if row['compatible'] else 'UYUMSUZ'}")
-        for name, issues in row["schemas"].items():
-            print(f"  {name}: {len(issues)} uyumsuz alan")
-            reasons = {}
-            for issue in issues:
-                reasons[issue.rsplit(": ", 1)[-1].split("=")[0]] = reasons.get(issue.rsplit(": ", 1)[-1].split("=")[0], 0) + 1
-            if reasons:
-                print("    " + json.dumps(reasons, ensure_ascii=False, sort_keys=True))
+        print(f"{operation}: {'uyumlu (izdüşümle)' if row['compatible'] else 'UYUMSUZ'}")
+        for name, schema in row["schemas"].items():
+            print(f"  {name}: özgün şemada {len(schema['original_issues'])} uyumsuz alan")
+            for item in schema["projected"]:
+                print(f"    gönderilmez: {item['path']} {item['keyword']}={json.dumps(item['value'])}"
+                      f" → sunucuda: {item['server_validation']}")
+            if schema["error"]:
+                print(f"    HATA: {schema['error']}")
     claimed = {str(op) for op in SUPPORTED_OPERATIONS["anthropic"]}
     compatible = {op for op, row in result.items() if row["compatible"]}
     if args.check and not claimed <= compatible:

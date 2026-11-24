@@ -9,7 +9,9 @@ param(
     [string]$Region,
     [switch]$PlanOnly,
     [switch]$Execute,
-    [switch]$PublishHosting
+    [switch]$PublishHosting,
+    # TA-005C: Update'te çalışan servisten bir ayarı açıkça kaldırmak için (ör. -DropEnv TEACHERAI_OLD_FLAG).
+    [string[]]$DropEnv = @()
 )
 $ErrorActionPreference = "Stop"
 
@@ -20,6 +22,7 @@ $arguments = @("-m", "scripts.deploy_plan", "--mode", $Mode.ToLowerInvariant())
 if ($Region) { $arguments += @("--region", $Region) }
 if ($Execute) { $arguments += "--execute" } else { $arguments += "--plan-only" }
 if ($PublishHosting) { $arguments += "--publish-hosting" }
+foreach ($name in $DropEnv) { $arguments += @("--drop-env", $name) }
 
 & $python @arguments
 if ($LASTEXITCODE -ne 0) { throw "Dağıtım durdu (çıkış $LASTEXITCODE)." }

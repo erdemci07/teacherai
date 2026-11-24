@@ -33,11 +33,21 @@ PRODUCTION = {"_env_file": None, "environment": "production", "firebase_project_
 
 # --- yapılandırma ---
 
-@pytest.mark.parametrize("field", ["provider_vision", "provider_interaction"])
-def test_unsupported_provider_assignment_stops_startup(field):
-    assert SUPPORTED_OPERATIONS["anthropic"] == frozenset({Operation.LESSONS})  # şema uyumu: yalnız ders
-    with pytest.raises(ValidationError, match="desteklemiyor"):
-        Settings(_env_file=None, allow_student_images_to_anthropic=True, anthropic_api_key="k", **{field: "anthropic"})
+@pytest.mark.parametrize(("field", "model_field", "env"), [
+    ("provider_vision", "anthropic_vision_model", "TEACHERAI_ANTHROPIC_VISION_MODEL"),
+    ("provider_interaction", "anthropic_interaction_model", "TEACHERAI_ANTHROPIC_INTERACTION_MODEL")])
+def test_unsupported_or_incomplete_provider_assignment_stops_startup(field, model_field, env):
+    # TA-005C: şema izdüşümüyle üç işlem de Anthropic'te desteklenir; eksik model/anahtar yine başlatmaz.
+    assert SUPPORTED_OPERATIONS["anthropic"] == frozenset(Operation)
+    base = {"_env_file": None, "allow_student_images_to_anthropic": True, field: "anthropic"}
+    with pytest.raises(ValidationError, match=env):
+        Settings(**base, anthropic_api_key="k")
+    with pytest.raises(ValidationError, match="ANTHROPIC_API_KEY"):
+        Settings(**base, **{model_field: "claude-sonnet-5-5"})
+    with pytest.raises(ValidationError, match="openai sağlayıcısına ait"):
+        Settings(**base, anthropic_api_key="k", **{model_field: "gpt-4.1-mini"})  # model/sağlayıcı uyumsuzluğu
+    ok = Settings(**base, anthropic_api_key="k", **{model_field: "claude-sonnet-5-5"})
+    assert ok.model_for(field.removeprefix("provider_")) == "claude-sonnet-5-5"
     with pytest.raises(ValidationError):
         Settings(_env_file=None, **{field: "gemini"})
 

@@ -147,8 +147,12 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = Field(default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TEACHERAI_ANTHROPIC_API_KEY"))
     # Varsayılan model yoktur; Anthropic'e atanan işlem modeli açıkça verilmeden başlamaz.
     anthropic_lesson_model: str | None = None
+    # TA-005C: Vision ve etkileşim için de açık model; varsayılan yoktur.
+    anthropic_vision_model: str | None = None
+    anthropic_interaction_model: str | None = None
     # Öğrenci görselleri ikinci bir işleyiciye ancak gizlilik metni ve veri işleme sözleşmesi kararından
-    # sonra gönderilebilir (ADR TA-005B). Bayrak yoksa Vision Anthropic'e atanamaz.
+    # sonra gönderilebilir (ADR TA-005B §6). Bayrak yoksa Vision Anthropic'e atanamaz; bayrak tek başına
+    # Vision'ı Anthropic'e taşımaz (TEACHERAI_PROVIDER_VISION ayrıca gerekir). Yetenek ve izin ayrı koşullardır.
     allow_student_images_to_anthropic: bool = False
 
     def provider_for(self, operation: Operation) -> str:
@@ -158,7 +162,8 @@ class Settings(BaseSettings):
     def model_for(self, operation: Operation) -> str | None:
         operation = Operation(operation)
         if self.provider_for(operation) == "anthropic":
-            return {Operation.LESSONS: self.anthropic_lesson_model}.get(operation)
+            return {Operation.VISION: self.anthropic_vision_model, Operation.LESSONS: self.anthropic_lesson_model,
+                    Operation.INTERACTION: self.anthropic_interaction_model}[operation]
         return {Operation.VISION: self.openai_vision_model, Operation.LESSONS: self.openai_lesson_model,
                 Operation.INTERACTION: self.openai_interaction_model}[operation]
 
@@ -172,20 +177,33 @@ class Settings(BaseSettings):
                              "(gizlilik metni ve veri işleme sözleşmesi kararı).")
         for operation in Operation:
             provider = self.provider_for(operation)
+            setting = 'LESSON' if operation == Operation.LESSONS else operation.upper()
             if operation not in SUPPORTED_OPERATIONS[provider]:
-                raise ValueError(f"{provider} sağlayıcısı {operation} işlemini desteklemiyor "
-                                 f"(TEACHERAI_PROVIDER_{'LESSON' if operation == Operation.LESSONS else operation.upper()}).")
+                raise ValueError(f"{provider} sağlayıcısı {operation} işlemini desteklemiyor (TEACHERAI_PROVIDER_{setting}).")
+            model = self.model_for(operation)
             if provider == "anthropic":
-                if not self.model_for(operation):
-                    raise ValueError(f"Anthropic'e atanan {operation} işlemi için model verilmedi (TEACHERAI_ANTHROPIC_LESSON_MODEL).")
+                if not model:
+                    raise ValueError(f"Anthropic'e atanan {operation} işlemi için model verilmedi (TEACHERAI_ANTHROPIC_{setting}_MODEL).")
                 if not self.anthropic_api_key:
                     raise ValueError("ANTHROPIC_API_KEY tanımlı değil; Anthropic'e atanmış işlem var.")
+            # TA-005C: katalogdaki model başka sağlayıcıya aitse veya işlemin girdisini desteklemiyorsa başlamaz.
+            problem = model_catalog.incompatibility(model, provider, operation)
+            if problem:
+                raise ValueError(f"{operation}: {problem}")
         if self.environment in {"production", "staging"}:
             if any(self.provider_for(op) == "openai" for op in Operation) and not self.openai_api_key:
                 raise ValueError("OPENAI_API_KEY tanımlı değil; OpenAI'ye atanmış işlem var.")
             unpriced = sorted({model for op in Operation if (model := self.model_for(op))} - set(self.model_prices))
             if unpriced or not self.pricing_version:
                 raise ValueError(f"Fiyatı tanımsız model production'da kullanılamaz: {', '.join(unpriced) or 'pricing_version yok'}.")
+            unverified = sorted({model for op in Operation if (model := self.model_for(op))
+                                 and model_catalog.supports(model, op) is not True})
+            if unverified:
+                raise ValueError(f"İşlem desteği katalogda doğrulanmamış model production'da kullanılamaz: {', '.join(unverified)}.")
+        for model in sorted({model for op in Operation if (model := self.model_for(op))}):
+            notice = model_catalog.lifecycle_notice(model)
+            if notice:
+                logging.getLogger(__name__).warning("Model yaşam döngüsü: %s", notice)
         return self
     public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
     public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))

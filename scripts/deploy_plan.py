@@ -11,6 +11,19 @@
 - Ön koşullar yalnız kontrol edilir; kaynak oluşturulmaz.
 - Image ``:latest`` ile değil, build'in ürettiği digest ile dağıtılır.
 - Bölge ``scripts/deploy-production.json`` içindeki K2 kararından gelir; karar yoksa ``--region`` zorunludur.
+
+TA-005C:
+- **Ortam uzlaştırması (Update).** ``--set-env-vars``/``--set-secrets`` servisin ortamını tümüyle değiştirir.
+  Bu yüzden önce çalışan servisin ortamı okunur: yönetilen değişkenler bu betikten gelir, onaylı çalışma
+  zamanı ayarları (``runtime_env_policy.preserve_env``) ve secret referansları (``preserve_secrets``)
+  korunur. Yasaklı (düz metin anahtar, hizmet hesabı JSON'u, debug) veya listede olmayan ad değişiklikten
+  önce dağıtımı durdurur; kaldırma yalnız ``--drop-env AD`` ile açıkça yapılır. Değerler yazdırılmaz.
+- **Firebase web yapılandırması.** Çevrimdışı biçim denetimi (proje, AUTH_DOMAIN, APP_ID, API_KEY,
+  isteğe bağlı alanlar) ve ``--execute``'ta değişiklikten önce ``firebase apps:list``/``apps:sdkconfig``
+  ile hedef uygulamanın gerçek SDK yapılandırmasıyla alan alan karşılaştırma. Plan kipinde yalnız
+  çevrimdışı denetim yapılır ve bu açıkça yazılır. Hiçbir değer yazdırılmaz.
+- **Tutarlılık.** Cloud Run bölgesi, Hosting rewrite'ları, ``.firebaserc`` ve ``cloudbuild.api.yaml``
+  image yolu aynı proje/bölge/depoyu göstermelidir.
 """
 
 from __future__ import annotations
@@ -31,6 +44,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = "scripts/deploy-production.json"
 WEB_KEYS = ("API_KEY", "AUTH_DOMAIN", "PROJECT_ID", "APP_ID")
+# Web paketinde varsa doğrulanan isteğe bağlı SDK alanları; env adı → sdkConfig alanı.
+WEB_SDK_FIELDS = {"API_KEY": "apiKey", "AUTH_DOMAIN": "authDomain", "PROJECT_ID": "projectId", "APP_ID": "appId",
+                  "STORAGE_BUCKET": "storageBucket", "MESSAGING_SENDER_ID": "messagingSenderId",
+                  "MEASUREMENT_ID": "measurementId"}
+API_KEY_FORMAT = re.compile(r"^AIza[0-9A-Za-z_-]{35}$")
+APP_ID_FORMAT = re.compile(r"^1:(\d+):web:[0-9a-f]+$")
+# Cloud Run'ın ortamı tümüyle değiştirdiği için betiğin her dağıtımda kendisinin yazdığı değişkenler.
+MANAGED_ENV = ("TEACHERAI_ENVIRONMENT", "TEACHERAI_FIREBASE_ENABLED", "TEACHERAI_FIREBASE_PROJECT_ID",
+               "TEACHERAI_FIREBASE_AUTH_PROJECT_ID")
+DELIMITERS = ",|;~#@"
 # Next'in production build'de okuduğu sıra: önce gelen kazanır.
 WEB_ENV_FILES = (".env.production.local", ".env.local", ".env.production", ".env")
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -82,6 +105,8 @@ class Config:
     secret: dict
     required_apis: list[str]
     region_decision: str = ""
+    runtime_env_policy: dict = field(default_factory=dict)
+    firebase_web: dict = field(default_factory=dict)
 
     @property
     def runtime_sa(self):
@@ -109,6 +134,7 @@ class Context:
     publish_hosting: bool = False
     git_sha: str = ""
     state: dict = field(default_factory=dict)
+    drop_env: frozenset = frozenset()
 
     def call(self, argv, what, env=None):
         result = self.run(argv, env)
@@ -170,7 +196,11 @@ def step_prerequisites(ctx):
         raise DeployError(f"Mod {ctx.mode} ama servis {'var' if exists else 'yok'}. Hiçbir değişiklik yapılmadı.")
 
 
-def web_firebase_config(root, project_id, environ=None):
+def web_firebase_config(root, project_id, environ=None, approved_auth_domains=()):
+    """Web paketine girecek Firebase SDK yapılandırması; çevrimdışı biçim denetimi. Değer yazdırılmaz.
+
+    Dönen sözlük ``WEB_SDK_FIELDS`` anahtarlarıyla (``API_KEY`` …) yalnız tanımlı alanları taşır.
+    """
     values = {}
     for name in reversed(WEB_ENV_FILES):
         path = Path(root) / "apps/web" / name
@@ -180,11 +210,63 @@ def web_firebase_config(root, project_id, environ=None):
                 if sep and not key.startswith("#"):
                     values[key.strip()] = value.strip().strip("'\"")
     values |= {k: v for k, v in (os.environ if environ is None else environ).items() if k.startswith("NEXT_PUBLIC_")}
-    missing = [key for key in WEB_KEYS if not values.get(f"NEXT_PUBLIC_FIREBASE_{key}")]
+    web = {key: values[f"NEXT_PUBLIC_FIREBASE_{key}"] for key in WEB_SDK_FIELDS if values.get(f"NEXT_PUBLIC_FIREBASE_{key}")}
+    missing = [key for key in WEB_KEYS if key not in web]
     if missing:
         raise DeployError(f"Firebase web yapılandırması eksik: {', '.join(missing)}")
-    if values["NEXT_PUBLIC_FIREBASE_PROJECT_ID"] != project_id:
+    if web["PROJECT_ID"] != project_id:
         raise DeployError("Firebase web PROJECT_ID dağıtım projesiyle aynı değil (tek proje).")
+    problems = []
+    if web["AUTH_DOMAIN"] not in {f"{project_id}.firebaseapp.com", f"{project_id}.web.app", *approved_auth_domains}:
+        problems.append("AUTH_DOMAIN (hedef projenin alanı veya onaylı özel alan değil)")
+    app = APP_ID_FORMAT.match(web["APP_ID"])
+    if not app:
+        problems.append("APP_ID (web uygulaması kimliği biçimi değil)")
+    elif "MESSAGING_SENDER_ID" in web and web["MESSAGING_SENDER_ID"] != app.group(1):
+        problems.append("MESSAGING_SENDER_ID (APP_ID'deki proje numarasıyla aynı değil)")
+    if not API_KEY_FORMAT.match(web["API_KEY"]):
+        problems.append("API_KEY (Firebase web anahtarı biçimi değil)")
+    if "STORAGE_BUCKET" in web and web["STORAGE_BUCKET"] not in {f"{project_id}.appspot.com", f"{project_id}.firebasestorage.app"}:
+        problems.append("STORAGE_BUCKET (hedef projenin kovası değil)")
+    if problems:
+        raise DeployError("Firebase web yapılandırması karışık veya geçersiz: " + "; ".join(problems))
+    return web
+
+
+def verify_web_app(ctx, web):
+    """Gerçek doğrulama: hedef projedeki web uygulamasının SDK yapılandırmasıyla alan alan karşılaştırma.
+
+    ``firebase apps:sdkconfig`` uygulamayı proje jokeriyle (``projects/-``) okur; bu yüzden dönen
+    ``projectId`` ayrıca hedefle karşılaştırılır ve uygulamanın hedef projede listelendiği denetlenir.
+    Yalnız okuma komutlarıdır; hiçbir değer yazdırılmaz.
+    """
+    project = ctx.cfg.project_id
+    listed = _json_result(ctx.call(["firebase", "apps:list", "WEB", "--project", project, "--json"], "Firebase web uygulama listesi"))
+    if web["APP_ID"] not in {item.get("appId") for item in listed or [] if isinstance(item, dict)}:
+        raise DeployError("Firebase web APP_ID hedef projede kayıtlı bir web uygulaması değil.")
+    result = _json_result(ctx.call(["firebase", "apps:sdkconfig", "WEB", web["APP_ID"], "--project", project, "--json"],
+                                   "Firebase web SDK yapılandırması"))
+    sdk = (result or {}).get("sdkConfig") if isinstance(result, dict) else None
+    if not isinstance(sdk, dict):
+        raise DeployError("Firebase web SDK yapılandırması okunamadı.")
+    custom = set(ctx.cfg.firebase_web.get("approved_auth_domains") or ())
+    mismatched = sorted(key for key, value in web.items()
+                        if not (key == "AUTH_DOMAIN" and value in custom) and sdk.get(WEB_SDK_FIELDS[key]) != value)
+    if sdk.get("projectId") != project:
+        mismatched.append("projectId (uygulama başka projeye ait)")
+    if mismatched:
+        raise DeployError("Firebase web yapılandırması hedef uygulamayla uyuşmuyor: " + ", ".join(mismatched))
+    ctx.state["web_config_verification"] = "authoritative"
+
+
+def _json_result(out):
+    try:
+        data = json.loads(out)
+    except (TypeError, ValueError):
+        raise DeployError("Firebase CLI JSON çıktısı okunamadı.") from None
+    if not isinstance(data, dict) or data.get("status") != "success":
+        raise DeployError("Firebase CLI komutu başarılı sonuç döndürmedi.")
+    return data.get("result")
 
 
 def check_rewrite(root, cfg):
@@ -193,6 +275,84 @@ def check_rewrite(root, cfg):
     run = rules[0].get("run", {}) if rules else {}
     if run.get("serviceId") != cfg.service or run.get("region") != cfg.region:
         raise DeployError(f"firebase.json /s/** rewrite'ı {cfg.service} ({cfg.region}) servisine bağlı değil.")
+    for rule in hosting.get("rewrites", []):  # TA-005C: Cloud Run'a giden her rewrite aynı servis ve bölge
+        target = rule.get("run")
+        if target and (target.get("serviceId") != cfg.service or target.get("region") != cfg.region):
+            raise DeployError(f"firebase.json {rule.get('source')} rewrite'ı {cfg.service} ({cfg.region}) servisine bağlı değil.")
+
+
+def check_consistency(root, cfg):
+    """TA-005C: proje, bölge ve Artifact Registry yolu dağıtım dosyalarında aynı olmalı (değişiklikten önce)."""
+    firebaserc = json.loads((Path(root) / ".firebaserc").read_text(encoding="utf-8-sig"))
+    if (firebaserc.get("projects") or {}).get("default") != cfg.project_id:
+        raise DeployError(f".firebaserc varsayılan projesi {cfg.project_id} değil.")
+    build = (Path(root) / "cloudbuild.api.yaml").read_text(encoding="utf-8")
+    image = f"${{_REGION}}-docker.pkg.dev/$PROJECT_ID/{cfg.repository}/{cfg.service}:${{_TAG}}"
+    if build.count(image) < 2:  # build adımı ve images listesi
+        raise DeployError("cloudbuild.api.yaml image yolu bölge değişkeni, depo ve servisle uyuşmuyor.")
+    if not cfg.image.startswith(f"{cfg.region}-docker.pkg.dev/{cfg.project_id}/{cfg.repository}/"):
+        raise DeployError("Artifact Registry image yolu seçilen bölge ve projeyle uyuşmuyor.")
+
+
+def current_runtime(service: dict) -> tuple[dict, dict]:
+    """Çalışan servisin (env, secret referansları). Secret değeri okunmaz; yalnız ad ve sürüm."""
+    containers = (((service.get("spec") or {}).get("template") or {}).get("spec") or {}).get("containers") or [{}]
+    env, secrets = {}, {}
+    for item in containers[0].get("env") or []:
+        ref = (item.get("valueFrom") or {}).get("secretKeyRef")
+        if ref:
+            secrets[item["name"]] = f"{ref.get('name')}:{ref.get('key', 'latest')}"
+        else:
+            env[item["name"]] = item.get("value", "")
+    return env, secrets
+
+
+def reconcile_runtime(cfg, current_env, current_secrets, drop=frozenset()):
+    """Yönetilen + korunan ortam. Bilinmeyen veya yasaklı ad ``DeployError``; değerler mesaja girmez."""
+    policy = cfg.runtime_env_policy or {}
+    preserve, preserve_secrets = set(policy.get("preserve_env") or ()), set(policy.get("preserve_secrets") or ())
+    prohibited = set(policy.get("prohibited_env") or ())
+    managed = {"TEACHERAI_ENVIRONMENT": "production", "TEACHERAI_FIREBASE_ENABLED": "true",
+               "TEACHERAI_FIREBASE_PROJECT_ID": cfg.project_id, "TEACHERAI_FIREBASE_AUTH_PROJECT_ID": cfg.project_id}
+    report = {"managed": sorted(managed), "preserved": [], "dropped": [], "managed_changed": []}
+    blocked = sorted(name for name in current_env if name in prohibited and name not in drop)
+    unknown = sorted(name for name in current_env
+                     if name not in preserve | prohibited | set(MANAGED_ENV) and name not in drop)
+    unknown_secrets = sorted(name for name in current_secrets
+                             if name not in preserve_secrets | {cfg.secret["env"]} and name not in drop)
+    if blocked:
+        raise DeployError(f"Çalışan serviste yasaklı ortam değişkeni var: {', '.join(blocked)}. "
+                          "Düz metin anahtar/hizmet hesabı/debug kabul edilmez; secret'a taşıyın veya --drop-env ile kaldırın.")
+    if unknown or unknown_secrets:
+        raise DeployError("Çalışan serviste politikada olmayan ayar var: " + ", ".join(unknown + unknown_secrets)
+                          + ". Bilinmeyen ayar ne korunur ne silinir: runtime_env_policy'ye ekleyin veya --drop-env ile kaldırın.")
+    env = dict(managed)
+    for name, value in sorted(current_env.items()):
+        if name in drop:
+            report["dropped"].append(name)
+        elif name in managed:
+            if value != managed[name]:
+                report["managed_changed"].append(name)
+        elif name in preserve:
+            env[name] = value
+            report["preserved"].append(name)
+    secrets = {cfg.secret["env"]: f"{cfg.secret['name']}:{cfg.secret['version']}"}
+    for name, ref in sorted(current_secrets.items()):
+        if name in drop:
+            report["dropped"].append(name)
+        elif name in preserve_secrets:
+            secrets[name] = ref
+            report["preserved"].append(name)
+    return env, secrets, report
+
+
+def env_flag(env: dict) -> str:
+    """``--set-env-vars`` değeri. Değerde virgül varsa gcloud'un ``^ayraç^`` sözdizimi kullanılır."""
+    for delimiter in DELIMITERS:
+        if not any(delimiter in value for value in env.values()):
+            joined = delimiter.join(f"{key}={value}" for key, value in env.items())
+            return joined if delimiter == "," else f"^{delimiter}^{joined}"
+    raise DeployError("Ortam değerleri için güvenli ayraç bulunamadı.")
 
 
 def step_validate(ctx):
@@ -203,8 +363,18 @@ def step_validate(ctx):
         raise DeployError("Instance sınırları geçersiz.")
     if cfg.runtime_sa.endswith("-compute@developer.gserviceaccount.com"):
         raise DeployError("Compute varsayılan hesabı kullanılamaz.")
-    check_rewrite(ctx.root, cfg)  # değişiklikten önce; 9. adımda yeniden denetlenir
-    web_firebase_config(ctx.root, cfg.project_id)  # değişiklikten önce; 7. adımda yeniden denetlenir
+    check_rewrite(ctx.root, cfg)  # değişiklikten önce; 11. adımda yeniden denetlenir
+    check_consistency(ctx.root, cfg)
+    approved = tuple(cfg.firebase_web.get("approved_auth_domains") or ())
+    web = web_firebase_config(ctx.root, cfg.project_id, approved_auth_domains=approved)  # 9. adımda yeniden denetlenir
+    verify_web_app(ctx, web)  # gerçek SDK yapılandırması; yalnız okuma
+    ctx.state["web_config"] = web
+    if ctx.mode == "update":
+        current_env, current_secrets = current_runtime(describe(ctx))
+    else:
+        current_env, current_secrets = {}, {}
+    ctx.state["env"], ctx.state["secrets"], ctx.state["runtime_report"] = reconcile_runtime(
+        cfg, current_env, current_secrets, ctx.drop_env)
 
 
 def step_build(ctx):
@@ -220,19 +390,24 @@ def step_build(ctx):
 
 def deploy_args(ctx):
     cfg = ctx.cfg
-    env = ",".join([
-        "TEACHERAI_ENVIRONMENT=production",
-        "TEACHERAI_FIREBASE_ENABLED=true",
-        f"TEACHERAI_FIREBASE_PROJECT_ID={cfg.project_id}",
-        f"TEACHERAI_FIREBASE_AUTH_PROJECT_ID={cfg.project_id}",
-    ])
+    if "env" in ctx.state:  # TA-005C: uzlaştırılmış tam ortam (yönetilen + onaylı korunan)
+        env = env_flag(ctx.state["env"])
+        secrets = ",".join(f"{name}={ref}" for name, ref in ctx.state["secrets"].items())
+    else:  # plan kipi: yalnız yönetilen değişkenler gösterilir; Update'te korunan ayarlar ayrıca okunur
+        env = ",".join([
+            "TEACHERAI_ENVIRONMENT=production",
+            "TEACHERAI_FIREBASE_ENABLED=true",
+            f"TEACHERAI_FIREBASE_PROJECT_ID={cfg.project_id}",
+            f"TEACHERAI_FIREBASE_AUTH_PROJECT_ID={cfg.project_id}",
+        ])
+        secrets = f"{cfg.secret['env']}={cfg.secret['name']}:{cfg.secret['version']}"
     args = ["run", "deploy", cfg.service, "--image", ctx.state.get("image", f"{cfg.image}@<digest>"),
             "--region", cfg.region, "--platform", "managed", "--port", "8000",
             "--service-account", cfg.runtime_sa, "--max-instances", str(cfg.max_instances),
             "--min-instances", str(cfg.min_instances), "--concurrency", str(cfg.concurrency),
             "--timeout", str(cfg.timeout_seconds), "--cpu", cfg.cpu, "--memory", cfg.memory,
             "--set-env-vars", env,
-            "--set-secrets", f"{cfg.secret['env']}={cfg.secret['name']}:{cfg.secret['version']}"]
+            "--set-secrets", secrets]
     if ctx.mode == "bootstrap":
         args.append("--allow-unauthenticated")  # herkese açık API; kimlik uygulama içinde doğrulanır
     return gc(ctx, *args)
@@ -276,7 +451,9 @@ def step_url(ctx):
 
 
 def step_web_config(ctx):
-    web_firebase_config(ctx.root, ctx.cfg.project_id)
+    approved = tuple(ctx.cfg.firebase_web.get("approved_auth_domains") or ())
+    if web_firebase_config(ctx.root, ctx.cfg.project_id, approved_auth_domains=approved) != ctx.state.get("web_config"):
+        raise DeployError("Firebase web yapılandırması doğrulamadan sonra değişti; web build yapılmadı.")
 
 
 def step_web_build(ctx):
@@ -299,7 +476,9 @@ def step_hosting(ctx):
 STEPS = (
     ("Yerel kapılar: main dalı, temiz ağaç, origin/main, API testleri", step_local_gates),
     ("Ön koşullar (yalnız kontrol): proje, billing, API'ler, Artifact Registry, secret, hizmet hesabı, mod", step_prerequisites),
-    ("Yapılandırma doğrulaması: bölge, instance sınırları, rewrite ve web yapılandırması (değişiklikten önce)", step_validate),
+    (("Yapılandırma doğrulaması (değişiklikten önce): bölge, instance sınırları, rewrite, .firebaserc ve image yolu, "
+      "web yapılandırması (biçim + firebase apps:sdkconfig ile gerçek uygulama), çalışan ortamın uzlaştırılması"),
+     step_validate),
     ("Image build ve digest", step_build),
     ("Cloud Run dağıtımı (digest ile)", step_deploy),
     ("Hazır revizyon ve digest eşliği", step_revision),
@@ -321,6 +500,17 @@ def plan_lines(ctx):
         lines.append(f"{number:>2}. {title}")
     shown = Context(Config(**{**vars(cfg), "region": cfg.region or "<K2>"}), ctx.mode, ctx.root, ctx.run)
     lines.append("    " + " ".join(deploy_args(shown)))
+    policy = cfg.runtime_env_policy or {}
+    if ctx.mode == "update":
+        lines.append(f"    Update: çalışan ortam okunur; {len(policy.get('preserve_env') or ())} onaylı ayar ve "
+                     f"{len(policy.get('preserve_secrets') or ())} secret referansı korunur, bilinmeyen/yasaklı ad durdurur"
+                     + (f"; --drop-env: {', '.join(sorted(ctx.drop_env))}" if ctx.drop_env else "") + ".")
+    try:
+        web_firebase_config(ctx.root, cfg.project_id, approved_auth_domains=tuple(cfg.firebase_web.get("approved_auth_domains") or ()))
+        lines.append("    Firebase web yapılandırması: yalnız çevrimdışı biçim denetimi geçti. Gerçek uygulamayla "
+                     "karşılaştırma --execute'ta değişiklikten önce yapılır.")
+    except DeployError as error:
+        lines.append(f"    Firebase web yapılandırması (çevrimdışı): {error}")
     if not ctx.publish_hosting:
         lines.append("    Hosting yayımlanmayacak; sonra: firebase deploy --only hosting --project " + cfg.project_id)
     return lines
@@ -343,9 +533,11 @@ def main(argv=None, runner: Runner | None = None):
     group.add_argument("--plan-only", action="store_true", help="varsayılan: yalnız planı yazdır")
     group.add_argument("--execute", action="store_true")
     parser.add_argument("--publish-hosting", action="store_true")
+    parser.add_argument("--drop-env", action="append", default=[], metavar="AD",
+                        help="Update: çalışan servisten bu ortam değişkenini veya secret referansını açıkça kaldır")
     args = parser.parse_args(argv)
     ctx = Context(load_config(ROOT, args.region), args.mode, ROOT, runner or system_runner,
-                  publish_hosting=args.publish_hosting)
+                  publish_hosting=args.publish_hosting, drop_env=frozenset(args.drop_env))
     if not args.execute:
         print("\n".join(plan_lines(ctx)))
         return 0
@@ -354,7 +546,8 @@ def main(argv=None, runner: Runner | None = None):
     except DeployError as error:
         print(f"DURDU: {error}", file=sys.stderr)
         return 1
-    print(json.dumps({"revision": state["revision"], "image": state["image"], "api": state["api_base"]}, indent=2))
+    print(json.dumps({"revision": state["revision"], "image": state["image"], "api": state["api_base"],
+                      "runtime": state["runtime_report"], "web_config": state.get("web_config_verification")}, indent=2))
     return 0
 
 

@@ -1,6 +1,19 @@
 # TA-005 runbook: math-ai-07 → teacherai-07 tek proje geçişi
 
-**Bu fazda hiçbir adım çalıştırılmadı.** Aşağıdaki [W] komutların her biri, Erdem'in o adım için ayrı ve açık onayıyla çalıştırılır. [R] komutlar salt okunurdur. Her komutta `--project` açıkça verilir; `gcloud config set project` ve `firebase use` kullanılmaz.
+**Bu fazda hiçbir adım çalıştırılmadı (TA-005, TA-005B, TA-005C).** Aşağıdaki [W] komutların her biri, Erdem'in o adım için ayrı ve açık onayıyla çalıştırılır. [R] komutlar salt okunurdur. Her komutta `--project` açıkça verilir; `gcloud config set project` ve `firebase use` kullanılmaz.
+
+### TA-005C ile eklenen işletim ön koşulları
+
+1. **Kopya, çakışmayı kendiliğinden ezmez.** Önce `--verify --report-out fark.json` alınır. Hedefte farklı olan belgeler yalnız `--overwrite-from fark.json` ile ve rapordaki aynı hedef ve kaynak özetiyle ezilir. Rapor en çok 1 saatliktir, aynı kaynak/hedef çiftine aittir ve `--authority source` ile üretilmiş olmalıdır. Onaysız çakışma `conflict_held_unapproved` olarak sayılır ve `conflicts` listesinde görünür.
+2. **Eşzamanlılık güvencesi tek proje içindir.** Her yazma ve budama silmesi hedef belgeyi aynı Firestore işleminde yeniden okur. Arada değişen belge `skipped_target_changed` veya `skipped_changed_before_delete` sayılır. Kaynak belge yazmadan hemen önce yeniden okunur (`skipped_source_changed`). Projeler arası tek işlem yoktur. Bu yüzden kopya ve son fark kopyası sırasında **iki proje de `read_only` bakım modunda** olmalıdır (4.2). Budama manifesti tek başına eşzamanlı değişikliğe karşı koruma sağlamaz.
+3. **Yeni sayaçlar.**
+   - `orphan_parent`: üst belgesi olmayan alt koleksiyon. Alt belgeler sahibi bilinmediği için yazılmaz.
+   - `owner_mismatch`: iki tarafta sahibi farklı belge. Hiçbir yöne yazılmaz.
+   - `skipped_*`: yukarıdaki eşzamanlılık atlamaları.
+
+   Bu sayılardan biri sıfırdan büyükse geçiş durur ve nedeni incelenir.
+4. **Dağıtımda ortam uzlaştırması.** `-Mode Update`, çalışan servisin ortamını okur. Onaylı ayarlar (`runtime_env_policy.preserve_env`) ve secret referansları (`preserve_secrets`) korunur. Politikada olmayan veya yasaklı bir ad dağıtımı değişiklikten önce durdurur. Kaldırma yalnız `-DropEnv AD` ile yapılır. Bakım modu (`TEACHERAI_MAINTENANCE_MODE`) bu yüzden normal bir Update ile kaybolmaz.
+5. **Firebase web yapılandırması.** `-Execute`, değişiklikten önce `firebase apps:list WEB` ve `firebase apps:sdkconfig WEB <appId>` [R] ile hedef uygulamanın gerçek SDK yapılandırmasını alan alan karşılaştırır. Plan kipi yalnız çevrimdışı biçim denetimi yapar ve bunu açıkça yazar. Özel `authDomain` yalnız `deploy-production.json` → `firebase_web.approved_auth_domains` listesine açıkça eklenince kabul edilir.
 
 Değişkenler:
 
@@ -99,6 +112,14 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
 
 - Mod, servisin gerçek varlığıyla uyuşmazsa betik hiçbir değişiklik yapmadan durur.
 - Varsayılan yalnız plandır (`-PlanOnly`); dış komut çalışmaz.
+- TA-005C: yapılandırma adımı değişiklikten önce şunları denetler:
+  - `.firebaserc` varsayılan projesi
+  - `cloudbuild.api.yaml` image yolu (bölge değişkeni, `teacherai` deposu, servis)
+  - Cloud Run'a giden **her** Hosting rewrite'ının servis ve bölgesi
+  - web yapılandırmasının hedef uygulamayla eşliği
+  - Update'te çalışan ortamın uzlaştırılması (yukarıdaki ön koşul 4)
+
+  Çıktıda yalnız ayar adları yazılır, değerler yazılmaz.
 - Sıra: yerel kapılar → ön koşullar (yalnız kontrol) → yapılandırma → image build ve digest → Cloud Run (digest ile) → hazır revizyon ve digest eşliği → `/health` → URL → web Firebase yapılandırması → web build → rewrite → Hosting (yalnız `-PublishHosting`).
 - Geri alma için hazır revizyon adı ve image digest'i çıktıda yazılır: `gcloud run services update-traffic teacherai-api --to-revisions=<önceki>=100 --region=$REGION --project=$DST`.
 
@@ -112,7 +133,13 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
    ```
    python -m scripts.migration.copy_firestore --execute --source $SRC --target $DST --authority source --confirm-target $DST
    ```
-   Çıktıdaki `blocked_deleted_owner`, `blocked_owner_not_in_auth`, `blocked_no_owner` ve `blocked_ownerless_share` sayıları kayda geçirilir. **Sahipsiz eski paylaşımlar** (`blocked_ownerless_share`) varsayılan olarak taşınmaz; taşınıp taşınmayacağına Erdem karar verir (`--copy-ownerless-shares`). Çakışmada ezilen hedef içeriğinin özeti `conflicts` listesindedir.
+   Çıktıdaki şu sayılar kayda geçirilir:
+   - `blocked_deleted_owner`, `blocked_owner_not_in_auth`, `blocked_no_owner`, `blocked_ownerless_share`
+   - TA-005C: `blocked_owner_mismatch`, `orphan_parent`, `conflict_held_unapproved`, `skipped_target_changed`, `skipped_source_changed`
+
+   **Sahipsiz eski paylaşımlar** (`blocked_ownerless_share`) varsayılan olarak taşınmaz; taşınıp taşınmayacağına Erdem karar verir (`--copy-ownerless-shares`).
+
+   Hedefte zaten farklı içerikle bulunan belge ilk kopyada ezilmez. Ezilmesi gerekiyorsa önce adım 2'deki `--verify` raporu alınır, `conflicts` listesi incelenir ve kopya `--overwrite-from fark.json` ile yeniden çalıştırılır. Ezilen hedef içeriğinin özeti `conflicts` listesinde `replaced_target_digest` olarak kalır.
 2. **[R]** İki yönlü doğrula:
    ```
    python -m scripts.migration.copy_firestore --verify --source $SRC --target $DST --authority source --auth-uids target --report-out fark.json
@@ -124,7 +151,7 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
    ```
    python -m scripts.migration.copy_firestore --prune --source $SRC --target $DST --authority source --confirm-prune $DST --prune-from fark.json [--execute]
    ```
-   Budama adayı: yalnız hedefte olan belge (yetkili taraf kaynaksa) veya sahibinin silme kaydı bulunan hedef belgesi. Raporda olmayan ya da değişmiş belge silinmez, sayılır.
+   Budama adayı: yalnız hedefte olan belge (yetkili taraf kaynaksa) veya sahibinin silme kaydı bulunan hedef belgesi. Raporda olmayan ya da değişmiş belge silinmez, sayılır. TA-005C: rapordan sonra değişen belge ziyarette, ziyaretle silme arasında değişen belge ise işlem içi yeniden okumayla ayıklanır (`skipped_changed_before_delete`).
 
 ## 4. Kontrollü geçiş
 
@@ -133,7 +160,7 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
 | 4.1 | Duyuru (zaman penceresi, beklenen kesinti: yazma kapalı ~30 dk) | — | — |
 | 4.2 | Eski serviste salt okunur mod: `gcloud run services update teacherai-api --region=us-east4 --project=$SRC --update-env-vars TEACHERAI_MAINTENANCE_MODE=read_only` | [W] | `POST` istekleri 503 + `Retry-After` döner. Web bakım mesajı gösterir. |
 | 4.3 | K1(b): `firebase auth:import auth-$SRC.json --hash-algo=SCRYPT --hash-key=<…> --salt-separator=<…> --rounds=<…> --mem-cost=<…> --project $DST`. Parametreler SRC Console → Authentication → kullanıcı menüsü → "Password hash parameters" ekranından alınır ve repoya girmez. | [W] yalnız Erdem | Kullanıcı sayısı eşit. UID'ler korunur. Token iptal zamanları **taşınmaz**, kullanıcılar yeniden oturum açar. |
-| 4.4 | Son fark kopyası `--execute --authority source` ve ardından `--verify` | [W] / [R] | `only_source`, `different`, `owner_not_in_auth` ve `deleted_owner_in_target` yok |
+| 4.4 | İki proje de `read_only` iken: `--verify --report-out fark.json` [R], ardından son fark kopyası `--execute --authority source --overwrite-from fark.json` [W], ardından yeniden `--verify` [R] | [R] / [W] / [R] | `only_source`, `different`, `owner_not_in_auth`, `owner_mismatch` ve `deleted_owner_in_target` yok. Kopya çıktısında `conflict_held_unapproved` ve `skipped_*` sıfır. |
 | 4.5 | Yeni web build'i (DST API URL'si ve DST web yapılandırması) ve `firebase deploy --only hosting --project $DST` | [W] | `/s/<id>` 200 döner, adres Hosting'de kalır |
 | 4.6 | Yeni serviste yazmayı aç (`TEACHERAI_MAINTENANCE_MODE=off`, varsayılan) | [W] | Yeni ders kaydı DST'de |
 | 4.7 | İzleme (ilk 24 saat): 5xx oranı, p95 gecikme, `ai_global_budget_exhausted` / `usage_limit` hataları, `account_deletion` sonuçları | [R] | Cloud Run metrikleri ve günlükler |
@@ -154,6 +181,8 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
      python -m scripts.migration.copy_firestore --execute --source $DST --target $SRC --authority source --confirm-target $SRC --allow-reverse
      ```
   3. `--verify --authority source` ile denetle. SRC'de yalnız orada kalan belgeler `only_target` görünür ve otomatik silinmez.
+     - TA-005C: SRC'de farklı içerikle duran belgeler geri kopyada ezilmez (`conflict_held_unapproved`). Ezilmeleri gerekiyorsa bu `--verify` raporu `--overwrite-from` ile verilir.
+     - Silme kaydı TTL ile kaybolmuş hesap DST Auth'unda olmadığı için geri yazılmaz (`blocked_owner_not_in_auth`).
   4. Hosting'i geri al ve eski serviste yazmayı aç.
 
   K1(b)'de DST'de yeni oluşan Auth hesapları SRC'ye otomatik dönmez. Bu hesaplar için ayrı bir dışa/içe aktarım gerekir.

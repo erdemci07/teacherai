@@ -11,12 +11,15 @@ from apps.api.app.core.operations import Operation
 from apps.api.app.core.usage import UsageLimitExceeded
 from apps.api.app.features.account.guard import AccountDeletionInProgress
 from apps.api.app.features.vision.exceptions import (
+    ImageTooLargeError,
+    InvalidImageError,
     InvalidProviderResponseError,
     ProviderAuthenticationError,
     ProviderConfigurationError,
     ProviderRateLimitError,
     ProviderTimeoutError,
     ProviderUnavailableError,
+    UnsupportedImageError,
 )
 from apps.api.app.features.vision.provider import ProviderResult
 from apps.api.app.features.vision.schemas import RecheckResponse, VisionProviderAnalysis
@@ -133,3 +136,73 @@ class OpenAIVisionProvider:
             request_id or "unknown",
             round((perf_counter() - started) * 1000),
         )
+
+
+class AnthropicVisionProvider(OpenAIVisionProvider):
+    """TA-005C §1: aynı istem, aynı ön işlenmiş görsel, aynı şema ve aynı geçit; yalnız adaptör farklıdır.
+
+    Gizlilik ve sağlayıcı yeteneği ayrı koşullardır: ``allow_images`` (TEACHERAI_ALLOW_STUDENT_IMAGES_TO_ANTHROPIC)
+    yoksa hiçbir görsel gönderilmez. Görsel denetimi geçitten önce yapılır; reddedilen görsel çağrı hakkı
+    veya rezervasyon harcamaz. Başka sağlayıcıya otomatik geçiş yoktur.
+    """
+
+    name = "anthropic"
+
+    def __init__(self, api_key: str | None, model: str, timeout_seconds: float, *, allow_images: bool = False,
+                 transport=None) -> None:
+        super().__init__(api_key, model, timeout_seconds)
+        self._allow_images, self._transport = allow_images, transport
+
+    def diagnostics(self) -> dict[str, str | bool]:
+        return {"provider": self.name, "configured": bool(self._api_key and self._allow_images), "model": self._model}
+
+    async def health(self) -> bool:
+        return bool(self._api_key and self._allow_images)
+
+    async def _call(self, content, text_format, purpose: str, request_id: str | None):
+        from apps.api.app.core.anthropic_adapter import AnthropicAdapter
+
+        started = perf_counter()
+        if not self._api_key or not self._allow_images:
+            error = ProviderConfigurationError()
+            self._log_anthropic(error.code if self._api_key else "missing_key", request_id, started)
+            raise error
+        adapter = AnthropicAdapter(self._api_key, allow_images=self._allow_images, transport=self._transport)
+        request = ProviderRequest(Operation.VISION, self._model, user=content, schema=text_format,
+                                  timeout=self._timeout_seconds + 2)
+        rejected = adapter.image_error(request)
+        if rejected:
+            self._log_anthropic(rejected, request_id, started)
+            raise _IMAGE_ERRORS.get(rejected, InvalidImageError)()
+        try:
+            return await invoke(adapter, request, purpose=purpose)
+        except AIOutcomeError as exc:
+            if type(exc) is not AIOutcomeError:
+                raise  # ret, kesilme, geçersiz çıktı, zaman aşımı: OpenAI yoluyla aynı sonuç sınıfı
+            self._log_anthropic(exc.reason, request_id, started)
+            raise _vision_error(exc.reason) from exc
+
+    def _log_anthropic(self, reason, request_id, started):
+        logger.warning("Anthropic Vision request failed reason=%s provider=%s model=%s request_id=%s duration_ms=%s",
+                       reason, self.name, self._model, request_id or "unknown", round((perf_counter() - started) * 1000))
+
+
+_IMAGE_ERRORS = {"student_images_not_allowed": ProviderConfigurationError, "image_size_limit": ImageTooLargeError,
+                 "image_dimension_limit": ImageTooLargeError, "image_media_type": UnsupportedImageError}
+
+
+def _vision_error(reason):
+    from apps.api.app.core.ai_outcomes import CONFIGURATION_FAILURES, ProviderFailure
+
+    if reason in CONFIGURATION_FAILURES:
+        return ProviderAuthenticationError()
+    if reason in {ProviderFailure.RATE_LIMITED, ProviderFailure.OVERLOADED}:
+        return ProviderRateLimitError()
+    if reason == ProviderFailure.PROVIDER_TIMEOUT:
+        return ProviderTimeoutError()
+    if reason in {ProviderFailure.INVALID_REQUEST, ProviderFailure.REQUEST_TOO_LARGE,
+                  ProviderFailure.CONTEXT_WINDOW_EXCEEDED}:
+        return InvalidProviderResponseError()
+    if reason in _IMAGE_ERRORS:
+        return _IMAGE_ERRORS[reason]()
+    return ProviderUnavailableError()

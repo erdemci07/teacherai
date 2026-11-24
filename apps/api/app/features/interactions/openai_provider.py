@@ -1,5 +1,6 @@
+from apps.api.app.core.ai_outcomes import AIOutcomeError, ProviderFailure
 from apps.api.app.core.ai_port import ProviderRequest
-from apps.api.app.core.gateway import invoke
+from apps.api.app.core.gateway import calls_remaining, invoke
 from apps.api.app.core.openai_adapter import OpenAIAdapter
 from apps.api.app.core.operations import Operation
 import asyncio, json
@@ -105,8 +106,65 @@ class OpenAIInteractionProvider:
         request = ProviderRequest(Operation.INTERACTION, self.model,
                                   user=json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
                                   system=self.prompt, schema=AdaptiveDraft, timeout=self.timeout + 2)
-        r = await invoke(OpenAIAdapter(client), request)
+        r = await invoke(self._adapter(client), request)
         return r.output_parsed
+
+    def _adapter(self, client):
+        return OpenAIAdapter(client)
+
+
+class _NoClient:
+    async def close(self):
+        return None
+
+
+class AnthropicInteractionProvider(OpenAIInteractionProvider):
+    """TA-005C §1: aynı bağlam, istem, şema (onaylı izdüşüm) ve geçit; yalnız adaptör farklıdır.
+
+    Bağlam aşımında (400 "prompt is too long") OpenAI yoluyla aynı tek acil bağlam denemesi yapılır;
+    deneme yalnız mantıksal istek tavanında hak kaldıysa yapılır ve geçitte sayılır.
+    """
+
+    name = "anthropic"
+
+    def __init__(self, api_key, model, timeout, context_budget_bytes: int = 12000, transport=None):
+        super().__init__(api_key, model, timeout, context_budget_bytes)
+        self.transport = transport
+
+    def _adapter(self, client):
+        from apps.api.app.core.anthropic_adapter import AnthropicAdapter
+
+        return AnthropicAdapter(self.api_key, transport=self.transport)
+
+    async def adapt(self, action: Action, lesson: LessonPlan, hint_level: int, teaching_context=None) -> AdaptiveDraft:
+        if not self.api_key:
+            raise InteractionProviderError
+        client = _NoClient()
+        try:
+            return await self._adapt_with_context(client, action, lesson, hint_level, teaching_context, "normal")
+        except AIOutcomeError as exc:
+            reason = exc.reason if type(exc) is AIOutcomeError else None
+            if reason is None:
+                raise
+            if reason != ProviderFailure.CONTEXT_WINDOW_EXCEEDED:
+                raise _interaction_error(reason) from exc
+            if calls_remaining() == 0:
+                raise InteractionContextTooLargeError from exc
+            try:
+                return await self._adapt_with_context(client, action, lesson, hint_level, teaching_context, "emergency")
+            except AIOutcomeError as retry:
+                retry_reason = retry.reason if type(retry) is AIOutcomeError else None
+                if retry_reason is None:
+                    raise
+                if retry_reason == ProviderFailure.CONTEXT_WINDOW_EXCEEDED:
+                    raise InteractionContextTooLargeError from retry
+                raise _interaction_error(retry_reason) from retry
+
+
+def _interaction_error(reason):
+    if reason in {ProviderFailure.INVALID_REQUEST, ProviderFailure.REQUEST_TOO_LARGE}:
+        return InvalidInteractionResponseError()
+    return InteractionProviderError()
 
 
 def _is_context_limit(exc: Exception) -> bool:

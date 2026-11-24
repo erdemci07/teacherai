@@ -147,7 +147,8 @@ def summarize(rows: list[dict]) -> dict:
 class Services:
     """Gerçek üretim yolu. Testler bu sınıfın yerine sahte bir nesne verir."""
 
-    def __init__(self, settings, vision_model, lesson_model, effort, lesson_provider="openai"):
+    def __init__(self, settings, vision_model, lesson_model, effort, lesson_provider="openai", vision_provider="openai",
+                 pack_images_to_anthropic=False):
         from apps.api.app.features.board.planner import BoardPlanner
         from apps.api.app.features.lessons.openai_provider import (
             AnthropicLessonProvider,
@@ -155,16 +156,23 @@ class Services:
         )
         from apps.api.app.features.lessons.service import LessonService
         from apps.api.app.features.mathai.service import MathAIService
-        from apps.api.app.features.vision.openai_provider import OpenAIVisionProvider
+        from apps.api.app.features.vision.openai_provider import (
+            AnthropicVisionProvider,
+            OpenAIVisionProvider,
+        )
         from apps.api.app.features.vision.service import VisionService
         from apps.api.app.features.vision.storage import LocalTemporaryImageStorage
 
         self.settings, self.temp = settings, tempfile.TemporaryDirectory()
         key = settings.openai_api_key
-        self.vision = VisionService(OpenAIVisionProvider(key, vision_model, settings.vision_provider_timeout_seconds),
-                                    LocalTemporaryImageStorage(Path(self.temp.name)), settings.max_upload_size_bytes, False,
-                                    recheck_limit=settings.vision_max_rechecks)
-        # TA-005B: Anthropic yalnız ders işlemini destekler; Vision OpenAI'de kalır.
+        # TA-005C: Anthropic Vision yalnız özgün paket görselleri için ve açık bayrakla (öğrenci görseli değildir;
+        # production izni TEACHERAI_ALLOW_STUDENT_IMAGES_TO_ANTHROPIC bununla açılmaz).
+        vision = (AnthropicVisionProvider(settings.anthropic_api_key, vision_model, settings.vision_provider_timeout_seconds,
+                                          allow_images=pack_images_to_anthropic)
+                  if vision_provider == "anthropic" else
+                  OpenAIVisionProvider(key, vision_model, settings.vision_provider_timeout_seconds))
+        self.vision = VisionService(vision, LocalTemporaryImageStorage(Path(self.temp.name)), settings.max_upload_size_bytes,
+                                    False, recheck_limit=settings.vision_max_rechecks)
         lessons = (AnthropicLessonProvider(settings.anthropic_api_key, lesson_model, settings.lesson_provider_timeout_seconds)
                    if lesson_provider == "anthropic" else
                    OpenAILessonProvider(key, lesson_model, settings.lesson_provider_timeout_seconds))
@@ -188,12 +196,12 @@ async def run_question(item: dict, services, settings, teacher: dict) -> dict:
     from apps.api.app.core.ai_outcomes import AIOutcomeError
     from apps.api.app.core.gateway import (
         ProviderCallBudgetExhausted,
-        begin_accounting,
+        begin_offline_accounting,
         end_accounting,
     )
     from apps.api.app.features.lessons.exceptions import LessonError
     from apps.api.app.features.vision.exceptions import VisionError
-    from scripts.evaluate_models import Capture, _NullTracker
+    from scripts.evaluate_models import Capture
 
     question, request_id = item["question"], f"pack-{item['question']['id']}"
     capture, usage = Capture(), logging.getLogger("teacherai.ai_usage")
@@ -205,7 +213,8 @@ async def run_question(item: dict, services, settings, teacher: dict) -> dict:
            "trap_tags": (teacher.get(question["id"]) or {}).get("trap_tags", []), "reading": {}}
     started = perf_counter()
     try:
-        token = begin_accounting(request_id, settings, _NullTracker(), "eval", max_calls=MAX_CALLS["vision"])
+        # TA-005C: açık offline kapsam (kendi çağrı tavanı; kullanıcı kotası yok). USD tavanı run() içinde.
+        token = begin_offline_accounting(request_id, settings, max_calls=MAX_CALLS["vision"])
         try:
             analysis = await services.analyze(item["image"], request_id)
         finally:
@@ -213,7 +222,7 @@ async def run_question(item: dict, services, settings, teacher: dict) -> dict:
         row["decision"] = analysis.integrity.decision if analysis.integrity else None
         row["reading"] = reading_scores(question["reading"], analysis)
         if analysis.integrity is not None and analysis.integrity.solvable:
-            token = begin_accounting(request_id, settings, _NullTracker(), "eval", max_calls=MAX_CALLS["lessons"])
+            token = begin_offline_accounting(request_id, settings, max_calls=MAX_CALLS["lessons"])
             try:
                 lesson = await services.generate(analysis, request_id)
             finally:
@@ -236,7 +245,13 @@ def command(args) -> str:
     effort = f" --reasoning-effort {args.reasoning_effort}" if args.reasoning_effort else ""
     return ("python -m scripts.evaluate_models pack --allow-paid --max-usd <onaylı USD> --max-calls <üst sınır>"
             + (f" --model {args.model}" if args.model else "") + effort + (f" --lesson-model {args.lesson_model}" if args.lesson_model else "")
-            + (" --provider anthropic" if getattr(args, "provider", "openai") == "anthropic" else ""))
+            + (" --provider anthropic" if getattr(args, "provider", "openai") == "anthropic" else "")
+            + (" --vision-provider anthropic --pack-images-to-anthropic"
+               if getattr(args, "vision_provider", "openai") == "anthropic" else ""))
+
+
+def _label(provider):
+    return "Anthropic" if provider == "anthropic" else "OpenAI"
 
 
 async def run(args, settings, services_factory=Services, out_root: Path = RUNS) -> int:
@@ -246,8 +261,10 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     vision_model, lesson_model = args.model or settings.openai_vision_model, args.lesson_model or settings.openai_lesson_model
     if args.reasoning_effort:
         validate_effort(vision_model, args.reasoning_effort)
-    if getattr(args, "provider", "openai") == "anthropic":
-        print("Sağlayıcı: ders Anthropic, Vision OpenAI (Anthropic Vision şeması uyumsuz; scripts/anthropic_schema_compat.py).")
+    lesson_provider, vision_provider = getattr(args, "provider", "openai"), getattr(args, "vision_provider", "openai")
+    if "anthropic" in (lesson_provider, vision_provider):
+        print(f"Sağlayıcı: ders {_label(lesson_provider)}, Vision {_label(vision_provider)}. Fallback yok; "
+              "öğretmen anahtarı ve okuma referansı sağlayıcıya gönderilmez.")
     runs, missing = plan()
     estimate = upper_usd(runs, vision_model, lesson_model, prices)
     calls = len(runs) * (MAX_CALLS["vision"] + MAX_CALLS["lessons"])
@@ -271,7 +288,9 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     efforts = {Operation.VISION: args.reasoning_effort} if args.reasoning_effort else {}
     run_settings = settings.model_copy(update={"pricing_version": version, "model_prices": prices,
                                                "reasoning_effort_by_operation": efforts})
-    extra = {"lesson_provider": "anthropic"} if getattr(args, "provider", "openai") == "anthropic" else {}
+    extra = {"lesson_provider": "anthropic"} if lesson_provider == "anthropic" else {}
+    if vision_provider == "anthropic":
+        extra |= {"vision_provider": "anthropic", "pack_images_to_anthropic": bool(getattr(args, "pack_images_to_anthropic", False))}
     services = services_factory(run_settings, vision_model, lesson_model, args.reasoning_effort, **extra)
     teacher = {entry.id: entry.model_dump() for entry in key.entries} if key else {}
     per_question = estimate / len(runs)
@@ -297,3 +316,64 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     print(f"Çıktı: {out} (Git dışı). Yalnız özet rapor commit'lenir.")
     return 0 if stopped is None else 4
+
+
+# --------------------------------------------------------------------------- TA-005C: hazırlık raporu (çağrı yok)
+
+# Ölçüm boyutları ve bugünkü ölçülebilirlik durumu. "olculur": kod ve referans hazır; "anahtar_gerekli":
+# öğretmen anahtarı olmadan ölçülmez; "insan_degerlendirmesi": otomatik metrik yok; uydurulmaz.
+DIMENSIONS = {
+    "ocr_vision": ("olculur", "paket reading alanına karşı alan türüne göre yapısal eşleşme (reading_scores)"),
+    "math_expression_recognition": ("olculur", "ifade AST eşleşmesi (integrity/expression.py)"),
+    "source_consistency": ("olculur", "bütünlük kararı ve netleştirme oranı (integrity.decision)"),
+    "diagram_interpretation": ("kismi", "visual_elements bayrakları; grafik ekseni için yapısal referans yok"),
+    "requested_answer_correctness": ("anahtar_gerekli", "öğretmen anahtarı expected_choice ile; modelden türetilmez"),
+    "lesson_generation": ("olculur", "ders üretimi, MathAI doğrulaması, sonuç sınıfları"),
+    "method_suitability": ("insan_degerlendirmesi", "yöntem denetimi yalnız kanıt düzeyi verir; uygunluk öğretmen kararıdır"),
+    "student_interaction": ("olculur_smoke", "run komutu: ipucunda cevap sızıntısı (sentetik smoke seti; gerçek kalite değil)"),
+    "latency": ("olculur", "soru başına uçtan uca süre, p50/p95"),
+    "token_usage": ("olculur", "ai_usage satırları; bilinmeyen kullanım None kalır"),
+    "estimated_cost": ("olculur", "katalog fiyatı; fiyatsız model veya bilinmeyen kullanım için None"),
+}
+
+
+def readiness(manifest_path: Path = MANIFEST, images: Path = IMAGES) -> dict:
+    """Gerçek değerlendirmeye hazırlık: denge, eksik görsel, anahtar ve sağlayıcı desteği. Sağlayıcı çağrısı yok."""
+    from collections import Counter
+
+    from apps.api.app.core import model_catalog
+    from apps.api.app.core.operations import Operation
+    from apps.api.app.core.providers import SUPPORTED_OPERATIONS
+
+    questions = json.loads(PACK.read_text(encoding="utf-8"))["questions"]
+    try:
+        runs, missing = plan(manifest_path, images)
+        image_error = None
+    except ValueError as error:
+        runs, missing, image_error = [], sorted(q["id"] for q in questions), str(error)
+    try:
+        key = load_key()
+        key_status = f"{len(key.entries)} satır" if key else "bekleniyor"
+    except (ValueError, OSError) as error:  # geçersiz anahtar (ValidationError dahil) raporlanır, yok sayılmaz
+        key, key_status = None, f"geçersiz: {type(error).__name__}"
+    keyed = {entry.id for entry in key.entries} if key else set()
+    by_subject = Counter(q["subject"] for q in questions)
+    return {
+        "pack_questions": len(questions),
+        "subjects": dict(sorted(by_subject.items())),
+        "balanced": len(set(by_subject.values())) == 1,
+        "images_ready": len(runs),
+        "images_missing": missing,
+        "image_error": image_error,
+        "answer_key": key_status,
+        "answer_key_missing": sorted({q["id"] for q in questions} - keyed),
+        "answer_key_separate_from_model_inputs": True,
+        "dimensions": {name: {"status": status, "basis": basis} for name, (status, basis) in DIMENSIONS.items()},
+        "providers": {provider: sorted(str(op) for op in ops) for provider, ops in SUPPORTED_OPERATIONS.items()},
+        "models": {name: {"provider": entry["provider"], "priced": bool(entry.get("usd_per_million_tokens")),
+                          "vision": model_catalog.supports(name, Operation.VISION),
+                          "lessons": model_catalog.supports(name, Operation.LESSONS)}
+                   for name, entry in sorted(model_catalog.catalog()["models"].items())},
+        "lifecycle": model_catalog.lifecycle_report(),
+        "real_accuracy_measured": False,
+    }

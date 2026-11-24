@@ -2,6 +2,8 @@ import json
 import sys
 import time
 
+READY = "__mathai_ready__"
+
 
 def main():
     if sys.platform == "linux":
@@ -12,6 +14,9 @@ def main():
     from ..lessons.schemas import LessonPlan
     from .service import MathAIService
 
+    # TA-005C: başlatma (yorumlayıcı + içe aktarma) bitti. Üst süreç zaman aşımında bu satırı görüp
+    # görmediğine göre başlatma gecikmesini hesaplama zaman aşımından ayırır.
+    print(READY, flush=True)
     operation, data = json.load(sys.stdin)
     started = time.perf_counter()  # içe aktarma sonrası: yalnız hesaplama
     service = MathAIService()

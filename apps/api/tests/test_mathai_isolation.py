@@ -68,8 +68,13 @@ def test_queue_wait_timeout_is_separate_from_compute_timeout(monkeypatch):
 
 
 @pytest.mark.parametrize(("error", "code"), [
-    (subprocess.TimeoutExpired(["worker"], 8.0), "mathai_timeout"),
+    # TA-005C: hazır satırı görüldüyse hesaplama zaman aşımı, görülmediyse başlatma gecikmesi.
+    (subprocess.TimeoutExpired(["worker"], 8.0, output=b"__mathai_ready__\n"), "mathai_timeout"),
+    (subprocess.TimeoutExpired(["worker"], 8.0, output="__mathai_ready__\n"), "mathai_timeout"),
+    (subprocess.TimeoutExpired(["worker"], 8.0), "mathai_startup_timeout"),
+    (subprocess.TimeoutExpired(["worker"], 8.0, output=b""), "mathai_startup_timeout"),
     (subprocess.CalledProcessError(1, ["worker"]), "mathai_error"),
+    (subprocess.CalledProcessError(-24, ["worker"]), "mathai_error"),  # RLIMIT_CPU sinyali: işçi hatası
     (OSError("spawn"), "mathai_error"),
 ])
 def test_failures_have_distinct_codes_and_release_the_slot(monkeypatch, error, code):
@@ -127,3 +132,36 @@ def test_api_returns_busy_code_and_retry_after():
         response = client.post("/api/v1/lessons/generate", json={"analysis_id": analysis.request_id})
     assert (response.status_code, response.json()["error"]) == (503, "mathai_busy")
     assert response.headers["Retry-After"] == "2"
+
+
+def test_worker_announces_readiness_before_reading_input_and_output_still_parses():
+    """TA-005C: gerçek alt süreç; hazır satırı ilk satırdır, zarf son satırdır."""
+    math = IsolatedMathAI(max_processes=1, max_waiting=0)
+    assert math.check_answer("2x=8", "4", "x")[0]
+    assert math.timeout_seconds == 8.0 and math.last_timing["startup_ms"] >= 0
+
+
+def test_unparseable_worker_output_is_a_worker_failure(monkeypatch):
+    def garbage(*args, **kwargs):
+        return subprocess.CompletedProcess(args, 0, stdout="__mathai_ready__\nbozuk", stderr="")
+
+    monkeypatch.setattr(isolated.subprocess, "run", garbage)
+    with pytest.raises(MathAIUnavailable) as caught:
+        IsolatedMathAI(max_processes=1, max_waiting=0).check_answer("2x=8", "4", "x")
+    assert caught.value.code == "mathai_error"
+
+
+def test_startup_timeout_has_its_own_public_code():
+    from fastapi.testclient import TestClient
+
+    from apps.api.app.main import create_app
+
+    app = create_app()
+
+    @app.get("/__startup")
+    def boom():
+        raise MathAIUnavailable("mathai_startup_timeout")
+
+    response = TestClient(app).get("/__startup")
+    assert (response.status_code, response.json()["error"]) == (503, "mathai_startup_timeout")
+    assert "Retry-After" not in response.headers

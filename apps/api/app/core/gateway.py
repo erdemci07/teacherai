@@ -9,14 +9,23 @@ Buradan yalnızca izin verilen üst veri çıkar. Her sağlayıcı çağrısı:
 5. rezervasyonu en fazla bir kez, sonuç kuralına göre iade eder.
 Kota, idempotency ve hesap silme denetimi ``core/admission.py`` ve ``core/usage.py`` ile bu katmandadır;
 adaptör bunları atlayamaz.
+
+TA-005C: muhasebe kapsamı zorunludur. İki tür vardır ve ikisi de açıkça açılır:
+- ``begin_accounting`` (production): ``core/admission.py`` açar (kimlik, kota, idempotency, hesap silme
+  denetiminden sonra). Her çağrı kullanıcı ve küresel çıktı rezervasyonu yapar. Çağrı tavanı her zaman
+  tanımlıdır: ``max_calls`` verilmezse işlemin mantıksal istek tavanı (``Settings.provider_call_budget``).
+- ``begin_offline_accounting`` (değerlendirme/test): kendi çağrı tavanı ve isteğe bağlı USD tavanı vardır,
+  kullanıcı kotasına yazmaz. Production/staging ortamında veya Cloud Run'da (``K_SERVICE``) açılamaz.
+Kapsam yoksa çağrı ``AccountingScopeRequired`` ile reddedilir; adaptöre hiç gidilmez.
 """
 
 import json
 import logging
+import os
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from time import perf_counter
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 from starlette.concurrency import run_in_threadpool
 
@@ -33,7 +42,6 @@ from .ai_outcomes import (
 )
 from .ai_port import ProviderAdapter, ProviderRequest, Usage, issue
 from .operations import Operation, validate_effort
-from .settings import get_settings
 
 logger = logging.getLogger("teacherai.ai_usage")
 
@@ -45,12 +53,25 @@ class Accounting:
     tracker: object
     uid: str
     calls: int = 0
-    # TA-003: mantıksal istek başına çağrı tavanı (None: sınırsız değil, eski çağıranlar için tanımsız).
+    # TA-003: mantıksal istek başına çağrı tavanı. TA-005C: None sınırsız demek değildir; production
+    # kapsamında işlemin mantıksal istek tavanı (Settings.provider_call_budget) uygulanır.
     max_calls: int | None = None
+    kind: Literal["production", "offline"] = "production"
+    max_usd: float | None = None  # yalnız offline: tahmini USD tavanı (kesin harcama sınırı değildir)
+    spent_usd: float = 0.0
+    unpriced_calls: int = 0  # maliyeti bilinmeyen çağrı; USD tavanı varken sonraki çağrıyı durdurur
 
 
 class ProviderCallBudgetExhausted(Exception):
     """İstek başına sağlayıcı çağrısı tavanı doldu; yeni ücretli çağrı yapılmaz (503 / ai_call_budget_exhausted)."""
+
+
+class AccountingScopeRequired(RuntimeError):
+    """Sağlayıcı çağrısı açık bir muhasebe kapsamı olmadan denendi; adaptör çağrılmadı."""
+
+
+class OfflineAccountingNotAllowed(RuntimeError):
+    """Offline (değerlendirme/test) kapsamı production, staging veya Cloud Run'da açılamaz."""
 
 
 @dataclass
@@ -65,14 +86,35 @@ class ProviderReply:
 
 
 _current = ContextVar("provider_accounting", default=None)
+# İşlem → ``Settings.provider_call_budget`` etkinliği (tavanı verilmemiş production kapsamı için).
+_ACTIVITY = {Operation.VISION: "analyze", Operation.LESSONS: "generate", Operation.INTERACTION: "interact"}
 
 
 def begin_accounting(request_id, settings, tracker, uid, max_calls=None):
+    """Production kapsamı: kullanıcıya bağlı rezervasyon ve çağrı tavanı."""
+    if tracker is None or not uid:
+        raise AccountingScopeRequired("Production kapsamı kullanım izleyicisi ve kullanıcı ister.")
     return _current.set(Accounting(request_id, settings, tracker, uid, max_calls=max_calls))
 
 
+def begin_offline_accounting(label: str, settings, *, max_calls: int, max_usd: float | None = None):
+    """Değerlendirme veya test kapsamı: kendi çağrı/USD tavanı; kullanıcı kotası ve rezervasyon yoktur."""
+    if getattr(settings, "environment", None) in {"production", "staging"} or os.getenv("K_SERVICE"):
+        raise OfflineAccountingNotAllowed("Offline muhasebe production/staging veya Cloud Run'da açılamaz.")
+    if not isinstance(max_calls, int) or isinstance(max_calls, bool) or max_calls < 1:
+        raise ValueError("Offline kapsam pozitif bir çağrı tavanı ister.")
+    if max_usd is not None and not max_usd > 0:
+        raise ValueError("Offline USD tavanı pozitif olmalı.")
+    return _current.set(Accounting(label, settings, None, "offline", max_calls=max_calls, kind="offline",
+                                   max_usd=max_usd))
+
+
+def current_scope() -> Accounting | None:
+    return _current.get()
+
+
 def calls_remaining() -> int | None:
-    """Bu istekte kalan sağlayıcı çağrısı hakkı; kapsam veya tavan yoksa None."""
+    """Bu istekte kalan sağlayıcı çağrısı hakkı; kapsam yoksa veya tavan işleme bağlıysa None."""
     scope = _current.get()
     if scope is None or scope.max_calls is None:
         return None
@@ -81,6 +123,13 @@ def calls_remaining() -> int | None:
 
 def end_accounting(token):
     _current.reset(token)
+
+
+def _ceiling(scope: Accounting, operation: Operation) -> int:
+    if scope.max_calls is not None:
+        return scope.max_calls
+    budget = scope.settings.provider_call_budget(_ACTIVITY[operation])
+    return budget if budget is not None else 1
 
 
 def _raise_for(outcome: Outcome, reason: str | None):
@@ -124,16 +173,31 @@ def _price(event, settings):
     event["pricing_version"] = settings.pricing_version
 
 
+def _refuse(scope, operation, purpose, reason, **extra):
+    logger.info(json.dumps({"event": "ai_call_refused", "reason": reason, "operation": operation, "purpose": purpose,
+                            "request_id": scope.request_id if scope else None,
+                            "accounting": scope.kind if scope else None, **extra},
+                           separators=(",", ":"), default=str))
+
+
 async def invoke(adapter: ProviderAdapter, request: ProviderRequest, *, validate: Callable | None = None,
                  purpose: str = "primary") -> ProviderReply:
-    """Ortak katman: tavan, rezervasyon, reasoning, geçiş belgesi, şema doğrulaması, günlük ve iade."""
+    """Ortak katman: kapsam, tavan, rezervasyon, reasoning, geçiş belgesi, şema doğrulaması, günlük ve iade."""
     scope = _current.get()
-    settings = scope.settings if scope else get_settings()
     operation = Operation(request.operation)
-    if scope and scope.max_calls is not None and scope.calls >= scope.max_calls:
+    if scope is None:
+        _refuse(None, operation, purpose, "no_accounting_scope")
+        raise AccountingScopeRequired("Sağlayıcı çağrısı muhasebe kapsamı olmadan yapılamaz.")
+    settings = scope.settings
+    ceiling = _ceiling(scope, operation)
+    if scope.calls >= ceiling:
         logger.info(json.dumps({"event": "ai_call_budget_exhausted", "request_id": scope.request_id,
                                 "operation": operation, "purpose": purpose, "calls": scope.calls,
-                                "max_calls": scope.max_calls}, separators=(",", ":"), default=str))
+                                "max_calls": ceiling, "accounting": scope.kind}, separators=(",", ":"), default=str))
+        raise ProviderCallBudgetExhausted
+    if scope.max_usd is not None and (scope.unpriced_calls or scope.spent_usd >= scope.max_usd):
+        _refuse(scope, operation, purpose, "offline_usd_budget", spent_usd=round(scope.spent_usd, 6),
+                unpriced_calls=scope.unpriced_calls)
         raise ProviderCallBudgetExhausted
     limit = settings.max_output_tokens_by_operation[operation]
     effort = settings.reasoning_effort_by_operation.get(operation)
@@ -141,15 +205,16 @@ async def invoke(adapter: ProviderAdapter, request: ProviderRequest, *, validate
         validate_effort(request.model, effort)
     request = ProviderRequest(operation, request.model, request.user, request.system, request.schema,
                               request.timeout, limit, effort or None)
-    attempt = scope.calls if scope else 0
+    attempt = scope.calls
     reservation = None
-    if scope:
+    if scope.kind == "production":
         reservation = await run_in_threadpool(scope.tracker.reserve_output, scope.uid, limit)
-        scope.calls += 1
+    scope.calls += 1
     started = perf_counter()
     event = {
         "event": "ai_usage",
-        "request_id": scope.request_id if scope else None,
+        "request_id": scope.request_id,
+        "accounting": scope.kind,
         "operation": operation,
         "purpose": purpose,
         "provider": adapter.name,
@@ -207,7 +272,18 @@ async def parse_response(client, operation, *, timeout: float | None = None, val
 
 
 async def _settle(scope, reservation, limit, outcome, usage: Usage, event, strict=False):
-    """Kullanılmayan rezervasyonu bir kez iade eder; tüketimi bilinmeyen sonuçta korur."""
+    """Kullanılmayan rezervasyonu bir kez iade eder; tüketimi bilinmeyen sonuçta korur.
+
+    Offline kapsamda rezervasyon yoktur; maliyet kapsamın USD sayacına yazılır, bilinmiyorsa sayılır.
+    """
+    if scope.kind == "offline":
+        cost = event.get("estimated_usd")
+        if cost is None:
+            scope.unpriced_calls += 1
+        else:
+            scope.spent_usd += cost
+        event["reservation"] = "offline"
+        return
     output = usage.output
     if not reservation or outcome in KEEP_RESERVATION or output is None:
         event["reservation"] = "kept" if reservation else "none"

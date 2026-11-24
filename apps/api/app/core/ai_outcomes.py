@@ -77,3 +77,34 @@ class AITimeoutError(AIOutcomeError):
 
 # Rezervasyon kuralı: tüketimi bilinmeyen sonuçlarda rezervasyon korunur.
 KEEP_RESERVATION = {Outcome.TIMEOUT}
+
+
+class ProviderFailure(StrEnum):
+    """TA-005C: ``provider_error`` sonucunun kanonik nedeni (ai_usage ``outcome_reason``).
+
+    Adaptör HTTP durumunu ve sağlayıcının ``error.type`` değerini bu adlara indirir; ham hata gövdesi,
+    mesajı, anahtar veya görsel günlüğe yazılmaz. Alan sağlayıcıları (ders, Vision, etkileşim) bu adı
+    mevcut alan hatalarına (yapılandırma, yoğunluk, zaman aşımı, geçersiz yanıt) çevirir.
+    """
+
+    AUTHENTICATION = "authentication"          # 401
+    PERMISSION = "permission"                  # 403
+    BILLING = "billing"                        # 402
+    MODEL_NOT_FOUND = "model_not_found"        # 404
+    INVALID_REQUEST = "invalid_request"        # 400 (bağlam aşımı hariç)
+    CONTEXT_WINDOW_EXCEEDED = "context_window_exceeded"  # 400 "prompt is too long"
+    REQUEST_TOO_LARGE = "request_too_large"    # 413
+    RATE_LIMITED = "rate_limited"              # 429
+    OVERLOADED = "overloaded"                  # 529
+    PROVIDER_INTERNAL = "provider_internal"    # 500 api_error
+    PROVIDER_TIMEOUT = "provider_timeout"      # 504 / timeout_error (sunucu tarafı)
+    CONNECTION = "connection"                  # ağ/bağlantı hatası, yanıt yok
+    UNEXPECTED_STOP = "unexpected_stop"        # beklenmeyen stop_reason (tool_use, pause_turn, …)
+    UNKNOWN = "unknown"                        # sınıflanamayan durum
+
+
+# Alan hatası eşlemesi için gruplar.
+CONFIGURATION_FAILURES = frozenset({ProviderFailure.AUTHENTICATION, ProviderFailure.PERMISSION,
+                                    ProviderFailure.BILLING, ProviderFailure.MODEL_NOT_FOUND})
+TRANSIENT_FAILURES = frozenset({ProviderFailure.RATE_LIMITED, ProviderFailure.OVERLOADED,
+                                ProviderFailure.PROVIDER_INTERNAL, ProviderFailure.CONNECTION})

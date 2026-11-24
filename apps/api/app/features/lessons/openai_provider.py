@@ -3,10 +3,16 @@ import logging
 from pathlib import Path
 from time import perf_counter
 
+from apps.api.app.core.ai_outcomes import (
+    CONFIGURATION_FAILURES,
+    TRANSIENT_FAILURES,
+    AIOutcomeError,
+    ProviderFailure,
+)
 from apps.api.app.core.ai_port import ProviderRequest
 from apps.api.app.core.openai_adapter import OpenAIAdapter
 from apps.api.app.core.operations import Operation
-from apps.api.app.core.gateway import invoke
+from apps.api.app.core.gateway import calls_remaining, invoke
 from openai import (
     APIConnectionError,
     APIStatusError,
@@ -214,3 +220,64 @@ class AnthropicLessonProvider(OpenAILessonProvider):
         from apps.api.app.core.anthropic_adapter import AnthropicAdapter
 
         return AnthropicAdapter(self.api_key, transport=self.transport)
+
+    async def generate_lesson_plan(self, analysis: VisionAnalysis, correction_feedback: str | None = None,
+                                   teaching_context=None, request_id: str | None = None) -> LessonProviderResult:
+        """TA-005C §3: OpenAI yoluyla aynı bağlam ve aynı tek acil bağlam yeniden denemesi.
+
+        Yeniden deneme yalnız güvenilir sınıflanmış bağlam aşımında (400 "prompt is too long") ve
+        mantıksal istek tavanında hak kaldıysa yapılır; çağrı geçitte sayılır.
+        """
+        started = perf_counter()
+        if not self.api_key:
+            raise LessonProviderConfigurationError
+        context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
+        purpose = "lessons.correction" if correction_feedback else "lessons.initial"
+        try:
+            response = await self._request_lesson(None, context, purpose)
+        except AIOutcomeError as exc:
+            if _failure(exc) != ProviderFailure.CONTEXT_WINDOW_EXCEEDED:
+                mapped = _lesson_error(exc, self, started, request_id)
+                if mapped is exc:
+                    raise
+                raise mapped from exc
+            if calls_remaining() == 0:
+                raise LessonContextTooLargeError from exc
+            emergency = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "emergency")
+            logger.warning("Anthropic Lesson context exceeded; retrying with emergency compact context request_id=%s "
+                           "first_size=%s retry_size=%s", request_id or "unknown", context.metrics.size_bytes,
+                           emergency.metrics.size_bytes)
+            try:
+                response = await self._request_lesson(None, emergency, "lessons.context_retry")
+            except AIOutcomeError as retry:
+                if _failure(retry) == ProviderFailure.CONTEXT_WINDOW_EXCEEDED:
+                    raise LessonContextTooLargeError from retry
+                mapped = _lesson_error(retry, self, started, request_id)
+                if mapped is retry:
+                    raise
+                raise mapped from retry
+        return LessonProviderResult(response.output_parsed, self.name, self.model)
+
+
+def _failure(exc: AIOutcomeError) -> str | None:
+    """Yalnız sınıflanmış ``provider_error`` sonucunun nedeni; diğer sonuç sınıfları için None."""
+    return exc.reason if type(exc) is AIOutcomeError else None
+
+
+def _lesson_error(exc: AIOutcomeError, provider, started, request_id):
+    """Anthropic ``provider_error`` nedenini OpenAI yolundaki alan hatalarına eşler; diğer sonuçlar aynen kalır."""
+    reason = _failure(exc)
+    if reason is None:
+        return exc
+    logger.warning("Anthropic Lesson request failed reason=%s provider=%s model=%s request_id=%s duration_ms=%s",
+                   reason, provider.name, provider.model, request_id or "unknown",
+                   round((perf_counter() - started) * 1000))
+    if reason in CONFIGURATION_FAILURES:
+        return LessonProviderConfigurationError()
+    if reason in TRANSIENT_FAILURES:
+        return LessonProviderUnavailableError()
+    if reason == ProviderFailure.PROVIDER_TIMEOUT:
+        return LessonProviderTimeoutError()
+    if reason in {ProviderFailure.INVALID_REQUEST, ProviderFailure.REQUEST_TOO_LARGE}:
+        return InvalidLessonPlanError()
+    return exc  # beklenmeyen stop_reason / bilinmeyen: ai_provider_error olarak kalır

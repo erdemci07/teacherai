@@ -4,7 +4,10 @@
   (``queue_timeout_seconds``) hesaplama zaman aşımından (``timeout_seconds``) ayrıdır; bekleyen sayısı
   ``max_waiting`` ile sınırlıdır.
 - **Hata sınıfları:** ``mathai_busy`` (kuyruk dolu ya da bekleme aşıldı; 503 + ``Retry-After``),
-  ``mathai_timeout`` (hesaplama sınırı aşıldı; 503), ``mathai_error`` (alt süreç hatası; 503).
+  ``mathai_startup_timeout`` (TA-005C: süreç toplam sınır içinde başlatmayı bitiremedi; 503),
+  ``mathai_timeout`` (başlatma bitti, hesaplama sınırı aştı; 503), ``mathai_error`` (alt süreç hatası,
+  sinyal veya bozuk çıktı; 503). Ayrım worker'ın içe aktarmadan sonra yazdığı hazır satırına dayanır;
+  toplam sınır (``timeout_seconds``) değişmedi.
 - **Birleştirme:** ders hattı her ``reconcile_answer_choice`` çağrısından hemen sonra aynı planla
   ``verify`` çağırır. Uzlaştırma aynı süreçte doğrulamayı da hesaplar; sonuç, uzlaştırılmış planın
   kanonik JSON'una bağlı kısa ömürlü bir önbellekte tutulur ve aynı plan için ikinci süreç açılmaz.
@@ -14,6 +17,7 @@
 """
 
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -27,6 +31,7 @@ from fastapi import HTTPException
 from ..lessons.schemas import LessonPlan
 from .parser import MathParseError
 from .schemas import VerificationResult
+from .worker import READY
 
 
 class MathAIUnavailable(HTTPException):
@@ -36,6 +41,16 @@ class MathAIUnavailable(HTTPException):
         headers = {"Retry-After": str(retry_after)} if retry_after else None
         super().__init__(503, "Symbolic computation unavailable.", headers=headers)
         self.code = code
+
+
+logger = logging.getLogger(__name__)
+
+
+def _ready(output) -> bool:
+    """Zaman aşımına kadar worker hazır satırını yazdı mı? (TimeoutExpired çıktısı bytes olabilir.)"""
+    if isinstance(output, bytes):
+        output = output.decode("utf-8", "replace")
+    return bool(output) and READY in output
 
 
 def _env_int(name, default):
@@ -66,10 +81,14 @@ class IsolatedMathAI:
             return
         with self._lock:
             if self._waiting >= self.max_waiting:
+                logger.warning(json.dumps({"event": "mathai_unavailable", "code": "mathai_busy", "reason": "queue_full",
+                                           "waiting": self._waiting, "max_waiting": self.max_waiting}))
                 raise MathAIUnavailable("mathai_busy", self.retry_after_seconds)
             self._waiting += 1
         try:
             if not self._slots.acquire(timeout=self.queue_timeout_seconds):
+                logger.warning(json.dumps({"event": "mathai_unavailable", "code": "mathai_busy", "reason": "queue_wait",
+                                           "queue_timeout_seconds": self.queue_timeout_seconds}))
                 raise MathAIUnavailable("mathai_busy", self.retry_after_seconds)
         finally:
             with self._lock:
@@ -89,19 +108,31 @@ class IsolatedMathAI:
                 check=True,
             )
         except subprocess.TimeoutExpired as exc:
-            raise MathAIUnavailable("mathai_timeout") from exc
+            code = "mathai_timeout" if _ready(exc.stdout) else "mathai_startup_timeout"
+            self._report(code, operation, started)
+            raise MathAIUnavailable(code) from exc
         except (subprocess.CalledProcessError, OSError) as exc:
+            self._report("mathai_error", operation, started, returncode=getattr(exc, "returncode", None))
             raise MathAIUnavailable("mathai_error") from exc
         finally:
             self._slots.release()
         try:
-            envelope = json.loads(completed.stdout)
-        except ValueError as exc:
+            lines = [line for line in completed.stdout.splitlines() if line.strip()]
+            envelope = json.loads(lines[-1])
+        except (ValueError, IndexError) as exc:
+            self._report("mathai_error", operation, started, returncode=0)
             raise MathAIUnavailable("mathai_error") from exc
         total = (time.perf_counter() - started) * 1000
         compute = envelope["timing"]["compute_ms"]
         self.last_timing = {"total_ms": total, "compute_ms": compute, "startup_ms": total - compute}
         return envelope["value"]
+
+    @staticmethod
+    def _report(code, operation, started, returncode=None):
+        """Yalnız sınıf, işlem adı, süre ve çıkış kodu; plan içeriği veya öğrenci verisi yazılmaz."""
+        logger.warning(json.dumps({"event": "mathai_unavailable", "code": code, "operation": operation,
+                                   "elapsed_ms": round((time.perf_counter() - started) * 1000),
+                                   "returncode": returncode}, separators=(",", ":")))
 
     @staticmethod
     def _key(plan_json):
