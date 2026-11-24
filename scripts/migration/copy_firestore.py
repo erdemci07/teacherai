@@ -1,14 +1,14 @@
-"""Firestore koleksiyonlarını projeler arasında uzlaştırır, kopyalar ve doğrular (TA-005 §6.2, TA-005B §2).
+"""Firestore koleksiyonlarını projeler arasında uzlaştırır, kopyalar ve doğrular (TA-005 §6.2, TA-005B §2, TA-005C §11).
 
 ``--authority source|target`` her modda zorunludur ve varsayılanı yoktur. Geçişten önce eski proje,
 geçişten sonra yeni proje yetkilidir; bayrak bu projenin betikteki rolünü (``--source``/``--target``) seçer.
 
 Kuru koşu (varsayılan; hiçbir şey yazmaz):
     python -m scripts.migration.copy_firestore --source math-ai-07 --target teacherai-07 --authority source
-Gerçek kopya:
-    ... --execute --confirm-target teacherai-07
 İki yönlü fark raporu (yalnız okur; ekrana yalnız sayı yazar):
     ... --verify [--auth-uids target] --report-out fark.json
+Gerçek kopya:
+    ... --execute --confirm-target teacherai-07 [--overwrite-from fark.json]
 Hedefte fazla belgeyi budama (yalnız ``--verify`` raporunda görülmüş ve o andan beri değişmemiş belgeler):
     ... --prune --confirm-prune teacherai-07 --prune-from fark.json [--execute]
 Hedef eski proje ise yazma ve budama ayrıca ``--allow-reverse`` ister.
@@ -19,10 +19,23 @@ Uzlaştırma kuralları:
 - Kullanıcıya ait koleksiyonda sahibi yetkili tarafın Auth'unda bulunmayan belge yazılmaz (30 günlük
   TTL ile silme kaydı kaybolsa da hesap Auth'ta yoktur). Sahipsiz paylaşımlar ayrıca sayılır ve
   ``--copy-ownerless-shares`` verilmedikçe yazılmaz.
-- Yetkili taraf kaynaksa: yalnız kaynakta olan yazılır; çakışmada kaynak değeri yazılır ve ezilen hedef
-  içeriğinin özeti raporlanır. Yetkili taraf hedefse: hedef hiç ezilmez; yalnız kaynakta olan belge
-  hedefte silinmiş olabileceği için (ör. hafıza sıfırlama, paylaşım kaldırma) yazılmaz, sayılır.
+- TA-005C: iki tarafta sahibi farklı olan belge (``owner_mismatch``) hiçbir yöne yazılmaz ve raporlanır.
+- Yetkili taraf kaynaksa: yalnız kaynakta olan yazılır. TA-005C: çakışan (iki tarafta farklı) hedef belge
+  yalnız ``--overwrite-from`` ile verilen ``--verify`` raporunda aynı hedef ve kaynak özetiyle onaylanmışsa
+  ezilir; aksi hâlde ``conflict_held_unapproved`` sayılır ve yazılmaz. Böylece beklenmeyen çakışma her
+  zaman yıkıcı işlemden önce raporda görünür. Yetkili taraf hedefse: hedef hiç ezilmez; yalnız kaynakta olan
+  belge hedefte silinmiş olabileceği için (ör. hafıza sıfırlama, paylaşım kaldırma) yazılmaz, sayılır.
 - Hedefte fazla belge hiçbir zaman otomatik silinmez.
+- TA-005C eşzamanlılık: her yazma ve silme, hedef belgeyi aynı Firestore işleminde yeniden okur ve yalnız
+  karar anındaki özet hâlâ aynıysa uygulanır (yeni belge için "hâlâ yok"). Arada değişen hedef belge
+  ``skipped_target_changed`` / ``skipped_changed_before_delete`` sayılır. Kaynak belge yazmadan hemen önce
+  yeniden okunur; değiştiyse ``skipped_source_changed`` sayılır. Bu güvence projeler arası tek işlem
+  değildir: kaynak tarafı için iki projenin ``read_only`` bakım modunda olması gerekir (runbook).
+  Budama manifesti tek başına eşzamanlı değişikliğe karşı koruma sağlamaz; korumayı işlem içi yeniden
+  okuma sağlar.
+- TA-005C yetim alt koleksiyonlar: üst belgesi olmayan (yalnız alt koleksiyonu olan) yollar
+  ``list_documents`` ile bulunur, ``orphan_parent`` sayılır ve alt belgeler sahibi bilinmediği için
+  (``no_owner``) yazılmaz; yalnız belge kimliğinden sahiplenen koleksiyonlarda kimlik kuralı geçerlidir.
 - Çıktıda belge içeriği, UID veya e-posta yoktur; belge yolları sha256 ile özetlenir.
 Kimlik: Application Default Credentials. Emülatörde ``FIRESTORE_EMULATOR_HOST`` kullanılır.
 """
@@ -68,8 +81,8 @@ OWNER_FIELDS = {"lessons": "student_id", "practice_questions": "student_id", "pr
                 "lesson_analyses": "owner", "users": DOC_ID, "student_profiles": DOC_ID, "student_memories": DOC_ID,
                 "ai_daily_usage": HASHED, "ai_output_usage": HASHED}
 DELETIONS = "account_deletions"
-BATCH = 400
-BLOCKED = ("deleted_owner", "owner_not_in_auth", "no_owner", "ownerless_share")
+BATCH = 400  # işlem başına en çok 500 yazma; pay bırakılır
+BLOCKED = ("deleted_owner", "owner_not_in_auth", "no_owner", "ownerless_share", "owner_mismatch")
 
 
 def client(project):
@@ -126,6 +139,10 @@ def digest(data) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def _digest_of(snapshot) -> str | None:
+    return digest(snapshot.to_dict()) if snapshot is not None and snapshot.exists else None
+
+
 def path_hash(path: str) -> str:
     return hashlib.sha256(path.encode()).hexdigest()
 
@@ -167,19 +184,25 @@ class Policy:
         self._deleted_hashes = {owner_hash(uid) for uid in self.deleted}
         self._auth_hashes = None if auth is None else {owner_hash(uid) for uid in auth}
 
-    def status(self, path, data):
+    def owner(self, path, data):
+        """(sahip değeri, karşılaştırma kümeleri) ya da sahipsiz koleksiyon için None."""
         top, doc_id = path.split("/")[0], path.split("/")[1]
         field = OWNER_FIELDS.get(top)
         if field is None:
-            return "unowned"
+            return None
         if field == HASHED:
             value = (data or {}).get("owner_hash") or (doc_id.split("_", 1)[1] if "_" in doc_id else None)
-            deleted, known = self._deleted_hashes, self._auth_hashes
-        else:
-            value = doc_id if field == DOC_ID else (data or {}).get(field)
-            deleted, known = self.deleted, self.auth
+            return value, self._deleted_hashes, self._auth_hashes
+        value = doc_id if field == DOC_ID else (data or {}).get(field)
+        return value, self.deleted, self.auth
+
+    def status(self, path, data):
+        owner = self.owner(path, data)
+        if owner is None:
+            return "unowned"
+        value, deleted, known = owner
         if not value:
-            if top == "shared_solutions":
+            if path.split("/")[0] == "shared_solutions":
                 return "ok" if self.copy_ownerless_shares else "ownerless_share"
             return "no_owner"
         if value in deleted:
@@ -187,6 +210,19 @@ class Policy:
         if known is not None and value not in known:
             return "owner_not_in_auth"
         return "ok"
+
+    def pair_status(self, path, src_data, dst_data):
+        """TA-005C: iki taraf birlikte. Silinmiş sahip her zaman kazanır; iki tarafta sahip farklıysa
+        ``owner_mismatch``; aksi hâlde kaynak (yoksa hedef) belgenin durumu."""
+        sides = [data for data in (src_data, dst_data) if data is not None]
+        statuses = [self.status(path, data) for data in sides]
+        if "deleted_owner" in statuses:
+            return "deleted_owner"
+        if len(sides) == 2:
+            owners = [self.owner(path, data) for data in sides]
+            if owners[0] is not None and owners[0][0] != owners[1][0]:
+                return "owner_mismatch"
+        return statuses[0] if statuses else self.status(path, None)
 
 
 def decide(policy, status, source_digest, target_digest):
@@ -202,87 +238,132 @@ def decide(policy, status, source_digest, target_digest):
     return "conflict_overwrite" if policy.authority == "source" else "conflict_kept_target"
 
 
-def pages(collection, size):
-    query = collection.order_by("__name__").limit(size)
-    last = None
-    while True:
-        batch = list((query.start_after(last) if last else query).stream())
-        yield batch
-        if len(batch) < size:
-            return
-        last = batch[-1]
+def _chunks(items, size):
+    for start in range(0, len(items), size):
+        yield items[start:start + size]
 
 
-def walk(source, target, collection_path, policy, visit, size, inherited=None):
-    """Kaynak ve hedefteki bütün belgeleri (alt koleksiyonlar dahil) bir kez ziyaret eder.
+def _snapshots(db, paths):
+    return {snap.reference.path: snap for snap in db.get_all([db.document(path) for path in paths])}
 
-    Alt koleksiyon belgesi, üst düzey atasının sahiplik durumunu devralır.
+
+def walk(source, target, collection_path, policy, visit, size, inherited=None, orphan=None):
+    """Kaynak ve hedefteki bütün belgeleri (alt koleksiyonlar ve yetim alt koleksiyonlar dahil) bir kez ziyaret eder.
+
+    ``list_documents`` verisi olmayan ama alt koleksiyonu olan üst belgeleri de döndürür. Böyle bir yol iki
+    tarafta da yoksa belge olarak ziyaret edilmez; ``orphan(path)`` çağrılır ve alt koleksiyonları sahibi
+    bilinmeyen üst durumla gezilir. Alt koleksiyon belgesi, üst düzey atasının sahiplik durumunu devralır.
     """
-    for page in pages(source.collection(collection_path), size):
-        if not page:
-            continue
-        others = {snap.reference.path: snap for snap in target.get_all([target.document(s.reference.path) for s in page])}
-        _visit_all([(s.reference.path, s, others[s.reference.path]) for s in page],
-                   source, target, policy, visit, size, inherited)
-    for page in pages(target.collection(collection_path), size):  # yalnız hedefte olanlar
-        if not page:
-            continue
-        others = {snap.reference.path: snap for snap in source.get_all([source.document(s.reference.path) for s in page])}
-        _visit_all([(s.reference.path, others[s.reference.path], s) for s in page if not others[s.reference.path].exists],
-                   source, target, policy, visit, size, inherited)
-
-
-def _visit_all(items, source, target, policy, visit, size, inherited):
-    for path, src, dst in items:
-        src_data = src.to_dict() if src.exists else None
-        dst_data = dst.to_dict() if dst.exists else None
-        status = inherited or policy.status(path, src_data if src_data is not None else dst_data)
-        visit(path, status, src_data, dst_data)
-        children = {c.id for c in source.document(path).collections()} | {c.id for c in target.document(path).collections()}
-        for child in sorted(children):
-            walk(source, target, f"{path}/{child}", policy, visit, size, inherited=status)
+    listed = [ref.path for ref in source.collection(collection_path).list_documents(page_size=size)]
+    seen = set(listed)
+    listed += [ref.path for ref in target.collection(collection_path).list_documents(page_size=size)
+               if ref.path not in seen]
+    for chunk in _chunks(listed, size):
+        src, dst = _snapshots(source, chunk), _snapshots(target, chunk)
+        for path in chunk:
+            src_data = src[path].to_dict() if src[path].exists else None
+            dst_data = dst[path].to_dict() if dst[path].exists else None
+            if src_data is None and dst_data is None:
+                status = inherited or policy.pair_status(path, None, None)
+                if orphan:
+                    orphan(path)
+            else:
+                status = inherited or policy.pair_status(path, src_data, dst_data)
+                visit(path, status, src_data, dst_data)
+            children = {c.id for c in source.document(path).collections()} | {c.id for c in target.document(path).collections()}
+            for child in sorted(children):
+                walk(source, target, f"{path}/{child}", policy, visit, size, inherited=status, orphan=orphan)
 
 
 def deletion_uids(*clients):
     return {snap.id for db in clients for snap in db.collection(DELETIONS).stream()}
 
 
-def copy(source_id, target_id, collections, execute, policy, size=300, source=None, target=None):
+def _apply_writes(source, target, items, report):
+    """Koşullu yazma. ``items``: (yol, kaynak verisi, kaynak özeti, beklenen hedef özeti, rebind edilmiş veri).
+
+    Kaynak, işlemden hemen önce yeniden okunur. Hedef aynı Firestore işleminde okunur; yalnız beklenen
+    özet (yeni belge için None) hâlâ geçerliyse yazılır. İşlem çakışmada yeniden koşarsa sonuç baştan
+    hesaplanır.
+    """
+    from google.cloud import firestore
+
+    fresh = _snapshots(source, [item[0] for item in items])
+    ready = []
+    for path, _, src_digest, expected, data in items:
+        if _digest_of(fresh[path]) != src_digest:
+            report[pattern(path)]["skipped_source_changed"] += 1
+        else:
+            ready.append((path, expected, data))
+    if not ready:
+        return
+
+    @firestore.transactional
+    def apply(tx):
+        current = {snap.reference.path: snap for snap in tx.get_all([target.document(p) for p, _, _ in ready])}
+        written, changed = [], []
+        for path, expected, data in ready:
+            if _digest_of(current[path]) == expected:
+                tx.set(target.document(path), data)
+                written.append(path)
+            else:
+                changed.append(path)
+        return written, changed
+
+    written, changed = apply(target.transaction())
+    for path in written:
+        report[pattern(path)]["written"] += 1
+    for path in changed:
+        report[pattern(path)]["skipped_target_changed"] += 1
+
+
+def copy(source_id, target_id, collections, execute, policy, size=300, source=None, target=None, approved_overwrites=None):
+    """``approved_overwrites``: ``--verify`` raporundaki ``overwrite_manifest`` adaylarının
+    (yol özeti, hedef özeti, kaynak özeti) kümesi; yoksa hiçbir çakışma ezilmez."""
     if policy.auth is None:
         raise ValueError("Kopya için yetkili tarafın Auth UID listesi zorunludur.")
     source, target = source or client(source_id), target or client(target_id)
-    report, conflicts = defaultdict(Counter), []
-    state = {"batch": target.batch(), "pending": 0}
+    report, conflicts, pending = defaultdict(Counter), [], []
+    approved = approved_overwrites or set()
 
     def visit(path, status, src_data, dst_data):
         src_digest = None if src_data is None else digest(src_data)
         dst_digest = None if dst_data is None else digest(dst_data)
         action = decide(policy, status, src_digest, dst_digest)
+        if action == "conflict_overwrite" and (path_hash(path), dst_digest, src_digest) not in approved:
+            action = "conflict_held_unapproved"
         stats = report[pattern(path)]
         stats[action] += 1
         if action.startswith("conflict_"):
-            kept = action == "conflict_kept_target"
-            conflicts.append({"collection": pattern(path), "path_sha256": path_hash(path),
-                              ("source_digest_not_written" if kept else "replaced_target_digest"):
-                              src_digest if kept else dst_digest})
+            entry = {"collection": pattern(path), "path_sha256": path_hash(path)}
+            if action == "conflict_overwrite":
+                entry["replaced_target_digest"] = dst_digest
+            elif action == "conflict_kept_target":
+                entry["source_digest_not_written"] = src_digest
+            else:
+                entry |= {"held_target_digest": dst_digest, "held_source_digest": src_digest}
+            conflicts.append(entry)
         if action in ("write_new", "conflict_overwrite"):
-            stats["written" if execute else "would_write"] += 1
-            if execute:
-                state["batch"].set(target.document(path), rebind(src_data, target, stats))
-                state["pending"] += 1
-                if state["pending"] == BATCH:
-                    state["batch"].commit()
-                    state["batch"], state["pending"] = target.batch(), 0
+            if not execute:
+                stats["would_write"] += 1
+                return
+            pending.append((path, src_data, src_digest, dst_digest, rebind(src_data, target, stats)))
+            if len(pending) == BATCH:
+                _apply_writes(source, target, pending, report)
+                pending.clear()
+
+    def orphan(path):
+        report[pattern(path)]["orphan_parent"] += 1
 
     for name in collections:
-        walk(source, target, name, policy, visit, size)
-    if state["pending"]:
-        state["batch"].commit()
+        walk(source, target, name, policy, visit, size, orphan=orphan)
+    if pending:
+        _apply_writes(source, target, pending, report)
     return {"collections": {key: dict(value) for key, value in report.items()}, "conflicts": conflicts}
 
 
 def _diff(source, target, collections, policy, size):
-    report, candidates = defaultdict(Counter), []
+    report, prune_candidates, overwrite_candidates = defaultdict(Counter), [], []
 
     def visit(path, status, src_data, dst_data):
         stats = report[pattern(path)]
@@ -294,7 +375,7 @@ def _diff(source, target, collections, policy, size):
             stats["only_source"] += 1
         else:
             stats["same" if src_digest == dst_digest else "different"] += 1
-        if status in ("no_owner", "ownerless_share", "owner_not_in_auth"):
+        if status in ("no_owner", "ownerless_share", "owner_not_in_auth", "owner_mismatch"):
             stats[status] += 1
         if status == "deleted_owner":
             for side, data in (("source", src_data), ("target", dst_data)):
@@ -303,21 +384,33 @@ def _diff(source, target, collections, policy, size):
         stale = dst_digest is not None and (
             (src_digest is None and policy.authority == "source") or status == "deleted_owner")
         if stale:
-            candidates.append({"path_sha256": path_hash(path), "digest": dst_digest})
+            prune_candidates.append({"path_sha256": path_hash(path), "digest": dst_digest})
+        if (policy.authority == "source" and src_digest and dst_digest and src_digest != dst_digest
+                and status not in BLOCKED):
+            overwrite_candidates.append({"path_sha256": path_hash(path), "target_digest": dst_digest,
+                                         "source_digest": src_digest})
+
+    def orphan(path):
+        report[pattern(path)]["orphan_parent"] += 1
 
     for name in collections:
-        walk(source, target, name, policy, visit, size)
-    return {key: dict(value) for key, value in report.items()}, candidates
+        walk(source, target, name, policy, visit, size, orphan=orphan)
+    return {key: dict(value) for key, value in report.items()}, prune_candidates, overwrite_candidates
 
 
 def verify(source_id, target_id, collections, policy, size=300, source=None, target=None, now=None):
-    """İki yönlü fark raporu. ``prune_manifest`` yalnız rapor dosyasına yazılır; ekrana çıkmaz."""
+    """İki yönlü fark raporu. Manifestler yalnız rapor dosyasına yazılır; ekrana çıkmaz.
+
+    ``prune_manifest.candidates``: budanabilecek hedef belgeleri. ``prune_manifest.overwrite_candidates``:
+    yetkili kaynak altında ezilebilecek çakışmalar; ``--overwrite-from`` yalnız bunları kabul eder.
+    """
     source, target = source or client(source_id), target or client(target_id)
-    counts, candidates = _diff(source, target, collections, policy, size)
+    counts, candidates, overwrites = _diff(source, target, collections, policy, size)
     stamp = (now or dt.datetime.now(dt.UTC)).isoformat()
     return {"collections": counts, "prune_manifest": {
         "tool": REPORT_TOOL, "format": 1, "source": source_id, "target": target_id, "authority": policy.authority,
-        "collections": sorted(collections), "created_at": stamp, "candidates": candidates}}
+        "collections": sorted(collections), "created_at": stamp, "candidates": candidates,
+        "overwrite_candidates": overwrites}}
 
 
 def load_prune_report(path, source_id, target_id, now=None):
@@ -339,8 +432,46 @@ def load_prune_report(path, source_id, target_id, now=None):
     return manifest
 
 
+def load_overwrite_approvals(path, source_id, target_id, authority, now=None):
+    """TA-005C: ``--overwrite-from`` raporu; budama raporuyla aynı denetimler ve aynı yetki."""
+    try:
+        manifest = load_prune_report(path, source_id, target_id, now)
+    except SystemExit as error:
+        raise SystemExit(str(error).replace("Silme yapılmadı", "Yazma yapılmadı")
+                         .replace("Budama raporu", "Ezme onayı raporu")) from None
+    if manifest.get("authority") != authority or authority != "source":
+        raise SystemExit("Ezme onayı yalnız --authority source ile üretilmiş ve kullanılan rapordan gelir. Yazma yapılmadı.")
+    return {(item["path_sha256"], item["target_digest"], item["source_digest"])
+            for item in manifest.get("overwrite_candidates") or []}
+
+
+def _apply_deletes(target, items, stats):
+    """Koşullu silme: hedef belge aynı işlemde yeniden okunur; yalnız onaylı özet hâlâ geçerliyse silinir."""
+    from google.cloud import firestore
+
+    @firestore.transactional
+    def apply(tx):
+        current = {snap.reference.path: snap for snap in tx.get_all([target.document(p) for p, _ in items])}
+        deleted, changed = [], []
+        for path, expected in items:
+            if _digest_of(current[path]) == expected:
+                tx.delete(target.document(path))
+                deleted.append(path)
+            else:
+                changed.append(path)
+        return deleted, changed
+
+    deleted, changed = apply(target.transaction())
+    stats["pruned"] += len(deleted)
+    stats["skipped_changed_before_delete"] += len(changed)
+
+
 def prune(source_id, target_id, manifest, execute, policy, size=300, source=None, target=None):
-    """Yalnız raporda görülmüş ve özeti o andan beri değişmemiş hedef belgelerini siler."""
+    """Yalnız raporda görülmüş ve özeti o andan beri değişmemiş hedef belgelerini siler.
+
+    TA-005C: rapordan sonra değişen belge ziyarette ayıklanır; ziyaretle silme arasında değişen belge
+    işlem içi yeniden okumayla ayıklanır (``skipped_changed_before_delete``).
+    """
     if manifest.get("authority") != policy.authority:
         raise SystemExit("Budama raporu farklı bir --authority ile üretilmiş. Silme yapılmadı.")
     source, target = source or client(source_id), target or client(target_id)
@@ -356,20 +487,19 @@ def prune(source_id, target_id, manifest, execute, policy, size=300, source=None
             return
         key = (path_hash(path), digest(dst_data))
         if key in approved:
-            stats["pruned" if execute else "would_prune"] += 1
-            to_delete.append(path)
+            if not execute:
+                stats["would_prune"] += 1
+            to_delete.append((path, key[1]))
         else:
             stats["skipped_changed_since_report" if key[0] in approved_paths else "skipped_not_in_report"] += 1
 
     for name in manifest["collections"]:
         walk(source, target, name, policy, visit, size)
     if execute:  # en derin belge önce; alt koleksiyonu olan üst belge kendi kaydıyla silinir
-        for start in range(0, len(to_delete), BATCH):
-            batch = target.batch()
-            for path in sorted(to_delete, key=lambda p: -p.count("/"))[start:start + BATCH]:
-                batch.delete(target.document(path))
-            batch.commit()
-    return dict(stats)
+        ordered = sorted(to_delete, key=lambda item: -item[0].count("/"))
+        for chunk in _chunks(ordered, BATCH):
+            _apply_deletes(target, chunk, stats)
+    return {key: value for key, value in stats.items() if value}
 
 
 def guard(args):
@@ -383,6 +513,8 @@ def guard(args):
         raise SystemExit("Budama --prune --confirm-prune <hedef> --prune-from <rapor> ister. Silme yapılmadı.")
     if (args.execute or args.prune) and args.target == LEGACY_PROJECT and not args.allow_reverse:
         raise SystemExit(f"Hedef {LEGACY_PROJECT}: geri yönde yazma/silme yalnız --allow-reverse ile. Yazma yapılmadı.")
+    if getattr(args, "overwrite_from", None) and (args.verify or args.prune):
+        raise SystemExit("--overwrite-from yalnız kopya kipinde kullanılır.")
     unknown = sorted(set(args.collections) - set(ALLOWLIST))
     if unknown:
         raise SystemExit(f"İzin listesinde olmayan koleksiyon: {', '.join(unknown)}")
@@ -407,8 +539,9 @@ def main(argv=None):
     parser.add_argument("--confirm-target")
     parser.add_argument("--allow-reverse", action="store_true")
     parser.add_argument("--verify", action="store_true")
-    parser.add_argument("--report-out", help="--verify: sayılar ve budama manifestiyle tam rapor dosyası")
+    parser.add_argument("--report-out", help="--verify: sayılar ve manifestlerle tam rapor dosyası")
     parser.add_argument("--auth-uids", choices=["target"], help="--verify: hedef Auth'ta olmayan sahipleri say")
+    parser.add_argument("--overwrite-from", help="kopya: yalnız bu --verify raporunda onaylı çakışmaları ez")
     parser.add_argument("--prune", action="store_true")
     parser.add_argument("--confirm-prune")
     parser.add_argument("--prune-from")
@@ -425,7 +558,8 @@ def main(argv=None):
         if args.report_out:
             Path(args.report_out).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
         output = {"mode": "verify", "collections": result["collections"],
-                  "prune_candidates": len(result["prune_manifest"]["candidates"])}
+                  "prune_candidates": len(result["prune_manifest"]["candidates"]),
+                  "overwrite_candidates": len(result["prune_manifest"]["overwrite_candidates"])}
     elif args.prune:
         manifest = load_prune_report(args.prune_from, args.source, args.target)
         policy = Policy(args.authority, deleted)
@@ -434,8 +568,11 @@ def main(argv=None):
     else:
         authority_project = args.source if args.authority == "source" else args.target
         policy = Policy(args.authority, deleted, _auth_uids(authority_project), args.copy_ownerless_shares)
+        approved = (load_overwrite_approvals(args.overwrite_from, args.source, args.target, args.authority)
+                    if args.overwrite_from else None)
         output = {"mode": "execute" if args.execute else "dry_run",
-                  **copy(args.source, args.target, args.collections, args.execute, policy, args.page_size, source, target)}
+                  **copy(args.source, args.target, args.collections, args.execute, policy, args.page_size, source, target,
+                         approved_overwrites=approved)}
     print(json.dumps({"source": args.source, "target": args.target, "authority": args.authority, **output},
                      ensure_ascii=False, indent=2))
     return 0
