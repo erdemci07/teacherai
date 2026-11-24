@@ -14,6 +14,7 @@ import { ImagePreview } from './ImagePreview';
 import { UploadCard } from './UploadCard';
 import { TeacherBoard } from './TeacherBoard';
 import { LessonText } from './LessonText';
+import { LearningWorkspace } from './LearningWorkspace';
 import { SolutionFeedback } from './SolutionFeedback';
 import { ShareSolution } from './ShareSolution';
 import { BrandMark } from '../components/BrandMark';
@@ -233,7 +234,7 @@ export function SolveWorkspace() {
               <p>Matematiksel kontrolün sonucunu ve çözüm adımlarını aşağıda inceleyebilirsin.</p>
             </section>
             <div ref={lessonStartRef} className="lessonScrollTarget" aria-hidden="true" />
-            <TeacherBoard result={result} />
+            <LearningWorkspace board={<TeacherBoard result={result} />}>
             {mismatch && <p className="choiceMismatch" role="note">{mismatch}</p>}
             <section key={result.lesson.lesson_plan_id} className="afterSolutionActions" aria-label="Çözüm sonrası işlemler">
               <InteractionPanel lesson={result.lesson} />
@@ -242,6 +243,7 @@ export function SolveWorkspace() {
               {showText && <LessonText lesson={result.lesson} />}
               <SolutionFeedback result={result} />
             </section>
+            </LearningWorkspace>
             {process.env.NEXT_PUBLIC_TEACHERAI_DEBUG === 'true' && <details className="technicalDetails"><summary>Teknik detaylar</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>}
           </div>
         )}
