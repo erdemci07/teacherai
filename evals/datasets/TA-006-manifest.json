@@ -1,0 +1,23 @@
+{
+  "schema_name": "teacherai.dataset_manifest",
+  "version": "1.0.0",
+  "note": "TA-006 veri ayrımı. 'generation_context: false' olan veriler ders üretimi bağlamına, bilgi kaydına veya istemlere hiçbir zaman girmez. Model eğitimi veya ince ayar yapılmaz. Örtüşme 'python -m scripts.dataset_manifest' ile raporlanır.",
+  "datasets": [
+    {"id": "scientific_knowledge", "path": "apps/api/app/features/knowledge/data", "role": "knowledge", "generation_context": true,
+     "status": "draft_only", "note": "Taslak girdiler çalışma zamanına uygun değildir; yalnız onaylılar bağlama girer (bugün 0)."},
+    {"id": "curriculum_registry", "path": "apps/api/app/features/curriculum/data", "role": "curriculum", "generation_context": true,
+     "status": "sourced_unreviewed", "note": "Resmî kod ve başlıklar; resmî kazanım metni isteme gönderilmez."},
+    {"id": "teacher_methods", "path": "data/contributions", "role": "teacher_contribution", "generation_context": false,
+     "status": "empty", "note": "Öğretmen katkıları önce taslak olarak içeri alınır; onaydan önce bağlama girmez."},
+    {"id": "development_fixtures", "path": "apps/api/tests/fixtures", "role": "development", "generation_context": false,
+     "status": "synthetic", "note": "Sentetik ve çevrimdışı. Sonuçları model doğruluğu sayılmaz."},
+    {"id": "practice_questions", "path": "evals/practice", "role": "practice", "generation_context": false,
+     "status": "empty", "note": "Özgün alıştırma soruları için ayrılmış yer; henüz soru yok."},
+    {"id": "heldout_evaluation", "path": "evals/datasets", "role": "heldout", "generation_context": false,
+     "status": "images_missing", "note": "24 özgün soru (6/6/6/6) apps/api/tests/fixtures/question_pack/teacherai_24.json içindedir ve çevrimdışı tutarlılık denetiminde de kullanılır; görseller 0/24."},
+    {"id": "teacher_answer_keys", "path": "evals/datasets/original-24.answers.json", "role": "answer_key", "generation_context": false,
+     "status": "missing", "note": "Bağımsız öğretmen anahtarı yok (0/24). Anahtar modelden türetilmez; şablon: original-24.answers.template.json."},
+    {"id": "ocr_variants", "path": "evals/ocr_variants", "role": "ocr_robustness", "generation_context": false,
+     "status": "empty", "note": "Aynı sorunun bulanık, döndürülmüş, kırpılmış görselleri için ayrılmış yer; henüz yok."}
+  ]
+}
