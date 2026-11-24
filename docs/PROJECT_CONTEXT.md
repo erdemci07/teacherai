@@ -14,8 +14,9 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Uygulandı (TA-005) | 8. sınıf matematik için kaynaklı kazanım kaydı (MEB 2018) ve taslak yöntem politikası; yalnız onaylı politika yöntem denetimi uygular, sınıf bilgisi beyan veya profilden gelir. Değişkensiz ifadelerde ve eşitsizlik uç değerinde şıkları gizleyerek çözme. Bakım modu, eski bağlantı yönlendirmesi, tek proje ayarları ve Firestore kopya betiği. Ayrıntı: [TA-005 raporu](phase-reports/TA-005.md). |
 | Uygulandı (TA-005B) | Sağlayıcıdan bağımsız AI portu; davranışı bayt bayt koruyan OpenAI adaptörü; yalnız ders işlemini destekleyen Anthropic adaptörü (varsayılan sağlayıcı her işlemde `openai`). Tek fiyat/yetenek kataloğu. Yöntem denetiminde güçlü (AST) ve zayıf (metin) kanıt ayrımı. Profilde sınıf seçimi ve derste sınıfın anlık kaydı. MathAI eşzamanlılık sınırı ve `mathai_busy`/`mathai_timeout`/`mathai_error`. Kopya betiğinde iki yönlü uzlaştırma ve silinmiş verinin hortlamasını önleme. Bootstrap/Update modlu, digest ile dağıtım planı. Ayrıntı: [TA-005B raporu](phase-reports/TA-005B.md). |
 | Uygulandı (TA-005C) | Üç işlem de Anthropic'te desteklenir. Anthropic'e onaylı şema izdüşümü gönderilir (4 sınır), doğrulama özgün Pydantic ile yapılır. Anthropic Vision ayrıca öğrenci görseli izni ister ve production'da kapalıdır. Varsayılan her işlemde `openai`'dir ve fallback yoktur. Sağlayıcı hataları kanonik nedenlere ayrılır; bağlam aşımında tek, sayılan yeniden deneme yapılır. Geçitte muhasebe kapsamı zorunludur (production/offline ayrımı). Katalogda yetenek ve yaşam döngüsü alanları vardır. Dağıtım Update'te çalışan ortamı uzlaştırır ve Firebase web yapılandırmasını gerçek uygulamayla karşılaştırır. Geçişte koşullu yazma/silme, onaylı ezme, yetim alt koleksiyon ve sahip farkı ele alınır. MathAI `mathai_startup_timeout` ekler. Değerlendirme hazırlık raporu vardır. Ayrıntı: [TA-005C raporu](phase-reports/TA-005C.md), [ADR TA-005C](architecture/adr-ta-005c-provider-completion.md). |
-| Tasarım (TA-006/TA-007) | Bilimsel bilgi mimarisi: beş temel (müfredat, yetkili bilimsel bilgi, belirlenimci Python, çok kipli AI, öğretmen uzmanlığı). Denge branşa göre değişir, sabit oran yoktur. Aday akademik kaynaklar ve lisans kategorileri, bilgi girdisi alanları tanımlıdır. Kod yoktur: [ADR TA-006 hazırlığı](architecture/adr-ta-006-scientific-knowledge-architecture.md). |
-| Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
+| Uygulandı (TA-006) | Müfredat Kaydı v2: 12 resmî program (MEB 2018 ve Maarif Modeli 2026; matematik 5-12, fen 5-8, fizik/kimya/biyoloji 9-12), 1591 kayıt (resmî kod, başlık, PDF sayfası; resmî metin kopyalanmaz), doğrulanmış 2025-2026/2026-2027 uygulama takvimi, ayrı sınav kapsamı, belirlenimci program çözümlemesi (mezun, belirsiz sınıf, yaz geçişi açıkça temsil edilir). Bilimsel kaynak kaydı (30 kaynak, dört ayrı izin) ve bilgi kaydı (74 taslak girdi; çalışma zamanına uygun 0). Matematik ders üretiminde sınırlı müfredat bağlamı ve dersle saklanan köken kaydı (ek çağrı yok). `/konular` gözatma, mobil öncelikli tasarım belirteçleri, alt gezinme/kenar çubuğu, büyütülebilir tahta. Ayrıntı: [TA-006 raporu](phase-reports/TA-006.md), [ADR TA-006](architecture/adr-ta-006-curriculum-knowledge.md). |
+| Taslak (TA-006 → TA-007) | Bilgi girdileri, yöntem politikaları ve Maarif matematik betimlemeleri `claude-draft`; öğretmen incelemesi olmadan yetkili bağlam olmaz. Öğretmen katkı biçimi ve şablonları [docs/teachers](teachers/README.md). |
+| Planlandı | Öğretmen incelemesiyle onaylı bilgi ve yöntem politikası (TA-007). Konu anlatımı ve uyarlanabilir ders (TA-013), ses ve canlı tahta (TA-014/015), Capacitor yerel kabuğu (TA-016). FKB öğrenci üretimi kapalı kalır (TA-009–TA-011). |
 | Ertelendi | Aşağıdaki yol haritasındaki TA-005 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
 
@@ -31,8 +32,8 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-004 | Akıl yürütme ve doğrulama çekirdeği | Tamamlandı |
 | TA-005 | Tek proje geçişine hazırlık, kimya düzeltmeleri, gizli şık stratejisi, 8. sınıf yöntem kaydı, değerlendirme altyapısı | Tamamlandı (canlı taşıma ve gerçek model koşusu onay bekliyor) |
 | TA-005B | Geçiş araçlarının güvenliği, ilk dağıtım planı, yöntem denetimi, sınıf bilgisi, MathAI dayanıklılığı, sağlayıcıdan bağımsız AI geçidi | Tamamlandı (canlı denetim çıktısı ve gerçek model koşusu bekliyor) |
-| TA-005C | Çoklu sağlayıcı tamamlama, muhasebe kapsamı, dağıtım ve geçiş güvenliği, değerlendirme hazırlığı, bilimsel bilgi mimarisi devri | Bu dal (canlı geçiş, dağıtım ve gerçek model koşusu onay bekliyor) |
-| TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
+| TA-005C | Çoklu sağlayıcı tamamlama, muhasebe kapsamı, dağıtım ve geçiş güvenliği, değerlendirme hazırlığı, bilimsel bilgi mimarisi devri | Tamamlandı (PR #24; canlı geçiş, dağıtım ve gerçek model koşusu onay bekliyor) |
+| TA-006 | Müfredat ve yöntem zekâsı, bilimsel kaynak/bilgi kaydı, mobil öncelikli arayüz temeli | Bu dal (öğretmen incelemesi, eksik belgeler ve gerçek cihaz testi bekliyor) |
 | TA-007 | Uzman öğretmen bilgisi | Planlandı |
 | TA-008 | İleri matematik ve geometri | Planlandı |
 | TA-009 | Fizik zekâsı | Planlandı |
@@ -46,6 +47,17 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-017 | Üretime hazırlık ve ölçekleme | Planlandı |
 
 GPT-4.1-mini yaşam döngüsü ve model geçişi bu numaralandırmadan bağımsız, zamana bağlı bir yayın gerekliliğidir. `gpt-4.1-mini-2025-04-14` için duyurulmuş kapanış 2027-01-14'tür (katalogdaki `lifecycle` alanı); uygulama başlangıçta uyarı yazar. Model varsayılanları değiştirilmedi.
+
+## Müfredat ve bilimsel bilgi (TA-006)
+
+Ayrıntılar [ADR TA-006](architecture/adr-ta-006-curriculum-knowledge.md), [kapsam raporu](curriculum/TA-006-coverage.md), [bilgi kapsam raporu](knowledge/TA-006-knowledge-coverage.md), [kaynak kaydı](sources/TA-006-source-registry.md) ve [eksik kaynaklar](sources/TA-006-missing-sources.md) içindedir.
+
+- Program içeriği, uygulama takvimi ve sınav kapsamı ayrı sürümlenir. Kimlik `<program>::<resmî kod>`. Doğrulanmamış sınav kapsamı kazanımı sınava bağlamaz.
+- Resmî kazanım metni (lisans ifadesi yok) öğrenciye ve isteme gönderilmez; yalnız TA-005'in 29 metni korunur.
+- Sınıf, öğrenci/mezun durumu ve sınav hedefi yalnız beyan veya profilden gelir; görselden çıkarılmaz. Mezun öğrenci 12. sınıf öğrencisi sayılmaz.
+- Ders bağlamı ≤ 4 kazanım kodu/başlığı ve yalnız onaylı bilgi girdileri, ≤ 1500 bayt; çözümleme yoksa istem değişmez. Dersle `educational_provenance` saklanır ve eski ders yeniden hesaplanmaz.
+- Denetleyici bağlantısı kısmidir; bilgi girdisi düzeyinde `passed` oluşamaz.
+- CI: `python -m scripts.curriculum_registry --check`, `knowledge_registry --check`, `dataset_manifest --check`, `teacher_contributions validate-all`.
 
 ## Doğruluk boyutları
 

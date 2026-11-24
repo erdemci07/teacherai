@@ -45,7 +45,7 @@ def test_no_fabricated_page_numbers_and_every_locator_points_to_verified_section
 
 def test_biology_is_not_forced_into_equations(registry):
     biology = [entry for entry in registry.entries.values() if entry.subject == Subject.BIOLOGY]
-    assert sum(1 for entry in biology if entry.representation) <= 2
+    assert sum(1 for entry in biology if entry.representation) <= 2  # yalnız fotosentez toplam denklemi
     assert sum(1 for entry in biology if entry.structure_function) >= 4
     assert {entry.kind for entry in biology} >= {"process", "relationship"}
 
@@ -173,7 +173,7 @@ CONTRIBUTION = {"schema_name": "teacherai.teacher_contribution", "version": "1.0
 def test_teacher_contribution_is_input_not_approval():
     contribution = TeacherContribution.model_validate(CONTRIBUTION)
     assert contribution.consent_model_training is False
-    for bad in ({"contributor": "Ayşe Yılmaz"}, {"consent_use": False}):
+    for bad in ({"contributor": "Ad Soyad"}, {"consent_use": False}):
         with pytest.raises(ValidationError):
             TeacherContribution.model_validate({**CONTRIBUTION, **bad})
     with pytest.raises(ValidationError):  # örnek soru anahtarsız olamaz
@@ -193,3 +193,13 @@ def test_overlap_between_heldout_and_generation_records_is_reported(monkeypatch)
     monkeypatch.setattr(dataset_manifest, "generation_texts", lambda: [("sızıntı", question[1])])
     problems, report = dataset_manifest.run()
     assert report["overlaps"] and any("örtüşme" in problem for problem in problems)
+
+
+def test_blank_teacher_template_matches_import_format_and_has_five_subject_templates():
+    from pathlib import Path
+
+    TeacherContribution.model_validate_json(Path("docs/teachers/contribution.template.json").read_text(encoding="utf-8"))
+    for name in ("matematik", "fizik", "kimya", "biyoloji", "ortaokul-fen"):
+        text = Path(f"docs/teachers/{name}.md").read_text(encoding="utf-8")
+        assert "bağımsız cevap" in text.lower() or "Cevap anahtarı" in text
+        assert "Sık yapılan öğrenci hataları" in text

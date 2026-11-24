@@ -1,6 +1,6 @@
 # ADR TA-006/TA-007 hazırlığı: Bilimsel bilgi mimarisi
 
-Durum: önerildi (tasarım). TA-005C'de bu kayıt için kod, şema, kayıt defteri veya veri yoktur. Uygulama TA-006 (müfredat ve yöntem zekâsı) ve TA-007'de (uzman öğretmen bilgisi) yapılır. FKB (fizik, kimya, biyoloji) öğrenci üretimi kapalı kalır.
+Durum: TA-006'da uygulandı; somut kararlar [ADR TA-006](adr-ta-006-curriculum-knowledge.md) içindedir. (TA-005C'de bu kayıt için kod, şema, kayıt defteri veya veri yoktu.) Uygulama TA-006 (müfredat ve yöntem zekâsı) ve TA-007'de (uzman öğretmen bilgisi) yapılır. FKB (fizik, kimya, biyoloji) öğrenci üretimi kapalı kalır.
 
 ## Bağlam
 
