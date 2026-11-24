@@ -15,7 +15,10 @@ from apps.api.app.features.feedback.email import (
 )
 from apps.api.app.features.feedback.repository import InMemoryFeedbackRepository
 from apps.api.app.features.feedback.service import FeedbackService
-from apps.api.app.features.interactions.openai_provider import OpenAIInteractionProvider
+from apps.api.app.features.interactions.openai_provider import (
+    AnthropicInteractionProvider,
+    OpenAIInteractionProvider,
+)
 from apps.api.app.features.interactions.service import InteractionService
 from apps.api.app.features.interactions.store import InMemoryPracticeStore
 from apps.api.app.features.lessons.openai_provider import AnthropicLessonProvider, OpenAILessonProvider
@@ -26,7 +29,10 @@ from apps.api.app.features.shares.repository import InMemoryShareRepository
 from apps.api.app.features.shares.service import ShareService
 from apps.api.app.features.students.repository import InMemoryStudentRepository
 from apps.api.app.features.students.service import StudentService
-from apps.api.app.features.vision.openai_provider import OpenAIVisionProvider
+from apps.api.app.features.vision.openai_provider import (
+    AnthropicVisionProvider,
+    OpenAIVisionProvider,
+)
 from apps.api.app.features.vision.service import VisionService
 from apps.api.app.features.vision.storage import LocalTemporaryImageStorage
 from apps.api.app.services.health_service import HealthService
@@ -99,11 +105,7 @@ def build_container(settings: Settings | None = None) -> Container:
             recipient=resolved_settings.feedback_notification_email,
             sender=resolved_settings.feedback_email_sender,
         )
-    vision_provider = OpenAIVisionProvider(
-        api_key=resolved_settings.openai_api_key,
-        model=resolved_settings.openai_vision_model,
-        timeout_seconds=resolved_settings.vision_provider_timeout_seconds,
-    )
+    vision_provider = _vision_provider(resolved_settings)
     return Container(
         settings=resolved_settings,
         token_verifier=FirebaseTokenVerifier(identity_app),
@@ -115,7 +117,7 @@ def build_container(settings: Settings | None = None) -> Container:
         account_deletion=AccountDeletionService(resolved_settings, db, FirebaseIdentity(identity_app)),
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
-        interaction_service=InteractionService(OpenAIInteractionProvider(resolved_settings.openai_api_key, resolved_settings.openai_interaction_model, resolved_settings.interaction_provider_timeout_seconds), IsolatedMathAI(), practice_store),
+        interaction_service=InteractionService(_interaction_provider(resolved_settings), IsolatedMathAI(), practice_store),
         lesson_service=LessonService(_lesson_provider(resolved_settings), IsolatedMathAI(), BoardPlanner()),
         vision_service=VisionService(
             provider=vision_provider,
@@ -125,6 +127,24 @@ def build_container(settings: Settings | None = None) -> Container:
             recheck_limit=resolved_settings.vision_max_rechecks,
         ),
     )
+
+
+def _vision_provider(settings):
+    """TA-005C: Vision Anthropic'e yalnız açık atama ve öğrenci görseli izniyle gider (Settings ikisini de ister)."""
+    if settings.provider_vision == "anthropic":
+        return AnthropicVisionProvider(settings.anthropic_api_key, settings.anthropic_vision_model,
+                                       settings.vision_provider_timeout_seconds,
+                                       allow_images=settings.allow_student_images_to_anthropic)
+    return OpenAIVisionProvider(api_key=settings.openai_api_key, model=settings.openai_vision_model,
+                                timeout_seconds=settings.vision_provider_timeout_seconds)
+
+
+def _interaction_provider(settings):
+    if settings.provider_interaction == "anthropic":
+        return AnthropicInteractionProvider(settings.anthropic_api_key, settings.anthropic_interaction_model,
+                                            settings.interaction_provider_timeout_seconds)
+    return OpenAIInteractionProvider(settings.openai_api_key, settings.openai_interaction_model,
+                                     settings.interaction_provider_timeout_seconds)
 
 
 def _lesson_provider(settings):

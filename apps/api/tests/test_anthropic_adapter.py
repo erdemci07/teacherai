@@ -4,6 +4,8 @@ Uyum testi (iki adaptörden aynı kanonik nesne) bir kalite ölçümü değildir
 sağlayıcıdan bağımsız olduğunu gösterir.
 """
 
+import base64
+import io
 import json
 from dataclasses import replace
 from types import SimpleNamespace
@@ -18,7 +20,6 @@ import apps.api.app.features.lessons.openai_provider as lesson_module
 from apps.api.app.core.ai_outcomes import (
     AIInvalidOutputError,
     AIOutcomeError,
-    AIOutputIncompleteError,
     AIOutputTruncatedError,
     AIRefusalError,
     AITimeoutError,
@@ -101,7 +102,8 @@ async def test_successful_canonical_conversion_and_request_shape():
 @pytest.mark.parametrize(("response", "error"), [
     (message(stop="max_tokens", text='{"yarım'), AIOutputTruncatedError),
     (message(stop="refusal", text=None), AIRefusalError),
-    (message(stop="model_context_window_exceeded", text=None), AIOutputIncompleteError),
+    # TA-005C: belge "yanıtı kesilmiş say" der (handling-stop-reasons); kesilme sınıfına düşer.
+    (message(stop="model_context_window_exceeded", text=None), AIOutputTruncatedError),
     (message(stop="tool_use"), AIOutcomeError),  # eşlenemeyen değer: provider_error
     (message(stop="pause_turn"), AIOutcomeError),
     (message(stop=None), AIOutcomeError),
@@ -173,7 +175,8 @@ async def test_global_budget_exhaustion_sends_nothing():
 @pytest.mark.asyncio
 async def test_student_images_are_not_sent_without_flag_and_limits_apply():
     seen = []
-    image = request().__class__(Operation.LESSONS, "claude-sonnet-5-5", user=(TextPart("oku"), ImagePart(b"\x89PNG", "image/png")),
+    png = tiny_png()  # TA-005C: boyut denetimi için okunabilir (sentetik, 2×2) görsel gerekir
+    image = request().__class__(Operation.LESSONS, "claude-sonnet-5-5", user=(TextPart("oku"), ImagePart(png, "image/png")),
                                 schema=LessonDraftResponse)
     with pytest.raises(AIOutcomeError) as caught:
         await call(AnthropicAdapter("key", transport=transport(message(), seen=seen)), image)
@@ -184,7 +187,16 @@ async def test_student_images_are_not_sent_without_flag_and_limits_apply():
     assert caught.value.reason == "image_media_type" and seen == []
     await call(AnthropicAdapter("key", allow_images=True, transport=transport(message(), seen=seen)), image)
     block = json.loads(seen[0].content)["messages"][0]["content"][1]
-    assert block == {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": "iVBORw=="}}
+    assert block == {"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                 "data": base64.b64encode(png).decode("ascii")}}
+
+
+def tiny_png(size=(2, 2)):
+    from PIL import Image
+
+    buffer = io.BytesIO()
+    Image.new("RGB", size, "white").save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def anthropic_app(monkeypatch, responses, seen):
@@ -332,5 +344,10 @@ def test_schema_compat_flags_documented_unsupported_features():
     recursive = {"$defs": {"N": {"type": "object", "properties": {"c": {"$ref": "#/$defs/N"}}, "additionalProperties": False}}}
     assert incompatibilities(recursive) == ["$defs/N: recursive_schema"]
     assert incompatibilities({"type": "object", "properties": {}, "required": [], "additionalProperties": False}) == []
+    allof = {"allOf": [{"$ref": "#/$defs/A"}, {"type": "object"}]}
+    assert incompatibilities(allof) == ["#: allOf_with_ref_or_combinator"]
     result = report()
-    assert result["lessons"]["compatible"] and not result["vision"]["compatible"] and not result["interaction"]["compatible"]
+    # TA-005C: özgün şemalardaki uyumsuzluklar hâlâ görünür; onaylı izdüşümden sonra üç işlem uyumludur.
+    assert result["vision"]["schemas"]["VisionProviderAnalysis"]["original_issues"]
+    assert result["interaction"]["schemas"]["AdaptiveDraft"]["original_issues"]
+    assert all(result[op]["compatible"] for op in ("vision", "lessons", "interaction"))

@@ -1,6 +1,6 @@
 {
   "pricing_version": "catalog-2026-11-22",
-  "verified_at": "OpenAI 2026-11-21; Anthropic 2026-11-22",
+  "verified_at": "OpenAI 2026-11-21; Anthropic 2026-11-22 (fiyat), 2026-11-24 (yetenek)",
   "source": "https://developers.openai.com/api/docs/pricing (platform.openai.com/docs/pricing yönlendirmesi), Standard, kısa bağlam",
   "reasoning_source": "https://developers.openai.com/api/docs/models/<model> (20 Kasım 2026'da okundu; TA-005 core/operations.py)",
   "models": {
@@ -11,7 +11,21 @@
         "cached_input": 0.1,
         "output": 1.6
       },
-      "reasoning_efforts": []
+      "reasoning_efforts": [],
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "TA-001'den beri production Vision modeli (Responses text_format + input_image); TA-005 model sayfası"
+      },
+      "lifecycle": {
+        "status": "shutdown_announced",
+        "applies_to": "gpt-4.1-mini-2025-04-14",
+        "shutdown": "2027-01-14",
+        "replacement": "gpt-6-luna",
+        "alias_status": "doğrulanmadı (takma ad sayfada ayrıca adlandırılmıyor)",
+        "source": "https://developers.openai.com/api/docs/deprecations (TA-005, 21 Kasım 2026)"
+      }
     },
     "gpt-6-luna": {
       "provider": "openai",
@@ -27,7 +41,13 @@
         "high",
         "xhigh",
         "max"
-      ]
+      ],
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "https://developers.openai.com/api/docs/models/gpt-6-luna (TA-005 notu)"
+      }
     },
     "gpt-5.6-terra": {
       "provider": "openai",
@@ -43,7 +63,13 @@
         "high",
         "xhigh",
         "max"
-      ]
+      ],
+      "capabilities": {
+        "text_input": true,
+        "image_input": null,
+        "structured_outputs": true,
+        "source": "Production ders modeli (Responses text_format). Görsel girdi desteği bu fazda doğrulanmadı: null."
+      }
     },
     "claude-fable-5-2": {
       "provider": "anthropic",
@@ -53,7 +79,14 @@
         "output": 40
       },
       "reasoning_efforts": [],
-      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)"
+      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)",
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "https://platform.claude.com/docs/en/build-with-claude/vision (featureMetadata.supportedModels), 24 Kasım 2026; structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+        "note": "CMEK kullanan organizasyonda structured outputs yok (model sayfası)."
+      }
     },
     "claude-opus-5-5": {
       "provider": "anthropic",
@@ -63,7 +96,13 @@
         "output": 20
       },
       "reasoning_efforts": [],
-      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)"
+      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)",
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "https://platform.claude.com/docs/en/build-with-claude/vision (featureMetadata.supportedModels), 24 Kasım 2026; structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs"
+      }
     },
     "claude-sonnet-5-5": {
       "provider": "anthropic",
@@ -73,20 +112,33 @@
         "output": 10
       },
       "reasoning_efforts": [],
-      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)"
+      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit)",
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "https://platform.claude.com/docs/en/build-with-claude/vision (featureMetadata.supportedModels), 24 Kasım 2026; structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs"
+      }
     },
     "claude-haiku-5-5": {
       "provider": "anthropic",
       "usd_per_million_tokens": null,
       "reasoning_efforts": [],
-      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit); 100.000 token üstü istem için farklı fiyat (kademeli). Tek fiyatla gösterilemediği için fiyatsız: maliyet hesaplanmaz, production'da reddedilir."
+      "price_source": "https://platform.claude.com/docs/en/about-claude/pricing (docs.claude.com yönlendirmesi), 22 Kasım 2026'da okundu; cached_input = önbellek okuması (cache hit); 100.000 token üstü istem için farklı fiyat (kademeli). Tek fiyatla gösterilemediği için fiyatsız: maliyet hesaplanmaz, production'da reddedilir.",
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "structured_outputs": true,
+        "source": "https://platform.claude.com/docs/en/build-with-claude/vision (featureMetadata.supportedModels), 24 Kasım 2026; structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs"
+      }
     }
   },
   "notes": [
     "gpt-4.1-mini-2025-04-14 için kapanış: 14 Ocak 2027; önerilen yerine geçen: gpt-6-luna (https://developers.openai.com/api/docs/deprecations). Takma ad gpt-4.1-mini sayfada ayrıca adlandırılmıyor.",
     "gpt-6-luna: görsel girdi ve structured outputs destekli; reasoning.effort: none, low, medium (varsayılan), high, xhigh, max (https://developers.openai.com/api/docs/models/gpt-6-luna).",
     "TA-005B: tek kaynak. Uygulama (Settings.model_prices, reasoning düzeyleri) ve değerlendirme (scripts/eval_pack.py) bu dosyayı okur. TEACHERAI_MODEL_PRICES yalnız açık geçersiz kılmadır. Fiyatı olmayan model production'da reddedilir; maliyeti uydurulmaz.",
-    "Anthropic: önbellek yazımı (1,25×/2×) tek fiyatla gösterilemez; adaptör önbellek yazımı görürse maliyeti hesaplamaz. reasoning_efforts boştur: adaptör düşünme parametresi göndermez."
+    "Anthropic: önbellek yazımı (1,25×/2×) tek fiyatla gösterilemez; adaptör önbellek yazımı görürse maliyeti hesaplamaz. reasoning_efforts boştur: adaptör düşünme parametresi göndermez.",
+    "TA-005C: capabilities alanı işlem desteğini doğrular (vision: image_input + structured_outputs; ders/etkileşim: text_input + structured_outputs). null bilinmiyor demektir; production'da doğrulanmamış destek reddedilir. lifecycle alanı duyurulmuş kapanışları görünür kılar; uygulama başlangıçta uyarı yazar."
   ],
   "anthropic_models_source": "https://platform.claude.com/docs/en/about-claude/models/overview (Claude API ID satırı), 22 Kasım 2026"
 }
