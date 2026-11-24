@@ -1,4 +1,4 @@
-import type { BlockCheck, EducationalDraft, LessonView, Table, VerificationReport } from '../lib/education.generated.ts';
+import type { BlockCheck, EducationalDraft, EducationalProvenance, LessonView, Table, VerificationReport } from '../lib/education.generated.ts';
 import { MathExpression } from '../solve/MathExpression.tsx';
 
 type Answer = NonNullable<EducationalDraft['answer']>;
@@ -53,8 +53,8 @@ const methodLabels: Record<VerificationReport['method'], string> = {
   not_checked: 'Yöntem: değerlendirilmedi.',
 };
 const curriculumLabels: Record<VerificationReport['curriculum'], string> = {
-  passed: 'Müfredat: konu kaynaklı bir kazanıma eşlendi.',
-  partially_checked: 'Müfredat: kısmen eşlendi.',
+  passed: 'Müfredat: konu, sınıfının resmî programındaki bir kazanıma eşlendi.',
+  partially_checked: 'Müfredat: eşleme kısmi (konu sözcükten veya incelenmemiş eşlemeyle belirlendi).',
   not_checked: 'Müfredat: değerlendirilmedi.',
 };
 
@@ -108,5 +108,40 @@ export function EducationBoard({ view }: { view: LessonView }) {
       <small data-policy-check="method" data-state={verification.method}>{methodLabels[verification.method]}</small>{' '}
       <small data-policy-check="curriculum" data-state={verification.curriculum}>{curriculumLabels[verification.curriculum]}</small>
     </p>}
+    {view.provenance && <ProvenanceDetails provenance={view.provenance} />}
   </article>;
+}
+
+const mappingLabels: Record<string, string> = {
+  structural: 'Konu, sorudaki ifadelerin yapısından belirlendi.',
+  single: 'Konu, soru metnindeki sözcüklerden tahmin edildi (kesin değil).',
+  ambiguous: 'Soru birden çok konuya benziyor; tek konu seçilmedi.',
+  none: 'Konu belirlenemedi.',
+};
+const transmissionLabels: Record<string, string> = {
+  normal: 'Seçilen bağlam ders üretimine gönderildi.',
+  emergency: 'Bağlam sığmadığı için müfredat ve bilgi bağlamı gönderilmedi.',
+  mixed: 'Çağrılardan en az birinde müfredat ve bilgi bağlamı gönderilmedi.',
+};
+
+// TA-007: dersin hangi program, konu eşlemesi, onaylı bilgi ve yöntem politikasıyla üretildiği. Aşamalı gösterim:
+// kapalı başlar; teknik kimlikler yalnız açınca görünür. Kayıt ders oluşturulduktan sonra değişmez.
+export function ProvenanceDetails({ provenance }: { provenance: EducationalProvenance }) {
+  const resolution = provenance.resolution;
+  const program = resolution.status === 'resolved' ? resolution.program_ids?.[0] : null;
+  const knowledge = provenance.transmitted_knowledge_ids ?? [];
+  const policies = provenance.method_policy_ids ?? [];
+  return <details className="taProvenance" data-provenance="lesson">
+    <summary>Bu dersin bağlamı</summary>
+    <ul>
+      <li>{program ? `Program: ${program} (${resolution.academic_year})` : 'Program belirlenemedi; müfredat bağlamı kullanılmadı.'}</li>
+      {provenance.topic_mapping && <li>{mappingLabels[provenance.topic_mapping]}</li>}
+      <li>{knowledge.length > 0 ? `Öğretmen onaylı ${knowledge.length} bilimsel bilgi girdisi kullanıldı.`
+        : 'Öğretmen onaylı bilimsel bilgi girdisi kullanılmadı.'}</li>
+      <li>{policies.length > 0 ? `Öğretmen onaylı ${policies.length} yöntem politikası uygulandı.`
+        : 'Onaylı yöntem politikası yok; yöntem kısıtı uygulanmadı.'}</li>
+      {provenance.transmission && <li>{transmissionLabels[provenance.transmission]}</li>}
+    </ul>
+    {(knowledge.length > 0 || policies.length > 0) && <p><small>Kayıtlar: {[...knowledge, ...policies].join(', ')}</small></p>}
+  </details>;
 }

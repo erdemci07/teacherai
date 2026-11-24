@@ -275,6 +275,17 @@ body:has(.taBoardFrame[data-expanded="true"]) { overflow: hidden; }
 .taUnit > summary::-webkit-details-marker { display: none; }
 .taUnit > div { padding: 0 var(--ta-space-4) var(--ta-space-4); }
 .taTopic h3 { font-size: 1rem; margin: var(--ta-space-3) 0 var(--ta-space-2); }
+/* TA-007: konuya bağlı eylem ve ders bağlamı (aşamalı gösterim) */
+.taTopicAction {
+  display: inline-flex; align-items: center; min-height: var(--ta-touch); margin-top: var(--ta-space-2);
+  padding: 0 var(--ta-space-4); border-radius: 999px; background: var(--ta-green-soft); color: var(--ta-green-strong);
+  font-weight: 800; text-decoration: none;
+}
+.taTopicAction:focus-visible { outline: 3px solid var(--ta-focus); outline-offset: 2px; }
+.taProvenance { margin-top: var(--ta-space-4); border: 1px solid var(--ta-line); border-radius: var(--ta-radius-sm); padding: var(--ta-space-2) var(--ta-space-3); }
+.taProvenance > summary { min-height: var(--ta-touch); display: flex; align-items: center; cursor: pointer; font-weight: 800; }
+.taProvenance ul { margin: var(--ta-space-2) 0; padding-left: var(--ta-space-4); }
+.taProvenance small { overflow-wrap: anywhere; color: var(--ta-muted); }
 .taOutcomes { display: grid; gap: var(--ta-space-2); margin: 0; padding: 0; list-style: none; }
 .taOutcomes li {
   display: grid;
