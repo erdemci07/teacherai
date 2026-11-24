@@ -1,0 +1,37 @@
+{
+  "schema_name": "teacherai.ocr_variants",
+  "version": "1.0.0",
+  "note": "Varyant ayrı örnek değildir; özgün soruya bağlıdır ve aynı öğretmen anahtarıyla puanlanır. Görseller Git dışında (evals/local/images).",
+  "variants": [
+    {
+      "question_id": "B01",
+      "file": "B01_light_blur.png",
+      "sha256": "901b8c60cb6e862f88cc1045823410dea22dc7909ea95aad973463075096a35b",
+      "variant": "light_blur"
+    },
+    {
+      "question_id": "C04",
+      "file": "C04_low_contrast.png",
+      "sha256": "8af7dffbbf5ece5e54d4a3b4a80a932b9e7badcbd3148409c7b81b38c06a885e",
+      "variant": "low_contrast"
+    },
+    {
+      "question_id": "M01",
+      "file": "M01_light_blur.png",
+      "sha256": "36c07152ff3f1dd5fafe85d37a0d10a0c81dbed7eb789f1c523aa76a2dabb58f",
+      "variant": "light_blur"
+    },
+    {
+      "question_id": "M01",
+      "file": "M01_missing_expression.png",
+      "sha256": "e6a4f10d7f29b701eba01b44a7753750973f50641b33a9117ea3099593c86f59",
+      "variant": "missing_expression"
+    },
+    {
+      "question_id": "P02",
+      "file": "P02_slight_rotation.png",
+      "sha256": "b60cf556eaff51f5b3fdf5c4aa30fa1dbf1f6009b4717f33508ad026b1b971ed",
+      "variant": "slight_rotation"
+    }
+  ]
+}

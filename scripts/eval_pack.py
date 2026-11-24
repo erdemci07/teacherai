@@ -47,15 +47,21 @@ def plan(manifest_path: Path = MANIFEST, images: Path = IMAGES) -> tuple[list[di
 
     pack = {q["id"]: q for q in json.loads(PACK.read_text(encoding="utf-8"))["questions"]}
     entries = json.loads(manifest_path.read_text(encoding="utf-8"))["images"] if manifest_path.exists() else []
-    runs, seen = [], set()
+    runs, seen, variants = [], set(), {}
     for entry in entries:
         path = images / entry["file"]
         if entry.get("question_id") not in pack or not path.exists():
             continue
         if hashlib.sha256(path.read_bytes()).hexdigest() != entry["sha256"]:
             raise ValueError(f"{entry['file']}: sha256 manifestle uyuşmuyor")
+        if entry.get("kind") == "ocr_variant":
+            # TA-007: varyant ayrı örnek değildir; özgün sorunun altında aynı anahtarla değerlendirilir.
+            variants.setdefault(entry["question_id"], []).append(path)
+            continue
         runs.append({"question": pack[entry["question_id"]], "image": path})
         seen.add(entry["question_id"])
+    for run in runs:
+        run["variants"] = variants.get(run["question"]["id"], [])
     return runs, sorted(set(pack) - seen)
 
 
@@ -363,6 +369,7 @@ def readiness(manifest_path: Path = MANIFEST, images: Path = IMAGES) -> dict:
         "subjects": dict(sorted(by_subject.items())),
         "balanced": len(set(by_subject.values())) == 1,
         "images_ready": len(runs),
+        "ocr_variants_ready": sum(len(run.get("variants", [])) for run in runs),
         "images_missing": missing,
         "image_error": image_error,
         "answer_key": key_status,

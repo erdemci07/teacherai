@@ -1,4 +1,155 @@
 {
   "images_dir": "evals/local/images",
-  "images": []
+  "images": [
+    {
+      "file": "B01.png",
+      "sha256": "c7ecb55679c7bcfe45d03beec1428645950e635485245acdb3a87cae7f94595b",
+      "question_id": "B01"
+    },
+    {
+      "file": "B01_light_blur.png",
+      "sha256": "901b8c60cb6e862f88cc1045823410dea22dc7909ea95aad973463075096a35b",
+      "question_id": "B01",
+      "kind": "ocr_variant"
+    },
+    {
+      "file": "B02.png",
+      "sha256": "be1596c353abe5ff0fba30a483da11d4b2e2dddc891e155e6968e656598cc6f7",
+      "question_id": "B02"
+    },
+    {
+      "file": "B03.png",
+      "sha256": "829bf6120b0cbf0081163ec2aa5613623bc44f2707f5d88e666d397fe292f2d6",
+      "question_id": "B03"
+    },
+    {
+      "file": "B04.png",
+      "sha256": "8f187a9f006fc969b4e3afbedf0d42f822b085cc06e8c4b1b8d1f70f4a81d62e",
+      "question_id": "B04"
+    },
+    {
+      "file": "B05.png",
+      "sha256": "6ab72f20f8bd9c469ace118c727fbc7368457d426e8d4d6fa529cc0daf07284c",
+      "question_id": "B05"
+    },
+    {
+      "file": "B06.png",
+      "sha256": "ce213d28d4f40b860be0be6a507ca29337f0d53da3837adccddae76b6fa03652",
+      "question_id": "B06"
+    },
+    {
+      "file": "C01.png",
+      "sha256": "0d97a78917f03e31e862ce9314a46ec6f77b4c98cdca1f15ea00348d25658655",
+      "question_id": "C01"
+    },
+    {
+      "file": "C02.png",
+      "sha256": "117287b7c1d5adffd958c37c834e91f85f8a0e86cdee9da9e448329b3fd20abd",
+      "question_id": "C02"
+    },
+    {
+      "file": "C03.png",
+      "sha256": "1d9675a8194ef26cf51493eab431319db295ccb9448d6e281ae585f4d7e0dad0",
+      "question_id": "C03"
+    },
+    {
+      "file": "C04.png",
+      "sha256": "8adf1d3b43fe40980c85385fd3e6770bb8ac722c22ee8bb40f6ab84e8568b4d9",
+      "question_id": "C04"
+    },
+    {
+      "file": "C04_low_contrast.png",
+      "sha256": "8af7dffbbf5ece5e54d4a3b4a80a932b9e7badcbd3148409c7b81b38c06a885e",
+      "question_id": "C04",
+      "kind": "ocr_variant"
+    },
+    {
+      "file": "C05.png",
+      "sha256": "2190f49746b15428a6640347cfbb8d39bbcbcf09a33e09dd41ecbd31dd00d16d",
+      "question_id": "C05"
+    },
+    {
+      "file": "C06.png",
+      "sha256": "874fbd5bddf99303625aff89344f6f643e67ec93a46239bef39edcddaa40b5d6",
+      "question_id": "C06"
+    },
+    {
+      "file": "M01.png",
+      "sha256": "f423a8bd2cd9339998d3ba5f27c9b3d100e2186bcf295c2a234f0e60454b89ee",
+      "question_id": "M01"
+    },
+    {
+      "file": "M01_light_blur.png",
+      "sha256": "36c07152ff3f1dd5fafe85d37a0d10a0c81dbed7eb789f1c523aa76a2dabb58f",
+      "question_id": "M01",
+      "kind": "ocr_variant"
+    },
+    {
+      "file": "M01_missing_expression.png",
+      "sha256": "e6a4f10d7f29b701eba01b44a7753750973f50641b33a9117ea3099593c86f59",
+      "question_id": "M01",
+      "kind": "ocr_variant"
+    },
+    {
+      "file": "M02.png",
+      "sha256": "3f495108d581b8242d3fee017ac46aeccd38571d0a1eaaf8eff98a81685ca7e4",
+      "question_id": "M02"
+    },
+    {
+      "file": "M03.png",
+      "sha256": "c5f9db3267f1b4b818869960edcc3b8d1b8cfbe1e447ba2a7ab1bb3e6a1e5ab3",
+      "question_id": "M03"
+    },
+    {
+      "file": "M04.png",
+      "sha256": "f45f0aa71e945b507539a1d9c20a28dd968f95818d43aa251b9ea8de37a92762",
+      "question_id": "M04"
+    },
+    {
+      "file": "M05.png",
+      "sha256": "6079f332e8115ae69a79b3eda7514d2d491fadbe0ec4abd57dbac3693b2f2523",
+      "question_id": "M05"
+    },
+    {
+      "file": "M06.png",
+      "sha256": "f4557a6864df4482e3c66b7267c81e8fb4dbcd0b4790ade1fb85c26615dea291",
+      "question_id": "M06"
+    },
+    {
+      "file": "P01.png",
+      "sha256": "060a1bcf1d5fd1fa329f148b58b8ba17b9bfbcf993b9f660cc5343623711981d",
+      "question_id": "P01"
+    },
+    {
+      "file": "P02.png",
+      "sha256": "fd2c546d08f52c4d28aceef272b3de09076c7fb414136e1a9110bbfd5cbef2c4",
+      "question_id": "P02"
+    },
+    {
+      "file": "P02_slight_rotation.png",
+      "sha256": "b60cf556eaff51f5b3fdf5c4aa30fa1dbf1f6009b4717f33508ad026b1b971ed",
+      "question_id": "P02",
+      "kind": "ocr_variant"
+    },
+    {
+      "file": "P03.png",
+      "sha256": "8bc904e0c5696c2796527b31de922c4352060cfc60802647dfdfb9ea09f1f988",
+      "question_id": "P03"
+    },
+    {
+      "file": "P04.png",
+      "sha256": "a92b5622ecb24bde2f52ad37588615008454738b888ad931aa871397a661c25e",
+      "question_id": "P04"
+    },
+    {
+      "file": "P05.png",
+      "sha256": "5be46ee057bc2b965a122a6f00043f9e5eaa8b53e052901a6f2ece98ed24fc1f",
+      "question_id": "P05"
+    },
+    {
+      "file": "P06.png",
+      "sha256": "cc13f0a077c0bd0a439c2551e76b879eee70efb6583b3f64b620825760ebb9c8",
+      "question_id": "P06"
+    }
+  ]
 }

@@ -40,10 +40,11 @@ def generation_texts() -> list[tuple[str, str]]:
     texts = []
     knowledge = ROOT / "apps/api/app/features/knowledge/data"
     for path in sorted(knowledge.glob("*.json")):
-        if path.name == "sources.json":
+        if path.name in {"sources.json", "reviewers.json"}:
             continue
         for entry in json.loads(path.read_text(encoding="utf-8"))["entries"]:
-            body = " ".join([entry["statement_tr"], *entry.get("misconceptions_tr", []), *entry.get("conditions_tr", [])])
+            body = " ".join([entry["statement_tr"], *entry.get("misconceptions_tr", []), *entry.get("conditions_tr", []),
+                             *entry.get("assumptions_tr", []), *entry.get("exceptions_tr", [])])
             texts.append((entry["id"], body))
     for path in sorted((ROOT / "apps/api/app/features/curriculum/data/descriptions").glob("*.json")):
         for code, item in json.loads(path.read_text(encoding="utf-8"))["items"].items():
