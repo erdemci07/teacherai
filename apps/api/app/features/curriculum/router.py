@@ -85,6 +85,8 @@ class BrowseView(BaseModel):
     grade: int
     units: list[BrowseUnit]
     knowledge_drafts: int
+    # TA-007: yetkili onaylı ve çalışma zamanına uygun bilgi girdileri (taslak olarak etiketlenmez).
+    knowledge_approved: int = 0
     rights_notice: str
 
 
@@ -121,19 +123,26 @@ def browse(program_id: str, grade: int, response: Response, user: User):
         raise HTTPException(404, "Program veya sınıf bulunamadı.")
     knowledge = knowledge_registry.default_knowledge()
     outcome_ids = {item.id for item in registry.outcomes_for(program_id, grade)}
-    drafts = sum(1 for entry in knowledge.entries.values() if outcome_ids & set(entry.outcome_refs))
+    linked = [entry for entry in knowledge.entries.values() if outcome_ids & set(entry.outcome_refs)]
+    approved = sum(1 for entry in linked
+                   if not knowledge_registry.runtime_eligibility(entry, knowledge.sources, knowledge.reviewers))
+    drafts = len(linked) - approved
     _cache(response)
     return ApiResponse(data=BrowseView(program=_summary(registry, program), grade=grade,
                                        units=registry_v2.browse(registry, program_id, grade),
-                                       knowledge_drafts=drafts, rights_notice=RIGHTS_NOTICE))
+                                       knowledge_drafts=drafts, knowledge_approved=approved,
+                                       rights_notice=RIGHTS_NOTICE))
 
 
 @router.get("/resolve", response_model=ApiResponse[CurriculumResolution])
 def resolve(user: User, subject: Subject = Subject.MATHEMATICS, grade: Annotated[int | None, Query(ge=5, le=12)] = None,
             academic_year: Annotated[str | None, Query(pattern=r"^20\d\d-20\d\d$")] = None,
             learner_status: Literal["student", "graduate"] | None = None,
-            exam: Literal["LGS", "TYT", "AYT"] | None = None):
-    """Yalnız istekte açıkça verilen bağlamla çözümler; sınıf veya mezuniyet tahmin edilmez."""
+            exam: Annotated[list[Literal["LGS", "TYT", "AYT"]] | None, Query(max_length=3)] = None,
+            track: Literal["general", "science_high_school", "basic_level"] | None = None):
+    """Yalnız istekte açıkça verilen bağlamla çözümler; sınıf, mezuniyet veya izlek tahmin edilmez.
+    TA-007: ``exam`` birden çok verilebilir (ör. TYT ve AYT); hiçbiri kaybolmaz."""
     today: date = datetime.now(timezone.utc).date()
     return ApiResponse(data=registry_v2.resolve(registry_v2.default_registry(), subject, grade, today=today,
-                                                academic_year=academic_year, learner_status=learner_status, exam=exam))
+                                                academic_year=academic_year, learner_status=learner_status,
+                                                exams=list(dict.fromkeys(exam or [])), track=track))

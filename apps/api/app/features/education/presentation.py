@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import Field, model_validator
 
+from .curriculum_v2 import EducationalProvenance
 from .domain import Contract, Identifier
 from .lesson import ExpressionBlock, LessonPlanV2
 
@@ -14,6 +15,8 @@ class LessonView(Contract):
     lesson: LessonPlanV2
     panels: list[BoardPanel] = Field(min_length=1, max_length=256)
     created_at: datetime
+    # TA-007: dersin üretildiği andaki bağlam kaydı (aşamalı gösterim için). Eski derslerde yoktur.
+    provenance: EducationalProvenance | None = None
 
     @model_validator(mode="after")
     def complete_board(self):

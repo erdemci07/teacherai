@@ -7,20 +7,19 @@ from uuid import uuid4
 
 from apps.api.app.features.auth.schemas import AuthenticatedUser
 from apps.api.app.features.board.planner import BoardPlanner
-from apps.api.app.features.curriculum import registry as reg
 from apps.api.app.features.lessons.service import LessonService
 from apps.api.app.features.mathai.service import MathAIService
 from apps.api.app.features.students.schemas import StudentProfile
 from apps.api.app.main import create_app
 from apps.api.tests.client import authenticated_client
-from apps.api.tests.test_curriculum import CLEAN, Provider, fixture_registry, linear_analysis
+from apps.api.tests.test_curriculum import CLEAN, Provider, authorize, linear_analysis
 
 PROFILE = "/api/v1/students/me/profile"
 
 
 @pytest.fixture
 def app(monkeypatch):
-    monkeypatch.setattr(reg, "default_registry", fixture_registry)
+    authorize(monkeypatch)
     app = create_app()
     service = LessonService(Provider(CLEAN), MathAIService(), BoardPlanner())
     app.state.container = replace(app.state.container, lesson_service=service)

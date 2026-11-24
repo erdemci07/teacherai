@@ -13,7 +13,7 @@ from ..board.schemas import BoardPlan
 from ...core.ai_outcomes import AIOutcomeError
 from ...core.gateway import ProviderCallBudgetExhausted, calls_remaining
 from ..curriculum import context as curriculum_context
-from ..curriculum.registry import correction_feedback, curriculum_check, method_check
+from ..curriculum import methods
 from ..education.curriculum import PolicyCheck
 from ..education.curriculum_v2 import EducationalProvenance
 from ..education.domain import EducationContext, Grade, Reference
@@ -44,6 +44,7 @@ class GeneratedLesson(BaseModel):
     # olarak öğrencinin bugünkü profilinden doldurulmaz.
     education_context: EducationContext | None = None
     # TA-005: sunucunun sınıf düzeyi yöntem ve müfredat denetimi. Sınıf bilinmiyorsa not_checked.
+    # TA-007: MethodPolicy v2 ve Müfredat Kaydı v2 ile üretilir (v1 denetimleri ders akışında kullanılmaz).
     method_check: PolicyCheck | None = None
     curriculum_check: PolicyCheck | None = None
     # TA-006: üretim anındaki müfredat/bilgi kaydı sürümü, program çözümlemesi ve seçilen kayıtlar. Eski
@@ -74,14 +75,17 @@ class LessonService:
 
     async def generate(self, analysis: VisionAnalysis, teaching_context=None, request_id: str | None = None,
                        grade: Grade | None = None, learner_status: str | None = None,
-                       exam_goal: str | None = None) -> GeneratedLesson:
+                       exam_goal: str | None = None, school_track: str | None = None,
+                       advanced_method_requested: bool = False) -> GeneratedLesson:
         resolved_request_id = request_id or analysis.request_id
         analysis = with_integrity(analysis)
         question = require_math_question(analysis)
         education_context = resolved_context(question, teaching_context).model_copy(update={"grade": grade})
         # TA-006: belirlenimci ve sınırlı bağlam; ek sağlayıcı çağrısı veya Firestore okuması yoktur.
         selected = curriculum_context.select(analysis, education_context.subject, grade.value if grade else None,
-                                             today=self.clock(), learner_status=learner_status, exam_goal=exam_goal)
+                                             today=self.clock(), learner_status=learner_status, exam_goal=exam_goal,
+                                             track=school_track)
+        levels: list[str | None] = []
         if selected.outcome_ids:
             references = [*education_context.references, Reference(kind="curriculum", key=selected.program_id),
                           *(Reference(kind="outcome", key=item) for item in selected.outcome_ids)]
@@ -104,7 +108,7 @@ class LessonService:
             },
         )
 
-        plan = await self._plan(analysis, None, teaching_context, resolved_request_id)
+        plan = await self._plan(analysis, None, teaching_context, resolved_request_id, levels)
         plan = await self._reconcile(plan)
         verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification")
         if verification.status == "failed":
@@ -116,7 +120,7 @@ class LessonService:
                 "Lesson correction requested",
                 extra={"request_id": resolved_request_id, "stage": "correction", "failed_checks": len([x for x in verification.checks if x.status == "failed"])},
             )
-            plan = await self._plan(analysis, feedback, teaching_context, resolved_request_id)
+            plan = await self._plan(analysis, feedback, teaching_context, resolved_request_id, levels)
             plan = await self._reconcile(plan)
             verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification_retry")
             if verification.status == "failed" or not verification.final_answer_verified:
@@ -124,24 +128,31 @@ class LessonService:
                 raise VerificationContradictionError
 
         grade_value = grade.value if grade is not None else None
-        method = method_check(plan, verification, grade_value)
+        policy_set = selected.policy_set
+
+        def check(candidate, candidate_verification):
+            return methods.method_check(candidate, candidate_verification, grade_value, policy_set,
+                                        advanced_requested=advanced_method_requested)
+
+        method = check(plan, verification)
         if method.state == "failed" and not correction and calls_remaining() != 0:
             # Tek hedefli düzeltme turu; mevcut lesson_max_provider_calls tavanı içinde kalır.
             correction = True
             logger.info("Lesson method correction requested", extra={"request_id": resolved_request_id, "stage": "method_correction",
                                                                        "operation": ",".join(method.operations)})
             try:
-                retry = await self._reconcile(await self._plan(analysis, correction_feedback(method), teaching_context, resolved_request_id))
+                retry = await self._reconcile(await self._plan(analysis, methods.correction_feedback(method, policy_set),
+                                                                teaching_context, resolved_request_id, levels))
                 retry_verification = await run_in_threadpool(self._verify, retry, resolved_request_id, "math_verification_method")
             except (LessonError, AIOutcomeError, ProviderCallBudgetExhausted):
                 retry_verification = None  # doğrulanmış özgün ders korunur; yöntem işareti failed kalır
             if retry_verification is not None and retry_verification.status != "failed" and (
                     retry_verification.final_answer_verified or not verification.final_answer_verified):
                 plan, verification = retry, retry_verification
-                method = method_check(plan, verification, grade_value)
+                method = check(plan, verification)
         if method.state == "failed":
             logger.warning("Lesson method not verified for grade", extra={"request_id": resolved_request_id, "stage": "method_check"})
-        curriculum = curriculum_check(analysis, grade_value)
+        curriculum = methods.curriculum_check(selected.resolution, selected.mapping, grade_value, list(selected.matched))
 
         board_started = perf_counter()
         artifact = validated_math_lesson(plan, verification, education_context, (method, curriculum))
@@ -175,10 +186,11 @@ class LessonService:
             education_context=education_context,
             method_check=method,
             curriculum_check=curriculum,
-            educational_provenance=selected.provenance,
+            educational_provenance=curriculum_context.with_transmission(selected.provenance, levels),
         )
 
-    async def _plan(self, analysis, feedback, teaching_context=None, request_id: str | None = None):
+    async def _plan(self, analysis, feedback, teaching_context=None, request_id: str | None = None,
+                    levels: list | None = None):
         started = perf_counter()
         logger.info(
             "Lesson provider planning started",
@@ -191,6 +203,8 @@ class LessonService:
             },
         )
         result = await self.provider.generate_lesson_plan(analysis, feedback, teaching_context, request_id=request_id)
+        if levels is not None:
+            levels.append(getattr(result, "context_level", None))
         duration = round((perf_counter() - started) * 1000)
         logger.info(
             "Lesson provider planning succeeded",

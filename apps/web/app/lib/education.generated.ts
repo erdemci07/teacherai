@@ -142,10 +142,13 @@ export type CurriculumResolution = {
   grade?: number | null;
   learner_status?: "student" | "graduate" | null;
   exam?: "LGS" | "TYT" | "AYT" | null;
+  exams?: Array<"LGS" | "TYT" | "AYT">;
+  exam_scope_ids?: Array<string>;
+  track?: "general" | "science_high_school" | "basic_level" | null;
   program_ids?: Array<string>;
   candidate_program_ids?: Array<string>;
   exam_scope_id?: string | null;
-  reasons?: Array<"grade_unknown" | "subject_unsupported" | "schedule_unverified" | "program_document_missing" | "by_exclusion" | "academic_year_transition" | "graduate_exam_scope" | "exam_scope_unverified" | "exam_scope_verified" | "explicit_program" | "explicit_program_not_applicable" | "multiple_programs" | "no_program_for_grade">;
+  reasons?: Array<"grade_unknown" | "subject_unsupported" | "schedule_unverified" | "program_document_missing" | "by_exclusion" | "academic_year_transition" | "graduate_exam_scope" | "exam_scope_unverified" | "exam_scope_verified" | "explicit_program" | "explicit_program_not_applicable" | "multiple_programs" | "no_program_for_grade" | "track_unspecified_general_assumed" | "track_specific_program" | "track_rule_missing_general_used" | "multiple_exam_goals">;
 };
 
 export type CurriculumSource = {
@@ -208,12 +211,23 @@ export type EducationalProvenance = {
   knowledge_version: string;
   resolution: CurriculumResolution;
   topic_key?: string | null;
-  match: "topic_key" | "alias" | "none";
+  match: "topic_key" | "alias" | "taxonomy" | "none";
   outcome_ids?: Array<string>;
   knowledge_ids?: Array<string>;
   excluded_draft_knowledge: number;
   payload_bytes: number;
   included_in_prompt: boolean;
+  selection_mode?: "deterministic_production" | null;
+  topic_mapping?: "structural" | "single" | "ambiguous" | "none" | null;
+  topic_candidates?: Array<string>;
+  knowledge_refs?: Array<KnowledgeRef>;
+  excluded_knowledge?: Array<ExcludedKnowledge>;
+  compacted_knowledge?: Array<string>;
+  method_policy_ids?: Array<string>;
+  inactive_method_policies?: number;
+  verification_capabilities?: Array<string>;
+  transmission?: "normal" | "emergency" | "mixed" | null;
+  transmitted_knowledge_ids?: Array<string>;
 };
 
 export type Entity = {
@@ -237,6 +251,11 @@ export type ExampleBlock = {
   prompt: string;
   explanation: string;
   answer: MathAnswer | NumberAnswer | QuantityAnswer | ChoiceAnswer | TextAnswer | TableAnswer;
+};
+
+export type ExcludedKnowledge = {
+  id: string;
+  reason: "not_runtime_eligible" | "exceeds_record_budget" | "exceeds_total_budget" | "limit_reached" | "subject_mismatch";
 };
 
 export type ExperimentGroup = {
@@ -324,6 +343,12 @@ export type IntentMarker = {
   category: "negation" | "polarity" | "extremum" | "quantifier" | "possibility" | "count" | "operation";
 };
 
+export type KnowledgeRef = {
+  id: string;
+  version: number;
+  content_digest: string;
+};
+
 export type LessonIntent = {
   mode: "question_solving" | "topic_explanation" | "conversation" | "interactive_whiteboard" | "practice" | "student_feedback" | "voice_narration";
   subject: Subject;
@@ -350,6 +375,7 @@ export type LessonView = {
   lesson: LessonPlanV2;
   panels: Array<BoardPanel>;
   created_at: string;
+  provenance?: EducationalProvenance | null;
 };
 
 export type MathAnswer = {
@@ -365,6 +391,15 @@ export type Measurement = {
   unit?: UnitSpec | null;
 };
 
+export type MethodEvidence = {
+  step: string;
+  used?: Array<"add_both_sides" | "subtract_both_sides" | "multiply_both_sides" | "divide_both_sides" | "expand" | "factor" | "complete_square" | "square_both_sides" | "isolate_variable" | "substitute" | "compare" | "evaluate" | "rewrite" | "case_split" | "apply_principle" | "calculate_quantity" | "convert_unit" | "compare_observations" | "infer_sequence" | "evaluate_premise" | "interpret_visual" | "explain" | "state_result" | "unknown" | "derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula">;
+  mentioned?: Array<"derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula">;
+  rejected?: Array<"derivative" | "integral" | "limit" | "logarithm" | "trigonometry" | "complex_number" | "quadratic_formula">;
+  identifiable?: boolean;
+  unparsed?: number;
+};
+
 export type MethodPolicy = {
   id: string;
   grade: number;
@@ -376,6 +411,8 @@ export type MethodPolicy = {
   status: "draft" | "approved";
   authored_by: "claude-draft" | "teacher";
   approved_by?: string | null;
+  approved_on?: string | null;
+  approval_digest?: string | null;
 };
 
 export type ModeSupport = {
@@ -445,6 +482,9 @@ export type PolicyCheck = {
   policy_ids?: Array<string>;
   outcome_ids?: Array<string>;
   detail?: string | null;
+  evidence?: Array<MethodEvidence>;
+  topic_candidates?: Array<string>;
+  inactive_policy_ids?: Array<string>;
 };
 
 export type Premise = {

@@ -1,14 +1,21 @@
 """TA-005 müfredat ve yöntem kaydı. Fikstür kaydı kullanılır; testler gerçek taslağa bağlı değildir.
-Sahte ders sağlayıcısı kullanılır; ağ çağrısı yoktur."""
+Sahte ders sağlayıcısı kullanılır; ağ çağrısı yoktur.
 
+TA-007: ders akışı MethodPolicy v2 çalışma zamanını kullanır. Onaylı fikstür politikası artık yalnız yetkili
+inceleyen (sentetik, yalnız bu yalıtılmış testte), onay tarihi ve güncel içerik özetiyle etkindir."""
+
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
 
 from apps.api.app.features.board.planner import BoardPlanner
+from apps.api.app.features.curriculum import methods, registry_v2
 from apps.api.app.features.curriculum import registry as reg
 from apps.api.app.features.education.curriculum import CurriculumRegistry
+from apps.api.app.features.education.knowledge import ReviewerAuthorization
+from apps.api.app.features.knowledge import reviewers as reviewer_registry
 from apps.api.app.features.education.domain import Grade
 from apps.api.app.features.education.math_adapter import validated_math_lesson
 from apps.api.app.features.lessons.provider import LessonProviderResult
@@ -20,8 +27,25 @@ from apps.api.tests.test_question_integrity import analysis
 SOURCE = {"document": "fikstür", "url": "https://example.invalid/program.pdf", "pages": "1"}
 
 
-def fixture_registry(status="approved"):
-    approval = {"status": status, "authored_by": "teacher", "approved_by": "test-ogretmen" if status == "approved" else None}
+# Sentetik yetki: yalnız yalıtılmış testlerde. Üretim kaydı (knowledge/data/reviewers.json) boştur.
+REVIEWER = ReviewerAuthorization(reviewer="teacher:test-ogretmen", roles=["teacher"], subjects=["mathematics"],
+                                 stages=["pedagogical"], valid_from=date(2020, 1, 1), authorized_by="owner:test-sahip",
+                                 authorized_on=date(2020, 1, 1), evidence_note_tr="Yalnız yalıtılmış test fikstürü.")
+
+
+def fixture_registry(status="approved", *, digest=True):
+    approval = {"status": status, "authored_by": "teacher",
+                "approved_by": "teacher:test-ogretmen" if status == "approved" else None,
+                "approved_on": "2026-01-15" if status == "approved" else None}
+    registry = _fixture(approval)
+    if status != "approved" or not digest:
+        return registry
+    digests = {p.legacy_id: methods.policy_digest(p) for p in registry_v2.migrate_v1_policies(registry)}
+    return registry.model_copy(update={"policies": [p.model_copy(update={"approval_digest": digests[p.id]})
+                                                    for p in registry.policies]})
+
+
+def _fixture(approval):
     return CurriculumRegistry.model_validate({
         "schema_name": "teacherai.curriculum_registry", "version": "1.0.0", "program_note": "fikstür",
         "outcomes": [{"subject": "mathematics", "grade": 8, "unit": "Doğrusal Denklemler", "topic": "dogrusal_denklemler",
@@ -72,9 +96,15 @@ class Provider:
                                     "fixture", "fixture")
 
 
+def authorize(monkeypatch, registry=fixture_registry, reviewers=(REVIEWER,)):
+    registry_v2.default_registry()  # v2 kaydı gerçek v1 kayıtla bir kez kurulur; fikstür yalnız politikaları değiştirir
+    monkeypatch.setattr(reg, "default_registry", registry)
+    monkeypatch.setattr(reviewer_registry, "default_reviewers", lambda: tuple(reviewers))
+
+
 @pytest.fixture
 def approved(monkeypatch):
-    monkeypatch.setattr(reg, "default_registry", fixture_registry)
+    authorize(monkeypatch)
 
 
 async def generate(provider, grade=8):
@@ -111,7 +141,10 @@ async def test_allowed_method_passes_and_curriculum_maps_to_sourced_outcome(appr
     result = await generate(provider)
     assert len(provider.feedback) == 1
     assert result.method_check.state == "passed" and result.method_check.topic == "dogrusal_denklemler"
-    assert result.curriculum_check.state == "passed" and result.curriculum_check.outcome_ids == ["T.8.1"]
+    # TA-007: müfredat boyutu v2 kaydından; kazanım küresel kimlikli ve çözümlenen programın 8. sınıfındadır.
+    assert result.curriculum_check.state == "passed" and result.curriculum_check.reason == "program_outcome_matched"
+    assert result.curriculum_check.outcome_ids and all(
+        ref.startswith("meb-2018.matematik.1-8::M.8.") for ref in result.curriculum_check.outcome_ids)
     report = validated_math_lesson(result.lesson, result.verification, result.education_context,
                                    (result.method_check, result.curriculum_check)).verification
     assert (report.method, report.curriculum) == ("passed", "passed")
@@ -128,12 +161,14 @@ async def test_unknown_grade_is_not_checked_and_never_guessed(approved):
 
 @pytest.mark.asyncio
 async def test_draft_registry_never_restricts(monkeypatch):
-    monkeypatch.setattr(reg, "default_registry", lambda: fixture_registry("draft"))
+    authorize(monkeypatch, lambda: fixture_registry("draft"))
     provider = Provider(DERIVATIVE)
     result = await generate(provider)
     assert len(provider.feedback) == 1
     assert (result.method_check.state, result.method_check.reason) == ("not_checked", "no_approved_policy")
-    assert result.curriculum_check.state == "not_checked"
+    assert result.method_check.inactive_policy_ids  # taslaklar sayılır ama kısıtlamaz
+    # TA-007: müfredat boyutu yöntem politikasından bağımsızdır; resmî programdaki kazanımla eşleşir.
+    assert result.curriculum_check.state == "passed" and result.curriculum_check.policy_ids == []
 
 
 def test_other_grades_and_topics_stay_not_checked():

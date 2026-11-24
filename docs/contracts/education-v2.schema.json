@@ -994,6 +994,28 @@
           "default": null,
           "title": "Exam Scope Id"
         },
+        "exam_scope_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Exam Scope Ids",
+          "type": "array"
+        },
+        "exams": {
+          "items": {
+            "enum": [
+              "LGS",
+              "TYT",
+              "AYT"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Exams",
+          "type": "array"
+        },
         "grade": {
           "anyOf": [
             {
@@ -1048,7 +1070,11 @@
               "explicit_program",
               "explicit_program_not_applicable",
               "multiple_programs",
-              "no_program_for_grade"
+              "no_program_for_grade",
+              "track_unspecified_general_assumed",
+              "track_specific_program",
+              "track_rule_missing_general_used",
+              "multiple_exam_goals"
             ],
             "type": "string"
           },
@@ -1067,6 +1093,23 @@
         },
         "subject": {
           "$ref": "#/$defs/Subject"
+        },
+        "track": {
+          "anyOf": [
+            {
+              "enum": [
+                "general",
+                "science_high_school",
+                "basic_level"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Track"
         }
       },
       "required": [
@@ -1622,6 +1665,15 @@
       "additionalProperties": false,
       "description": "Bir dersin üretildiği andaki eğitim bağlamının yeniden kurulabilir kaydı. Ders kaydıyla saklanır; kayıt\nveya profil sonradan değişse de eski ders yeniden hesaplanmaz.",
       "properties": {
+        "compacted_knowledge": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Compacted Knowledge",
+          "type": "array"
+        },
         "curriculum_version": {
           "maxLength": 256,
           "minLength": 1,
@@ -1634,6 +1686,21 @@
           "title": "Excluded Draft Knowledge",
           "type": "integer"
         },
+        "excluded_knowledge": {
+          "items": {
+            "$ref": "#/$defs/ExcludedKnowledge"
+          },
+          "maxItems": 32,
+          "title": "Excluded Knowledge",
+          "type": "array"
+        },
+        "inactive_method_policies": {
+          "default": 0,
+          "maximum": 1024,
+          "minimum": 0,
+          "title": "Inactive Method Policies",
+          "type": "integer"
+        },
         "included_in_prompt": {
           "title": "Included In Prompt",
           "type": "boolean"
@@ -1643,8 +1710,16 @@
             "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
             "type": "string"
           },
-          "maxItems": 3,
+          "maxItems": 4,
           "title": "Knowledge Ids",
+          "type": "array"
+        },
+        "knowledge_refs": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeRef"
+          },
+          "maxItems": 4,
+          "title": "Knowledge Refs",
           "type": "array"
         },
         "knowledge_version": {
@@ -1657,10 +1732,20 @@
           "enum": [
             "topic_key",
             "alias",
+            "taxonomy",
             "none"
           ],
           "title": "Match",
           "type": "string"
+        },
+        "method_policy_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Method Policy Ids",
+          "type": "array"
         },
         "outcome_ids": {
           "items": {
@@ -1672,13 +1757,35 @@
           "type": "array"
         },
         "payload_bytes": {
-          "maximum": 4096,
+          "maximum": 8192,
           "minimum": 0,
           "title": "Payload Bytes",
           "type": "integer"
         },
         "resolution": {
           "$ref": "#/$defs/CurriculumResolution"
+        },
+        "selection_mode": {
+          "anyOf": [
+            {
+              "const": "deterministic_production",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selection Mode"
+        },
+        "topic_candidates": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Topic Candidates",
+          "type": "array"
         },
         "topic_key": {
           "anyOf": [
@@ -1692,6 +1799,59 @@
           ],
           "default": null,
           "title": "Topic Key"
+        },
+        "topic_mapping": {
+          "anyOf": [
+            {
+              "enum": [
+                "structural",
+                "single",
+                "ambiguous",
+                "none"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic Mapping"
+        },
+        "transmission": {
+          "anyOf": [
+            {
+              "enum": [
+                "normal",
+                "emergency",
+                "mixed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transmission"
+        },
+        "transmitted_knowledge_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Transmitted Knowledge Ids",
+          "type": "array"
+        },
+        "verification_capabilities": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Verification Capabilities",
+          "type": "array"
         }
       },
       "required": [
@@ -1914,6 +2074,33 @@
         "answer"
       ],
       "title": "ExampleBlock",
+      "type": "object"
+    },
+    "ExcludedKnowledge": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "not_runtime_eligible",
+            "exceeds_record_budget",
+            "exceeds_total_budget",
+            "limit_reached",
+            "subject_mismatch"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "reason"
+      ],
+      "title": "ExcludedKnowledge",
       "type": "object"
     },
     "ExperimentGroup": {
@@ -2602,6 +2789,35 @@
       "title": "IntentMarker",
       "type": "object"
     },
+    "KnowledgeRef": {
+      "additionalProperties": false,
+      "properties": {
+        "content_digest": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Content Digest",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "content_digest"
+      ],
+      "title": "KnowledgeRef",
+      "type": "object"
+    },
     "LessonIntent": {
       "additionalProperties": false,
       "properties": {
@@ -2789,6 +3005,17 @@
           "minItems": 1,
           "title": "Panels",
           "type": "array"
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EducationalProvenance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -2871,6 +3098,118 @@
       "title": "Measurement",
       "type": "object"
     },
+    "MethodEvidence": {
+      "additionalProperties": false,
+      "description": "Bir adımdaki yöntem kanıtı. ``used`` güçlü (sunucu sınıflandırması + AST), ``mentioned`` zayıf (düz metin),\n``rejected`` olumsuzlanmış söz (\"türev kullanmadan\"). ``identifiable`` false: adım işlemi belirlenemedi.\n``unparsed`` > 0: ayrışmayan ifade; o ifade için yöntem doğrulama dışındadır.",
+      "properties": {
+        "identifiable": {
+          "default": true,
+          "title": "Identifiable",
+          "type": "boolean"
+        },
+        "mentioned": {
+          "items": {
+            "enum": [
+              "derivative",
+              "integral",
+              "limit",
+              "logarithm",
+              "trigonometry",
+              "complex_number",
+              "quadratic_formula"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Mentioned",
+          "type": "array"
+        },
+        "rejected": {
+          "items": {
+            "enum": [
+              "derivative",
+              "integral",
+              "limit",
+              "logarithm",
+              "trigonometry",
+              "complex_number",
+              "quadratic_formula"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Rejected",
+          "type": "array"
+        },
+        "step": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Step",
+          "type": "string"
+        },
+        "unparsed": {
+          "default": 0,
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Unparsed",
+          "type": "integer"
+        },
+        "used": {
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "add_both_sides",
+                  "subtract_both_sides",
+                  "multiply_both_sides",
+                  "divide_both_sides",
+                  "expand",
+                  "factor",
+                  "complete_square",
+                  "square_both_sides",
+                  "isolate_variable",
+                  "substitute",
+                  "compare",
+                  "evaluate",
+                  "rewrite",
+                  "case_split",
+                  "apply_principle",
+                  "calculate_quantity",
+                  "convert_unit",
+                  "compare_observations",
+                  "infer_sequence",
+                  "evaluate_premise",
+                  "interpret_visual",
+                  "explain",
+                  "state_result",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "derivative",
+                  "integral",
+                  "limit",
+                  "logarithm",
+                  "trigonometry",
+                  "complex_number",
+                  "quadratic_formula"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "maxItems": 16,
+          "title": "Used",
+          "type": "array"
+        }
+      },
+      "required": [
+        "step"
+      ],
+      "title": "MethodEvidence",
+      "type": "object"
+    },
     "MethodPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -2924,6 +3263,20 @@
           "title": "Allowed Operations",
           "type": "array"
         },
+        "approval_digest": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Digest"
+        },
         "approved_by": {
           "anyOf": [
             {
@@ -2937,6 +3290,19 @@
           ],
           "default": null,
           "title": "Approved By"
+        },
+        "approved_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved On"
         },
         "authored_by": {
           "enum": [
@@ -3394,6 +3760,14 @@
           "title": "Dimension",
           "type": "string"
         },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/MethodEvidence"
+          },
+          "maxItems": 64,
+          "title": "Evidence",
+          "type": "array"
+        },
         "grade": {
           "anyOf": [
             {
@@ -3407,6 +3781,15 @@
           ],
           "default": null,
           "title": "Grade"
+        },
+        "inactive_policy_ids": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Inactive Policy Ids",
+          "type": "array"
         },
         "operations": {
           "items": {
@@ -3516,6 +3899,15 @@
           ],
           "default": null,
           "title": "Topic"
+        },
+        "topic_candidates": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Topic Candidates",
+          "type": "array"
         }
       },
       "required": [

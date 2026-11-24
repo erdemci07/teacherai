@@ -16,7 +16,7 @@ from apps.api.app.features.curriculum import context as selection
 from apps.api.app.features.curriculum import registry_v2
 from apps.api.app.features.education.base import Subject
 from apps.api.app.features.education.domain import Grade
-from apps.api.app.features.education.knowledge import KnowledgeEntry
+from apps.api.app.features.education.knowledge import KnowledgeEntry, ReviewerAuthorization, content_digest
 from apps.api.app.features.education.policy import TeachingPolicy
 from apps.api.app.features.knowledge import registry as knowledge
 from apps.api.app.features.lessons.context import build_lesson_generation_context
@@ -105,14 +105,27 @@ async def test_graduate_and_transition_contexts_do_not_reach_the_prompt():
 def test_approved_knowledge_enters_context_only_after_review():
     registry = knowledge.default_knowledge()
     base = registry.entries["math.equation-equivalence"]
-    review = {"reviewer": "teacher:matematik-01", "role": "teacher", "reviewed_on": "2026-12-01", "reviewed_version": 1,
-              "decision": "approve", "rationale_tr": "8. sınıfa uygun."}
-    approved = KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved", "reviews": [review]})
-    custom = knowledge.KnowledgeRegistry(sources=registry.sources, entries={**registry.entries, approved.id: approved}, digest="t")
+    # TA-007: onay aynı sürümün içerik özetiyle, hak kararı proje sahibince; ikisi de yetki kaydında (yalnız test).
+    review = {"reviewer": "teacher:matematik-01", "role": "teacher", "reviewed_on": "2026-12-01",
+              "reviewed_version": base.version, "decision": "approve", "rationale_tr": "8. sınıfa uygun.",
+              "stage": "scientific", "content_digest": content_digest(base)}
+    rights = {"source_use": "independent_fact", "basis_tr": "Özgün anlatım.", "decision": "approved",
+              "decided_by": "owner:test-sahip", "decided_on": "2026-12-02"}
+    approved = KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved", "reviews": [review], "rights": rights})
+    reviewers = tuple(ReviewerAuthorization(reviewer=ref, roles=[role], subjects=["mathematics"], stages=[stage],
+                                            valid_from=date(2026, 1, 1), authorized_by="owner:test-sahip",
+                                            authorized_on=date(2026, 1, 1), evidence_note_tr="Yalnız test fikstürü.")
+                      for ref, role, stage in (("teacher:matematik-01", "teacher", "scientific"),
+                                               ("owner:test-sahip", "project_owner", "rights")))
+    custom = knowledge.KnowledgeRegistry(sources=registry.sources, entries={**registry.entries, approved.id: approved},
+                                         digest="t", reviewers=reviewers)
     chosen = selection.select(linear_analysis(), Subject.MATHEMATICS, 8, today=TODAY, knowledge=custom)
     assert [item.id for item in chosen.payload.knowledge] == ["math.equation-equivalence"]
     assert chosen.provenance.knowledge_ids == ["math.equation-equivalence"]
     assert chosen.provenance.payload_bytes <= selection.MAX_PAYLOAD_BYTES
+    # Koşullar kırpılmadan bütün kayıt gider; sürüm ve içerik özeti köken kaydındadır.
+    assert chosen.payload.knowledge[0].conditions_tr == list(approved.conditions_tr)
+    assert chosen.provenance.knowledge_refs[0].content_digest == content_digest(approved)
 
 
 def test_selection_is_deterministic_and_fast():
@@ -127,9 +140,13 @@ def test_selection_is_deterministic_and_fast():
 
 
 def test_exam_goal_parsing_does_not_guess():
-    assert selection.canonical_exam("LGS'ye hazırlanıyorum") is None  # kesme işaretli biçim sözcük olarak ayrışmaz
+    # TA-007: Türkçe ekli biçimler tanınır; birden çok hedef kaybolmaz ("YKS" = TYT + AYT).
+    assert selection.canonical_exam("LGS'ye hazırlanıyorum") == "LGS"
     assert selection.canonical_exam("lgs") == "LGS" and selection.canonical_exam("AYT matematik") == "AYT"
     assert selection.canonical_exam("YKS") is None and selection.canonical_exam("TYT ve AYT") is None
+    assert selection.exam_goals("TYT ve AYT") == ["TYT", "AYT"] and selection.exam_goals("YKS'ye hazırlanıyorum") == ["TYT", "AYT"]
+    assert selection.exam_goals("Sınava hazırlanıyorum") == [] and selection.exam_goals(None) == []
+    assert selection.declared_graduate("Mezunum, AYT'ye çalışıyorum") and not selection.declared_graduate("12. sınıfım")
 
 
 @pytest.fixture
