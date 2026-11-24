@@ -31,7 +31,7 @@ from statistics import median
 from time import perf_counter
 
 from apps.api.app.core.ai_outcomes import AIOutcomeError
-from apps.api.app.core.gateway import begin_accounting, end_accounting
+from apps.api.app.core.gateway import begin_offline_accounting, end_accounting
 from apps.api.app.core.operations import Operation, validate_effort
 from apps.api.app.core.settings import get_settings
 from apps.api.app.features.interactions.exceptions import InteractionError
@@ -232,12 +232,10 @@ def fake_factory(call, input_tokens):
     return build
 
 
-class _NullTracker:
-    def reserve_output(self, uid, limit):
-        return None
-
-    def release_output(self, *args):
-        return None
+def known_sum(values):
+    """TA-005C: bilinmeyen (None) değer varsa toplam da bilinmez; sıfır sayılmaz."""
+    values = list(values)
+    return None if any(value is None for value in values) else sum(values)
 
 
 class Capture(logging.Handler):
@@ -258,7 +256,8 @@ async def execute(call, settings, client_factory, dataset_dir, api_key):
     level = usage_logger.level
     usage_logger.addHandler(capture)
     usage_logger.setLevel(logging.INFO)
-    token = begin_accounting(f"eval-{call.item.id}", run_settings, _NullTracker(), "eval")
+    # TA-005C: açık offline kapsam; kullanıcı kotasına yazmaz, kendi çağrı tavanı vardır.
+    token = begin_offline_accounting(f"eval-{call.item.id}", run_settings, max_calls=CALLS_PER_REQUEST[call.operation])
     row = {"item_id": call.item.id, "operation": call.operation, "model": call.model, "reasoning_effort": call.effort or "",
            "schema_valid": False, "error": None, "output": ""}
     # Yanıt alınamayan öğe metriklerde başarısız sayılır; oranlar yalnız başarılılardan hesaplanmaz.
@@ -288,7 +287,7 @@ async def execute(call, settings, client_factory, dataset_dir, api_key):
     row["provider_calls"] = len(events)
     row["outcome"] = events[-1]["outcome"] if events else "local_error"
     for key in ("input_tokens", "output_tokens", "reasoning_tokens"):
-        row[key] = sum(event.get(key) or 0 for event in events)
+        row[key] = known_sum(event.get(key) for event in events)
     costs = [event.get("estimated_usd") for event in events]
     row["estimated_usd"] = sum(costs) if events and all(cost is not None for cost in costs) else None
     return row
@@ -362,8 +361,9 @@ def summarize(rows):
             "root_set_match": rate("roots_match"), "schema_valid_rate": rate("schema_valid"), "answer_leak_rate": rate("answer_leak"),
             "outcomes": dict(sorted(_count(r["outcome"] for r in items).items())),
             "latency_p50_ms": median(latencies), "latency_p95_ms": percentile(latencies, 0.95),
-            "input_tokens": sum(r["input_tokens"] for r in items), "output_tokens": sum(r["output_tokens"] for r in items),
-            "reasoning_tokens": sum(r["reasoning_tokens"] for r in items),
+            "input_tokens": known_sum(r["input_tokens"] for r in items),
+            "output_tokens": known_sum(r["output_tokens"] for r in items),
+            "reasoning_tokens": known_sum(r["reasoning_tokens"] for r in items),
             "estimated_usd": round(sum(costs), 6) if all(c is not None for c in costs) else None,
         })
     return summary
@@ -461,7 +461,10 @@ def parser():
     go.add_argument("--fake-input-tokens", type=int, default=1200, help=argparse.SUPPRESS)
     go.add_argument("--output-dir")
     pack = commands.add_parser("pack", help="TA-005: 24 özgün soru, görsel + öğretmen anahtarı, tam üretim yolu.")
-    pack.add_argument("--provider", choices=["openai", "anthropic"], default="openai")
+    pack.add_argument("--provider", choices=["openai", "anthropic"], default="openai", help="ders sağlayıcısı")
+    pack.add_argument("--vision-provider", choices=["openai", "anthropic"], default="openai")
+    pack.add_argument("--pack-images-to-anthropic", action="store_true",
+                      help="özgün paket görsellerinin Anthropic'e gönderilmesine açık izin (öğrenci görseli değildir)")
     pack.add_argument("--model", help="Vision modeli (varsayılan: ayardaki model)")
     pack.add_argument("--lesson-model", help="Ders modeli (varsayılan: ayardaki model)")
     pack.add_argument("--reasoning-effort", choices=["none", "low", "medium", "high", "xhigh", "max"])
@@ -469,6 +472,7 @@ def parser():
     pack.add_argument("--allow-paid", action="store_true")
     pack.add_argument("--max-usd", type=float)
     pack.add_argument("--max-calls", type=int)
+    commands.add_parser("readiness", help="TA-005C: gerçek değerlendirmeye hazırlık raporu (çağrı yok).")
     return root
 
 
@@ -477,18 +481,28 @@ def main(argv=None, settings=None, client_factory=None, out_root=ROOT / "eval-re
     if args.mode in (None, "validate"):
         datasets = getattr(args, "datasets", None) or sorted(DATASETS.glob("*.jsonl"))
         return validate(datasets)
+    if args.mode == "readiness":
+        from scripts import eval_pack
+
+        print(json.dumps(eval_pack.readiness(), ensure_ascii=False, indent=2))
+        print("Hazırlık raporu; sağlayıcı çağrısı yapılmadı. Gerçek doğruluk ölçülmedi.")
+        return 0
     settings = settings or get_settings()
     if args.mode == "pack":
         from scripts import eval_pack
 
         if args.provider == "anthropic" and not args.lesson_model:
             parser().error("--provider anthropic için --lesson-model zorunludur (varsayılan Anthropic modeli yok). Çağrı yapılmadı.")
-        if args.provider == "anthropic" and not args.dry_run and not settings.anthropic_api_key:
-            parser().error("--provider anthropic için ANTHROPIC_API_KEY gerekli. Çağrı yapılmadı.")
+        if args.vision_provider == "anthropic" and not (args.model and args.pack_images_to_anthropic):
+            parser().error("--vision-provider anthropic için --model ve --pack-images-to-anthropic zorunludur. Çağrı yapılmadı.")
+        uses_anthropic = "anthropic" in (args.provider, args.vision_provider)
+        uses_openai = "openai" in (args.provider, args.vision_provider)
+        if uses_anthropic and not args.dry_run and not settings.anthropic_api_key:
+            parser().error("Anthropic işlemi için ANTHROPIC_API_KEY gerekli. Çağrı yapılmadı.")
         if not args.dry_run:
             missing = [flag for flag, value in (("--allow-paid", args.allow_paid), ("--max-usd", args.max_usd),
                                                 ("--max-calls", args.max_calls)) if not value]
-            if missing or not settings.openai_api_key or not settings.ai_enabled:
+            if missing or (uses_openai and not settings.openai_api_key) or not settings.ai_enabled:
                 parser().error("Ücretli koşu için birlikte gerekli: --allow-paid, --max-usd, --max-calls ve anahtar. Çağrı yapılmadı.")
         logging.basicConfig(level=logging.WARNING, format="%(message)s")
         return asyncio.run(eval_pack.run(args, settings))
