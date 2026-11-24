@@ -13,6 +13,8 @@ TeacherAI genel amaçlı, çok disiplinli bir öğretmendir. Amaç, öğrencinin
 | Kısmi | MathAI sınırlı tek değişkenli gerçel denklemleri ve belirli grafik özelliklerini denetler. Sözel gerekçeler otomatik olarak kanıtlanmaz. Doğrulanabilir benzer denklem üretildiğinde öğrenci pratik yanıtı gönderebilir. Öğrenme hafızası mevcut etkileşim olaylarından oluşur. |
 | Uygulandı (TA-005) | 8. sınıf matematik için kaynaklı kazanım kaydı (MEB 2018) ve taslak yöntem politikası; yalnız onaylı politika yöntem denetimi uygular, sınıf bilgisi beyan veya profilden gelir. Değişkensiz ifadelerde ve eşitsizlik uç değerinde şıkları gizleyerek çözme. Bakım modu, eski bağlantı yönlendirmesi, tek proje ayarları ve Firestore kopya betiği. Ayrıntı: [TA-005 raporu](phase-reports/TA-005.md). |
 | Uygulandı (TA-005B) | Sağlayıcıdan bağımsız AI portu; davranışı bayt bayt koruyan OpenAI adaptörü; yalnız ders işlemini destekleyen Anthropic adaptörü (varsayılan sağlayıcı her işlemde `openai`). Tek fiyat/yetenek kataloğu. Yöntem denetiminde güçlü (AST) ve zayıf (metin) kanıt ayrımı. Profilde sınıf seçimi ve derste sınıfın anlık kaydı. MathAI eşzamanlılık sınırı ve `mathai_busy`/`mathai_timeout`/`mathai_error`. Kopya betiğinde iki yönlü uzlaştırma ve silinmiş verinin hortlamasını önleme. Bootstrap/Update modlu, digest ile dağıtım planı. Ayrıntı: [TA-005B raporu](phase-reports/TA-005B.md). |
+| Uygulandı (TA-005C) | Üç işlem de Anthropic'te desteklenir. Anthropic'e onaylı şema izdüşümü gönderilir (4 sınır), doğrulama özgün Pydantic ile yapılır. Anthropic Vision ayrıca öğrenci görseli izni ister ve production'da kapalıdır. Varsayılan her işlemde `openai`'dir ve fallback yoktur. Sağlayıcı hataları kanonik nedenlere ayrılır; bağlam aşımında tek, sayılan yeniden deneme yapılır. Geçitte muhasebe kapsamı zorunludur (production/offline ayrımı). Katalogda yetenek ve yaşam döngüsü alanları vardır. Dağıtım Update'te çalışan ortamı uzlaştırır ve Firebase web yapılandırmasını gerçek uygulamayla karşılaştırır. Geçişte koşullu yazma/silme, onaylı ezme, yetim alt koleksiyon ve sahip farkı ele alınır. MathAI `mathai_startup_timeout` ekler. Değerlendirme hazırlık raporu vardır. Ayrıntı: [TA-005C raporu](phase-reports/TA-005C.md), [ADR TA-005C](architecture/adr-ta-005c-provider-completion.md). |
+| Tasarım (TA-006/TA-007) | Bilimsel bilgi mimarisi: beş temel (müfredat, yetkili bilimsel bilgi, belirlenimci Python, çok kipli AI, öğretmen uzmanlığı). Denge branşa göre değişir, sabit oran yoktur. Aday akademik kaynaklar ve lisans kategorileri, bilgi girdisi alanları tanımlıdır. Kod yoktur: [ADR TA-006 hazırlığı](architecture/adr-ta-006-scientific-knowledge-architecture.md). |
 | Planlandı | Müfredat modülü ilgili eski programları ve Türkiye Yüzyılı Maarif Modeli’ni destekleyecek. Sınıf düzeyine uygun yöntemler açık politikalarla uygulanacak. Öğretmen bilgisi yapılandırılacak ve bağımsız incelemeden geçecek. Mobil istemci için ilk tercih Capacitor. |
 | Ertelendi | Aşağıdaki yol haritasındaki TA-005 ve sonrası. 100 soruluk öğretmen incelemeli değerlendirme seti dış katkı olarak ertelendi. |
 | Dış doğrulama bekliyor | Gerçek sağlayıcı kalite karşılaştırması, dağıtılmış sürüm, gerçek Firebase kimliği ve App Check geçişi. |
@@ -28,7 +30,8 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-003 | Soru bütünlüğü ve görsel zekâ | Tamamlandı |
 | TA-004 | Akıl yürütme ve doğrulama çekirdeği | Tamamlandı |
 | TA-005 | Tek proje geçişine hazırlık, kimya düzeltmeleri, gizli şık stratejisi, 8. sınıf yöntem kaydı, değerlendirme altyapısı | Tamamlandı (canlı taşıma ve gerçek model koşusu onay bekliyor) |
-| TA-005B | Geçiş araçlarının güvenliği, ilk dağıtım planı, yöntem denetimi, sınıf bilgisi, MathAI dayanıklılığı, sağlayıcıdan bağımsız AI geçidi | Bu dal (canlı denetim çıktısı ve gerçek model koşusu bekliyor) |
+| TA-005B | Geçiş araçlarının güvenliği, ilk dağıtım planı, yöntem denetimi, sınıf bilgisi, MathAI dayanıklılığı, sağlayıcıdan bağımsız AI geçidi | Tamamlandı (canlı denetim çıktısı ve gerçek model koşusu bekliyor) |
+| TA-005C | Çoklu sağlayıcı tamamlama, muhasebe kapsamı, dağıtım ve geçiş güvenliği, değerlendirme hazırlığı, bilimsel bilgi mimarisi devri | Bu dal (canlı geçiş, dağıtım ve gerçek model koşusu onay bekliyor) |
 | TA-006 | Müfredat ve yöntem zekâsı | Planlandı |
 | TA-007 | Uzman öğretmen bilgisi | Planlandı |
 | TA-008 | İleri matematik ve geometri | Planlandı |
@@ -42,7 +45,7 @@ TA-002 sonrası numaralandırma (TA-003 ile güncellendi):
 | TA-016 | Çapraz platform mobil (Capacitor) | Planlandı |
 | TA-017 | Üretime hazırlık ve ölçekleme | Planlandı |
 
-GPT-4.1-mini yaşam döngüsü ve model geçişi bu numaralandırmadan bağımsız, zamana bağlı bir yayın gerekliliğidir. Model varsayılanları değiştirilmedi.
+GPT-4.1-mini yaşam döngüsü ve model geçişi bu numaralandırmadan bağımsız, zamana bağlı bir yayın gerekliliğidir. `gpt-4.1-mini-2025-04-14` için duyurulmuş kapanış 2027-01-14'tür (katalogdaki `lifecycle` alanı); uygulama başlangıçta uyarı yazar. Model varsayılanları değiştirilmedi.
 
 ## Doğruluk boyutları
 
@@ -91,6 +94,7 @@ Kabul sonuçları, istemci geçişi, yapılandırma ve açık konular [TA-001](p
 
 ## AI maliyet ve sonuç sözleşmesi (TA-001B)
 
+- TA-005C: geçit açık bir muhasebe kapsamı olmadan sağlayıcı çağırmaz. Production kapsamını yalnız `core/admission.py` açar. Değerlendirme ve testler `begin_offline_accounting` ile kendi çağrı/USD tavanını açar; bu kapsam production/staging'de ve Cloud Run'da açılamaz.
 - Her sağlayıcı çağrısı `core/gateway.py` üzerinden geçer. TA-005B'den beri geçit sağlayıcıdan bağımsızdır: adaptörler (`core/openai_adapter.py`, `core/anthropic_adapter.py`) yalnız geçidin tek kullanımlık geçiş belgesiyle çağrılabilir; kota, bütçe, tavan, rezervasyon, şema doğrulaması ve günlük ortak katmandadır. Fiyatlar `core/model_catalog.json` dosyasındadır ([ADR TA-005B](architecture/adr-ta-005b-provider-gateway.md)). Çıktı sınırı işlem başına ayarlanır (`TEACHERAI_MAX_OUTPUT_TOKENS_BY_OPERATION`, varsayılan 4096 / 4096 / 16384). Reasoning düzeyi yalnızca destekleyen modelde gönderilir (`TEACHERAI_REASONING_EFFORT_BY_OPERATION`).
 - Sonuç sınıfları ve hata kodları: `completed`, `incomplete_max_tokens` (502 `ai_output_truncated`), `incomplete_other` (422 `ai_output_filtered` veya 502 `ai_output_incomplete`), `refusal` (422 `ai_refused`), `invalid_output` (502 `ai_invalid_output`), `timeout` (504 `ai_timeout`), `provider_error` (mevcut kodlar). Başarısız sonuçta hiçbir kayıt kalıcı hale gelmez. `ai_usage` günlüğü `outcome` alanını taşır.
 - Kullanıcı başına günlük sınırların yanında küresel günlük bütçe uygulanır (`TEACHERAI_GLOBAL_DAILY_PAID_OPERATIONS`, `…_PROVIDER_CALLS`, `…_OUTPUT_TOKENS`). Bütçe tek `ai_global_usage/{gün}` belgesinde, kullanıcı sayacıyla aynı işlemde ayrılır. `0` ilgili yolu kapatır. Aşımda 503 `ai_global_budget_exhausted` döner. Bu sınırlar kesin bir USD tavanı değildir.

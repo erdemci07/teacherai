@@ -14,6 +14,16 @@ Bu dizin, mevcut modeller (`gpt-4.1-mini`) ile aday model (`gpt-6-luna`) arasın
 
 `--dry-run` hiçbir çağrı yapmaz. Plan, üst tahmin ve onay sonrası komutu yazar. Fiyatlar `apps/api/app/core/model_catalog.json` dosyasından (TA-005B: uygulama ile ortak tek kaynak) okunur. Ham çıktılar `evals/runs/` altına (Git dışı) yazılır. Ayrıntı: [docs/evals/TA-005-luna.md](../docs/evals/TA-005-luna.md).
 
+TA-005C eklemeleri:
+
+- **Hazırlık.** `python -m scripts.evaluate_models readiness` çağrı yapmaz ve şunları yazar:
+  - dört branşın dengesi (6/6/6/6)
+  - eksik görseller ve eksik öğretmen anahtarı satırları
+  - her ölçüm boyutunun durumu: `olculur`, `kismi`, `anahtar_gerekli`, `insan_degerlendirmesi`, `olculur_smoke`
+  - sağlayıcı ve model desteği ile duyurulmuş model kapanışları
+- **Sağlayıcı seçimi.** Ders sağlayıcısı `--provider anthropic --lesson-model <model>` ile seçilir. Vision sağlayıcısı `--vision-provider anthropic --model <model> --pack-images-to-anthropic` ile seçilir. Bu izin yalnız özgün paket görselleri içindir ve production'daki öğrenci görseli iznini açmaz.
+- **Offline kapsam.** Değerlendirme çağrıları açık bir offline muhasebe kapsamında koşar: kendi çağrı tavanı vardır, kullanıcı kotasına yazmaz. Bilinmeyen token sayıları ve maliyet sıfır sayılmaz; özetlerde `null` kalır.
+
 ## Soru bütünlüğü matrisi (TA-003)
 
 `python -m scripts.integrity_matrix --check` 49 sentetik Vision yanıt senaryosunu ve 10 seçenek uzlaştırma vakasını gerçek `VisionService`, `OpenAIVisionProvider`, gateway ve çağrı tavanından geçirir. OpenAI istemcisi ağsız bir sahtedir. Matris; yanlış engelleme, geçirilen kritik belirsizlik, otomatik kaynak değişikliği, yanlış seçenek uzlaştırması ve çağrı sınırı için fikstür kabul ölçütlerini denetler. Gerçek model tanıma doğruluğunu ölçmez. Fikstürler `apps/api/tests/fixtures/integrity/scenarios.json` içindedir ve model değerlendirme veri setlerinden ayrıdır.
