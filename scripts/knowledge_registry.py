@@ -1,6 +1,6 @@
 """Bilimsel kaynak/bilgi kaydı doğrulaması, kapsam raporu ve çevrimdışı taslak önizleme (TA-006).
 
-    python -m scripts.knowledge_registry                 # doğrular, docs/knowledge/TA-006-knowledge-coverage.md yazar
+    python -m scripts.knowledge_registry                 # doğrular, docs/knowledge/TA-007-knowledge-coverage.md yazar
     python -m scripts.knowledge_registry --check         # doğrular; rapor güncel değilse başarısız olur
     python -m scripts.knowledge_registry preview <kimlik> # taslak girdiyi engelleri ve denetleyici kapsamıyla gösterir
 
@@ -19,7 +19,8 @@ from apps.api.app.features.knowledge import registry as knowledge
 from apps.api.app.features.knowledge.capabilities import CAPABILITIES, capability_check
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs/knowledge/TA-006-knowledge-coverage.md"
+REPORT = ROOT / "docs/knowledge/TA-007-knowledge-coverage.md"
+AUDIT = ROOT / "apps/api/app/features/knowledge/audit/TA-007-draft-audit.json"
 SUBJECT_TR = {"mathematics": "Matematik (geometri dahil)", "physics": "Fizik", "chemistry": "Kimya", "biology": "Biyoloji",
               "science": "Ortaokul fen (bütünleşik)"}
 PERM_TR = {"allowed": "evet", "not_allowed": "hayır", "conditional": "koşullu", "unknown": "bilinmiyor"}
@@ -27,18 +28,40 @@ PERM_TR = {"allowed": "evet", "not_allowed": "hayır", "conditional": "koşullu"
 
 def render(registry: knowledge.KnowledgeRegistry) -> str:
     rows = knowledge.coverage(registry)
-    lines = ["# TA-006 bilimsel bilgi kapsam raporu", "",
+    lines = ["# TA-007 bilimsel bilgi kapsam raporu", "",
              "Bu dosya `python -m scripts.knowledge_registry` ile üretilir; elle düzenlenmez.", "",
              f"- Kayıt sürümü: `{registry.version}`",
              f"- Kaynak: {len(registry.sources)} · bilgi girdisi: {len(registry.entries)} · tanımlı denetleyici: {len(CAPABILITIES)}", "",
-             "Bütün girdiler `claude-draft` taslağıdır. Hiçbiri öğretmen veya alan uzmanınca incelenmedi; bu yüzden çalışma",
-             "zamanına uygun girdi sayısı 0'dır. Denetleyici bağlantısı iddianın yalnız belirtilen parçasını kapsar.", "",
+             "Bütün girdiler `claude-draft` taslağıdır. Hiçbiri öğretmen veya alan uzmanınca incelenmedi; inceleyen yetki kaydı",
+             f"boştur ({len(registry.reviewers)} yetkili). Bu yüzden çalışma zamanına uygun girdi sayısı 0'dır. Denetleyici",
+             "bağlantısı iddianın yalnız belirtilen parçasını kapsar.", "",
              "| Alan | Girdi | Kaynaklı | Kaynaksız | Kazanıma bağlı | Denetleyicili | İncelenen | Çalışma zamanına uygun | Tür dağılımı |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for row in rows:
         kinds = ", ".join(f"{key} {value}" for key, value in row["kinds"].items())
         lines.append(f"| {SUBJECT_TR[row['subject']]} | {row['total']} | {row['sourced']} | {len(row['unsourced'])} | {row['with_outcome']} | "
                      f"{row['with_verifier']} | {row['reviewed']} | {row['runtime_eligible']} | {kinds} |")
+    lines += ["", "| Alan | Düzeltilen (sürüm 2+) | Müfredat başlığına bağlı | Kaynak kullanım sınıfı |", "| --- | --- | --- | --- |"]
+    for row in rows:
+        uses = ", ".join(f"{key} {value}" for key, value in row["source_use"].items())
+        lines.append(f"| {SUBJECT_TR[row['subject']]} | {row['revised']} | {row['topic_linked']} | {uses} |")
+    audit = json.loads(AUDIT.read_text(encoding="utf-8"))
+    actions = Counter(item["action"] for item in audit["rows"])
+    severities = Counter(finding["severity"] for item in audit["rows"] for finding in item["findings"])
+    expert = ", ".join(f"`{item['entry_id']}`" for item in audit["rows"] if item["action"] == "needs_expert") or "yok"
+    action_text = ", ".join(f"{key} {value}" for key, value in sorted(actions.items()))
+    severity_text = ", ".join(f"{key} {value}" for key, value in sorted(severities.items()))
+    lines += ["", "## TA-007 bağımsız taslak denetimi", "",
+              (f"`{AUDIT.relative_to(ROOT).as_posix()}`: {len(audit['rows'])} TA-006 taslağı. Eylem: {action_text}. "
+               f"Bulgu düzeyi: {severity_text}."),
+              "AI destekli denetimdir; uzman onayı değildir. Düzeltilen girdiler önceki sürümü `revisions` içinde korur.",
+              f"Uzman kararı gereken girdiler: {expert}.", "",
+              "## TA-006 → TA-007", "", "| Ölçü | TA-006 | TA-007 |", "| --- | --- | --- |",
+              f"| Kaynak | 30 | {len(registry.sources)} |", f"| Bilgi girdisi | 74 | {len(registry.entries)} |"]
+    before = {"mathematics": 19, "physics": 18, "chemistry": 16, "biology": 15, "science": 6}
+    for row in rows:
+        lines.append(f"| {SUBJECT_TR[row['subject']]} | {before[row['subject']]} | {row['total']} |")
+    lines.append(f"| Çalışma zamanına uygun | 0 | {sum(row['runtime_eligible'] for row in rows)} |")
     unsourced = [entry for row in rows for entry in row["unsourced"]]
     lines += ["", f"Kaynaksız girdiler (çalışma zamanına kapalı): {', '.join(f'`{item}`' for item in unsourced) or 'yok'}", "",
               "## Kaynaklar ve izinler", "",

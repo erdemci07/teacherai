@@ -15,7 +15,16 @@ from pathlib import Path
 
 from ..curriculum import registry_v2
 from ..education.base import Subject
-from ..education.knowledge import KnowledgeEntry, KnowledgeFile, SourceRecord, SourceRegistryFile
+from . import reviewers as reviewer_registry
+from ..education.knowledge import (
+    KnowledgeEntry,
+    KnowledgeFile,
+    ReviewerAuthorization,
+    ReviewerRegistryFile,
+    SourceRecord,
+    SourceRegistryFile,
+    content_digest,
+)
 from .capabilities import CAPABILITIES, capability_check
 
 DATA = Path(__file__).with_name("data")
@@ -35,28 +44,78 @@ class KnowledgeRegistry:
     sources: dict[str, SourceRecord]
     entries: dict[str, KnowledgeEntry]
     digest: str
+    reviewers: tuple[ReviewerAuthorization, ...] = ()
 
     @property
     def version(self) -> str:
         return f"{SCHEMA_VERSION}+{self.digest[:12]}"
 
 
-def runtime_eligibility(entry: KnowledgeEntry, sources: dict[str, SourceRecord]) -> list[str]:
-    """Boş liste: çalışma zamanında yetkili bağlam olarak kullanılabilir. Aksi halde engel nedenleri."""
+def authorized(reviewers, reviewer: str, stage: str, subject: Subject, role: str, on) -> bool:
+    """İnceleyen, proje sahibinin kaydında bu aşama, alan, rol ve tarih için yetkili mi? Tarih yoksa hayır."""
+    return reviewer_registry.authorized(reviewers, reviewer, stage, subject, role, on)
+
+
+def _rights_reasons(entry: KnowledgeEntry, sources: dict[str, SourceRecord], reviewers) -> list[str]:
+    rights = entry.rights
+    reasons = []
+    if rights.source_use == "unresolved":
+        reasons.append("rights_unresolved")
+    if rights.decision != "approved":
+        reasons.append(f"rights_decision:{rights.decision}")
+    elif not authorized(reviewers, rights.decided_by, "rights", entry.subject, "project_owner", rights.decided_on):
+        reasons.append("rights_decider_not_authorized")
+    cited = [sources.get(locator.source_id) for locator in entry.provenance]
+    for source in cited:
+        if source is None:
+            continue
+        perms = source.permissions
+        # Başvuru izni yalnız özgün anlatımı ve kaynak gösterimini kapsar; kopyalama/uyarlama yetkisi vermez.
+        if perms.academic_reference != "allowed" or source.access in {"access_restricted", "not_accessed"}:
+            reasons.append(f"rights_restricted:{source.id}")
+        if rights.source_use == "licensed_adaptation":
+            if perms.ingestion not in {"allowed", "conditional"} or not source.license_verified:
+                reasons.append(f"adaptation_not_licensed:{source.id}")
+            if rights.commercial_use != "eligible":
+                reasons.append(f"commercial_use:{rights.commercial_use}")
+        if rights.source_use == "direct_quotation":
+            if perms.redistribution not in {"allowed", "conditional"} or not source.license_verified:
+                reasons.append(f"quotation_not_licensed:{source.id}")
+            if rights.commercial_use != "eligible":
+                reasons.append(f"commercial_use:{rights.commercial_use}")
+        if rights.source_use in {"licensed_adaptation", "direct_quotation"} and source.license and \
+                "NC" in source.license.upper().replace("-", " ").split() and rights.commercial_use == "eligible":
+            reasons.append(f"noncommercial_license:{source.id}")
+    return reasons
+
+
+def runtime_eligibility(entry: KnowledgeEntry, sources: dict[str, SourceRecord], reviewers=()) -> list[str]:
+    """Boş liste: yetkili çalışma zamanı bağlamına girebilir. Aksi halde engel nedenleri.
+
+    Gerekenler: onaylı durum; onayın proje sahibince yetkilendirilmiş bir öğretmen/uzmandan, aynı sürüm ve aynı
+    içerik özeti için gelmesi (bayat onay geçersiz); doğrulanmış kaynak konumu; kaynak kullanım sınıfına uygun
+    haklar ve yetkili proje sahibinin hak kararı.
+    """
     reasons = []
     if entry.status != "approved":
         reasons.append(f"status:{entry.status}")
-    if not entry.provenance:
+    else:
+        approval = entry.reviews[-1]
+        if not authorized(reviewers, approval.reviewer, approval.stage, entry.subject, approval.role, approval.reviewed_on):
+            reasons.append("reviewer_not_authorized")
+        if approval.content_digest != content_digest(entry):
+            reasons.append("stale_approval")
+        if entry.authored_by == "teacher" and approval.reviewer in {review.reviewer for review in entry.reviews if review.decision == "source_verified"} \
+                and len({review.reviewer for review in entry.reviews if review.decision == "approve"}) < 1:
+            reasons.append("no_independent_approval")
+    if not entry.provenance and entry.rights.source_use != "teacher_original":
         reasons.append("unsourced")
     for locator in entry.provenance:
-        source = sources.get(locator.source_id)
-        if source is None:
+        if locator.source_id not in sources:
             reasons.append(f"unknown_source:{locator.source_id}")
-            continue
-        if locator.verified_on is None:
+        elif locator.verified_on is None:
             reasons.append(f"locator_unverified:{locator.source_id}")
-        if source.permissions.academic_reference != "allowed" or source.access in {"access_restricted", "not_accessed"}:
-            reasons.append(f"rights_restricted:{source.id}")
+    reasons += _rights_reasons(entry, sources, reviewers)
     return sorted(set(reasons))
 
 
@@ -64,7 +123,8 @@ def _cycles(edges: dict[str, list[str]]) -> list[list[str]]:
     return registry_v2._cycles(edges)
 
 
-def validate(sources: list[SourceRecord], files: list[KnowledgeFile], outcome_ids: set[str], problems: list[str]) -> None:
+def validate(sources: list[SourceRecord], files: list[KnowledgeFile], outcome_ids: set[str], problems: list[str],
+             unit_ids: set[str] | None = None) -> None:
     source_ids = Counter(item.id for item in sources)
     problems.extend(f"Yinelenen kaynak: {key}" for key, count in source_ids.items() if count > 1)
     entries = [entry for item in files for entry in item.entries]
@@ -88,6 +148,11 @@ def validate(sources: list[SourceRecord], files: list[KnowledgeFile], outcome_id
         for ref in entry.outcome_refs:
             if ref not in outcome_ids:
                 problems.append(f"Tanımsız kazanım: {entry.id} → {ref}")
+        for ref in entry.curriculum_topic_refs:
+            if unit_ids is not None and ref not in unit_ids:
+                problems.append(f"Tanımsız müfredat başlığı: {entry.id} → {ref}")
+        if entry.rights.contribution_id is not None and entry.rights.source_use != "teacher_original":
+            problems.append(f"Katkı bağı yalnız öğretmen özgün içeriğinde olur: {entry.id}")
         for link in entry.verifiers:
             if link.verifier not in CAPABILITIES:
                 problems.append(f"Tanımsız denetleyici: {entry.id} → {link.verifier}")
@@ -110,15 +175,20 @@ def load(data_dir: Path = DATA, outcome_ids: set[str] | None = None) -> Knowledg
         payload = registry_v2._read(path)
         hasher.update(f"{name}.json".encode() + b"\0" + payload)
         files.append(KnowledgeFile.model_validate_json(payload))
+    unit_ids = None
     if outcome_ids is None:
-        outcome_ids = set(registry_v2.default_registry().outcomes)
+        curriculum = registry_v2.default_registry()
+        outcome_ids, unit_ids = set(curriculum.outcomes), set(curriculum.units)
+    reviewer_bytes = registry_v2._read(data_dir / "reviewers.json")
+    hasher.update(b"reviewers.json\0" + reviewer_bytes)
+    reviewers = tuple(ReviewerRegistryFile.model_validate_json(reviewer_bytes).reviewers)
     problems: list[str] = []
-    validate(sources, files, outcome_ids, problems)
+    validate(sources, files, outcome_ids, problems, unit_ids)
     if problems:
         raise KnowledgeRegistryError(problems)
     return KnowledgeRegistry(sources={item.id: item for item in sources},
                              entries={entry.id: entry for item in files for entry in item.entries},
-                             digest=hasher.hexdigest())
+                             digest=hasher.hexdigest(), reviewers=reviewers)
 
 
 @lru_cache
@@ -137,7 +207,7 @@ def select(registry: KnowledgeRegistry, subject: Subject, *, topic_keys: set[str
     for entry in registry.entries.values():
         if entry.subject not in wanted:
             continue
-        if not include_drafts and runtime_eligibility(entry, registry.sources):
+        if not include_drafts and runtime_eligibility(entry, registry.sources, registry.reviewers):
             continue
         score = (2 if outcome_ids & set(entry.outcome_refs) else 0) + (1 if entry.topic in topic_keys else 0)
         if score:
@@ -159,7 +229,10 @@ def coverage(registry: KnowledgeRegistry) -> list[dict]:
             "with_verifier": sum(1 for entry in group if entry.verifiers),
             "statuses": dict(sorted(Counter(entry.status for entry in group).items())),
             "reviewed": sum(1 for entry in group if entry.reviews),
-            "runtime_eligible": sum(1 for entry in group if not runtime_eligibility(entry, registry.sources)),
+            "runtime_eligible": sum(1 for entry in group if not runtime_eligibility(entry, registry.sources, registry.reviewers)),
+            "revised": sum(1 for entry in group if entry.revisions),
+            "source_use": dict(sorted(Counter(entry.rights.source_use for entry in group).items())),
+            "topic_linked": sum(1 for entry in group if entry.curriculum_topic_refs),
         })
     return rows
 
@@ -168,6 +241,6 @@ def preview(registry: KnowledgeRegistry, entry_id: str) -> dict:
     """Çevrimdışı önizleme: taslak girdi, uygunluk engelleri ve denetleyici kapsamıyla birlikte."""
     entry = registry.entries[entry_id]
     return {"entry": entry.model_dump(mode="json", exclude_none=True),
-            "runtime_blockers": runtime_eligibility(entry, registry.sources),
+            "runtime_blockers": runtime_eligibility(entry, registry.sources, registry.reviewers),
             "capability": capability_check(entry).model_dump(mode="json"),
             "notice_tr": "TASLAK ÖNİZLEME — öğretmen onayı olmadan öğrenciye veya modele yetkili bilgi olarak verilmez."}

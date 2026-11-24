@@ -7,13 +7,22 @@ from pydantic import ValidationError
 
 from apps.api.app.features.education.base import Subject
 from apps.api.app.features.education.contribution import TeacherContribution
-from apps.api.app.features.education.knowledge import KnowledgeEntry, SourceRecord
+from apps.api.app.features.education.knowledge import KnowledgeEntry, ReviewerAuthorization, SourceRecord, content_digest
 from apps.api.app.features.knowledge import capabilities as caps
 from apps.api.app.features.knowledge import registry as k
 from scripts import dataset_manifest
 
 REVIEW = {"reviewer": "teacher:fizik-ogretmeni-01", "role": "teacher", "reviewed_on": "2026-12-01", "reviewed_version": 1,
           "decision": "approve", "rationale_tr": "Koşullar ve sadeleştirme 10. sınıfa uygun."}
+# TA-007: sentetik yetkiler yalnız bu yalıtılmış testte. Üretim inceleyen kaydı boştur.
+TEACHER = ReviewerAuthorization(reviewer="teacher:fizik-ogretmeni-01", roles=["teacher"], subjects=["physics"],
+                                stages=["scientific"], valid_from=date(2026, 1, 1), authorized_by="owner:test-sahip",
+                                authorized_on=date(2026, 1, 1), evidence_note_tr="Yalnız test fikstürü.")
+OWNER = ReviewerAuthorization(reviewer="owner:test-sahip", roles=["project_owner"], subjects=["physics"],
+                              stages=["rights"], valid_from=date(2026, 1, 1), authorized_by="owner:test-sahip",
+                              authorized_on=date(2026, 1, 1), evidence_note_tr="Yalnız test fikstürü.")
+RIGHTS = {"source_use": "independent_fact", "basis_tr": "Özgün anlatım; kaynak yalnız doğrulama başvurusu.",
+          "decision": "approved", "decided_by": "owner:test-sahip", "decided_on": "2026-12-02"}
 
 
 @pytest.fixture(scope="module")
@@ -21,15 +30,21 @@ def registry():
     return k.default_knowledge()
 
 
-def approved(entry: KnowledgeEntry, **review) -> KnowledgeEntry:
-    return KnowledgeEntry.model_validate({**entry.model_dump(), "status": "approved", "reviews": [{**REVIEW, **review}]})
+def approved(entry: KnowledgeEntry, rights: dict | None = None, **review) -> KnowledgeEntry:
+    """TA-007: onay bilimsel aşamada, aynı sürümün içerik özetiyle verilir."""
+    base = {**REVIEW, "reviewed_version": entry.version, "stage": "scientific", "content_digest": content_digest(entry)}
+    data = {**entry.model_dump(), "status": "approved", "reviews": [{**base, **review}]}
+    if rights is not None:
+        data["rights"] = rights
+    return KnowledgeEntry.model_validate(data)
 
 
 def test_balanced_initial_dataset_is_sourced_draft_and_not_runtime_eligible(registry):
     rows = {row["subject"]: row for row in k.coverage(registry)}
+    # TA-007: dengeli genişletme (hedef aralık, kota değil): çekirdek branşlarda 40–60, ortaokul fende 15–30.
     for subject in ("mathematics", "physics", "chemistry", "biology"):
-        assert 15 <= rows[subject]["total"] <= 25
-    assert rows["science"]["total"] >= 5
+        assert 40 <= rows[subject]["total"] <= 60
+    assert 15 <= rows["science"]["total"] <= 30
     assert all(entry.status == "draft" and entry.authored_by == "claude-draft" and not entry.reviews
                for entry in registry.entries.values())
     assert sum(row["runtime_eligible"] for row in rows.values()) == 0
@@ -85,7 +100,8 @@ def test_rights_cannot_be_assumed():
 def test_approval_requires_human_review_of_the_same_version(registry):
     entry = registry.entries["phys.ohms-law"]
     assert approved(entry).status == "approved"
-    for bad in ({"reviewer": "claude:taslak"}, {"role": "project_owner"}, {"reviewed_version": 2}, {"decision": "source_verified"}):
+    for bad in ({"reviewer": "claude:taslak"}, {"role": "project_owner"}, {"reviewed_version": 2}, {"decision": "source_verified"},
+                {"content_digest": None}, {"stage": "pedagogical"}):
         with pytest.raises(ValidationError):
             approved(entry, **bad)
     with pytest.raises(ValidationError):
@@ -116,18 +132,23 @@ def test_law_records_must_state_validity_conditions(registry):
 def test_drafts_are_excluded_from_runtime_selection_but_visible_in_offline_preview(registry):
     assert k.select(registry, Subject.PHYSICS, topic_keys={"elektrik"}) == []
     preview = [entry.id for entry in k.select(registry, Subject.PHYSICS, topic_keys={"elektrik"}, include_drafts=True)]
-    assert preview == ["phys.ohms-law", "phys.resistivity", "phys.series-parallel"]
+    # TA-007: genişletmeyle "elektrik" konusunda daha çok taslak var; sıra kimliğe göre belirlenimcidir.
+    assert preview == ["phys.electric-current", "phys.electric-power", "phys.kirchhoff-rules"]
     shown = k.preview(registry, "phys.ohms-law")
     assert "status:draft" in shown["runtime_blockers"] and shown["notice_tr"].startswith("TASLAK")
 
 
 def test_approved_and_rights_clear_entry_becomes_eligible(registry):
-    entry = approved(registry.entries["phys.ohms-law"])
-    assert k.runtime_eligibility(entry, registry.sources) == []
+    entry = approved(registry.entries["phys.ohms-law"], rights=RIGHTS)
+    reviewers = (TEACHER, OWNER)
+    assert k.runtime_eligibility(entry, registry.sources, reviewers) == []
+    # TA-007: yetki kaydı olmadan sözdizimi geçerli onay ve hak kararı yetmez.
+    assert {"reviewer_not_authorized", "rights_decider_not_authorized"} <= set(k.runtime_eligibility(entry, registry.sources))
     restricted = {**registry.sources, "openstax.university-physics-volume-2": registry.sources["iupac.gold-book"].model_copy(
         update={"id": "openstax.university-physics-volume-2"})}
-    assert "rights_restricted:openstax.university-physics-volume-2" in k.runtime_eligibility(entry, restricted)
-    custom = k.KnowledgeRegistry(sources=registry.sources, entries={**registry.entries, entry.id: entry}, digest="t")
+    assert "rights_restricted:openstax.university-physics-volume-2" in k.runtime_eligibility(entry, restricted, reviewers)
+    custom = k.KnowledgeRegistry(sources=registry.sources, entries={**registry.entries, entry.id: entry}, digest="t",
+                                 reviewers=reviewers)
     assert [item.id for item in k.select(custom, Subject.PHYSICS, topic_keys={"elektrik"})] == ["phys.ohms-law"]
 
 

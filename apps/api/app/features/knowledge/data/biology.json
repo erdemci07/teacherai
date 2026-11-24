@@ -1,165 +1,1932 @@
 {
-  "schema_name": "teacherai.knowledge_registry",
-  "version": "1.0.0",
-  "subject": "biology",
-  "entries": [
-    {"id": "bio.cell-theory", "version": 1, "subject": "biology", "topic": "hucre", "kind": "fact",
-     "title_tr": "Hücre kuramı",
-     "statement_tr": "Bütün canlılar bir veya daha çok hücreden oluşur, hücre canlılığın temel birimidir ve yeni hücreler var olan hücrelerin bölünmesiyle oluşur.",
-     "misconceptions_tr": ["Virüsleri hücreli canlı saymak."],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::9.2.1.1"],
-     "visuals": ["labeled_structure"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "4.1 Studying Cells", "url": "https://openstax.org/books/biology-2e/pages/4-1-studying-cells", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.prokaryote-eukaryote", "version": 1, "subject": "biology", "topic": "hucre", "kind": "relationship",
-     "title_tr": "Prokaryot ve ökaryot hücre",
-     "statement_tr": "Prokaryot hücrelerde zarla çevrili çekirdek ve zarlı organeller bulunmaz; ökaryot hücrelerde genetik madde çekirdek zarıyla çevrilidir ve zarlı organeller vardır. İki hücre türünde de hücre zarı, sitoplazma, ribozom ve DNA bulunur.",
-     "structure_function": [{"structure_tr": "Çekirdek zarı", "function_tr": "Ökaryotlarda DNA'yı sitoplazmadan ayırır; transkripsiyon ile translasyon farklı bölmelerde gerçekleşir."}],
-     "misconceptions_tr": ["Prokaryotlarda ribozom bulunmadığını sanmak."],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::9.2.1.2"],
-     "visuals": ["labeled_structure"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "4.2 Prokaryotic Cells", "url": "https://openstax.org/books/biology-2e/pages/4-2-prokaryotic-cells", "verified_on": "2026-11-24"},
-                    {"source_id": "openstax.biology-2e", "section": "4.3 Eukaryotic Cells", "url": "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.organelles", "version": 1, "subject": "biology", "topic": "hucre", "kind": "relationship",
-     "title_tr": "Organellerde yapı-işlev ilişkisi",
-     "statement_tr": "Ökaryot hücrede organeller işlevlerine uygun yapılar taşır: mitokondri oksijenli solunumla ATP üretir, kloroplast fotosentezle ışık enerjisini kimyasal enerjiye dönüştürür, ribozom proteinleri sentezler.",
-     "structure_function": [
-       {"structure_tr": "Mitokondri iç zar kıvrımları", "function_tr": "Elektron taşıma zinciri ve ATP sentezi için yüzeyi artırır."},
-       {"structure_tr": "Kloroplast tilakoit zarları", "function_tr": "Işığa bağımlı tepkimelerin pigmentlerini ve taşıyıcılarını barındırır."},
-       {"structure_tr": "Ribozom", "function_tr": "mRNA'daki kodonlara göre amino asitleri birleştirir; zarsızdır ve prokaryotlarda da bulunur."}],
-     "misconceptions_tr": ["Bitki hücrelerinde mitokondri bulunmadığını sanmak."],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::9.2.1.2"],
-     "visuals": ["labeled_structure"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "4.3 Eukaryotic Cells", "url": "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.membrane-structure", "version": 1, "subject": "biology", "topic": "hucre_zari", "kind": "definition",
-     "title_tr": "Akıcı mozaik zar modeli",
-     "statement_tr": "Hücre zarı, içine proteinlerin gömüldüğü ve yanal hareket edebilen fosfolipit çift katmanıdır; zar seçici geçirgendir.",
-     "structure_function": [{"structure_tr": "Fosfolipitlerin hidrofobik kuyrukları", "function_tr": "Yüklü ve büyük polar moleküllerin serbest geçişini engeller."},
-                            {"structure_tr": "Taşıyıcı ve kanal proteinleri", "function_tr": "Belirli maddelerin zardan geçişini sağlar."}],
-     "misconceptions_tr": ["Zarın katı ve hareketsiz bir duvar olduğunu sanmak."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.9.2.2"],
-     "visuals": ["labeled_structure"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "5.1 Components and Structure", "url": "https://openstax.org/books/biology-2e/pages/5-1-components-and-structure", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.passive-transport", "version": 1, "subject": "biology", "topic": "madde_gecisi", "kind": "process",
-     "title_tr": "Pasif taşıma: difüzyon ve osmoz",
-     "statement_tr": "Pasif taşımada maddeler derişim farkı yönünde ve hücre ATP harcamadan geçer; osmozda su, seçici geçirgen zardan çözünen derişimi yüksek tarafa doğru net olarak hareket eder.",
-     "conditions_tr": ["Derişim (veya su potansiyeli) farkı bulunmalı.", "Zar söz konusu maddeye geçirgen olmalı."],
-     "misconceptions_tr": ["Dengede molekül hareketinin durduğunu sanmak.", "Osmozda çözünenin hareket ettiğini düşünmek."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.9.2.3", "meb-2018.biyoloji.9-12::9.2.1.3"],
-     "related": ["bio.membrane-structure"],
-     "visuals": ["process_diagram", "experiment_graph"],
-     "verifiers": [{"verifier": "reasoning.evidence.controlled_comparison", "checks_tr": "Zar deneyinde yalnız bir değişkenin değiştirildiği."}, {"verifier": "reasoning.evidence.claim", "checks_tr": "Deney verisinin verilen iddiayı destekleyip desteklemediği."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "5.2 Passive Transport", "url": "https://openstax.org/books/biology-2e/pages/5-2-passive-transport", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.active-transport", "version": 1, "subject": "biology", "topic": "madde_gecisi", "kind": "process",
-     "title_tr": "Aktif taşıma",
-     "statement_tr": "Aktif taşımada maddeler derişim farkına karşı taşıyıcı proteinlerle taşınır ve hücre enerji (çoğunlukla ATP) harcar.",
-     "misconceptions_tr": ["Büyük molekülün her zaman aktif taşımayla geçtiğini sanmak (endositoz ayrı bir süreçtir)."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.9.2.2"],
-     "related": ["bio.passive-transport"],
-     "visuals": ["process_diagram"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "5.3 Active Transport", "url": "https://openstax.org/books/biology-2e/pages/5-3-active-transport", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.enzymes", "version": 1, "subject": "biology", "topic": "enzimler", "kind": "relationship",
-     "title_tr": "Enzimlerin çalışması",
-     "statement_tr": "Enzimler tepkimenin aktivasyon enerjisini düşürerek hızlandıran ve tepkimede tükenmeyen biyolojik katalizörlerdir; etkinlikleri sıcaklık, pH ve substrat derişimine bağlıdır ve uygun olmayan koşullarda yapıları bozulabilir.",
-     "structure_function": [{"structure_tr": "Aktif bölge", "function_tr": "Substrata biçim ve kimyasal özellik olarak uyar; özgüllüğü belirler."}],
-     "conditions_tr": ["Her enzimin kendine özgü en uygun sıcaklık ve pH aralığı vardır."],
-     "misconceptions_tr": ["Enzimin tepkimenin denge konumunu değiştirdiğini sanmak.", "Sıcaklık arttıkça enzim etkinliğinin sınırsız arttığını düşünmek."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.9.1.8"],
-     "visuals": ["experiment_graph", "process_diagram"],
-     "verifiers": [{"verifier": "reasoning.evidence.controlled_comparison", "checks_tr": "Sıcaklık veya pH deneyinde kontrol değişkenleri."}, {"verifier": "reasoning.evidence.claim", "checks_tr": "Ölçülen en yüksek etkinlik noktasına ilişkin iddia."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "6.5 Enzymes", "url": "https://openstax.org/books/biology-2e/pages/6-5-enzymes", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.dna-structure", "version": 1, "subject": "biology", "topic": "nukleik_asitler", "kind": "fact",
-     "title_tr": "DNA'nın yapısı ve baz eşleşmesi",
-     "statement_tr": "DNA, nükleotitlerden oluşan iki zincirin birbirine zıt yönde (antiparalel) sarılmasıyla oluşan çift sarmaldır; adenin timinle, guanin sitozinle hidrojen bağlarıyla eşleşir.",
-     "structure_function": [{"structure_tr": "Tamamlayıcı baz eşleşmesi", "function_tr": "Bir zincirin diziliminden diğerinin belirlenmesini ve eşlenmeyi sağlar."}],
-     "misconceptions_tr": ["Gen ile kromozomu aynı şey sanmak."],
-     "outcome_refs": ["meb-2018.fen-bilimleri.3-8::F.8.2.1.1", "tymm-2026.biyoloji.9-12::BIY.12.2.2"],
-     "visuals": ["molecular_structure", "labeled_structure"],
-     "verifiers": [{"verifier": "reasoning.sequence.transcription", "checks_tr": "Kalıp zincir dizisinin tamamlayıcısının doğru yazıldığı."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "14.2 DNA Structure and Sequencing", "url": "https://openstax.org/books/biology-2e/pages/14-2-dna-structure-and-sequencing", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.transcription", "version": 1, "subject": "biology", "topic": "protein_sentezi", "kind": "process",
-     "title_tr": "Transkripsiyon (DNA'dan mRNA'ya)",
-     "statement_tr": "Transkripsiyonda DNA'nın kalıp zinciri okunarak tamamlayıcı mRNA sentezlenir; RNA'da timin yerine urasil bulunur.",
-     "conditions_tr": ["Ökaryotlarda çekirdekte, prokaryotlarda sitoplazmada gerçekleşir."],
-     "misconceptions_tr": ["mRNA dizisini kalıp zincirle aynı sanmak (kodlayan zincire benzer, T yerine U)."],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::12.1.2.1"],
-     "related": ["bio.dna-structure", "bio.translation"],
-     "visuals": ["process_diagram"],
-     "verifiers": [{"verifier": "reasoning.sequence.transcription", "checks_tr": "Kalıp DNA'dan mRNA dizisinin belirlenimci üretimi. Gen ifadesinin düzenlenmesini sınamaz."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "15.1 The Genetic Code", "url": "https://openstax.org/books/biology-2e/pages/15-1-the-genetic-code", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.translation", "version": 1, "subject": "biology", "topic": "protein_sentezi", "kind": "process",
-     "title_tr": "Translasyon ve genetik şifre",
-     "statement_tr": "Translasyonda ribozom mRNA'yı üçlü kodonlar hâlinde okur ve tRNA'ların getirdiği amino asitleri sırayla bağlayarak polipeptit oluşturur. Genetik şifre neredeyse evrenseldir ve bir amino asit birden çok kodonla şifrelenebilir.",
-     "conditions_tr": ["Okuma başlama kodonuyla başlar ve durma kodonunda biter."],
-     "misconceptions_tr": ["Her kodonun farklı bir amino asidi şifrelediğini sanmak."],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::12.1.2.1"],
-     "related": ["bio.transcription", "bio.organelles"],
-     "visuals": ["process_diagram"],
-     "verifiers": [{"verifier": "reasoning.sequence.codon", "checks_tr": "mRNA'da belirli konumdaki kodonun okunması."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "15.5 Ribosomes and Protein Synthesis", "url": "https://openstax.org/books/biology-2e/pages/15-5-ribosomes-and-protein-synthesis", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.photosynthesis", "version": 1, "subject": "biology", "topic": "fotosentez", "kind": "process",
-     "title_tr": "Fotosentez",
-     "statement_tr": "Fotosentezde bitki, alg ve bazı bakteriler ışık enerjisini kullanarak karbon dioksit ve sudan glikoz gibi organik molekül üretir ve oksijen açığa çıkarır; ökaryotlarda kloroplastta gerçekleşir.",
-     "representation": "6CO_2+6H_2O \\rightarrow C_6H_{12}O_6+6O_2",
-     "conditions_tr": ["Toplam denklem tek bir tepkimeyi değil çok basamaklı süreci özetler."],
-     "misconceptions_tr": ["Bitkilerin yalnız fotosentez yaptığını, solunum yapmadığını sanmak.", "Açığa çıkan oksijenin CO₂'den geldiğini düşünmek (sudan gelir)."],
-     "simplifications": [{"level": "8. sınıf / 12. sınıf", "text_tr": "Işık + su + karbon dioksit → besin + oksijen.", "omits_tr": "Işığa bağımlı tepkimeler ve Calvin döngüsü ayrımı."}],
-     "outcome_refs": ["meb-2018.biyoloji.9-12::12.2.2.1"],
-     "related": ["bio.organelles", "bio.cellular-respiration"],
-     "visuals": ["process_diagram", "chemical_equation"],
-     "verifiers": [{"verifier": "reasoning.chemistry.balance", "checks_tr": "Toplam denklemin atom dengesi. Biyolojik süreci veya basamaklarını doğrulamaz."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "8.1 Overview of Photosynthesis", "url": "https://openstax.org/books/biology-2e/pages/8-1-overview-of-photosynthesis", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.cellular-respiration", "version": 1, "subject": "biology", "topic": "hucresel_solunum", "kind": "process",
-     "title_tr": "Hücresel solunum",
-     "statement_tr": "Hücresel solunumda organik moleküllerdeki kimyasal enerji basamaklı tepkimelerle ATP'ye aktarılır; oksijenli solunumda son elektron alıcısı oksijendir.",
-     "conditions_tr": ["Oksijensiz koşullarda fermantasyon gibi daha düşük verimli yollar kullanılır."],
-     "misconceptions_tr": ["Solunumu yalnız akciğerde gaz alışverişi sanmak.", "Enerjinin 'üretildiğini' söylemek (dönüştürülür)."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.10.1.7", "meb-2018.biyoloji.9-12::12.2.4.1"],
-     "related": ["bio.photosynthesis", "bio.organelles"],
-     "visuals": ["process_diagram"],
-     "verifiers": [{"verifier": "reasoning.chemistry.balance", "checks_tr": "Glikozun oksijenli yıkımına ait toplam denklemin atom dengesi."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "7.1 Energy in Living Systems", "url": "https://openstax.org/books/biology-2e/pages/7-1-energy-in-living-systems", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.mendel-segregation", "version": 1, "subject": "biology", "topic": "kalitim", "kind": "law",
-     "title_tr": "Mendel'in ayrılma ilkesi",
-     "statement_tr": "Diploit bir canlıdaki bir genin iki aleli gamet oluşumunda birbirinden ayrılır ve her gamete yalnız biri geçer; bağımsız dağılım ilkesi farklı kromozomlardaki genler için geçerlidir.",
-     "conditions_tr": ["Tek gen, iki alel; tam baskınlık gibi basit kalıtım durumlarında oranlar beklenen biçimde görülür.", "Bağlı genlerde bağımsız dağılım geçerli değildir."],
-     "exceptions_tr": ["Eksik baskınlık, eş baskınlık, çok alellilik ve eşeye bağlı kalıtımda fenotip oranları farklıdır."],
-     "misconceptions_tr": ["Baskın özelliğin toplumda her zaman daha yaygın olduğunu sanmak."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.12.2.5", "meb-2018.biyoloji.9-12::10.2.1.1"],
-     "visuals": ["data_table", "process_diagram"],
-     "verifiers": [{"verifier": "reasoning.evidence.constant_ratio", "checks_tr": "Çaprazlama tablosu verisinde oranın sabitliği (yalnız veri denetimi)."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "12.3 Laws of Inheritance", "url": "https://openstax.org/books/biology-2e/pages/12-3-laws-of-inheritance", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.cell-division", "version": 1, "subject": "biology", "topic": "hucre_bolunmesi", "kind": "process",
-     "title_tr": "Mitoz ve mayoz",
-     "statement_tr": "Mitozla bölünen bir hücreden genetik olarak özdeş ve aynı kromozom sayısına sahip iki hücre oluşur; mayozla kromozom sayısı yarıya iner ve genetik çeşitlilik oluşur.",
-     "misconceptions_tr": ["Mayozun yalnız insanda görüldüğünü sanmak.", "Kromatit ile kromozomu karıştırmak."],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.12.1.3"],
-     "visuals": ["process_diagram", "labeled_structure"],
-     "verifiers": [{"verifier": "reasoning.evidence.sequence_order", "checks_tr": "Evrelerin verilen sıralamasının modeldeki sırayla uyumu."}],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "10.2 The Cell Cycle", "url": "https://openstax.org/books/biology-2e/pages/10-2-the-cell-cycle", "verified_on": "2026-11-24"},
-                    {"source_id": "openstax.biology-2e", "section": "11.1 The Process of Meiosis", "url": "https://openstax.org/books/biology-2e/pages/11-1-the-process-of-meiosis", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"},
-    {"id": "bio.ecosystem-energy-flow", "version": 1, "subject": "biology", "topic": "ekoloji", "kind": "relationship",
-     "title_tr": "Ekosistemde enerji akışı",
-     "statement_tr": "Enerji ekosistemde üreticilerden tüketicilere tek yönde akar ve her beslenme basamağında büyük bölümü ısı olarak kaybedildiği için üst basamaklara giderek azalan miktarda aktarılır; madde ise döngüyle yeniden kullanılır.",
-     "conditions_tr": ["Basamaklar arası aktarım oranı ekosisteme göre değişir; sabit bir yüzde değildir."],
-     "misconceptions_tr": ["Enerjinin madde gibi döngüyle yeniden kullanıldığını sanmak.", "Aktarım oranını her ekosistemde tam %10 kabul etmek."],
-     "simplifications": [{"level": "8. sınıf", "text_tr": "Besin zincirinde yukarı çıktıkça aktarılan enerji azalır.", "omits_tr": "Basamaklar arası verimin ekosisteme göre değişmesi ve ölçüm yöntemi."}],
-     "outcome_refs": ["tymm-2026.biyoloji.9-12::BIY.10.2.3", "meb-2018.biyoloji.9-12::10.3.1.1"],
-     "visuals": ["process_diagram"],
-     "provenance": [{"source_id": "openstax.biology-2e", "section": "46.2 Energy Flow through Ecosystems", "url": "https://openstax.org/books/biology-2e/pages/46-2-energy-flow-through-ecosystems", "verified_on": "2026-11-24"}],
-     "authored_by": "claude-draft", "status": "draft"}
-  ]
+ "schema_name": "teacherai.knowledge_registry",
+ "version": "1.0.0",
+ "subject": "biology",
+ "entries": [
+  {
+   "id": "bio.cell-theory",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucre",
+   "kind": "fact",
+   "title_tr": "Hücre kuramı",
+   "statement_tr": "Bütün canlılar bir veya daha çok hücreden oluşur, hücre canlılığın temel birimidir ve yeni hücreler var olan hücrelerin bölünmesiyle oluşur.",
+   "misconceptions_tr": [
+    "Virüsleri hücreli canlı saymak."
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.2.1.1"
+   ],
+   "visuals": [
+    "labeled_structure"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "4.1 Studying Cells",
+     "url": "https://openstax.org/books/biology-2e/pages/4-1-studying-cells",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.prokaryote-eukaryote",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucre",
+   "kind": "relationship",
+   "title_tr": "Prokaryot ve ökaryot hücre",
+   "statement_tr": "Prokaryot hücrelerde zarla çevrili çekirdek ve zarlı organeller bulunmaz; ökaryot hücrelerde genetik madde çekirdek zarıyla çevrilidir ve zarlı organeller vardır. İki hücre türünde de hücre zarı, sitoplazma, ribozom ve DNA bulunur.",
+   "structure_function": [
+    {
+     "structure_tr": "Çekirdek zarı",
+     "function_tr": "Ökaryotlarda DNA'yı sitoplazmadan ayırır; transkripsiyon ile translasyon farklı bölmelerde gerçekleşir."
+    }
+   ],
+   "misconceptions_tr": [
+    "Prokaryotlarda ribozom bulunmadığını sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.2.1.2"
+   ],
+   "visuals": [
+    "labeled_structure"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "4.2 Prokaryotic Cells",
+     "url": "https://openstax.org/books/biology-2e/pages/4-2-prokaryotic-cells",
+     "verified_on": "2026-11-24"
+    },
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "4.3 Eukaryotic Cells",
+     "url": "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.organelles",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucre",
+   "kind": "relationship",
+   "title_tr": "Organellerde yapı-işlev ilişkisi",
+   "statement_tr": "Ökaryot hücrede organeller işlevlerine uygun yapılar taşır: mitokondri oksijenli solunumla ATP üretir, kloroplast fotosentezle ışık enerjisini kimyasal enerjiye dönüştürür, ribozom proteinleri sentezler.",
+   "structure_function": [
+    {
+     "structure_tr": "Mitokondri iç zar kıvrımları",
+     "function_tr": "Elektron taşıma zinciri ve ATP sentezi için yüzeyi artırır."
+    },
+    {
+     "structure_tr": "Kloroplast tilakoit zarları",
+     "function_tr": "Işığa bağımlı tepkimelerin pigmentlerini ve taşıyıcılarını barındırır."
+    },
+    {
+     "structure_tr": "Ribozom",
+     "function_tr": "mRNA'daki kodonlara göre amino asitleri birleştirir; zarsızdır ve prokaryotlarda da bulunur."
+    }
+   ],
+   "misconceptions_tr": [
+    "Bitki hücrelerinde mitokondri bulunmadığını sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.2.1.2"
+   ],
+   "visuals": [
+    "labeled_structure"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "4.3 Eukaryotic Cells",
+     "url": "https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.membrane-structure",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucre_zari",
+   "kind": "definition",
+   "title_tr": "Akıcı mozaik zar modeli",
+   "statement_tr": "Hücre zarı, içine proteinlerin gömüldüğü ve yanal hareket edebilen fosfolipit çift katmanıdır; zar seçici geçirgendir.",
+   "structure_function": [
+    {
+     "structure_tr": "Fosfolipitlerin hidrofobik kuyrukları",
+     "function_tr": "Yüklü ve büyük polar moleküllerin serbest geçişini engeller."
+    },
+    {
+     "structure_tr": "Taşıyıcı ve kanal proteinleri",
+     "function_tr": "Belirli maddelerin zardan geçişini sağlar."
+    }
+   ],
+   "misconceptions_tr": [
+    "Zarın katı ve hareketsiz bir duvar olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.9.2.2"
+   ],
+   "visuals": [
+    "labeled_structure"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "5.1 Components and Structure",
+     "url": "https://openstax.org/books/biology-2e/pages/5-1-components-and-structure",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.passive-transport",
+   "version": 2,
+   "subject": "biology",
+   "topic": "madde_gecisi",
+   "kind": "process",
+   "title_tr": "Pasif taşıma: difüzyon ve osmoz",
+   "statement_tr": "Pasif taşımada maddeler hücrenin metabolik enerji harcamadan, yüksüz maddeler için derişim farkı, iyonlar için elektrokimyasal fark yönünde geçer. Osmozda su, seçici geçirgen bir zardan su potansiyelinin yüksek olduğu taraftan düşük olduğu tarafa (çözünen derişiminin daha yüksek olduğu tarafa) net olarak hareket eder.",
+   "conditions_tr": [
+    "Zar söz konusu maddeye geçirgen olmalı (kolaylaştırılmış difüzyonda taşıyıcı/kanal gerekir).",
+    "Osmoz anlatımı, zarın çözünene geçirgen olmadığı durum içindir."
+   ],
+   "misconceptions_tr": [
+    "Dengede molekül hareketinin durduğunu sanmak.",
+    "Osmozda çözünenin hareket ettiğini düşünmek."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.9.2.3",
+    "meb-2018.biyoloji.9-12::9.2.1.3"
+   ],
+   "related": [
+    "bio.membrane-structure"
+   ],
+   "visuals": [
+    "process_diagram",
+    "experiment_graph"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.evidence.controlled_comparison",
+     "checks_tr": "Zar deneyinde yalnız bir değişkenin değiştirildiği."
+    },
+    {
+     "verifier": "reasoning.evidence.claim",
+     "checks_tr": "Deney verisinin verilen iddiayı destekleyip desteklemediği."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "5.2 Passive Transport",
+     "url": "https://openstax.org/books/biology-2e/pages/5-2-passive-transport",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "İyonlar için elektrokimyasal fark ve osmozun su potansiyeli/geçirgenlik koşulu eklendi.",
+     "changed_fields": [
+      "conditions_tr",
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Pasif taşımada maddeler derişim farkı yönünde ve hücre ATP harcamadan geçer; osmozda su, seçici geçirgen zardan çözünen derişimi yüksek tarafa doğru net olarak hareket eder.\", \"conditions_tr\": [\"Derişim (veya su potansiyeli) farkı bulunmalı.\", \"Zar söz konusu maddeye geçirgen olmalı.\"]}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.active-transport",
+   "version": 2,
+   "subject": "biology",
+   "topic": "madde_gecisi",
+   "kind": "process",
+   "title_tr": "Aktif taşıma",
+   "statement_tr": "Aktif taşımada maddeler derişim (veya elektrokimyasal) farkına karşı taşıyıcı proteinlerle taşınır ve hücre enerji harcar. Birincil aktif taşımada enerji doğrudan ATP'den, ikincil aktif taşımada başka bir maddenin oluşturduğu farktan sağlanır.",
+   "misconceptions_tr": [
+    "Büyük molekülün her zaman aktif taşımayla geçtiğini sanmak (endositoz ayrı bir süreçtir)."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.9.2.2"
+   ],
+   "related": [
+    "bio.passive-transport"
+   ],
+   "visuals": [
+    "process_diagram"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "5.3 Active Transport",
+     "url": "https://openstax.org/books/biology-2e/pages/5-3-active-transport",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Birincil ve ikincil aktif taşıma ayrıldı; her aktif taşımanın doğrudan ATP kullandığı izlenimi kaldırıldı.",
+     "changed_fields": [
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Aktif taşımada maddeler derişim farkına karşı taşıyıcı proteinlerle taşınır ve hücre enerji (çoğunlukla ATP) harcar.\"}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.enzymes",
+   "version": 2,
+   "subject": "biology",
+   "topic": "enzimler",
+   "kind": "relationship",
+   "title_tr": "Enzimlerin çalışması",
+   "statement_tr": "Enzimler tepkimenin aktivasyon enerjisini düşürerek hızlandıran ve tepkimede tükenmeyen biyolojik katalizörlerdir; çoğu proteindir. Etkinlikleri sıcaklık, pH ve substrat derişimine bağlıdır ve uygun olmayan koşullarda yapıları bozulabilir. Enzimler tepkimenin denge konumunu değiştirmez.",
+   "structure_function": [
+    {
+     "structure_tr": "Aktif bölge",
+     "function_tr": "Substrata biçim ve kimyasal özellik olarak uyar; özgüllüğü belirler."
+    }
+   ],
+   "conditions_tr": [
+    "Her enzimin kendine özgü en uygun sıcaklık ve pH aralığı vardır."
+   ],
+   "misconceptions_tr": [
+    "Enzimin tepkimenin denge konumunu değiştirdiğini sanmak.",
+    "Sıcaklık arttıkça enzim etkinliğinin sınırsız arttığını düşünmek."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.9.1.8"
+   ],
+   "visuals": [
+    "experiment_graph",
+    "process_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.evidence.controlled_comparison",
+     "checks_tr": "Sıcaklık veya pH deneyinde kontrol değişkenleri."
+    },
+    {
+     "verifier": "reasoning.evidence.claim",
+     "checks_tr": "Ölçülen en yüksek etkinlik noktasına ilişkin iddia."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "6.5 Enzymes",
+     "url": "https://openstax.org/books/biology-2e/pages/6-5-enzymes",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Bazı RNA molekülleri (ribozimler) de katalizör olarak çalışır."
+   ],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Ribozim istisnası ve denge konumunun değişmediği eklendi.",
+     "changed_fields": [
+      "exceptions_tr",
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Enzimler tepkimenin aktivasyon enerjisini düşürerek hızlandıran ve tepkimede tükenmeyen biyolojik katalizörlerdir; etkinlikleri sıcaklık, pH ve substrat derişimine bağlıdır ve uygun olmayan koşullarda yapıları bozulabilir.\", \"exceptions_tr\": null}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.dna-structure",
+   "version": 1,
+   "subject": "biology",
+   "topic": "nukleik_asitler",
+   "kind": "fact",
+   "title_tr": "DNA'nın yapısı ve baz eşleşmesi",
+   "statement_tr": "DNA, nükleotitlerden oluşan iki zincirin birbirine zıt yönde (antiparalel) sarılmasıyla oluşan çift sarmaldır; adenin timinle, guanin sitozinle hidrojen bağlarıyla eşleşir.",
+   "structure_function": [
+    {
+     "structure_tr": "Tamamlayıcı baz eşleşmesi",
+     "function_tr": "Bir zincirin diziliminden diğerinin belirlenmesini ve eşlenmeyi sağlar."
+    }
+   ],
+   "misconceptions_tr": [
+    "Gen ile kromozomu aynı şey sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.fen-bilimleri.3-8::F.8.2.1.1",
+    "tymm-2026.biyoloji.9-12::BIY.12.2.2"
+   ],
+   "visuals": [
+    "molecular_structure",
+    "labeled_structure"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.sequence.transcription",
+     "checks_tr": "Kalıp zincir dizisinin tamamlayıcısının doğru yazıldığı."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "14.2 DNA Structure and Sequencing",
+     "url": "https://openstax.org/books/biology-2e/pages/14-2-dna-structure-and-sequencing",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.transcription",
+   "version": 2,
+   "subject": "biology",
+   "topic": "protein_sentezi",
+   "kind": "process",
+   "title_tr": "Transkripsiyon (DNA'dan RNA'ya)",
+   "statement_tr": "Transkripsiyonda DNA'nın kalıp zinciri okunarak ona tamamlayıcı bir RNA molekülü sentezlenir; RNA'da timin yerine urasil bulunur. Ürün, genin türüne göre mRNA, tRNA, rRNA veya başka bir RNA olabilir; protein şifreleyen genlerde ürün mRNA'dır.",
+   "conditions_tr": [
+    "Ökaryotlarda çekirdekte, prokaryotlarda sitoplazmada gerçekleşir.",
+    "Okul düzeyindeki anlatım protein şifreleyen genlere odaklanır."
+   ],
+   "misconceptions_tr": [
+    "mRNA dizisini kalıp zincirle aynı sanmak (kodlayan zincire benzer, T yerine U)."
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::12.1.2.1"
+   ],
+   "related": [
+    "bio.dna-structure",
+    "bio.translation"
+   ],
+   "visuals": [
+    "process_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.sequence.transcription",
+     "checks_tr": "Kalıp DNA'dan mRNA dizisinin belirlenimci üretimi. Gen ifadesinin düzenlenmesini sınamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "15.1 The Genetic Code",
+     "url": "https://openstax.org/books/biology-2e/pages/15-1-the-genetic-code",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Ökaryotik ön-mRNA, olgun mRNA olmadan önce işlenir (kırpılma, uç düzenlemeleri)."
+   ],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Transkripsiyonun yalnız mRNA ürettiği izlenimi düzeltildi; RNA türleri ve ökaryotik işleme eklendi.",
+     "changed_fields": [
+      "conditions_tr",
+      "exceptions_tr",
+      "statement_tr",
+      "title_tr"
+     ],
+     "previous_json": "{\"title_tr\": \"Transkripsiyon (DNA'dan mRNA'ya)\", \"statement_tr\": \"Transkripsiyonda DNA'nın kalıp zinciri okunarak tamamlayıcı mRNA sentezlenir; RNA'da timin yerine urasil bulunur.\", \"conditions_tr\": [\"Ökaryotlarda çekirdekte, prokaryotlarda sitoplazmada gerçekleşir.\"], \"exceptions_tr\": null}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.translation",
+   "version": 1,
+   "subject": "biology",
+   "topic": "protein_sentezi",
+   "kind": "process",
+   "title_tr": "Translasyon ve genetik şifre",
+   "statement_tr": "Translasyonda ribozom mRNA'yı üçlü kodonlar hâlinde okur ve tRNA'ların getirdiği amino asitleri sırayla bağlayarak polipeptit oluşturur. Genetik şifre neredeyse evrenseldir ve bir amino asit birden çok kodonla şifrelenebilir.",
+   "conditions_tr": [
+    "Okuma başlama kodonuyla başlar ve durma kodonunda biter."
+   ],
+   "misconceptions_tr": [
+    "Her kodonun farklı bir amino asidi şifrelediğini sanmak."
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::12.1.2.1"
+   ],
+   "related": [
+    "bio.transcription",
+    "bio.organelles"
+   ],
+   "visuals": [
+    "process_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.sequence.codon",
+     "checks_tr": "mRNA'da belirli konumdaki kodonun okunması."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "15.5 Ribosomes and Protein Synthesis",
+     "url": "https://openstax.org/books/biology-2e/pages/15-5-ribosomes-and-protein-synthesis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.photosynthesis",
+   "version": 2,
+   "subject": "biology",
+   "topic": "fotosentez",
+   "kind": "process",
+   "title_tr": "Fotosentez",
+   "statement_tr": "Fotosentez, ışık enerjisinin kimyasal enerjiye dönüştürülerek inorganik karbondan organik molekül üretildiği süreçtir. Bitkiler, algler ve siyanobakterilerde görülen oksijenli fotosentezde elektron kaynağı sudur ve oksijen açığa çıkar; bazı bakterilerdeki oksijensiz fotosentezde su kullanılmaz ve oksijen üretilmez. Ökaryotlarda süreç kloroplastta gerçekleşir.",
+   "representation": "6CO_2+6H_2O \\rightarrow C_6H_{12}O_6+6O_2",
+   "conditions_tr": [
+    "Verilen toplam denklem oksijenli fotosentez içindir ve çok basamaklı süreci özetler."
+   ],
+   "misconceptions_tr": [
+    "Bitkilerin yalnız fotosentez yaptığını, solunum yapmadığını sanmak.",
+    "Açığa çıkan oksijenin CO₂'den geldiğini düşünmek (sudan gelir)."
+   ],
+   "simplifications": [
+    {
+     "level": "8. sınıf / 12. sınıf",
+     "text_tr": "Işık + su + karbon dioksit → besin + oksijen.",
+     "omits_tr": "Işığa bağımlı tepkimeler ve Calvin döngüsü ayrımı."
+    }
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::12.2.2.1"
+   ],
+   "related": [
+    "bio.organelles",
+    "bio.cellular-respiration"
+   ],
+   "visuals": [
+    "process_diagram",
+    "chemical_equation"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.balance",
+     "checks_tr": "Toplam denklemin atom dengesi. Biyolojik süreci veya basamaklarını doğrulamaz."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "8.1 Overview of Photosynthesis",
+     "url": "https://openstax.org/books/biology-2e/pages/8-1-overview-of-photosynthesis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Yeşil kükürt bakterileri gibi oksijensiz fotosentez yapan bakteriler oksijen üretmez (elektron kaynağı ör. H₂S)."
+   ],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Oksijenli ve oksijensiz fotosentez ayrıldı; her fotosentetik canlının oksijen ürettiği izlenimi kaldırıldı.",
+     "changed_fields": [
+      "conditions_tr",
+      "exceptions_tr",
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Fotosentezde bitki, alg ve bazı bakteriler ışık enerjisini kullanarak karbon dioksit ve sudan glikoz gibi organik molekül üretir ve oksijen açığa çıkarır; ökaryotlarda kloroplastta gerçekleşir.\", \"conditions_tr\": [\"Toplam denklem tek bir tepkimeyi değil çok basamaklı süreci özetler.\"], \"exceptions_tr\": null}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.cellular-respiration",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucresel_solunum",
+   "kind": "process",
+   "title_tr": "Hücresel solunum",
+   "statement_tr": "Hücresel solunumda organik moleküllerdeki kimyasal enerji basamaklı tepkimelerle ATP'ye aktarılır; oksijenli solunumda son elektron alıcısı oksijendir.",
+   "conditions_tr": [
+    "Oksijensiz koşullarda fermantasyon gibi daha düşük verimli yollar kullanılır."
+   ],
+   "misconceptions_tr": [
+    "Solunumu yalnız akciğerde gaz alışverişi sanmak.",
+    "Enerjinin 'üretildiğini' söylemek (dönüştürülür)."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.10.1.7",
+    "meb-2018.biyoloji.9-12::12.2.4.1"
+   ],
+   "related": [
+    "bio.photosynthesis",
+    "bio.organelles"
+   ],
+   "visuals": [
+    "process_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.chemistry.balance",
+     "checks_tr": "Glikozun oksijenli yıkımına ait toplam denklemin atom dengesi."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "7.1 Energy in Living Systems",
+     "url": "https://openstax.org/books/biology-2e/pages/7-1-energy-in-living-systems",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.mendel-segregation",
+   "version": 2,
+   "subject": "biology",
+   "topic": "kalitim",
+   "kind": "law",
+   "title_tr": "Mendel'in ayrılma ilkesi",
+   "statement_tr": "Ayrılma ilkesine göre diploit bir canlıdaki bir genin iki aleli gamet oluşumunda birbirinden ayrılır ve her gamete yalnız biri geçer. Bu ilke baskınlık türünden bağımsızdır; eksik veya eş baskınlık fenotip oranlarını değiştirir ama alellerin ayrılmasını geçersiz kılmaz.",
+   "conditions_tr": [
+    "Mayozla gamet oluşturan diploit canlılar için geçerlidir.",
+    "3:1 fenotip oranı tek gen, iki alel ve tam baskınlık varsayımına bağlıdır."
+   ],
+   "exceptions_tr": [
+    "Ayrılmama (nondisjunction) gibi mayoz hatalarında aleller düzgün ayrılmaz."
+   ],
+   "misconceptions_tr": [
+    "Baskın özelliğin toplumda her zaman daha yaygın olduğunu sanmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.12.2.5",
+    "meb-2018.biyoloji.9-12::10.2.1.1"
+   ],
+   "visuals": [
+    "data_table",
+    "process_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.evidence.constant_ratio",
+     "checks_tr": "Çaprazlama tablosu verisinde oranın sabitliği (yalnız veri denetimi)."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "12.3 Laws of Inheritance",
+     "url": "https://openstax.org/books/biology-2e/pages/12-3-laws-of-inheritance",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-24",
+     "author": "claude-draft",
+     "summary_tr": "Ayrılma ilkesi bağımsız dağılımdan ayrıldı; baskınlık türünün ayrılmayı geçersiz kılmadığı vurgulandı.",
+     "changed_fields": [
+      "conditions_tr",
+      "exceptions_tr",
+      "statement_tr"
+     ],
+     "previous_json": "{\"statement_tr\": \"Diploit bir canlıdaki bir genin iki aleli gamet oluşumunda birbirinden ayrılır ve her gamete yalnız biri geçer; bağımsız dağılım ilkesi farklı kromozomlardaki genler için geçerlidir.\", \"conditions_tr\": [\"Tek gen, iki alel; tam baskınlık gibi basit kalıtım durumlarında oranlar beklenen biçimde görülür.\", \"Bağlı genlerde bağımsız dağılım geçerli değildir.\"], \"exceptions_tr\": [\"Eksik baskınlık, eş baskınlık, çok alellilik ve eşeye bağlı kalıtımda fenotip oranları farklıdır.\"]}",
+     "audit_ref": "TA-007-draft-audit"
+    }
+   ]
+  },
+  {
+   "id": "bio.cell-division",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucre_bolunmesi",
+   "kind": "process",
+   "title_tr": "Mitoz ve mayoz",
+   "statement_tr": "Mitozla bölünen bir hücreden genetik olarak özdeş ve aynı kromozom sayısına sahip iki hücre oluşur; mayozla kromozom sayısı yarıya iner ve genetik çeşitlilik oluşur.",
+   "misconceptions_tr": [
+    "Mayozun yalnız insanda görüldüğünü sanmak.",
+    "Kromatit ile kromozomu karıştırmak."
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.12.1.3"
+   ],
+   "visuals": [
+    "process_diagram",
+    "labeled_structure"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.evidence.sequence_order",
+     "checks_tr": "Evrelerin verilen sıralamasının modeldeki sırayla uyumu."
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "10.2 The Cell Cycle",
+     "url": "https://openstax.org/books/biology-2e/pages/10-2-the-cell-cycle",
+     "verified_on": "2026-11-24"
+    },
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "11.1 The Process of Meiosis",
+     "url": "https://openstax.org/books/biology-2e/pages/11-1-the-process-of-meiosis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.ecosystem-energy-flow",
+   "version": 1,
+   "subject": "biology",
+   "topic": "ekoloji",
+   "kind": "relationship",
+   "title_tr": "Ekosistemde enerji akışı",
+   "statement_tr": "Enerji ekosistemde üreticilerden tüketicilere tek yönde akar ve her beslenme basamağında büyük bölümü ısı olarak kaybedildiği için üst basamaklara giderek azalan miktarda aktarılır; madde ise döngüyle yeniden kullanılır.",
+   "conditions_tr": [
+    "Basamaklar arası aktarım oranı ekosisteme göre değişir; sabit bir yüzde değildir."
+   ],
+   "misconceptions_tr": [
+    "Enerjinin madde gibi döngüyle yeniden kullanıldığını sanmak.",
+    "Aktarım oranını her ekosistemde tam %10 kabul etmek."
+   ],
+   "simplifications": [
+    {
+     "level": "8. sınıf",
+     "text_tr": "Besin zincirinde yukarı çıktıkça aktarılan enerji azalır.",
+     "omits_tr": "Basamaklar arası verimin ekosisteme göre değişmesi ve ölçüm yöntemi."
+    }
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.10.2.3",
+    "meb-2018.biyoloji.9-12::10.3.1.1"
+   ],
+   "visuals": [
+    "process_diagram"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "46.2 Energy Flow through Ecosystems",
+     "url": "https://openstax.org/books/biology-2e/pages/46-2-energy-flow-through-ecosystems",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru; metin kopyalanmadı veya uyarlanmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "bio.carbohydrates",
+   "version": 1,
+   "subject": "biology",
+   "topic": "temel_bilesikler",
+   "kind": "definition",
+   "title_tr": "Karbonhidratlar",
+   "statement_tr": "Karbonhidratlar monosakkaritler ve bunların glikozit bağlarıyla oluşturduğu disakkarit ve polisakkaritlerdir; enerji kaynağı (glikoz, nişasta, glikojen) ve yapı maddesi (selüloz) olarak işlev görür.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "3.2 Carbohydrates",
+     "url": "https://openstax.org/books/biology-2e/pages/3-2-carbohydrates",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Selülozun insanlar tarafından enerji için sindirilebildiğini sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.1.2.2"
+   ]
+  },
+  {
+   "id": "bio.lipids",
+   "version": 1,
+   "subject": "biology",
+   "topic": "temel_bilesikler",
+   "kind": "definition",
+   "title_tr": "Lipitler",
+   "statement_tr": "Lipitler suda çözünmeyen, apolar bölgeleri baskın moleküllerdir; yağlar enerji depolar, fosfolipitler zarların temelini oluşturur, steroitler hormon ve zar bileşeni olarak görev yapar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "3.3 Lipids",
+     "url": "https://openstax.org/books/biology-2e/pages/3-3-lipids",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "related": [
+    "bio.membrane-structure"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.1.2.2"
+   ]
+  },
+  {
+   "id": "bio.proteins",
+   "version": 1,
+   "subject": "biology",
+   "topic": "temel_bilesikler",
+   "kind": "relationship",
+   "title_tr": "Proteinlerin yapısı ve işlevi",
+   "statement_tr": "Proteinler amino asitlerin peptit bağlarıyla bağlanmasıyla oluşur; işlevleri üç boyutlu yapılarına bağlıdır ve yapıyı bozan sıcaklık veya pH değişimleri işlevi bozabilir (denatürasyon).",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "3.4 Proteins",
+     "url": "https://openstax.org/books/biology-2e/pages/3-4-proteins",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.1.2.2"
+   ]
+  },
+  {
+   "id": "bio.nucleic-acids",
+   "version": 1,
+   "subject": "biology",
+   "topic": "nukleik_asitler",
+   "kind": "definition",
+   "title_tr": "Nükleik asitler",
+   "statement_tr": "DNA ve RNA nükleotitlerden oluşan nükleik asitlerdir; DNA'da deoksiriboz ve timin, RNA'da riboz ve urasil bulunur. DNA genetik bilgiyi saklar, RNA bu bilginin ifadesinde görev alır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "3.5 Nucleic Acids",
+     "url": "https://openstax.org/books/biology-2e/pages/3-5-nucleic-acids",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf",
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.dna-structure"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.1.2.2"
+   ]
+  },
+  {
+   "id": "bio.atp",
+   "version": 1,
+   "subject": "biology",
+   "topic": "enerji_metabolizmasi",
+   "kind": "relationship",
+   "title_tr": "ATP",
+   "statement_tr": "ATP hücrenin enerji aktarım molekülüdür; uç fosfatının hidroliziyle açığa çıkan serbest enerji, enerji gerektiren tepkimelerle eşleştirilerek kullanılır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "6.4 ATP: Adenosine Triphosphate",
+     "url": "https://openstax.org/books/biology-2e/pages/6-4-atp-adenosine-triphosphate",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "ATP'nin enerjiyi uzun süre depoladığını sanmak (kısa süreli aktarıcıdır)."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::12.2.1"
+   ]
+  },
+  {
+   "id": "bio.glycolysis",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucresel_solunum",
+   "kind": "process",
+   "title_tr": "Glikoliz",
+   "statement_tr": "Glikoliz sitoplazmada glikozun iki piruvata parçalandığı ve net 2 ATP ile 2 NADH üretildiği basamaktır; oksijen gerektirmez.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "7.2 Glycolysis",
+     "url": "https://openstax.org/books/biology-2e/pages/7-2-glycolysis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Net kazanç bir glikoz molekülü içindir."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.cellular-respiration"
+   ]
+  },
+  {
+   "id": "bio.fermentation",
+   "version": 1,
+   "subject": "biology",
+   "topic": "hucresel_solunum",
+   "kind": "process",
+   "title_tr": "Fermantasyon",
+   "statement_tr": "Oksijensiz koşullarda bazı hücreler glikolizden gelen NADH'yi NAD⁺'ya geri dönüştürmek için fermantasyon yapar; laktik asit veya etil alkol fermantasyonunda ATP yalnız glikolizden kazanılır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "7.5 Metabolism without Oxygen",
+     "url": "https://openstax.org/books/biology-2e/pages/7-5-metabolism-without-oxygen",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::12.2.4.1"
+   ]
+  },
+  {
+   "id": "bio.light-reactions",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fotosentez",
+   "kind": "process",
+   "title_tr": "Işığa bağımlı tepkimeler",
+   "statement_tr": "Oksijenli fotosentezde ışığa bağımlı tepkimeler tilakoit zarlarında gerçekleşir; ışık enerjisi ATP ve NADPH'ye aktarılır ve suyun ayrışmasından oksijen açığa çıkar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "8.2 The Light-Dependent Reactions of Photosynthesis",
+     "url": "https://openstax.org/books/biology-2e/pages/8-2-the-light-dependent-reactions-of-photosynthesis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Oksijenli fotosentez içindir."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.photosynthesis"
+   ]
+  },
+  {
+   "id": "bio.calvin-cycle",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fotosentez",
+   "kind": "process",
+   "title_tr": "Calvin döngüsü",
+   "statement_tr": "Calvin döngüsü kloroplastın stromasında gerçekleşir; CO₂ bağlanır ve ışığa bağımlı tepkimelerden gelen ATP ve NADPH kullanılarak şeker öncülleri üretilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "8.3 Using Light Energy to Make Organic Molecules",
+     "url": "https://openstax.org/books/biology-2e/pages/8-3-using-light-energy-to-make-organic-molecules",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Calvin döngüsünün yalnız karanlıkta gerçekleştiğini sanmak."
+   ],
+   "levels": [
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.light-reactions"
+   ]
+  },
+  {
+   "id": "bio.dna-replication",
+   "version": 1,
+   "subject": "biology",
+   "topic": "nukleik_asitler",
+   "kind": "process",
+   "title_tr": "DNA eşlenmesi",
+   "statement_tr": "DNA eşlenmesi yarı korunumludur: her yeni çift sarmal bir eski bir yeni zincir taşır; yeni zincir yalnız 5'→3' yönünde uzar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "14.3 Basics of DNA Replication",
+     "url": "https://openstax.org/books/biology-2e/pages/14-3-basics-of-dna-replication",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.dna-structure"
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.12.2.2"
+   ]
+  },
+  {
+   "id": "bio.mutation-repair",
+   "version": 1,
+   "subject": "biology",
+   "topic": "genetik",
+   "kind": "relationship",
+   "title_tr": "Mutasyon ve DNA onarımı",
+   "statement_tr": "Mutasyon DNA dizisindeki kalıcı değişikliktir; hücrelerin onarım mekanizmaları hataların çoğunu düzeltir. Mutasyonların bir kısmı zararlı, çoğu etkisiz, az bir kısmı yararlı olabilir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "14.6 DNA Repair",
+     "url": "https://openstax.org/books/biology-2e/pages/14-6-dna-repair",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Her mutasyonun zararlı olduğunu sanmak."
+   ],
+   "levels": [
+    "8. sınıf",
+    "12. sınıf"
+   ]
+  },
+  {
+   "id": "bio.gene-regulation",
+   "version": 1,
+   "subject": "biology",
+   "topic": "gen_ifadesi",
+   "kind": "relationship",
+   "title_tr": "Gen ifadesinin düzenlenmesi",
+   "statement_tr": "Bir organizmanın bütün hücreleri aynı genleri taşısa da hangi genlerin ne zaman ifade edileceği düzenlenir; bu düzenleme hücre farklılaşmasını sağlar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "16.1 Regulation of Gene Expression",
+     "url": "https://openstax.org/books/biology-2e/pages/16-1-regulation-of-gene-expression",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ]
+  },
+  {
+   "id": "bio.independent-assortment",
+   "version": 1,
+   "subject": "biology",
+   "topic": "kalitim",
+   "kind": "law",
+   "title_tr": "Bağımsız dağılım ilkesi",
+   "statement_tr": "Farklı kromozomlarda (veya aynı kromozomda çok uzak) bulunan genlerin alelleri gametlere birbirinden bağımsız dağılır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "12.3 Laws of Inheritance",
+     "url": "https://openstax.org/books/biology-2e/pages/12-3-laws-of-inheritance",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "conditions_tr": [
+    "Genler bağlı olmamalıdır."
+   ],
+   "exceptions_tr": [
+    "Aynı kromozomda yakın genler bağlı kalıtılır."
+   ],
+   "levels": [
+    "10. sınıf",
+    "12. sınıf"
+   ],
+   "related": [
+    "bio.mendel-segregation"
+   ]
+  },
+  {
+   "id": "bio.dominance-types",
+   "version": 1,
+   "subject": "biology",
+   "topic": "kalitim",
+   "kind": "relationship",
+   "title_tr": "Baskınlık türleri",
+   "statement_tr": "Tam baskınlıkta heterozigotun fenotipi baskın homozigota benzer; eksik baskınlıkta ara fenotip, eş baskınlıkta iki alelin de özelliği birlikte görülür.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "12.2 Characteristics and Traits",
+     "url": "https://openstax.org/books/biology-2e/pages/12-2-characteristics-and-traits",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "10. sınıf"
+   ],
+   "related": [
+    "bio.mendel-segregation"
+   ]
+  },
+  {
+   "id": "bio.sex-linked",
+   "version": 1,
+   "subject": "biology",
+   "topic": "kalitim",
+   "kind": "relationship",
+   "title_tr": "Bağlı genler ve X'e bağlı kalıtım",
+   "statement_tr": "Aynı kromozom üzerindeki genler birlikte kalıtılma eğilimindedir; X kromozomundaki çekinik alelli özellikler erkeklerde tek kopyayla ortaya çıktığı için daha sık görülür.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "13.1 Chromosomal Theory and Genetic Linkage",
+     "url": "https://openstax.org/books/biology-2e/pages/13-1-chromosomal-theory-and-genetic-linkage",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Krossing over bağlı genlerin yeni kombinasyonlarını oluşturabilir."
+   ],
+   "levels": [
+    "10. sınıf",
+    "12. sınıf"
+   ],
+   "outcome_refs": [
+    "tymm-2026.biyoloji.9-12::BIY.12.2.7"
+   ]
+  },
+  {
+   "id": "bio.natural-selection",
+   "version": 1,
+   "subject": "biology",
+   "topic": "evrim",
+   "kind": "process",
+   "title_tr": "Doğal seçilim",
+   "statement_tr": "Kalıtsal varyasyon bulunan bir popülasyonda ortama daha uygun özellikteki bireyler ortalamada daha çok yavru bırakır; böylece bu özelliklerin sıklığı kuşaklar boyunca artar. Seçilim bireyleri değil popülasyonları değiştirir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "18.1 Understanding Evolution",
+     "url": "https://openstax.org/books/biology-2e/pages/18-1-understanding-evolution",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Canlıların ihtiyaç duydukları için değiştiğini sanmak."
+   ],
+   "levels": [
+    "8. sınıf",
+    "12. sınıf"
+   ]
+  },
+  {
+   "id": "bio.taxonomy",
+   "version": 1,
+   "subject": "biology",
+   "topic": "siniflandirma",
+   "kind": "definition",
+   "title_tr": "Sınıflandırma ve filogeni",
+   "statement_tr": "Canlılar ortak ata ilişkilerine göre hiyerarşik olarak sınıflandırılır; tür adı cins ve tür sıfatından oluşan iki adlı adlandırmayla yazılır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "20.1 Organizing Life on Earth",
+     "url": "https://openstax.org/books/biology-2e/pages/20-1-organizing-life-on-earth",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.3.1.1"
+   ]
+  },
+  {
+   "id": "bio.homeostasis",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Homeostazi",
+   "statement_tr": "Homeostazi, iç ortamın (sıcaklık, pH, şeker düzeyi gibi) dar sınırlar içinde tutulmasıdır; çoğunlukla olumsuz geri bildirimle sağlanır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "33.3 Homeostasis",
+     "url": "https://openstax.org/books/biology-2e/pages/33-3-homeostasis",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "exceptions_tr": [
+    "Doğum sancıları gibi bazı süreçler olumlu geri bildirimle yürür."
+   ],
+   "levels": [
+    "11. sınıf"
+   ]
+  },
+  {
+   "id": "bio.digestion",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Sindirim",
+   "statement_tr": "Sindirimde büyük besin molekülleri mekanik ve kimyasal (enzimatik) olarak emilebilecek küçük birimlere ayrılır; emilimin çoğu ince bağırsakta gerçekleşir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "34.3 Digestive System Processes",
+     "url": "https://openstax.org/books/biology-2e/pages/34-3-digestive-system-processes",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "6. sınıf",
+    "11. sınıf"
+   ],
+   "related": [
+    "bio.enzymes"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.1.3"
+   ]
+  },
+  {
+   "id": "bio.circulation",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Dolaşım sistemi",
+   "statement_tr": "İnsanda kapalı ve çift dolaşım vardır: küçük dolaşım kanı akciğerlere, büyük dolaşım vücuda taşır; atardamarlar kalpten kanı götürür, toplardamarlar kalbe getirir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "40.1 Overview of the Circulatory System",
+     "url": "https://openstax.org/books/biology-2e/pages/40-1-overview-of-the-circulatory-system",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Atardamarların her zaman oksijenli kan taşıdığını sanmak (akciğer atardamarı oksijence fakirdir)."
+   ],
+   "levels": [
+    "6. sınıf",
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.1.4"
+   ]
+  },
+  {
+   "id": "bio.gas-exchange",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Solunumda gaz değişimi",
+   "statement_tr": "Akciğerlerde gaz değişimi alveollerde difüzyonla, kısmi basınç farkı yönünde gerçekleşir; oksijen kana, karbon dioksit alveollere geçer.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "39.2 Gas Exchange across Respiratory Surfaces",
+     "url": "https://openstax.org/books/biology-2e/pages/39-2-gas-exchange-across-respiratory-surfaces",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "related": [
+    "bio.passive-transport"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.1.5"
+   ]
+  },
+  {
+   "id": "bio.neuron-signal",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Sinir hücresinde iletim",
+   "statement_tr": "Nöronlarda uyarı aksiyon potansiyeliyle iletilir; sinapslarda genellikle kimyasal ileticilerle bir sonraki hücreye aktarılır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "35.2 How Neurons Communicate",
+     "url": "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.1.1"
+   ]
+  },
+  {
+   "id": "bio.hormones",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "relationship",
+   "title_tr": "Hormonlar",
+   "statement_tr": "Hormonlar kanla taşınan ve yalnız uygun reseptörü taşıyan hedef hücreleri etkileyen kimyasal habercilerdir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "37.1 Types of Hormones",
+     "url": "https://openstax.org/books/biology-2e/pages/37-1-types-of-hormones",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ]
+  },
+  {
+   "id": "bio.innate-immunity",
+   "version": 1,
+   "subject": "biology",
+   "topic": "bagisiklik",
+   "kind": "process",
+   "title_tr": "Doğal bağışıklık",
+   "statement_tr": "Doğal bağışıklık deri ve mukoza gibi engellerle, iltihap ve fagositoz gibi hızlı ama özgül olmayan yanıtlarla vücudu korur; kazanılmış bağışıklık ise özgül ve bellek oluşturandır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "42.1 Innate Immune Response",
+     "url": "https://openstax.org/books/biology-2e/pages/42-1-innate-immune-response",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ]
+  },
+  {
+   "id": "bio.osmoregulation",
+   "version": 1,
+   "subject": "biology",
+   "topic": "fizyoloji",
+   "kind": "process",
+   "title_tr": "Osmotik düzenleme ve boşaltım",
+   "statement_tr": "Osmotik düzenleme vücut sıvılarının su ve çözünen dengesini korur; böbrekler süzme, geri emilim ve salgılamayla bu dengeye ve atıkların atılmasına katkı sağlar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "41.1 Osmoregulation and Osmotic Balance",
+     "url": "https://openstax.org/books/biology-2e/pages/41-1-osmoregulation-and-osmotic-balance",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "related": [
+    "bio.passive-transport"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.1.6"
+   ]
+  },
+  {
+   "id": "bio.plant-transport",
+   "version": 1,
+   "subject": "biology",
+   "topic": "bitki_biyolojisi",
+   "kind": "process",
+   "title_tr": "Bitkilerde su ve madde taşınması",
+   "statement_tr": "Bitkilerde su ve mineraller ksilemde kökten yapraklara, terlemenin oluşturduğu çekimle taşınır; organik besinler floemde üretim yerinden kullanım veya depo yerine taşınır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "30.5 Transport of Water and Solutes in Plants",
+     "url": "https://openstax.org/books/biology-2e/pages/30-5-transport-of-water-and-solutes-in-plants",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::12.3.2"
+   ]
+  },
+  {
+   "id": "bio.plant-reproduction",
+   "version": 1,
+   "subject": "biology",
+   "topic": "bitki_biyolojisi",
+   "kind": "process",
+   "title_tr": "Çiçekli bitkilerde tozlaşma ve döllenme",
+   "statement_tr": "Tozlaşma polenin dişi organın tepeciğine taşınmasıdır; ardından gerçekleşen döllenme sonucunda tohum, yumurtalık duvarından da meyve gelişir.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "32.2 Pollination and Fertilization",
+     "url": "https://openstax.org/books/biology-2e/pages/32-2-pollination-and-fertilization",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Tozlaşma ile döllenmeyi aynı olay sanmak."
+   ],
+   "levels": [
+    "7. sınıf",
+    "12. sınıf"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::12.3.3"
+   ]
+  },
+  {
+   "id": "bio.population-limits",
+   "version": 1,
+   "subject": "biology",
+   "topic": "ekoloji",
+   "kind": "relationship",
+   "title_tr": "Popülasyon büyümesinin sınırları",
+   "statement_tr": "Kaynaklar sınırsızken popülasyon üstel büyüyebilir; gerçek ortamlarda kaynak sınırlılığı büyümeyi yavaşlatır ve popülasyon taşıma kapasitesi civarında dalgalanır.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "45.3 Environmental Limits to Population Growth",
+     "url": "https://openstax.org/books/biology-2e/pages/45-3-environmental-limits-to-population-growth",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "curriculum_topic_refs": [
+    "meb-2018.biyoloji.9-12::11.2.2"
+   ]
+  },
+  {
+   "id": "bio.biogeochemical-cycles",
+   "version": 1,
+   "subject": "biology",
+   "topic": "ekoloji",
+   "kind": "process",
+   "title_tr": "Madde döngüleri",
+   "statement_tr": "Karbon, azot ve su gibi maddeler canlılar ile cansız çevre arasında döngüyle yeniden kullanılır; enerji ise döngü yapmaz, tek yönde akar.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "46.3 Biogeochemical Cycles",
+     "url": "https://openstax.org/books/biology-2e/pages/46-3-biogeochemical-cycles",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "levels": [
+    "8. sınıf",
+    "10. sınıf"
+   ],
+   "related": [
+    "bio.ecosystem-energy-flow"
+   ]
+  },
+  {
+   "id": "bio.viruses",
+   "version": 1,
+   "subject": "biology",
+   "topic": "canlilar_dunyasi",
+   "kind": "fact",
+   "title_tr": "Virüsler",
+   "statement_tr": "Virüsler bir nükleik asit (DNA veya RNA) ve protein kılıftan oluşur; kendi başlarına metabolizmaları yoktur ve yalnız bir konak hücre içinde çoğalabilirler.",
+   "provenance": [
+    {
+     "source_id": "openstax.biology-2e",
+     "section": "21.1 Viral Evolution, Morphology, and Classification",
+     "url": "https://openstax.org/books/biology-2e/pages/21-1-viral-evolution-morphology-and-classification",
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvuru.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   },
+   "misconceptions_tr": [
+    "Antibiyotiklerin virüsleri öldürdüğünü sanmak."
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "outcome_refs": [
+    "meb-2018.biyoloji.9-12::9.3.2.3"
+   ]
+  }
+ ]
 }
