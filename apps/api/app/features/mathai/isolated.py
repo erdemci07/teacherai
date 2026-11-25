@@ -75,6 +75,7 @@ class IsolatedMathAI:
         self._waiting = 0
         self._verified: OrderedDict[str, dict] = OrderedDict()
         self.last_timing: dict | None = None  # ölçüm betiği için: spawn ve hesaplama ayrı
+        self.last_phases: dict | None = None
 
     def _acquire(self):
         if self._slots.acquire(blocking=False):
@@ -125,6 +126,8 @@ class IsolatedMathAI:
         total = (time.perf_counter() - started) * 1000
         compute = envelope["timing"]["compute_ms"]
         self.last_timing = {"total_ms": total, "compute_ms": compute, "startup_ms": total - compute}
+        # TA-008B §20: işçi içi fazlar (içe aktarma, çekirdek, uzmanlık, serileştirme); yalnız ölçüm betiği okur.
+        self.last_phases = {key: value for key, value in envelope["timing"].items() if key != "compute_ms"}
         return envelope["value"]
 
     @staticmethod

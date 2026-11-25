@@ -1,9 +1,11 @@
+import logging
 import re
 from time import perf_counter
 
 import sympy
 from sympy import Symbol, simplify, solve
 
+from ..education.mathematics import MathematicsReport
 from ..education.reasoning import EXPRESSION_TARGETS, AnswerTarget, TargetResolution
 from ..education.science import Premise
 from ..integrity import expression as expression_tree
@@ -26,6 +28,9 @@ from .parser import (
 )
 from .schemas import ChoiceMatch, GraphData, VerificationCheck, VerificationResult
 
+_LOGGER = logging.getLogger(__name__)
+_SPECIALIST_KIND = {"solution_set": "equation", "inequality": "equation", "transformation": "transformation",
+                    "geometry": "geometry", "function": "function", "word_problem": "final_answer", "target": "answer_target"}
 VARIABLE_TARGETS = {"variable_value", "solution_set"}
 _TARGET_DETAIL = {
     "variable_value": "değişkenin değeri", "expression_value": "istenen ifadenin değeri", "sum": "istenen toplam",
@@ -39,18 +44,51 @@ class MathAIService:
     """Sınırlı SymPy doğrulaması. TA-004: son cevap *istenen hedefe* göre denetlenir."""
 
     def verify(self, plan: LessonPlan) -> VerificationResult:
-        """TA-008: çekirdek doğrulama + matematik uzmanlığı raporu. Rapor durumu yalnız zayıflatır."""
+        """TA-008/TA-008B: çekirdek doğrulama + matematik uzmanlığı raporu.
+
+        - Uzmanlık raporu çekirdek durumu hiçbir zaman güçlendirmez.
+        - Maddi çelişki (yanlış istenen cevap, eksik/fazla çözüm, geçersiz kabul edilmiş dönüşüm, eksik dal, kaynak
+          olgularının çelişmesi) son cevap doğrulamasını geçersiz kılar: ``failed`` + ``contradiction``. Ders akışı
+          bunu sınırlı düzeltme hakkıyla ele alır.
+        - Maddi olmayan başarısızlık veya eksik analiz yalnız ``verified`` → ``partially_verified`` zayıflatır.
+        - Uzmanlık denetimi beklenmedik biçimde çökerse sessizce düşmez: ``specialist_status="unavailable"`` raporu ve
+          uyarı döner. Çekirdek denetimlerin kendi kanıtı ayrı olduğundan çekirdek durum korunur.
+        """
+        started = perf_counter()
         result = self._verify_core(plan)
+        core_done = perf_counter()
+        # TA-008B §20: ölçüm için faz süreleri (içerik yok). Yalıtılmış işçi bunları zarfta üst sürece iletir.
+        phases = {"core_ms": (core_done - started) * 1000}
+        self.last_phases = phases  # yalnız ölçüm; her çağrı kendi sözlüğünü atar (paylaşılan nesne değiştirilmez)
         try:
             from ..mathematics import specialist
 
             report = specialist.analyze(plan, result)
-        except Exception:  # noqa: BLE001 — rapor üretilemezse çekirdek sonuç aynen döner
-            return result
-        update = {"mathematics": report}
-        if specialist.contradiction(report) and result.status == "verified":
+            phases["specialist_ms"] = (perf_counter() - core_done) * 1000
+        except Exception as exc:  # noqa: BLE001 — eksik denetim açıkça işaretlenir; içerik günlüğe yazılmaz
+            _LOGGER.warning("mathematics_specialist_unavailable", extra={"error_type": type(exc).__name__})
+            report = MathematicsReport(specialist_status="unavailable", capability="unsupported",
+                                       notes_tr=["Matematik uzmanlık denetimi bu ders için çalıştırılamadı; "
+                                                 "uzmanlık sonucu yoktur."])
+            return result.model_copy(update={"mathematics": report, "warnings": [
+                *result.warnings, "Matematik uzmanlık denetimi çalıştırılamadı; ek denetimler yapılmadı."]})
+        update: dict = {"mathematics": report}
+        if report.material_count:
+            first = report.material_failures[0] if report.material_failures else None
+            check = VerificationCheck(
+                id="mathematics_specialist", kind=_SPECIALIST_KIND.get(first.area if first else "", "answer_target"),
+                status="failed", reason="specialist_material_contradiction",
+                statement=(first.statement or first.reason) if first else "material", detail=(first.detail if first else None))
+            update |= {"status": "failed", "contradiction": True, "final_answer_verified": False, "confidence": 0.0,
+                       "checks": [*result.checks, check],
+                       "warnings": [*result.warnings, "Matematik uzmanlık denetimi maddi çelişki buldu: "
+                                    + ", ".join(sorted({c.reason for c in report.material_failures}))[:300]]}
+        elif result.status == "verified" and (
+            any(c.status == "failed" for c in report.checks) or report.specialist_status == "partial"
+        ):
             update |= {"status": "partially_verified", "confidence": min(result.confidence, 0.7),
-                       "warnings": [*result.warnings, "Matematik uzmanlık denetimi çözüm kümesinde tutarsızlık buldu."]}
+                       "warnings": [*result.warnings, "Matematik uzmanlık denetimi tamamlanamadı veya model/cevap "
+                                    "uyumunu doğrulayamadı."]}
         return result.model_copy(update=update)
 
     def _verify_core(self, plan: LessonPlan) -> VerificationResult:
@@ -336,36 +374,56 @@ class MathAIService:
     # ------------------------------------------------------------------ adımlar
 
     def _step_checks(self, plan, checks, variable, expected, original_text) -> set:
-        """Adım kontrollerini ekler; dönüştürülmüş denklemlerin köklerini (yabancı kök tespiti için) döndürür."""
+        """Adım kontrollerini ekler; dönüştürülmüş denklemlerin köklerini (yabancı kök tespiti için) döndürür.
+
+        TA-008B §6: meşru durum ayrımı yanlış başarısızlık sayılmaz. Ardışık ``case`` adımları (her biri tek dal
+        olabilir) veya aynı adımda dallara ayrılan denklemler birlikte değerlendirilir: dalların birleşimi önceki
+        kümeye (veya özgün çözüm kümesine) eşit olmalıdır. Ayrımdan sonra her denklem bir dalın içinde denetlenir.
+        Genişleten dönüşümden sonra yalnız yabancı adayların elenmesi (özgün çözümlerin tamamı korunarak) kayıp değildir.
+        """
         previous = expected
         seen: set = set()
         previous_equation = equation(branches(original_text)[0]) if len(branches(original_text)) == 1 else None
-        for step in plan.content.steps:
+        branch_sets: list[set] | None = None  # durum ayrımından sonra açık dallar
+        steps = list(plan.content.steps)
+        consumed: set[str] = set()
+        for position, step in enumerate(steps):
             for item in step.expressions:
                 if item.type == "inequality":
                     checks.append(self._inequality_step(step.id, item.latex, variable))
                 elif item.type not in ("equation", "function"):
                     checks.append(VerificationCheck(id=step.id, kind="expression", status="unsupported", statement=item.latex))
+            if step.id in consumed:
+                continue
             equation_items = [item for item in step.expressions if item.type in ("equation", "function")]
-            if step.type == "case" and len(equation_items) > 1:
-                try:
-                    branch_union = set()
-                    for item in equation_items:
-                        branch_union.update(solutions(item.latex, variable))
-                    valid = branch_union == expected
-                    checks.append(VerificationCheck(
-                        id=step.id, kind="transformation", status="passed" if valid else "failed",
-                        statement="; ".join(x.latex for x in equation_items), operation="case_split",
-                        reason="cases_cover_solution_set" if valid else "case_missing_or_invalid",
-                        detail="Durumların birleşimi çözüm kümesini veriyor." if valid else "Durumlardan biri eksik veya geçersiz."))
-                except (MathParseError, NotImplementedError, TypeError):
-                    checks.append(VerificationCheck(id=step.id, kind="transformation", status="unsupported",
-                                                    statement="; ".join(x.latex for x in equation_items)))
+            if step.type == "case" and equation_items:
+                group = list(equation_items)
+                for later in steps[position + 1:]:
+                    if later.type != "case":
+                        break
+                    group.extend(item for item in later.expressions if item.type in ("equation", "function"))
+                    consumed.add(later.id)
+                split = self._case_split(step.id, group, variable, expected, previous)
+                checks.append(split[0])
+                if split[1] is not None:
+                    seen |= set().union(*split[1])
+                    branch_sets, previous_equation = split[1], None
                 continue
             for index, item in enumerate(equation_items):
                 try:
                     current = solutions(item.latex, variable)
                     seen |= current
+                    rest = equation_items[index:]
+                    if branch_sets is None and len(rest) > 1 and current < previous:
+                        split = self._case_split(f"{step.id}_{index}", rest, variable, expected, previous)
+                        checks.append(split[0])
+                        if split[1] is not None:
+                            seen |= set().union(*split[1])
+                            branch_sets, previous_equation = split[1], None
+                        break
+                    if branch_sets is not None:
+                        checks.append(self._branch_step(f"{step.id}_{index}", item.latex, current, branch_sets, expected))
+                        continue
                     current_equation = equation(branches(item.latex)[0]) if len(branches(item.latex)) == 1 else None
                     operation = targets.classify(previous_equation, current_equation, variable) if (
                         previous_equation is not None and current_equation is not None) else None
@@ -375,6 +433,9 @@ class MathAIService:
                         # Tersinir olmayan dönüşüm aday kök ekleyebilir; kökler özgün denklemde ayrıca denetlenir.
                         status, reason = "passed", "nonreversible_superset"
                         detail = "Dönüşüm çözüm kümesini genişletti; adaylar özgün denklemde denetlenmeli."
+                    elif expected <= current < previous:
+                        status, reason = "passed", "extraneous_eliminated"
+                        detail = "Yalnız özgün denklemi sağlamayan adaylar elendi; özgün çözümlerin tamamı korundu."
                     elif current < previous:
                         status, reason, detail = "failed", "solution_lost", "Dönüşüm bir çözümü kaybettirdi (ör. değişken içeren ifadeye bölme)."
                     else:
@@ -388,6 +449,48 @@ class MathAIService:
                     checks.append(VerificationCheck(id=f"{step.id}_{index}", kind="transformation", status="unsupported",
                                                     statement=item.latex))
         return seen
+
+    @staticmethod
+    def _case_split(check_id, items, variable, expected, previous):
+        """Dalların birleşimi önceki kümeye veya özgün çözüm kümesine eşit mi? (geçerliyse dal kümeleri döner)"""
+        statement = "; ".join(x.latex for x in items)[:400]
+        try:
+            branch_sets = [solutions(item.latex, variable) for item in items]
+        except (MathParseError, NotImplementedError, TypeError):
+            return VerificationCheck(id=check_id, kind="transformation", status="unsupported", statement=statement,
+                                     operation="case_split", reason="case_split_unchecked"), None
+        union = set().union(*branch_sets)
+        valid = union == previous or union == expected
+        check = VerificationCheck(
+            id=check_id, kind="transformation", status="passed" if valid else "failed", statement=statement,
+            operation="case_split", reason="cases_cover_solution_set" if valid else "case_missing_or_invalid",
+            detail="Durumların birleşimi çözüm kümesini veriyor." if valid else "Durumlardan biri eksik veya geçersiz.")
+        return check, (branch_sets if valid else None)
+
+    @staticmethod
+    def _branch_step(check_id, latex, current, branch_sets, expected):
+        """Durum ayrımından sonraki adım: bir dalın kümesini korumalı, dalları birleştirmeli veya yalnız yabancı adayı
+        elemeli. Hiçbir dala uymayan değer üretmek veya geçerli bir çözümü düşürmek başarısızlıktır."""
+        union = set().union(*branch_sets)
+        for position, branch in enumerate(branch_sets):
+            if current == branch:
+                return VerificationCheck(id=check_id, kind="transformation", status="passed", statement=latex,
+                                         reason="branch_preserved", detail="Dal içinde çözüm kümesi korundu.")
+            if current < branch and (branch & expected) <= current:
+                branch_sets[position] = current
+                return VerificationCheck(id=check_id, kind="transformation", status="passed", statement=latex,
+                                         reason="extraneous_eliminated", detail="Dal içinde yalnız yabancı aday elendi.")
+        if current == union or current == expected:
+            return VerificationCheck(id=check_id, kind="transformation", status="passed", statement=latex,
+                                     reason="branches_merged", detail="Dalların sonuçları birleştirildi.")
+        if current <= union and expected <= current:
+            return VerificationCheck(id=check_id, kind="transformation", status="passed", statement=latex,
+                                     reason="extraneous_eliminated", detail="Yalnız yabancı adaylar elendi.")
+        if current <= union:
+            return VerificationCheck(id=check_id, kind="transformation", status="failed", statement=latex,
+                                     reason="solution_lost", detail="Dal sonucu geçerli bir çözümü düşürdü.")
+        return VerificationCheck(id=check_id, kind="transformation", status="failed", statement=latex,
+                                 reason="solution_set_changed", detail="Adım hiçbir dalın kümesiyle uyumlu değil.")
 
     def _inequality_steps(self, plan, checks, source, variable):
         """Eşitsizlik adımları: çözüm kümesi korunuyor mu, yön negatif çarpanda ters çevrildi mi?"""
