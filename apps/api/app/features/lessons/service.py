@@ -26,6 +26,7 @@ from ..education.math_adapter import (
     validated_math_lesson,
     with_integrity,
 )
+from ..mathai.priority import after_paid_call
 from ..mathai.schemas import VerificationResult
 from ..mathai.service import MathAIService
 from ..vision.schemas import VisionAnalysis
@@ -289,7 +290,7 @@ class LessonService:
 
     async def _reconcile(self, plan):
         try:
-            return await run_in_threadpool(self.mathai.reconcile_answer_choice, plan)
+            return await run_in_threadpool(after_paid_call(self.mathai.reconcile_answer_choice), plan)
         except HTTPException:
             raise
         except Exception as exc:
@@ -299,7 +300,7 @@ class LessonService:
         started = perf_counter()
         logger.info("MathAI verification started", extra={"request_id": request_id, "stage": stage, "expression_count": len(plan.source_analysis.mathematical_expressions)})
         try:
-            verification = self.mathai.verify(plan)
+            verification = after_paid_call(self.mathai.verify)(plan)
         except HTTPException:
             raise
         except Exception as exc:

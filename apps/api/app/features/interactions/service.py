@@ -4,6 +4,7 @@ from .store import PracticeRecord
 from uuid import uuid4
 from apps.api.app.features.board.schemas import BoardElement, BoardPlan
 from apps.api.app.features.mathai.parser import MathParseError
+from apps.api.app.features.mathai.priority import after_paid_call
 from apps.api.app.features.mathai.service import MathAIService
 from .exceptions import (
     InvalidInteractionError,
@@ -82,7 +83,7 @@ class InteractionService:
                     "verified"
                     if (
                         await run_in_threadpool(
-                            self.mathai.check_answer,
+                            after_paid_call(self.mathai.check_answer),
                             draft.question_expression,
                             draft.expected_answer_expression,
                             draft.answer_variable,
