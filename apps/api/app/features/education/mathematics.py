@@ -27,7 +27,9 @@ CheckArea = Literal[
     "probability", "statistics", "calculus", "geometry", "construction", "word_problem", "model_fidelity",
     "strategy", "alternative",
 ]
-CheckScope = Literal["exact", "universal", "configuration", "sampled", "not_applicable"]
+# TA-008B: ``model`` = temsil edilen kısıt sisteminin bütün çözümleri (Öklid gerçekleşebilirliği ayrıca kanıtlanmaz).
+# ``universal`` yalnız matematiksel olarak gerekçelendirilebilen evrensel iddialar içindir.
+CheckScope = Literal["exact", "universal", "model", "configuration", "sampled", "not_applicable"]
 
 
 class MathCheck(Contract):
@@ -38,6 +40,10 @@ class MathCheck(Contract):
     scope: CheckScope = "exact"
     statement: Latex | None = None
     detail: Text | None = None
+    # TA-008B: ``material``: doğrulanmış bir hedefe/modele/küme sonucuna karşı *kesin* matematiksel çelişki (ör. yanlış
+    # istenen cevap, eksik çözüm, geçersiz kabul edilmiş dönüşüm). Maddi çelişki doğrulanmış ders sonucunu engeller.
+    # Belirsizlik, desteklenmeyen hesap veya model sadakati eksikliği maddi değildir.
+    material: bool = False
 
 
 class IntervalView(Contract):
@@ -57,6 +63,11 @@ class SolutionSetView(Contract):
     intervals: list[IntervalView] = Field(default_factory=list, max_length=16)
     exclusions: list[Label] = Field(default_factory=list, max_length=16)
     exact: bool = True
+    # TA-008B: gösterim sınırını aşan küme kesilmez gibi sunulmaz; ``truncated`` true ise görünüm eksiktir ve
+    # bütünlük karşılaştırması yalnız işçideki kesin küme üzerinden yapılır.
+    truncated: bool = False
+    # TA-008B: özgün ifadeden (sadeleştirmeden önce) toplanan tanım koşulları.
+    conditions: list[Label] = Field(default_factory=list, max_length=24)
 
     @model_validator(mode="after")
     def coherent(self):
@@ -81,6 +92,8 @@ class WordQuantity(Contract):
     value: Latex | None = None  # bilinen nicelik; bilinmeyende None
     discrete: bool = False
     origin: ModelOrigin = "stated"
+    # TA-008B: değerin soru metnindeki dayanağı (birebir alıntı). Aynı sayının metinde geçmesi anlamını kanıtlamaz.
+    evidence: Text | None = None
 
 
 class WordConstraint(Contract):
@@ -123,6 +136,12 @@ class GeometryFact(Contract):
     other: list[PointLabel] = Field(default_factory=list, max_length=8)
     value: Latex | None = None
     origin: FactOrigin
+    # TA-008B kanıt zinciri. ``stated``: soru metninden birebir alıntı (sunucu metinde arar; bulunmazsa olgu yalnız
+    # sağlayıcı önerisidir). ``derived``: öncül olgu kimlikleri ve kural (sunucu doğrular; doğrulanmayan türetme
+    # açıklayıcı hipotez kalır ve kısıt olmaz).
+    evidence: Text | None = None
+    premises: list[Identifier] = Field(default_factory=list, max_length=6)
+    rule: Identifier | None = None
 
 
 ConstructionKind = Literal["altitude", "segment", "extension", "parallel_line", "midpoint", "radius",
@@ -216,6 +235,16 @@ class GraphSegment(Contract):
     end_closed: bool = True
 
 
+class GeometryFactStatus(Contract):
+    """TA-008B §19: sunucunun olgu kararı. ``basis``: kabul edilmişse kanıt sınıfı (source_text, diagram_interpreted,
+    validated_derivation, construction_defined), reddedilmişse neden kodu. Tahta etiketini sağlayıcının ``origin``
+    alanından değil bu karardan alır."""
+
+    id: Identifier
+    status: Literal["accepted", "rejected"]
+    basis: Identifier
+
+
 class MathematicsReport(Contract):
     schema_version: Literal["1.0.0"] = "1.0.0"
     topics: list[Identifier] = Field(default_factory=list, max_length=4)
@@ -225,8 +254,19 @@ class MathematicsReport(Contract):
     domain_exclusions: list[Label] = Field(default_factory=list, max_length=16)
     model_kind: Literal["word_problem", "geometry", "none"] = "none"
     model_status: Literal["accepted", "rejected", "absent"] = "absent"
+    geometry_facts: list[GeometryFactStatus] = Field(default_factory=list, max_length=32)
     strategies: list[StrategyRef] = Field(default_factory=list, max_length=8)
     alternatives: list[AlternativePath] = Field(default_factory=list, max_length=3)
+    graph_expression: Latex | None = None
     graph_segments: list[GraphSegment] = Field(default_factory=list, max_length=16)
+    # TA-008B: yalnız doğrulanmış parçaların içinden, tanımsız noktalar dışlanarak alınmış örnek noktalar (gösterim).
+    graph_points: list[tuple[float, float]] = Field(default_factory=list, max_length=96)
+    # Kaldırılabilir süreksizlik (x, limit) — açık daire; düşey asimptot x değerleri — kesikli çizgi.
+    graph_holes: list[tuple[float, float]] = Field(default_factory=list, max_length=16)
+    graph_asymptotes: list[float] = Field(default_factory=list, max_length=16)
+    # TA-008B: maddi çelişkiler kesmeden önce ayrı tutulur; ``checks`` kesilse bile durum hesabından düşmez.
+    material_failures: list[MathCheck] = Field(default_factory=list, max_length=16)
+    material_count: int = Field(default=0, ge=0, le=1000)
+    specialist_status: Literal["completed", "partial", "unavailable"] = "completed"
     capability: Literal["independently_verifiable", "partially_verifiable", "ai_assisted_only", "unsupported"] = "unsupported"
     notes_tr: list[Text] = Field(default_factory=list, max_length=8)

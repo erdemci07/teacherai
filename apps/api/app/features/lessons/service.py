@@ -58,6 +58,37 @@ def _today() -> date:
     return datetime.now(timezone.utc).date()
 
 
+# TA-008B §13: düzeltme sonrası kabul için uzmanlık raporunda "cevap düzeyinde" geçmesi gereken denetimler.
+ANSWER_LEVEL_CHECKS = ("_answer", "claimed_solution_set", "claimed_inequality_set")
+
+
+def correction_feedback(verification: VerificationResult) -> str:
+    """Yapılandırılmış düzeltme geri bildirimi: çekirdek başarısız denetimler ve uzmanlık raporunun maddi çelişkileri.
+    Yalnız sunucu doğrulayıcılarının neden kodları ve kısa ayrıntıları gönderilir; değerlendirme anahtarı yoktur."""
+    lines = [f"- [{check.kind}/{check.reason or 'failed'}] {check.detail or check.statement}"[:300]
+             for check in verification.checks if check.status == "failed" and check.id != "mathematics_specialist"]
+    report = verification.mathematics
+    if report is not None:
+        lines += [f"- [uzmanlık/{item.area}/{item.reason}] {item.detail or item.statement or ''}"[:300]
+                  for item in report.material_failures]
+    return ("MathAI çelişki buldu. Aşağıdaki maddi sorunları düzelt; doğru adımları koru, özgün sorunun tanım "
+            "kümesini ve istenen hedefi değiştirme:\n" + "\n".join(lines[:12]))[:1200]
+
+
+def correction_resolved(verification: VerificationResult) -> bool:
+    """Düzeltilmiş ders kabul edilir mi? Başarısız denetim kalmamalı ve son cevap bağımsız doğrulanmış olmalı:
+    çekirdek son cevap doğrulaması veya uzmanlık raporunda cevap düzeyinde geçen bir denetim (geometri hedefi, sözel
+    problem hedefi, çözüm kümesi, f(a)). Doğrulanamayan düzeltme reddedilir; doğrulanmamış ders doğrulanmış sayılmaz."""
+    if verification.status == "failed" or verification.contradiction:
+        return False
+    if verification.final_answer_verified:
+        return True
+    report = verification.mathematics
+    return report is not None and report.material_count == 0 and any(
+        check.status == "passed" and (check.id.endswith(ANSWER_LEVEL_CHECKS[0]) or check.id in ANSWER_LEVEL_CHECKS[1:])
+        for check in report.checks)
+
+
 def with_curriculum(teaching_context, grade: Grade | None, payload):
     """Seçilmiş müfredat bağlamı varsa sağlayıcıya TeachingPolicy olarak verilir; yoksa bağlam aynen kalır."""
     if payload is None:
@@ -131,18 +162,18 @@ class LessonService:
         verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification")
         if verification.status == "failed":
             correction = True
-            feedback = "MathAI çelişki buldu: " + "; ".join(
-                check.detail or check.statement for check in verification.checks if check.status == "failed"
-            )
+            feedback = correction_feedback(verification)
             logger.info(
                 "Lesson correction requested",
-                extra={"request_id": resolved_request_id, "stage": "correction", "failed_checks": len([x for x in verification.checks if x.status == "failed"])},
+                extra={"request_id": resolved_request_id, "stage": "correction",
+                       "failed_checks": len([x for x in verification.checks if x.status == "failed"]),
+                       "material_failures": verification.mathematics.material_count if verification.mathematics else 0},
             )
             plan = await self._plan(analysis, feedback, teaching_context, resolved_request_id, attempts,
                                     "verification_correction")
             plan = await self._reconcile(plan)
             verification = await run_in_threadpool(self._verify, plan, resolved_request_id, "math_verification_retry")
-            if verification.status == "failed" or not verification.final_answer_verified:
+            if not correction_resolved(verification):
                 logger.warning("Lesson verification contradiction remained", extra={"request_id": resolved_request_id, "stage": "math_verification_retry"})
                 raise VerificationContradictionError
 

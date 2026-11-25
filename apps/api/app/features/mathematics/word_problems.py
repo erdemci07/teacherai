@@ -71,14 +71,32 @@ def analyze(model: WordProblemModel, question_text: str) -> WordResult:
         result.status = "unsupported"
         add(MathCheck(id="word_model", area="word_problem", status="unsupported", reason="model_unparsed", detail=str(exc)[:300]))
         return result
-    # Sadakat: bilinen değerler metinde geçiyor mu? (ilişkilerin doğruluğu ayrıca kanıtlanmaz)
+    # Sadakat (TA-008B): bilinen değerin metinde geçmesi anlamını kanıtlamaz. Değer, metinden birebir alıntıyla
+    # (``evidence``) bağlanırsa "dayanaklı", yalnız sayı metinde varsa "anlamı doğrulanmamış" sayılır.
     numbers = _numbers_in(question_text)
-    missing = [item.symbol for item, value in stated if value not in numbers and -value not in numbers]
-    add(MathCheck(id="model_fidelity", area="model_fidelity",
-                  status="failed" if missing else "partially_checked",
-                  reason="value_not_in_source" if missing else "values_grounded_relations_unverified",
-                  detail=(f"Metinde bulunmayan bilinen değer(ler): {', '.join(missing)}" if missing else
-                          "Bilinen değerler soru metninde geçiyor; ilişkilerin soruya uygunluğu otomatik kanıtlanmadı.")))
+    text = _norm(question_text)
+    missing, unanchored = [], []
+    for item, value in stated:
+        if value not in numbers and -value not in numbers:
+            missing.append(item.symbol)
+        elif not (item.evidence and _norm(item.evidence) in text and value in _numbers_in(item.evidence)):
+            unanchored.append(item.symbol)
+    if missing:
+        status, reason = "failed", "value_not_in_source"
+        detail = f"Metinde bulunmayan bilinen değer(ler): {', '.join(missing)}"
+    elif unanchored:
+        status, reason = "partially_checked", "value_meaning_unanchored"
+        detail = (f"Sayı metinde var ama hangi niceliğe ait olduğu alıntıyla bağlanmadı: {', '.join(unanchored)}. "
+                  "İlişkilerin soruya uygunluğu otomatik kanıtlanmadı.")
+    else:
+        status, reason = "partially_checked", "values_anchored_relations_unverified"
+        detail = "Bilinen değerler metindeki alıntılara bağlı; ilişkilerin soruya uygunluğu otomatik kanıtlanmadı."
+    add(MathCheck(id="model_fidelity", area="model_fidelity", status=status, reason=reason, detail=detail))
+    unit_problem = _unit_mismatch(model, equations, symbols)
+    if unit_problem:
+        add(MathCheck(id="word_units", area="word_problem", status="failed", reason="unit_mismatch", detail=unit_problem))
+        result.status = "inconsistent"
+        return result
     unknown = [symbols[item.symbol] for item in model.quantities if item.value is None]
     try:
         solutions = sp.solve(equations, list(symbols.values()), dict=True)
@@ -86,7 +104,10 @@ def analyze(model: WordProblemModel, question_text: str) -> WordResult:
         result.status = "unsupported"
         add(MathCheck(id="word_solution", area="word_problem", status="unsupported", reason="solver_incomplete"))
         return result
-    constraints = {item.symbol: item.kind for item in model.constraints}
+    # TA-008B: aynı değişkene birden çok kısıt birbirini ezmez; hepsi birlikte uygulanır.
+    constraints: dict[str, set[str]] = {}
+    for item in model.constraints:
+        constraints.setdefault(item.symbol, set()).add(item.kind)
     discrete = {item.symbol for item in model.quantities if item.discrete}
     admissible = [s for s in solutions if _admissible(s, symbols, constraints, discrete)]
     if not solutions:
@@ -123,13 +144,32 @@ def _admissible(solution, symbols, constraints, discrete) -> bool:
             continue
         if not expr.finite(value):
             return False
-        kind = constraints.get(name)
-        if kind == "positive" and not value > 0:
+        kinds = constraints.get(name, set())
+        if "positive" in kinds and not value > 0:
             return False
-        if kind == "nonnegative" and not value >= 0:
+        if "nonnegative" in kinds and not value >= 0:
             return False
-        if (kind in {"integer", "natural"} or name in discrete) and not value.is_integer:
+        if (kinds & {"integer", "natural"} or name in discrete) and not value.is_integer:
             return False
-        if kind == "natural" and value < 0:
+        if "natural" in kinds and value < 0:
             return False
     return True
+
+
+def _norm(text: str) -> str:
+    lowered = (text or "").replace("İ", "i").replace("I", "ı").lower().replace("'", "").replace("’", "")
+    return " ".join(lowered.split())
+
+
+def _unit_mismatch(model: WordProblemModel, equations, symbols) -> str | None:
+    """Toplanan/eşitlenen yalın niceliklerin birimleri aynı olmalı (ör. km ile dakika toplanmaz). Çarpım ve bölümde
+    birim cebiri yapılmaz; bu sınır açıkça kısmidir."""
+    units = {symbols[item.symbol]: _norm(item.unit) for item in model.quantities if item.unit}
+    for equation in equations:
+        for side in (equation.lhs - equation.rhs,):
+            terms = side.args if isinstance(side, sp.Add) else (side,)
+            bare = [term if term.is_Symbol else -term if (-term).is_Symbol else None for term in terms]
+            found = {units[t] for t in bare if t is not None and t in units}
+            if len(found) > 1:
+                return f"Aynı ilişkide farklı birimler toplanıyor/eşitleniyor: {', '.join(sorted(found))}"
+    return None

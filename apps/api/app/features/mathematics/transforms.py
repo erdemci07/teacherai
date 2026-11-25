@@ -18,6 +18,7 @@ from dataclasses import dataclass
 
 import sympy as sp
 
+from . import domain as domains
 from . import expr, sets
 
 RELATIONS = {"<": sp.StrictLessThan, "<=": sp.LessThan, ">": sp.StrictGreaterThan, ">=": sp.GreaterThan}
@@ -25,7 +26,7 @@ RELATIONS = {"<": sp.StrictLessThan, "<=": sp.LessThan, ">": sp.StrictGreaterTha
 
 @dataclass(frozen=True)
 class StepVerdict:
-    relation: str  # equivalent | gains | loses | changed | unsupported
+    relation: str  # equivalent | gains | eliminates | loses | changed | unsupported
     hazard: str | None
     detail: str
 
@@ -62,7 +63,9 @@ def compare(previous: str, current: str, original: str, variable_name: str = "x"
     variable = expr.symbol(variable_name)
     try:
         _, _, original_sides = _set(original, variable, sp.S.Reals)
-        allowed = sets.domain_of(original_sides, variable)
+        # TA-008B: özgün ilişkinin AST tanım kümesi (sadeleştirme öncesi) + sürekli tanım kümesi
+        allowed = sp.Intersection(domains.domain_set(domains.conditions_of(original), variable),
+                                  sets.domain_of(original_sides, variable))
         before, ops_before, sides_before = _set(previous, variable, allowed)
         after, ops_after, sides_after = _set(current, variable, allowed)
     except (expr.ExprError, NotImplementedError, TypeError, ValueError):
@@ -89,5 +92,11 @@ def compare(previous: str, current: str, original: str, variable_name: str = "x"
     if sets.same_set(sp.Intersection(before, after), before) is True:
         return StepVerdict("gains", hazard, "Dönüşüm çözüm kümesini genişletti; yabancı kök özgün denklemde elenmeli.")
     if sets.same_set(sp.Intersection(before, after), after) is True:
+        # TA-008B: önceki adım kümeyi genişletmişse (ör. kare alma), yalnız özgün denklemi sağlamayan adayların elenmesi
+        # kayıp değildir. Özgün çözümlerin tamamı korunuyorsa "eliminates" döner.
+        original_set, _, _ = _set(original, variable, allowed)
+        if sets.same_set(sp.Intersection(after, original_set), original_set) is True:
+            return StepVerdict("eliminates", None, "Yalnız özgün denklemi sağlamayan (yabancı) adaylar elendi; özgün "
+                                                   "çözümlerin tamamı korundu.")
         return StepVerdict("loses", hazard or "solution_lost", "Dönüşüm bir veya daha çok çözümü kaybettirdi.")
     return StepVerdict("changed", hazard, "Dönüşüm çözüm kümesini değiştirdi.")

@@ -1,4 +1,4 @@
-"""TA-008 matematik regresyon derlemi, yetenek matrisi ve yerel kıyaslama.
+"""TA-008/TA-008B matematik regresyon derlemi, yetenek matrisi ve yerel kıyaslama.
 
     python -m scripts.math_matrix              # vakaları koşturur, matris ve kıyaslama raporlarını yazar
     python -m scripts.math_matrix --check      # vakalar beklenenle uyuşmalı; matris raporu güncel olmalı (CI)
@@ -21,7 +21,8 @@ from time import perf_counter
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ROOT / "apps/api/tests/fixtures/mathematics/regression.json"
 MATRIX = ROOT / "docs/mathematics/TA-008-capability-matrix.md"
-BENCHMARK = ROOT / "docs/mathematics/TA-008-performance.md"
+# TA-008B: TA-008 ölçümü (TA-008-performance.md) karşılaştırma tabanı olarak korunur; yeni ölçüm ayrı dosyadadır.
+BENCHMARK = ROOT / "docs/mathematics/TA-008B-corpus-benchmark.md"
 
 
 def _text(value) -> str:
@@ -67,7 +68,9 @@ def run_case(case: dict):
         return {"strategies": [p.strategy for p in paths], "all_verified": all(p.verified for p in paths)}
     if kind == "function_graph":
         facts = functions.analyze(a["latex"])
-        return {"discontinuities": [_text(item) for item in facts.discontinuities], "segments": len(facts.segments)}
+        return {"discontinuities": [_text(item) for item in facts.discontinuities], "segments": len(facts.segments),
+                "holes": [list(item) for item in facts.holes], "asymptotes": list(facts.asymptotes),
+                "first_closed": facts.segments[0].start_closed if facts.segments else None}
     if kind == "inverse":
         value, reason = functions.inverse(a["latex"])
         return {"reason": reason, "inverse": _text(value) if value is not None else None}
@@ -115,13 +118,16 @@ def run_case(case: dict):
     if kind == "antiderivative":
         return calculus.check_antiderivative(a["integrand"], a["candidate"])
     if kind == "geometry":
-        result = geometry.analyze(GeometryModel.model_validate(a["model"]))
+        # TA-008B: olgular yalnız kaynağa (metin alıntısı / işaretli şekil) bağlanırsa kısıt olur.
+        source = geometry.Source(a.get("text", ""), bool(a.get("figure", False)))
+        result = geometry.analyze(GeometryModel.model_validate(a["model"]), source)
         return {"determinacy": result.determinacy, "values": [_text(v) for v in result.target_values],
                 "reasons": sorted({c.reason for c in result.checks})}
     if kind == "word":
         result = word_problems.analyze(WordProblemModel.model_validate(a["model"]), a["text"])
-        fidelity = next((c.status for c in result.checks if c.area == "model_fidelity"), None)
-        return {"status": result.status, "values": [_text(v) for v in result.objective_values], "fidelity": fidelity}
+        fidelity = next((c for c in result.checks if c.area == "model_fidelity"), None)
+        return {"status": result.status, "values": [_text(v) for v in result.objective_values],
+                "fidelity": fidelity.status if fidelity else None, "fidelity_reason": fidelity.reason if fidelity else None}
     if kind == "strategy":
         refs = strategies.recommend(set(a["features"]), a["grade"], set(a["forbidden"]))
         return {ref.id: (ref.reason if ref.reason == "forbidden_by_approved_policy" else ref.suitable_for_grade) for ref in refs}
@@ -182,7 +188,7 @@ def render_matrix(results: list[dict]) -> str:
     by_area: dict[str, list[dict]] = {}
     for row in results:
         by_area.setdefault(row["area"], []).append(row)
-    lines = ["# TA-008 matematik yetenek matrisi", "",
+    lines = ["# TA-008/TA-008B matematik yetenek matrisi", "",
              "Bu dosya `python -m scripts.math_matrix` ile üretilir; elle düzenlenmez. CI `--check` uygular.", "",
              ("Matris *gerçekte uygulanan* yeteneği gösterir; hedef mimari değildir. Hiçbir konu bağımsız öğretmen anahtarıyla "
               "değerlendirilmedi (değerlendirme: **yok**). `runtime`: `live` ders akışında kaynak ifadeler ayrıştığında, "
@@ -206,7 +212,7 @@ def render_benchmark(results: list[dict]) -> str:
     by_area: dict[str, list[float]] = {}
     for row in results:
         by_area.setdefault(row["area"], []).append(row["ms"])
-    lines = ["# TA-008 matematik yerel performans ölçümü", "",
+    lines = ["# TA-008B matematik derlemi yerel ölçümü", "",
              ("`python -m scripts.math_matrix` çıktısı. Süreler bu geliştirme makinesinde, süreç içinde (SymPy ısınmış), vaka "
               "başına üç koşunun ortancasıdır. Yalıtılmış işçinin süreç başlatma maliyeti (≈ 1–3 sn) dahil değildir. Bulut "
               "performansı iddiası değildir."), "",

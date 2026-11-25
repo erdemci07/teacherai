@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..education.mathematics import MathematicsReport
+from ..education.mathematics import GraphSegment, MathematicsReport
 from ..education.reasoning import TargetResolution
 
 
@@ -18,6 +18,11 @@ class GraphData(BaseModel):
     critical_points:list[float]=Field(default_factory=list); sample_points:list[tuple[float,float]]=Field(default_factory=list)
     # TA-008: tanımsız noktalar; çizimde grafik bu noktalarda birleştirilmez. Örnek noktalar kanıt değildir.
     discontinuities:list[float]=Field(default_factory=list)
+    # TA-008B: doğrulanmış kesintisiz parçalar (açık/kapalı uçlarıyla), kaldırılabilir süreksizlik (x, limit) ve düşey
+    # asimptotlar. Örnek noktalar yalnız bu parçaların içinden alınır; çizim parçaları birleştirmez.
+    segments:list[GraphSegment]=Field(default_factory=list)
+    holes:list[tuple[float,float]]=Field(default_factory=list)
+    asymptotes:list[float]=Field(default_factory=list)
 class ChoiceMatch(BaseModel):
     """Seçenek uzlaştırmasının açık kaydı. En yakın değer seçilmez; eşleşme yalnızca kesin eşdeğerliktir."""
     model_config=ConfigDict(extra="forbid")
