@@ -45,7 +45,7 @@ Matris *gerçekte uygulanan* yeteneği gösterir; hedef mimari değildir. Hiçbi
 
 ## Regresyon derlemi
 
-`apps/api/tests/fixtures/mathematics/regression.json`: 89 sentetik vaka (olumlu, olumsuz, sınır ve çekimser). Geçen: 89/89.
+`apps/api/tests/fixtures/mathematics/regression.json`: 97 sentetik vaka (olumlu, olumsuz, sınır ve çekimser). Geçen: 97/97.
 
 | Alan | Vaka | Geçen |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ Matris *gerçekte uygulanan* yeteneği gösterir; hedef mimari değildir. Hiçbi
 | calculus | 8 | 8 |
 | foundations | 9 | 9 |
 | functions | 10 | 10 |
-| geometry | 21 | 21 |
+| geometry | 29 | 29 |
 | probability | 5 | 5 |
 | statistics | 1 | 1 |
 | strategy | 2 | 2 |

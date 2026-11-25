@@ -8,13 +8,16 @@ _KINDS = {"segment_length": "uzunluk", "angle_measure": "açı", "right_angle": 
           "triangle": "üçgen", "similar": "benzer", "congruent": "eş", "coordinate": "koordinat", "tangent": "teğet"}
 
 
-_ACCEPTED = {"source_text": "metinde verilen", "diagram_interpreted": "şekilde işaretli (görselden okundu)",
-             "validated_derivation": "doğrulanmış türetme", "construction_defined": "yardımcı çizimin tanımından"}
+_ACCEPTED = {"source_text": "metinde verilen", "diagram_observation": "şekilde işaretli (görselden AI ile okundu)",
+             "student_confirmed": "öğrencinin onayladığı", "validated_derivation": "doğrulanmış türetme",
+             "construction_defined": "yardımcı çizimin tanımından"}
 _REJECTED = {"visual_fact_not_given": "yalnız görünüş", "provider_proposed": "kaynakta bulunamadı",
              "unsupported_derivation": "türetme kanıtsız", "circular_derivation": "döngüsel türetme",
              "missing_premise": "öncül eksik", "rule_not_applicable": "kural uygulanamaz",
              "construction_overreach": "çizim bunu kurmaz", "tangent_preconditions_unmet": "teğet ön koşulu yok",
-             "degenerate_object": "yozlaşmış nesne"}
+             "degenerate_object": "yozlaşmış nesne", "quote_does_not_assert_fact": "alıntı bunu ileri sürmüyor",
+             "quote_mentions_without_asserting": "yalnız soruda anılıyor", "negated_in_source": "kaynak olumsuzluyor",
+             "diagram_marking_unlinked": "işaret gözleme bağlanamadı (yorum)"}
 
 
 def _fact_label(verdict) -> str:
