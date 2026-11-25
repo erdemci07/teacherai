@@ -236,7 +236,7 @@ class GraphSegment(Contract):
 
 
 class GeometryFactStatus(Contract):
-    """TA-008B §19: sunucunun olgu kararı. ``basis``: kabul edilmişse kanıt sınıfı (source_text, diagram_interpreted,
+    """TA-008B §19: sunucunun olgu kararı. ``basis``: kabul edilmişse kanıt sınıfı (source_text, diagram_observation, student_confirmed,
     validated_derivation, construction_defined), reddedilmişse neden kodu. Tahta etiketini sağlayıcının ``origin``
     alanından değil bu karardan alır."""
 

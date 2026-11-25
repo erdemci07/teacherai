@@ -24,6 +24,11 @@ from ..integrity import expression as tree
 MAX_CONDITIONS = 24
 
 
+class DomainOverflow(ValueError):
+    """TA-009 §3.4: koşul sayısı sınırı aştı. Kesilmiş koşul listesi eksik bir tanım kümesi verir; bu yüzden kesmek
+    yerine hata yükseltilir ve çağıran analiz ``unsupported`` kalır (kapalı başarısızlık)."""
+
+
 @dataclass(frozen=True)
 class Condition:
     kind: str  # nonzero | nonnegative | positive | not_one
@@ -59,9 +64,12 @@ def conditions(node) -> list[Condition]:
 
     def add(kind, sub, reason):
         key = (kind, tree.to_latex(sub))
-        if key not in seen and len(found) < MAX_CONDITIONS:
-            seen.add(key)
-            found.append(Condition(kind, sub, reason))
+        if key in seen:
+            return
+        if len(found) >= MAX_CONDITIONS:
+            raise DomainOverflow(f"domain_conditions_exceed_{MAX_CONDITIONS}")
+        seen.add(key)
+        found.append(Condition(kind, sub, reason))
 
     def walk(item):
         if isinstance(item, tree.Frac):
@@ -98,8 +106,11 @@ def conditions(node) -> list[Condition]:
 
 
 def conditions_of(latex: str) -> list[Condition]:
+    """Ayrıştırılamayan ifade için boş liste değil hata: "koşul yok" ile "koşullar bilinmiyor" ayrıdır (TA-009 §3.4)."""
     result = tree.parse(latex)
-    return conditions(result.tree) if result.parsed else []
+    if not result.parsed:
+        raise DomainOverflow(f"domain_unparsed:{result.reason or 'invalid'}")
+    return conditions(result.tree)
 
 
 def domain_set(conds: list[Condition], variable, complex_domain: bool = False):

@@ -66,8 +66,53 @@ UNITS: dict[str, tuple[Fraction, Dim, bool]] = {
     "V": (Fraction(1), _d(M=1, L=2, T=-3, I=-1), False),
     "Ω": (Fraction(1), _d(M=1, L=2, T=-3, I=-2), False),
     "µg": (Fraction(1, 10**9), _d(M=1), False),
+    # TA-009: Türk sınavlarında yaygın birimler. Her çarpanın kaynağı CONVERSION_SOURCES içindedir.
+    "ton": (Fraction(1000), _d(M=1), False),
+    "mA": (Fraction(1, 1000), _d(I=1), False),
+    "µA": (Fraction(1, 10**6), _d(I=1), False),
+    "kV": (Fraction(1000), _d(M=1, L=2, T=-3, I=-1), False),
+    "mV": (Fraction(1, 1000), _d(M=1, L=2, T=-3, I=-1), False),
+    "kΩ": (Fraction(1000), _d(M=1, L=2, T=-3, I=-2), False),
+    "MΩ": (Fraction(10**6), _d(M=1, L=2, T=-3, I=-2), False),
+    "mC": (Fraction(1, 1000), _d(T=1, I=1), False),
+    "µC": (Fraction(1, 10**6), _d(T=1, I=1), False),
+    "nC": (Fraction(1, 10**9), _d(T=1, I=1), False),
+    "F": (Fraction(1), _d(M=-1, L=-2, T=4, I=2), False),
+    "mF": (Fraction(1, 1000), _d(M=-1, L=-2, T=4, I=2), False),
+    "µF": (Fraction(1, 10**6), _d(M=-1, L=-2, T=4, I=2), False),
+    "nF": (Fraction(1, 10**9), _d(M=-1, L=-2, T=4, I=2), False),
+    "pF": (Fraction(1, 10**12), _d(M=-1, L=-2, T=4, I=2), False),
+    "T": (Fraction(1), _d(M=1, T=-2, I=-1), False),
+    "Wb": (Fraction(1), _d(M=1, L=2, T=-2, I=-1), False),
+    "MJ": (Fraction(10**6), _d(M=1, L=2, T=-2), False),
+    "MW": (Fraction(10**6), _d(M=1, L=2, T=-3), False),
+    "Wh": (Fraction(3600), _d(M=1, L=2, T=-2), False),
+    "kWh": (Fraction(3_600_000), _d(M=1, L=2, T=-2), False),
+    "eV": (Fraction(1_602_176_634, 10**28), _d(M=1, L=2, T=-2), False),
+    "cal": (Fraction(4184, 1000), _d(M=1, L=2, T=-2), False),
+    "kcal": (Fraction(4184), _d(M=1, L=2, T=-2), False),
+    "atm": (Fraction(101_325), _d(M=1, L=-1, T=-2), False),
+    "mmHg": (Fraction(133_322_387_415, 10**9), _d(M=1, L=-1, T=-2), False),
+    "cmHg": (Fraction(1_333_223_874_150, 10**9), _d(M=1, L=-1, T=-2), False),
+    "bar": (Fraction(100_000), _d(M=1, L=-1, T=-2), False),
 }
-ALIASES = {"sn": "s", "dk": "min", "ℓ": "L", "ºC": "°C", "℃": "°C", "lt": "L", "ohm": "Ω", "μg": "µg"}
+ALIASES = {"sn": "s", "dk": "min", "sa": "h", "ℓ": "L", "ºC": "°C", "℃": "°C", "lt": "L", "ohm": "Ω", "μg": "µg",
+           "μA": "µA", "μC": "µC", "μF": "µF", "kohm": "kΩ"}
+# TA-009 §12: dönüşüm çarpanlarının kaynakları (yalnız tanımlı/standart değerler; ölçüm değeri değildir).
+CONVERSION_SOURCES = {
+    "eV": "BIPM SI Broşürü, 9. baskı (2019), Tablo 8: 1 eV = 1,602 176 634 × 10⁻¹⁹ J (tam; e tanımlı sabit).",
+    "kWh": "Tanım: 1 kW · 1 h = 1000 W × 3600 s = 3,6 × 10⁶ J (BIPM SI Broşürü, türetilmiş birimler).",
+    "Wh": "Tanım: 1 W × 3600 s = 3600 J.",
+    "cal": "NIST SP 811 (2008), B.8: termokimyasal kalori, 1 cal_th = 4,184 J (tam). Uluslararası tablo kalorisi "
+           "(4,1868 J) kullanılmaz; soru başka bir değer veriyorsa sorunun değeri geçerlidir.",
+    "kcal": "1 kcal_th = 4184 J (NIST SP 811, B.8).",
+    "atm": "NIST SP 811 (2008), B.8: standart atmosfer, 1 atm = 101 325 Pa (tam; 10. CGPM, 1954).",
+    "mmHg": "NIST SP 811 (2008), B.8: geleneksel milimetre cıva, 1 mmHg = 133,322 387 415 Pa. Sınavlar genellikle "
+            "76 cmHg = 1 atm uzlaşımını verir; verilen uzlaşım bu değerin önüne geçer.",
+    "cmHg": "10 mmHg (NIST SP 811, B.8 geleneksel değerden).",
+    "bar": "BIPM SI Broşürü, 9. baskı, Tablo 8 dışı birimler: 1 bar = 10⁵ Pa (tam).",
+    "ton": "Ton (metrik), 1 t = 1000 kg (BIPM SI Broşürü, Tablo 8).",
+}
 AMBIGUOUS = {"C", "M", "l"}
 _SYMBOLS = sorted(list(UNITS) + list(ALIASES) + list(AMBIGUOUS), key=len, reverse=True)
 _SUPERSCRIPT = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺", "0123456789-+")
