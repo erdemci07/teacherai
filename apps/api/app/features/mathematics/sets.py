@@ -16,6 +16,7 @@ import sympy as sp
 from sympy.calculus.util import continuous_domain
 
 from ..education.mathematics import IntervalView, SolutionSetView
+from . import domain as domains
 from . import expr
 
 MAX_INTEGER_SCAN = 2000
@@ -61,17 +62,27 @@ def _interval_view(item: sp.Interval) -> IntervalView:
                         upper_closed=not item.right_open and upper is not None)
 
 
-def view(value, variable=None, domain: str = "real", excluded=()) -> SolutionSetView:
-    """SymPy kümesinin gösterilebilir kaydı. Bilinmeyen biçim ``unsupported`` olur (asla ``passed`` değil)."""
+MAX_ELEMENTS, MAX_INTERVALS, MAX_EXCLUSIONS = 32, 16, 16
+
+
+def view(value, variable=None, domain: str = "real", excluded=(), conditions=()) -> SolutionSetView:
+    """SymPy kümesinin gösterilebilir kaydı. Bilinmeyen biçim ``unsupported`` olur (asla ``passed`` değil).
+    Sınırı aşan liste kesilir ama ``truncated`` ve ``exact=False`` ile eksik olduğu açıkça işaretlenir."""
     name = str(variable) if variable is not None else None
-    base = {"domain": domain, "variable": name, "exclusions": [expr.text(item) for item in excluded][:16]}
+    excluded = list(excluded)
+    base = {"domain": domain, "variable": name, "exclusions": [expr.text(item) for item in excluded][:MAX_EXCLUSIONS],
+            "conditions": [c.text_tr() for c in conditions][:24]}
+    if len(excluded) > MAX_EXCLUSIONS:
+        base |= {"truncated": True}
     if value == sp.S.EmptySet:
         return SolutionSetView(kind="empty", **base)
     if value in (sp.S.Reals, sp.S.Complexes) or value == DOMAINS.get(domain):
         return SolutionSetView(kind="all", **base)
     if isinstance(value, sp.FiniteSet) and all(item.is_number for item in value):
         items = sorted(value, key=sp.default_sort_key)
-        return SolutionSetView(kind="finite", elements=[expr.text(item) for item in items][:32], **base)
+        if len(items) > MAX_ELEMENTS:
+            base |= {"truncated": True, "exact": False}
+        return SolutionSetView(kind="finite", elements=[expr.text(item) for item in items][:MAX_ELEMENTS], **base)
     if isinstance(value, sp.Interval):
         return SolutionSetView(kind="intervals", intervals=[_interval_view(value)], **base)
     if isinstance(value, sp.Union) and all(isinstance(item, (sp.Interval, sp.FiniteSet)) for item in value.args):
@@ -84,10 +95,12 @@ def view(value, variable=None, domain: str = "real", excluded=()) -> SolutionSet
         views = [_interval_view(item) for item in sorted(intervals, key=lambda item: item.start)]
         views += [IntervalView(lower=expr.text(p), upper=expr.text(p), lower_closed=True, upper_closed=True)
                   for p in sorted(points, key=sp.default_sort_key)]
-        return SolutionSetView(kind="intervals", intervals=views[:16], **base)
+        if len(views) > MAX_INTERVALS:
+            base |= {"truncated": True, "exact": False}
+        return SolutionSetView(kind="intervals", intervals=views[:MAX_INTERVALS], **base)
     if isinstance(value, sp.Complement) and isinstance(value.args[0], sp.Interval) and isinstance(value.args[1], sp.FiniteSet):
         return view(sp.Union(*[sp.Interval(a, b, True, True) for a, b in _cuts(value.args[0], value.args[1])]),
-                    variable, domain, excluded)
+                    variable, domain, excluded, conditions)
     if isinstance(value, (sp.ConditionSet, sp.ImageSet)):
         return SolutionSetView(kind="conditional", exact=False, **base)
     return SolutionSetView(kind="unsupported", exact=False, **base)
@@ -114,16 +127,18 @@ def solve_equation(latex: str, variable_name: str = "x", domain: str = "real") -
     left, right = sides
     if (left.free_symbols | right.free_symbols) - {variable}:
         raise expr.ExprError("parameters")
-    allowed = domain_of([left, right], variable)
+    conds = domains.conditions_of(latex)
+    # TA-008B: tanım kümesi özgün AST'den (sadeleştirme öncesi) + SymPy sürekli tanım kümesi (ek güvence).
+    allowed = sp.Intersection(domains.domain_set(conds, variable), domain_of([left, right], variable))
     base = sp.S.Complexes if domain == "complex" else sp.S.Reals
     if domain == "complex":
         variable = sp.Symbol(variable_name)
         left, right = left.subs(expr.symbol(variable_name), variable), right.subs(expr.symbol(variable_name), variable)
-        allowed = sp.S.Complexes
+        allowed = domains.domain_set(conds, variable, complex_domain=True)  # gerçel kısıt uygulanmaz
     raw = sp.solveset(sp.Eq(left, right), variable, domain=base)
-    result = _restricted(sp.Intersection(raw, allowed) if domain != "complex" else raw, domain)
+    result = _restricted(sp.Intersection(raw, allowed), domain)
     result = _simplify_set(result)
-    shown = view(result, variable, domain, exclusions(allowed) if domain != "complex" else ())
+    shown = view(result, variable, domain, exclusions(allowed) if domain != "complex" else (), conds)
     status = "exact" if shown.kind in {"finite", "empty", "all", "intervals"} else shown.kind
     return Solved(shown, result, status)
 
@@ -150,12 +165,13 @@ def solve_inequality(latex: str, variable_name: str = "x") -> Solved:
     variable = expr.symbol(variable_name)
     if set().union(*(item.free_symbols for item in sides)) - {variable}:
         raise expr.ExprError("parameters")
-    allowed = domain_of(sides, variable)
+    conds = domains.conditions_of(latex)
+    allowed = sp.Intersection(domains.domain_set(conds, variable), domain_of(sides, variable))
     result = allowed
     for op, left, right in zip(ops, sides, sides[1:]):
         result = sp.Intersection(result, sp.solveset(relations[op](left, right), variable, domain=sp.S.Reals))
     result = sp.simplify(result) if isinstance(result, sp.Intersection) else result
-    shown = view(result, variable, "real", exclusions(allowed))
+    shown = view(result, variable, "real", exclusions(allowed), conds)
     return Solved(shown, result, "exact" if shown.kind in {"finite", "empty", "all", "intervals"} else shown.kind)
 
 

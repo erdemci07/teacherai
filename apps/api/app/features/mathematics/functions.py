@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import sympy as sp
 
 from ..education.mathematics import GraphSegment
+from . import domain as domains
 from . import expr, sets
 
 WINDOW = (-10, 10)
@@ -24,6 +25,9 @@ class FunctionFacts:
     roots: object
     discontinuities: list
     segments: list[GraphSegment]
+    # TA-008B §18: kaldırılabilir süreksizlik (sonlu limit; açık daire) ve düşey asimptot (sonsuz limit) ayrımı.
+    holes: list = ()  # [(x, limit)]
+    asymptotes: list = ()
 
 
 def analyze(latex: str, variable_name: str = "x", window=WINDOW) -> FunctionFacts:
@@ -31,7 +35,8 @@ def analyze(latex: str, variable_name: str = "x", window=WINDOW) -> FunctionFact
     x = expr.symbol(variable_name)
     if f.free_symbols - {x}:
         raise expr.ExprError("parameters")
-    domain = sets.domain_of([f], x)
+    # TA-008B: tanım kümesi özgün AST'den; (x²−1)/(x−1) sadeleşse de x = 1 tanımsız kalır
+    domain = sp.Intersection(domains.domain_set(domains.conditions_of(latex), x), sets.domain_of([f], x))
     roots = sp.Intersection(sp.solveset(sp.Eq(f, 0), x, domain=sp.S.Reals), domain)
     holes = sets.exclusions(domain)
     lo, hi = window
@@ -48,14 +53,38 @@ def analyze(latex: str, variable_name: str = "x", window=WINDOW) -> FunctionFact
             if isinstance(part, sp.Interval) and part.measure > 0:
                 segments.append(GraphSegment(start=float(part.start), end=float(part.end),
                                              start_closed=not part.left_open, end_closed=not part.right_open))
-    return FunctionFacts(domain, holes, roots, cut, segments[:16])
+    removable, asymptotes = _classify(f, x, cut, segments)
+    return FunctionFacts(domain, holes, roots, cut, segments[:16], removable, asymptotes)
+
+
+def _classify(f, x, cut, segments):
+    """Tanımsız iç noktalar ve açık uç noktalar için tek yanlı limitler: iki yandan aynı sonlu limit → kaldırılabilir
+    (delik); herhangi bir yanda sonsuz limit → düşey asimptot. Karar verilemeyen nokta hiçbirine konmaz."""
+    removable, asymptotes = [], []
+    candidates = {float(p): p for p in cut}
+    for segment in segments:
+        for value, closed in ((segment.start, segment.start_closed), (segment.end, segment.end_closed)):
+            if not closed and WINDOW[0] < value < WINDOW[1]:
+                candidates.setdefault(value, sp.nsimplify(value))
+    for value, point in sorted(candidates.items())[:MAX_POINTS]:
+        try:
+            sides = [sp.limit(f, x, point, dir=d) for d in ("-", "+")]
+        except (NotImplementedError, TypeError, ValueError):
+            continue
+        real = [s for s in sides if s.is_extended_real and s is not sp.nan]
+        if any(s in (sp.oo, -sp.oo) for s in real):
+            asymptotes.append(value)
+        elif len(real) == 2 and all(expr.finite(s) for s in real) and sp.simplify(real[0] - real[1]) == 0                 and point in cut:
+            removable.append((value, float(real[0])))
+    return removable, asymptotes
 
 
 def evaluate(latex: str, value, variable_name: str = "x"):
     """f(a). Tanım kümesi dışında ExprError (sessiz NaN yok)."""
     f = expr.expression(latex)
     x = expr.symbol(variable_name)
-    domain = sets.domain_of([f], x)
+    # TA-008B: özgün ifadenin tanım kümesi (sadeleşmiş ifade x = 1'de tanımlı görünse bile)
+    domain = sp.Intersection(domains.domain_set(domains.conditions_of(latex), x), sets.domain_of([f], x))
     if domain.contains(value) != sp.true:
         raise expr.ExprError("outside_domain")
     result = sp.simplify(f.subs(x, value))

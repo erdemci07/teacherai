@@ -23,7 +23,9 @@ def quadratic(latex: str, variable_name: str = "x") -> list[AlternativePath]:
         return []
     x = expr.symbol(variable_name)
     poly_expr = sp.expand(sides[0] - sides[1])
-    if poly_expr.free_symbols - {x}:
+    # TA-008B: yalnız polinom denklem; rasyonel/köklü denklem (ör. (x²−4)/(x−2) = 4) alternatif yol üretmez ve tanım
+    # kümesi kaybolmasın diye paydası temizlenmiş biçime dönüştürülmez.
+    if poly_expr.free_symbols - {x} or not poly_expr.is_polynomial(x):
         return []
     poly = sp.Poly(poly_expr, x)
     if poly.degree() != 2:
