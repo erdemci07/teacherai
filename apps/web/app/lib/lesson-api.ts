@@ -6,9 +6,10 @@ export interface Step { id:string;type:string;title:string;explanation:string;ex
 export interface LessonContent { question_understanding:string;known_values:string[];unknown:string|null;prerequisite_reminder:string|null;key_rule:string|null;strategy:string;strategy_id:string;steps:Step[];common_mistake:string|null;mistake_type:string|null;shortcut:string|null;mini_example:Expression[];teacher_tip:string|null;final_answer:string;final_answer_expressions:Expression[];takeaway:string }
 export interface LessonPlan { lesson_plan_id:string;source_analysis:VisionAnalysis;learning_objectives:string[];concept_id:string;content:LessonContent;provider:string;model:string;lesson_generation_ms:number }
 export interface VerificationCheck { id:string;kind:string;status:'passed'|'failed'|'unsupported';statement:string;detail:string|null }
-export interface GraphData { expression:string;roots:number[];y_intercept:number|null;critical_points:number[];sample_points:[number,number][] }
+import type { GraphData, IntervalView } from './math-board';
+export type { GraphData, IntervalView };
 export interface VerificationResult { status:'verified'|'partially_verified'|'unsupported'|'failed';confidence:number;checks:VerificationCheck[];final_answer_verified:boolean;contradiction:boolean;warnings:string[];engine:string;engine_version:string;graph:GraphData|null;processing_time_ms:number;choice_match?:ChoiceMatch|null }
-export interface BoardElement { id:string;type:string;text:string|null;latex:string|null;mark:'none'|'check'|'cross'|'warning';source_step_id:string|null;graph:GraphData|null;shape:string|null }
+export interface BoardElement { id:string;type:string;text:string|null;latex:string|null;mark:'none'|'check'|'cross'|'warning';source_step_id:string|null;graph:GraphData|null;shape:string|null;intervals?:IntervalView[]|null;exclusions?:string[]|null;facts?:string[]|null;schematic?:boolean }
 export interface BoardPlan { schema_version:string;board_id:string;lesson_plan_id:string;title:string;elements:BoardElement[] }
 export interface GeneratedLesson { lesson:LessonPlan;verification:VerificationResult;board:BoardPlan;correction_attempted:boolean;total_processing_ms:number }
 export class LessonApiError extends Error { constructor(public code:string){super(code)} }
