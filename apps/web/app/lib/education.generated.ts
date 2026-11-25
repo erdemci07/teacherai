@@ -113,6 +113,12 @@ export type Condition = {
   value: string;
 };
 
+export type ContextAttempt = {
+  purpose: "initial" | "verification_correction" | "method_correction";
+  levels: Array<"normal" | "emergency" | "unknown">;
+  accepted: boolean;
+};
+
 export type ContextValue = {
   value: string;
   origin: "declared" | "profile" | "inferred";
@@ -228,6 +234,9 @@ export type EducationalProvenance = {
   verification_capabilities?: Array<string>;
   transmission?: "normal" | "emergency" | "mixed" | null;
   transmitted_knowledge_ids?: Array<string>;
+  excluded_methods?: Array<ExcludedMethod>;
+  attempts?: Array<ContextAttempt>;
+  advanced_requested?: boolean;
 };
 
 export type Entity = {
@@ -255,7 +264,12 @@ export type ExampleBlock = {
 
 export type ExcludedKnowledge = {
   id: string;
-  reason: "not_runtime_eligible" | "exceeds_record_budget" | "exceeds_total_budget" | "limit_reached" | "subject_mismatch";
+  reason: "not_runtime_eligible" | "exceeds_record_budget" | "exceeds_total_budget" | "limit_reached" | "above_learner_level" | "learner_level_unknown" | "level_unspecified" | "exam_level_mismatch" | "subject_mismatch";
+};
+
+export type ExcludedMethod = {
+  policy_id: string;
+  reason: "exceeds_total_budget" | "limit_reached";
 };
 
 export type ExperimentGroup = {

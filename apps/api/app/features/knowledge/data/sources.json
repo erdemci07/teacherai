@@ -838,6 +838,58 @@
    "notes_tr": "TA-007'de eklendi; bölüm adresleri ve sayfa altbilgisindeki lisans 2026-11-24'te doğrulandı.",
    "review_status": "unreviewed",
    "edition": "2e"
+  },
+  {
+   "id": "openstax.contemporary-mathematics",
+   "title": "Contemporary Mathematics",
+   "institution": "OpenStax (Rice University)",
+   "url": "https://openstax.org/details/books/contemporary-mathematics",
+   "kind": "open_textbook",
+   "access": "open_web",
+   "subjects": [
+    "mathematics",
+    "geometry"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "license_verified": true,
+   "rights_holder": "Rice University",
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "conditional",
+    "redistribution": "conditional",
+    "model_training": "unknown",
+    "conditions_tr": "Ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0). Ticari kullanım ayrı izin ister."
+   },
+   "verified_on": "2026-11-25",
+   "edition_verified": false,
+   "notes_tr": "TA-008'de eklendi; bölüm adresleri ve sayfadaki CC BY-NC-SA 4.0 bağlantısı 2026-11-25'te doğrulandı. Baskı numarası sayfada doğrulanmadı.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "joyce.euclid-elements",
+   "title": "Euclid's Elements (David E. Joyce web baskısı)",
+   "authors": [
+    "Euclid",
+    "David E. Joyce (web baskısı)"
+   ],
+   "institution": "Clark University",
+   "url": "https://mathcs.clarku.edu/~djoyce/java/elements/elements.html",
+   "kind": "classic",
+   "access": "open_web",
+   "subjects": [
+    "geometry",
+    "mathematics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed"
+   },
+   "edition_verified": false,
+   "notes_tr": "Önermelerin kendisi kamu malıdır; Joyce'un web baskısı (çeviri, açıklama, şekiller) telif bildirimi taşır. Yalnız önerme başvurusu olarak kullanılır; metin alınmadı. Önerme sayfaları 2026-11-25'te başlıklarıyla doğrulandı.",
+   "review_status": "unreviewed"
   }
  ]
 }

@@ -826,6 +826,46 @@
       "title": "Condition",
       "type": "object"
     },
+    "ContextAttempt": {
+      "additionalProperties": false,
+      "description": "Bir ders sağlayıcısı çağrısı. ``levels`` aynı çağrıdaki gönderimler (ör. normal → acil yeniden deneme).",
+      "properties": {
+        "accepted": {
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "levels": {
+          "items": {
+            "enum": [
+              "normal",
+              "emergency",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "title": "Levels",
+          "type": "array"
+        },
+        "purpose": {
+          "enum": [
+            "initial",
+            "verification_correction",
+            "method_correction"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        }
+      },
+      "required": [
+        "purpose",
+        "levels",
+        "accepted"
+      ],
+      "title": "ContextAttempt",
+      "type": "object"
+    },
     "ContextValue": {
       "additionalProperties": false,
       "properties": {
@@ -1665,6 +1705,19 @@
       "additionalProperties": false,
       "description": "Bir dersin üretildiği andaki eğitim bağlamının yeniden kurulabilir kaydı. Ders kaydıyla saklanır; kayıt\nveya profil sonradan değişse de eski ders yeniden hesaplanmaz.",
       "properties": {
+        "advanced_requested": {
+          "default": false,
+          "title": "Advanced Requested",
+          "type": "boolean"
+        },
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/ContextAttempt"
+          },
+          "maxItems": 8,
+          "title": "Attempts",
+          "type": "array"
+        },
         "compacted_knowledge": {
           "items": {
             "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
@@ -1692,6 +1745,14 @@
           },
           "maxItems": 32,
           "title": "Excluded Knowledge",
+          "type": "array"
+        },
+        "excluded_methods": {
+          "items": {
+            "$ref": "#/$defs/ExcludedMethod"
+          },
+          "maxItems": 8,
+          "title": "Excluded Methods",
           "type": "array"
         },
         "inactive_method_policies": {
@@ -2090,6 +2151,10 @@
             "exceeds_record_budget",
             "exceeds_total_budget",
             "limit_reached",
+            "above_learner_level",
+            "learner_level_unknown",
+            "level_unspecified",
+            "exam_level_mismatch",
             "subject_mismatch"
           ],
           "title": "Reason",
@@ -2101,6 +2166,30 @@
         "reason"
       ],
       "title": "ExcludedKnowledge",
+      "type": "object"
+    },
+    "ExcludedMethod": {
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "exceeds_total_budget",
+            "limit_reached"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "reason"
+      ],
+      "title": "ExcludedMethod",
       "type": "object"
     },
     "ExperimentGroup": {
