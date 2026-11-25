@@ -67,6 +67,7 @@ class WordQuantityResponse(BaseModel):
     value: str|None
     discrete: bool
     origin: Literal["stated","derived","assumed","visual_uncertain"]
+    evidence: str|None
 class WordConstraintResponse(BaseModel):
     model_config=ConfigDict(extra="forbid")
     symbol: str
@@ -86,6 +87,9 @@ class GeometryFactResponse(BaseModel):
     other: list[str]
     value: str|None
     origin: Literal["stated","marked","derived","visual_uncertain","construction"]
+    evidence: str|None
+    premises: list[str]
+    rule: str|None
 class ConstructionResponse(BaseModel):
     model_config=ConfigDict(extra="forbid")
     id: str

@@ -233,7 +233,8 @@ def test_provider_model_is_validated_and_invalid_model_is_dropped():
     payload = lesson_payload()
     geometry = {"kind": "geometry", "word_problem": None, "geometry": {
         "points": ["A", "B", "C"], "facts": [{"id": "t", "kind": "triangle", "points": ["A", "B", "C"], "other": [],
-                                              "value": None, "origin": "stated"}],
+                                              "value": None, "origin": "stated",
+                                              "evidence": None, "premises": [], "rule": None}],
         "constructions": [], "target": {"kind": "angle", "points": ["A", "B", "C"]}, "schematic": True}}
     payload["content"]["mathematical_model"] = geometry
     draft = normalize_lesson_draft_response(LessonDraftResponse.model_validate(payload))
