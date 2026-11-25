@@ -1,6 +1,6 @@
 """Bilimsel kaynak/bilgi kaydı doğrulaması, kapsam raporu ve çevrimdışı taslak önizleme (TA-006).
 
-    python -m scripts.knowledge_registry                 # doğrular, docs/knowledge/TA-007-knowledge-coverage.md yazar
+    python -m scripts.knowledge_registry                 # doğrular, docs/knowledge/TA-008-knowledge-coverage.md yazar
     python -m scripts.knowledge_registry --check         # doğrular; rapor güncel değilse başarısız olur
     python -m scripts.knowledge_registry preview <kimlik> # taslak girdiyi engelleri ve denetleyici kapsamıyla gösterir
 
@@ -19,7 +19,7 @@ from apps.api.app.features.knowledge import registry as knowledge
 from apps.api.app.features.knowledge.capabilities import CAPABILITIES, capability_check
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs/knowledge/TA-007-knowledge-coverage.md"
+REPORT = ROOT / "docs/knowledge/TA-008-knowledge-coverage.md"
 AUDIT = ROOT / "apps/api/app/features/knowledge/audit/TA-007-draft-audit.json"
 SUBJECT_TR = {"mathematics": "Matematik (geometri dahil)", "physics": "Fizik", "chemistry": "Kimya", "biology": "Biyoloji",
               "science": "Ortaokul fen (bütünleşik)"}
@@ -28,7 +28,7 @@ PERM_TR = {"allowed": "evet", "not_allowed": "hayır", "conditional": "koşullu"
 
 def render(registry: knowledge.KnowledgeRegistry) -> str:
     rows = knowledge.coverage(registry)
-    lines = ["# TA-007 bilimsel bilgi kapsam raporu", "",
+    lines = ["# TA-008 bilimsel bilgi kapsam raporu", "",
              "Bu dosya `python -m scripts.knowledge_registry` ile üretilir; elle düzenlenmez.", "",
              f"- Kayıt sürümü: `{registry.version}`",
              f"- Kaynak: {len(registry.sources)} · bilgi girdisi: {len(registry.entries)} · tanımlı denetleyici: {len(CAPABILITIES)}", "",
@@ -62,6 +62,18 @@ def render(registry: knowledge.KnowledgeRegistry) -> str:
     for row in rows:
         lines.append(f"| {SUBJECT_TR[row['subject']]} | {before[row['subject']]} | {row['total']} |")
     lines.append(f"| Çalışma zamanına uygun | 0 | {sum(row['runtime_eligible'] for row in rows)} |")
+    maths = [entry for entry in registry.entries.values() if entry.subject.value in {"mathematics", "geometry"}]
+    by_topic = Counter(entry.topic for entry in maths)
+    by_source = Counter(locator.source_id for entry in maths for locator in entry.provenance)
+    with_verifier = sum(1 for entry in maths if entry.verifiers)
+    lines += ["", "## Matematik ve geometri kapsamı (TA-008)", "",
+              (f"{len(maths)} girdi (geometri {sum(1 for e in maths if e.subject.value == 'geometry')}); denetleyici bağlantılı "
+               f"{with_verifier}; hepsi `draft`, hak kararı `pending`. Denetleyici bağlantısı iddianın yalnız belirtilen "
+               "parçasını kapsar."), "",
+              "| Konu | Girdi |", "| --- | --- |"]
+    lines += [f"| `{topic}` | {count} |" for topic, count in sorted(by_topic.items())]
+    lines += ["", "| Kaynak | Girdi başvurusu |", "| --- | --- |"]
+    lines += [f"| `{source}` | {count} |" for source, count in sorted(by_source.items())]
     unsourced = [entry for row in rows for entry in row["unsourced"]]
     lines += ["", f"Kaynaksız girdiler (çalışma zamanına kapalı): {', '.join(f'`{item}`' for item in unsourced) or 'yok'}", "",
               "## Kaynaklar ve izinler", "",
