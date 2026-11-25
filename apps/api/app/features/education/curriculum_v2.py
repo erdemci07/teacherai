@@ -269,6 +269,9 @@ class MethodPolicyV2(Contract):
     # çalışma zamanında etkin olmaz (``curriculum.methods``).
     approved_on: date | None = None
     approval_digest: Label | None = None
+    # TA-008: öğretmen katkısından türetilmiş politika; katkı yayımlanmış ve aynı sürüm olmalı.
+    contribution_id: Identifier | None = None
+    contribution_digest: Label | None = None
 
     @model_validator(mode="after")
     def approval_is_explicit(self):
@@ -347,7 +350,22 @@ class KnowledgeRef(Contract):
 
 
 ExclusionReason = Literal["not_runtime_eligible", "exceeds_record_budget", "exceeds_total_budget", "limit_reached",
+                          # TA-008: öğrenci düzeyi uygunluğu (bilimsel doğruluk veya müfredat kararı değildir)
+                          "above_learner_level", "learner_level_unknown", "level_unspecified", "exam_level_mismatch",
                           "subject_mismatch"]
+
+
+class ExcludedMethod(Contract):
+    policy_id: Identifier
+    reason: Literal["exceeds_total_budget", "limit_reached"]
+
+
+class ContextAttempt(Contract):
+    """Bir ders sağlayıcısı çağrısı. ``levels`` aynı çağrıdaki gönderimler (ör. normal → acil yeniden deneme)."""
+
+    purpose: Literal["initial", "verification_correction", "method_correction"]
+    levels: list[Literal["normal", "emergency", "unknown"]] = Field(min_length=1, max_length=3)
+    accepted: bool
 
 
 class ExcludedKnowledge(Contract):
@@ -433,6 +451,11 @@ class EducationalProvenance(Contract):
     # "mixed": birden çok çağrıdan en az biri acil düzeydeydi. None: sağlayıcı düzey bildirmedi.
     transmission: Literal["normal", "emergency", "mixed"] | None = None
     transmitted_knowledge_ids: list[Identifier] = Field(default_factory=list, max_length=4)
+    # TA-008: bütçe nedeniyle dışarıda bırakılan yöntem politikaları ve sağlayıcı denemeleri. ``accepted`` true
+    # olan deneme dersin gerçekten kullanılan planını üretti; ``transmission`` bu denemenin düzeyidir.
+    excluded_methods: list[ExcludedMethod] = Field(default_factory=list, max_length=8)
+    attempts: list[ContextAttempt] = Field(default_factory=list, max_length=8)
+    advanced_requested: bool = False
 
     @model_validator(mode="after")
     def transmitted_subset(self):

@@ -40,7 +40,7 @@ def generation_texts() -> list[tuple[str, str]]:
     texts = []
     knowledge = ROOT / "apps/api/app/features/knowledge/data"
     for path in sorted(knowledge.glob("*.json")):
-        if path.name in {"sources.json", "reviewers.json"}:
+        if path.name in {"sources.json", "reviewers.json", "contribution_publications.json"}:
             continue
         for entry in json.loads(path.read_text(encoding="utf-8"))["entries"]:
             body = " ".join([entry["statement_tr"], *entry.get("misconceptions_tr", []), *entry.get("conditions_tr", []),

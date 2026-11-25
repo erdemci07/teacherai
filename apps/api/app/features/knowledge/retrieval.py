@@ -14,6 +14,7 @@ bırakılır ve nedeni kaydedilir. Yalnız isteğe bağlı yanılgı listesi bü
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -21,7 +22,7 @@ from ..curriculum.topics import normalize
 from ..education.base import Subject
 from ..education.curriculum_v2 import ContextKnowledge, ExcludedKnowledge, KnowledgeRef
 from ..education.knowledge import KnowledgeEntry, content_digest
-from .registry import KnowledgeRegistry, runtime_eligibility
+from .registry import KnowledgeRegistry, eligibility
 
 Mode = Literal["production", "preview"]
 SCORES = {"outcome": 16, "topic": 8, "curriculum_topic": 4, "relationship": 2, "lexical": 1}
@@ -36,6 +37,56 @@ class Budget:
 
 
 DEFAULT_BUDGET = Budget()
+
+
+@dataclass(frozen=True)
+class Learner:
+    """TA-008: öğrenci düzeyi yalnız beyandan (sınıf, sınav hedefleri) gelir; görselden çıkarılmaz.
+    ``advanced_requested``: öğrenci düzey üstü anlatımı açıkça istedi."""
+
+    grade: int | None
+    exams: tuple[str, ...] = ()
+    advanced_requested: bool = False
+
+
+LEVEL = re.compile(r"(\d{1,2})(?:\s*-\s*(\d{1,2}))?\s*\.\s*sınıf")
+EXAM_LEVELS = {"LGS", "TYT", "AYT"}
+
+
+def level_profile(entry: KnowledgeEntry) -> tuple[set[int], set[str], bool]:
+    """(sınıflar, sınav etiketleri, bütün düzeyler mi). Etiketler girdinin ``levels`` alanından belirlenimci okunur."""
+    grades: set[int] = set()
+    exams: set[str] = set()
+    every = False
+    for label in entry.levels:
+        text = label.strip()
+        if text.casefold() in {"tüm düzeyler", "bütün düzeyler"}:
+            every = True
+        if text.upper() in EXAM_LEVELS:
+            exams.add(text.upper())
+        for match in LEVEL.finditer(text):
+            low = int(match.group(1))
+            high = int(match.group(2) or low)
+            grades.update(range(low, high + 1))
+    return grades, exams, every
+
+
+def level_reason(entry: KnowledgeEntry, learner: Learner | None) -> str | None:
+    """None: düzeye uygun. Sınav hedefi sınıf düzeyi sayılmaz; düzey üstü kayıt yalnız açık istekle gelir."""
+    if learner is None:
+        return None
+    grades, exams, every = level_profile(entry)
+    if every:
+        return None
+    if not grades and not exams:
+        return "level_unspecified"
+    if learner.grade is None:
+        return None if exams & set(learner.exams) else "learner_level_unknown"
+    if grades:
+        if learner.grade in grades or max(grades) < learner.grade:
+            return None  # aynı veya alt düzey (ön koşul) bilgisi
+        return None if learner.advanced_requested else "above_learner_level"
+    return None if exams & set(learner.exams) else "exam_level_mismatch"
 
 
 @dataclass(frozen=True)
@@ -151,7 +202,8 @@ def candidates(registry: KnowledgeRegistry, subject: Subject, *, topic_keys=(), 
 
 
 def _size(item: ContextKnowledge) -> int:
-    return len(json.dumps(item.model_dump(exclude_none=True, exclude_defaults=True), ensure_ascii=False,
+    # TA-008: isteme giden serileştirmeyle aynı (lessons.context: exclude_none, sıkı ayırıcı).
+    return len(json.dumps(item.model_dump(exclude_none=True), ensure_ascii=False,
                           separators=(",", ":")).encode("utf-8"))
 
 
@@ -163,13 +215,18 @@ def to_context(entry: KnowledgeEntry) -> ContextKnowledge:
 
 
 def retrieve(registry: KnowledgeRegistry, subject: Subject, *, topic_keys=(), outcome_ids=(), unit_ids=(),
-             query: str = "", mode: Mode = "production", budget: Budget = DEFAULT_BUDGET) -> RetrievalResult:
+             query: str = "", mode: Mode = "production", budget: Budget = DEFAULT_BUDGET,
+             learner: Learner | None = None) -> RetrievalResult:
     rows = candidates(registry, subject, topic_keys=topic_keys, outcome_ids=outcome_ids, unit_ids=unit_ids, query=query)
     selected, context, excluded, compacted, total = [], [], [], [], 0
     for entry, score, reasons in rows:
-        blockers = tuple(runtime_eligibility(entry, registry.sources, registry.reviewers))
+        blockers = tuple(eligibility(registry, entry))
         if mode == "production" and blockers:
             excluded.append(ExcludedKnowledge(id=entry.id, reason="not_runtime_eligible"))
+            continue
+        unsuitable = level_reason(entry, learner)
+        if unsuitable is not None:
+            excluded.append(ExcludedKnowledge(id=entry.id, reason=unsuitable))
             continue
         if len(context) >= budget.max_entries:
             excluded.append(ExcludedKnowledge(id=entry.id, reason="limit_reached"))

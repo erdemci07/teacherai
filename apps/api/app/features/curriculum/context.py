@@ -26,6 +26,8 @@ from ..education.curriculum_v2 import (
     CurriculumResolution,
     EducationalProvenance,
     ExcludedKnowledge,
+    ExcludedMethod,
+    ContextAttempt,
 )
 from ..knowledge import registry as knowledge_registry
 from ..knowledge import retrieval
@@ -87,7 +89,9 @@ def declared_graduate(value: str | None) -> bool:
 
 
 def _payload_bytes(payload: CurriculumContextPayload) -> int:
-    return len(json.dumps(payload.model_dump(exclude_none=True, exclude_defaults=True), ensure_ascii=False,
+    """TA-008: isteme giden serileştirmenin birebir aynısı (``lessons.context``: ``exclude_none``, sıkı ayırıcı,
+    UTF-8). Kazanımlar, bilgi kayıtları, yöntemler, üst bilgi ve JSON yapısı dahildir."""
+    return len(json.dumps(payload.model_dump(exclude_none=True), ensure_ascii=False,
                           separators=(",", ":")).encode("utf-8"))
 
 
@@ -130,7 +134,8 @@ def select(analysis, subject: Subject, grade: int | None, *, today: date, learne
            exam_goal: str | None = None, academic_year: str | None = None, track: str | None = None,
            curriculum: registry_v2.CurriculumRegistryV2 | None = None,
            knowledge: knowledge_registry.KnowledgeRegistry | None = None,
-           budget: retrieval.Budget = retrieval.DEFAULT_BUDGET) -> SelectedContext:
+           budget: retrieval.Budget = retrieval.DEFAULT_BUDGET,
+           advanced_requested: bool = False) -> SelectedContext:
     curriculum = curriculum or registry_v2.default_registry()
     knowledge = knowledge or knowledge_registry.default_knowledge()
     goals = exam_goals(exam_goal)
@@ -159,7 +164,8 @@ def select(analysis, subject: Subject, grade: int | None, *, today: date, learne
     unit_ids = sorted({ref for outcome, _ in chosen for ref in (outcome.unit_id, outcome.topic_id) if ref})
     found = retrieval.retrieve(knowledge, subject, topic_keys=sorted(topics.knowledge_topics(mapping.keys)),
                                outcome_ids=outcome_ids, unit_ids=unit_ids,
-                               query=getattr(analysis, "question_text", "") or "", budget=budget)
+                               query=getattr(analysis, "question_text", "") or "", budget=budget,
+                               learner=retrieval.Learner(resolution.grade, tuple(resolution.exams), advanced_requested))
     not_eligible = sum(1 for item in found.excluded if item.reason == "not_runtime_eligible")
     extra["matched"] = tuple(matched)
     if not chosen:
@@ -176,14 +182,26 @@ def select(analysis, subject: Subject, grade: int | None, *, today: date, learne
         knowledge=retrieval.as_context(found), methods=methods.context_methods(policy_set), authority_tr=AUTHORITY_TR,
     )
     excluded = list(found.excluded)
-    # Toplam bütçe: önce bilgi kaydı bütünüyle çıkarılır, sonra kazanım; kayıt içi kırpma yapılmaz.
-    while _payload_bytes(payload) > MAX_PAYLOAD_BYTES and (payload.knowledge or len(payload.outcomes) > 1):
+    excluded_methods = []
+    # Toplam bütçe (son serileştirme): önce düşük öncelikli bilgi kaydı bütünüyle, sonra yöntem politikası, en son
+    # kazanım çıkarılır; kayıt içi kırpma yapılmaz ve her çıkarma nedeniyle köken kaydına yazılır.
+    while _payload_bytes(payload) > MAX_PAYLOAD_BYTES and (payload.knowledge or payload.methods or len(payload.outcomes) > 1):
         if payload.knowledge:
             dropped = payload.knowledge[-1]
             excluded.append(ExcludedKnowledge(id=dropped.id, reason="exceeds_total_budget"))
             payload = payload.model_copy(update={"knowledge": payload.knowledge[:-1]})
+        elif payload.methods:
+            excluded_methods.append(ExcludedMethod(policy_id=payload.methods[-1].policy_id, reason="exceeds_total_budget"))
+            payload = payload.model_copy(update={"methods": payload.methods[:-1]})
         else:
             payload = payload.model_copy(update={"outcomes": payload.outcomes[:-1]})
+    if _payload_bytes(payload) > MAX_PAYLOAD_BYTES:
+        # Tek kazanım bile sığmıyor: bağlam gönderilmez (kırpılmış bağlam gönderilmez).
+        return SelectedContext(None, EducationalProvenance(**base, **empty, excluded_draft_knowledge=not_eligible,
+                                                           excluded_knowledge=excluded[:32],
+                                                           excluded_methods=excluded_methods[:8],
+                                                           advanced_requested=advanced_requested),
+                               (), program_id, **extra)
     kept = {item.code for item in payload.outcomes}
     ids = tuple(outcome.id for outcome, _ in chosen if outcome.official_code in kept)
     knowledge_ids = [item.id for item in payload.knowledge]
@@ -195,15 +213,32 @@ def select(analysis, subject: Subject, grade: int | None, *, today: date, learne
         knowledge_refs=[ref for ref in found.refs if ref.id in knowledge_ids],
         excluded_knowledge=excluded[:32], compacted_knowledge=[ref for ref in found.compacted if ref in knowledge_ids],
         verification_capabilities=_capabilities(knowledge.entries[ref] for ref in knowledge_ids),
+        excluded_methods=excluded_methods[:8], advanced_requested=advanced_requested,
     )
     return SelectedContext(payload, provenance, ids, program_id, **extra)
 
 
 def with_transmission(provenance: EducationalProvenance, levels: list[str | None]) -> EducationalProvenance:
-    """Sağlayıcının bildirdiği gerçek gönderim düzeyini ders oluşturulurken bir kez ekler (sonradan değişmez)."""
-    known = [level for level in levels if level is not None]
-    if not known or len(known) != len(levels):
+    """Geriye dönük: her çağrının tek düzeyi verilir; bütün çağrılar kabul edilmiş sayılır (TA-007 davranışı)."""
+    attempts = [{"purpose": "initial", "levels": [level or "unknown"], "accepted": True} for level in levels]
+    return with_attempts(provenance, attempts, require_known=True)
+
+
+def with_attempts(provenance: EducationalProvenance, attempts: list[dict], require_known: bool = False) -> EducationalProvenance:
+    """TA-008: sağlayıcı denemelerini ve kabul edilen denemenin gerçek gönderim düzeyini ders oluşturulurken bir kez
+    ekler (sonradan değişmez). ``transmission`` kabul edilen planı üreten çağrının *son* gönderim düzeyidir; bir
+    çağrı içinde acil yeniden deneme olduysa önceki düzey ``attempts`` içinde görünür. Düzey bilinmiyorsa
+    ``transmission`` uydurulmaz."""
+    if not attempts:
         return provenance
-    state = "normal" if set(known) == {"normal"} else ("emergency" if set(known) == {"emergency"} else "mixed")
-    sent = provenance.knowledge_ids if state == "normal" and provenance.included_in_prompt else []
-    return provenance.model_copy(update={"transmission": state, "transmitted_knowledge_ids": list(sent)})
+    accepted = [item for item in attempts if item["accepted"]]
+    final_levels = [item["levels"][-1] for item in accepted]
+    update: dict = {"attempts": [ContextAttempt.model_validate(item) for item in attempts][:8]}
+    if accepted and "unknown" not in final_levels:
+        state = "normal" if set(final_levels) == {"normal"} else (
+            "emergency" if set(final_levels) == {"emergency"} else "mixed")
+        sent = provenance.knowledge_ids if state == "normal" and provenance.included_in_prompt else []
+        update |= {"transmission": state, "transmitted_knowledge_ids": list(sent)}
+    elif require_known:
+        return provenance
+    return provenance.model_copy(update=update)

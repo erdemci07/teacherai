@@ -44,6 +44,22 @@ VerifierId = Literal[
     "reasoning.chemistry.redox_electrons", "reasoning.sequence.transcription", "reasoning.sequence.codon",
     "reasoning.evidence.controlled_comparison", "reasoning.evidence.claim", "reasoning.evidence.constant_ratio",
     "reasoning.evidence.sequence_order",
+    # TA-008 matematik uzmanlığı
+    "mathematics.solution_set",
+    "mathematics.inequality_set",
+    "mathematics.transformation",
+    "mathematics.function_domain",
+    "mathematics.inverse_function",
+    "mathematics.trig_interval",
+    "mathematics.probability_exact",
+    "mathematics.statistics",
+    "mathematics.calculus_extremum",
+    "mathematics.antiderivative",
+    "mathematics.definite_integral",
+    "mathematics.geometry_constraints",
+    "mathematics.triangle_inequality",
+    "mathematics.similarity_correspondence",
+    "mathematics.word_problem_model",
 ]
 CheckState = Literal["passed", "failed", "partially_checked", "unsupported", "not_checked"]
 
@@ -187,9 +203,14 @@ class RightsRecord(Contract):
     redistribution_tr: Text | None = None
     share_alike: bool = False
     contribution_id: Identifier | None = None
+    # TA-008: girdinin türetildiği katkı sürümünün içerik özeti; yayın anlık görüntüsüyle eşleşmeli.
+    contribution_digest: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")] | None = None
     decision: Literal["pending", "approved", "rejected"] = "pending"
     decided_by: ReviewerRef | None = None
     decided_on: date | None = None
+    # TA-008: hak kararının verildiği hak kaydı + içerik özetinin özeti (``rights_digest``). Hak alanları veya
+    # içerik sonradan değişirse karar bayatlar.
+    decision_digest: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")] | None = None
 
     @model_validator(mode="after")
     def decision_is_attributed(self):
@@ -201,6 +222,8 @@ class RightsRecord(Contract):
             raise ValueError("Uyarlama ve alıntı atıf metni taşır.")
         if self.source_use == "teacher_original" and self.contribution_id is None:
             raise ValueError("Öğretmen özgün içeriği katkı kaydına bağlanır.")
+        if (self.contribution_digest is not None) and self.contribution_id is None:
+            raise ValueError("Katkı özeti katkı kimliğiyle birlikte verilir.")
         if self.source_use == "unresolved" and self.decision == "approved":
             raise ValueError("Çözülmemiş hak durumu onaylanamaz.")
         return self
@@ -252,6 +275,20 @@ class KnowledgeEntry(Contract):
     revisions: list[RevisionNote] = Field(default_factory=list, max_length=64)
     # Öğrenci düzeyi: girdinin hangi sınıf/sınav düzeyinde anlatılabileceği (müfredat uygunluğu değildir).
     levels: list[Label] = Field(default_factory=list, max_length=8)
+    # TA-008: içeriğin yazarı (öğretmen/uzman yazımında zorunlu). AI taslağında None. Yazar kendi içeriğini
+    # bağımsız olarak onaylayamaz.
+    author_ref: ReviewerRef | None = None
+
+    @model_validator(mode="after")
+    def author_is_identified(self):
+        """TA-008: öğretmen/uzman yazımında yazar başvurusu zorunlu; AI taslağı yazar başvurusu taşımaz.
+        Yazar kendi içeriğine onay veremez (bağımsız inceleme)."""
+        if (self.authored_by == "claude-draft") != (self.author_ref is None):
+            raise ValueError("Öğretmen/uzman içeriği yazar başvurusu taşır; AI taslağı taşımaz.")
+        if self.author_ref is not None and any(review.reviewer == self.author_ref and review.decision == "approve"
+                                               for review in self.reviews):
+            raise ValueError("Yazar kendi içeriğini onaylayamaz.")
+        return self
 
     @model_validator(mode="after")
     def review_state_is_recorded(self):
@@ -282,9 +319,14 @@ class KnowledgeEntry(Contract):
         return self
 
 
-SCIENTIFIC_FIELDS = ("version", "subject", "topic", "kind", "statement_tr", "representation", "quantities", "conditions_tr",
-                     "assumptions_tr", "exceptions_tr", "structure_function", "misconceptions_tr", "simplifications",
-                     "outcome_refs", "provenance", "levels")
+# TA-008: özet geri getirmede ve sunumda kullanılan bütün öğretimsel alanları kapsar (başlık, ilişkiler, müfredat
+# başlığı bağları, görseller, denetleyiciler, yazar dahil). İnceleme ve hak kararı alanları özete girmez.
+SCIENTIFIC_FIELDS = ("version", "subject", "topic", "subtopic", "kind", "title_tr", "statement_tr", "representation",
+                     "quantities", "conditions_tr", "assumptions_tr", "exceptions_tr", "prerequisites", "related",
+                     "structure_function", "misconceptions_tr", "simplifications", "outcome_refs",
+                     "curriculum_topic_refs", "visuals", "verifiers", "provenance", "levels", "author_ref")
+RIGHTS_DIGEST_FIELDS = ("source_use", "basis_tr", "source_editions", "license_versions", "attribution_tr",
+                        "commercial_use", "redistribution_tr", "share_alike", "contribution_id", "contribution_digest")
 
 
 def content_digest(entry: "KnowledgeEntry") -> str:
@@ -294,6 +336,56 @@ def content_digest(entry: "KnowledgeEntry") -> str:
 
     payload = entry.model_dump(mode="json", include=set(SCIENTIFIC_FIELDS))
     return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def rights_digest(entry: "KnowledgeEntry") -> str:
+    """Hak kararının kapsadığı hak alanları + içerik özeti (TA-008)."""
+    import hashlib
+    import json
+
+    payload = {"rights": entry.rights.model_dump(mode="json", include=set(RIGHTS_DIGEST_FIELDS)),
+               "content": content_digest(entry)}
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+# --- TA-008: katkı yayın anlık görüntüsü ------------------------------------------------------------------------
+
+class ContributionPublication(Contract):
+    """Çevrimdışı yönetişim aracının (``teacher_contributions snapshot``) ürettiği, çalışma zamanının okuduğu
+    değişmez yayın kaydı. Firestore okuması yoktur; katkı dosyası çalışma zamanında okunmaz."""
+
+    contribution_id: Identifier
+    contributor: ReviewerRef
+    subject: Subject
+    content_digest: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+    status: Literal["published", "withdrawn", "rejected", "superseded", "revision_requested"]
+    decided_on: date
+    published_by: ReviewerRef | None = None
+    consent_use: bool
+    consent_model_training: bool = False
+
+    @model_validator(mode="after")
+    def published_is_attributed(self):
+        if self.status == "published" and (self.published_by is None or not self.published_by.startswith("owner:")):
+            raise ValueError("Yayın yalnız proje sahibi başvurusuyla kaydedilir.")
+        if self.status == "published" and not self.consent_use:
+            raise ValueError("Kullanım izni olmayan katkı yayımlanamaz.")
+        return self
+
+
+class ContributionSnapshotFile(Contract):
+    schema_name: Literal["teacherai.contribution_publications"]
+    version: Literal["1.0.0"]
+    generated_on: date | None = None
+    register_digest: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")] | None = None
+    records: list[ContributionPublication] = Field(default_factory=list, max_length=2000)
+
+    @model_validator(mode="after")
+    def unique(self):
+        ids = [item.contribution_id for item in self.records]
+        if len(set(ids)) != len(ids):
+            raise ValueError("Katkı kimlikleri benzersiz olmalı.")
+        return self
 
 
 class ReviewerAuthorization(Contract):

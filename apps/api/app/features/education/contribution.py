@@ -13,13 +13,15 @@ from typing import Annotated, Literal
 
 from pydantic import Field, StringConstraints, model_validator
 
-from .base import Contract, Identifier, Subject, Text
+from .base import Contract, Identifier, Label, Subject, Text
 from .knowledge import ReviewerRef
 
 ContributionKind = Literal["unfamiliar_question_approach", "common_error", "preferred_strategy", "class_level_method",
                            "alternative_explanation", "visual_strategy", "scientific_condition", "example_question",
                            # TA-007: istisna/karşı örnek koşuldan ayrı tutulur.
-                           "scientific_exception"]
+                           "scientific_exception",
+                           # TA-008: konu belirtilmemiş genel pedagojik öneri (kazanım uydurulmaz).
+                           "general_pedagogy"]
 
 
 class ExampleQuestion(Contract):
@@ -60,6 +62,10 @@ class TeacherContribution(Contract):
     # Katkı sahibinin içeriği TeacherAI'de kullanma iznine onayı (öğrenciye gösterim dahil). Model eğitimi ayrı izindir.
     consent_use: Literal[True]
     consent_model_training: bool = False
+    # TA-008: öğretmenlik deneyimi ve sınıf/sınav deneyimi özeti (kimlik bilgisi değildir).
+    experience_tr: Text | None = None
+    # TA-008: içe aktarma kökeni (ör. "google_forms:<satır özeti>"); kaynak dosya çalışma zamanında okunmaz.
+    import_ref: Label | None = None
     items: list[ContributionItem] = Field(min_length=1, max_length=200)
 
 

@@ -17,6 +17,7 @@ from apps.api.app.features.curriculum import registry_v2
 from apps.api.app.features.education.base import Subject
 from apps.api.app.features.education.domain import Grade
 from apps.api.app.features.education.knowledge import KnowledgeEntry, ReviewerAuthorization, content_digest
+from apps.api.tests.test_ta006_knowledge import seal_rights
 from apps.api.app.features.education.policy import TeachingPolicy
 from apps.api.app.features.knowledge import registry as knowledge
 from apps.api.app.features.lessons.context import build_lesson_generation_context
@@ -111,7 +112,8 @@ def test_approved_knowledge_enters_context_only_after_review():
               "stage": "scientific", "content_digest": content_digest(base)}
     rights = {"source_use": "independent_fact", "basis_tr": "Özgün anlatım.", "decision": "approved",
               "decided_by": "owner:test-sahip", "decided_on": "2026-12-02"}
-    approved = KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved", "reviews": [review], "rights": rights})
+    approved = seal_rights(KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved", "reviews": [review],
+                                                          "rights": rights}))
     reviewers = tuple(ReviewerAuthorization(reviewer=ref, roles=[role], subjects=["mathematics"], stages=[stage],
                                             valid_from=date(2026, 1, 1), authorized_by="owner:test-sahip",
                                             authorized_on=date(2026, 1, 1), evidence_note_tr="Yalnız test fikstürü.")
