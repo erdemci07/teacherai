@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from apps.api.app.features.mathai.parser import MathParseError, equation, expression
 
 from .exceptions import InvalidLessonPlanError
+from ..education.mathematics import MathematicalModel
 from .schemas import LessonDraft, LessonDraftResponse
 
 
@@ -44,6 +45,7 @@ def normalize_lesson_draft_response(response: LessonDraftResponse) -> LessonDraf
     content["strategy_id"] = _normalize_prefixed_slug(content.get("strategy_id"), "strategy")
     content["steps"] = [_normalize_step(step, index) for index, step in enumerate(content.get("steps", []), start=1)]
     _sanitize_student_facing_text(data)
+    content["mathematical_model"] = _valid_model(content.get("mathematical_model"))
     if not content.get("final_answer_expressions"):
         extracted = _extract_final_answer_expression(content.get("final_answer"))
         if extracted:
@@ -52,6 +54,16 @@ def normalize_lesson_draft_response(response: LessonDraftResponse) -> LessonDraf
         return LessonDraft.model_validate(data)
     except (ValidationError, ValueError) as exc:
         raise InvalidLessonPlanError from exc
+
+
+def _valid_model(value: Any) -> Any:
+    """TA-008: geçersiz yapılandırılmış model dersi düşürmez; yalnız model atılır (sunucu modelsiz denetler)."""
+    if not value:
+        return None
+    try:
+        return MathematicalModel.model_validate(value).model_dump(mode="json")
+    except (ValidationError, ValueError):
+        return None
 
 
 def _trim(value: Any) -> Any:

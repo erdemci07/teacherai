@@ -39,6 +39,21 @@ class MathAIService:
     """Sınırlı SymPy doğrulaması. TA-004: son cevap *istenen hedefe* göre denetlenir."""
 
     def verify(self, plan: LessonPlan) -> VerificationResult:
+        """TA-008: çekirdek doğrulama + matematik uzmanlığı raporu. Rapor durumu yalnız zayıflatır."""
+        result = self._verify_core(plan)
+        try:
+            from ..mathematics import specialist
+
+            report = specialist.analyze(plan, result)
+        except Exception:  # noqa: BLE001 — rapor üretilemezse çekirdek sonuç aynen döner
+            return result
+        update = {"mathematics": report}
+        if specialist.contradiction(report) and result.status == "verified":
+            update |= {"status": "partially_verified", "confidence": min(result.confidence, 0.7),
+                       "warnings": [*result.warnings, "Matematik uzmanlık denetimi çözüm kümesinde tutarsızlık buldu."]}
+        return result.model_copy(update=update)
+
+    def _verify_core(self, plan: LessonPlan) -> VerificationResult:
         started = perf_counter()
         checks: list[VerificationCheck] = []
         warnings: list[str] = []

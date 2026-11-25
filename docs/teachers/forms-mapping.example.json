@@ -1,0 +1,23 @@
+{
+ "_note": "ÖRNEK eşleme. Gerçek Google Forms dışa aktarımı görülmeden sütun adları kesinleşmez: önce 'python -m scripts.forms_import inspect <dosya.csv>' çalıştırın ve sağdaki değerleri gerçek başlıklarla değiştirin. Eşlemede olmayan sütun okunmaz.",
+ "columns": {
+  "timestamp": "Zaman damgası",
+  "alias": "Takma adınız (teacher:... biçiminde)",
+  "role": "Rolünüz",
+  "subject": "Branşınız",
+  "experience": "Öğretmenlik deneyiminiz",
+  "grades_exams": "Hangi sınıf ve sınavlarda deneyiminiz var?",
+  "misconceptions": "Öğrencilerin sık yaptığı hatalar ve nedenleri",
+  "strategies": "Tercih ettiğiniz anlatım stratejileri",
+  "alternatives": "Alternatif öğretim yöntemleri",
+  "visual": "Görsel / tahta kullanımı",
+  "curriculum": "Sınıf düzeyine göre dikkat edilmesi gerekenler",
+  "general": "Genel pedagojik önerileriniz",
+  "consent_use": "Katkımın Teacher AI içinde kullanılmasına izin veriyorum",
+  "consent_training": "Model eğitimi için ayrı izin"
+ },
+ "subject_values": {"Matematik": "mathematics", "Geometri": "geometry", "Fizik": "physics", "Kimya": "chemistry",
+                    "Biyoloji": "biology", "Fen Bilimleri": "science"},
+ "yes_values": ["Evet", "Evet, izin veriyorum", "Kabul ediyorum"],
+ "no_values": ["Hayır", "Hayır, izin vermiyorum"]
+}

@@ -2065,6 +2065,5499 @@
    "outcome_refs": [
     "tymm-2026.matematik.9-12::MAT.10.6.1"
    ]
+  },
+  {
+   "id": "math.algebraic-expression-evaluation",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "cebirsel_ifadeler",
+   "kind": "method",
+   "title_tr": "Cebirsel ifadenin değerini bulma",
+   "statement_tr": "Bir cebirsel ifadenin değeri, değişkenlerin yerine verilen sayılar konup işlem önceliğine uyularak hesaplanır; negatif değer yerine konurken parantez kullanılır.",
+   "conditions_tr": [
+    "Değişkenin aldığı değer ifadenin tanımlı olduğu bir değerdir."
+   ],
+   "exceptions_tr": [
+    "Payda sıfır olursa ifade o değerde tanımsızdır."
+   ],
+   "prerequisites": [
+    "math.order-of-operations"
+   ],
+   "misconceptions_tr": [
+    "-x² ile (-x)² ifadelerini aynı sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathai.constant_expression",
+     "checks_tr": "Yerine koyma sonrası sabit ifadenin kesin değeri.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "2.2 Evaluate, Simplify, and Translate Expressions",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/2-2-evaluate-simplify-and-translate-expressions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.multiples-factors",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "carpanlar_ve_katlar",
+   "kind": "definition",
+   "title_tr": "Kat ve çarpan",
+   "statement_tr": "Bir a doğal sayısı b'nin çarpanıdır ancak ve ancak b, a'ya kalansız bölünüyorsa; bu durumda b, a'nın katıdır. Her sayının sonsuz katı, sonlu sayıda pozitif çarpanı vardır.",
+   "conditions_tr": [
+    "a ≠ 0."
+   ],
+   "exceptions_tr": [
+    "0 her sayının katıdır ama hiçbir sayının pozitif çarpanı değildir."
+   ],
+   "misconceptions_tr": [
+    "Bir sayının en büyük çarpanının kendisinden büyük olabileceğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "2.4 Find Multiples and Factors",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/2-4-find-multiples-and-factors",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "5-6. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.gcd-lcm-product",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "carpanlar_ve_katlar",
+   "kind": "relationship",
+   "title_tr": "EBOB ile EKOK ilişkisi",
+   "statement_tr": "İki pozitif tam sayı için EBOB(a, b) · EKOK(a, b) = a · b'dir; asal çarpanlara ayırmada EBOB ortak asalların en küçük üslerinin, EKOK bütün asalların en büyük üslerinin çarpımıdır.",
+   "representation": "\\mathrm{EBOB}(a,b)\\cdot\\mathrm{EKOK}(a,b)=ab",
+   "conditions_tr": [
+    "a ve b pozitif tam sayılardır."
+   ],
+   "exceptions_tr": [
+    "Üç veya daha çok sayıda EBOB·EKOK = çarpım eşitliği genel olarak geçmez."
+   ],
+   "prerequisites": [
+    "math.prime-factorization-lcm"
+   ],
+   "misconceptions_tr": [
+    "EKOK'u iki sayının çarpımı sanmak (yalnız aralarında asal sayılarda doğrudur)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "2.5 Prime Factorization and the Least Common Multiple",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/2-5-prime-factorization-and-the-least-common-multiple",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.integers-number-line",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "tam_sayilar",
+   "kind": "definition",
+   "title_tr": "Tam sayılar ve sayı doğrusu",
+   "statement_tr": "Tam sayılar pozitif tam sayılar, sıfır ve negatif tam sayılardan oluşur; sayı doğrusunda sağdaki sayı soldakinden büyüktür ve bir sayının mutlak değeri sıfıra uzaklığıdır.",
+   "misconceptions_tr": [
+    "-5'in -2'den büyük olduğunu sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "3.1 Introduction to Integers",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/3-1-introduction-to-integers",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.fraction-visual-model",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kesirler",
+   "kind": "definition",
+   "title_tr": "Kesrin parça–bütün modeli",
+   "statement_tr": "a/b kesri, bütünün b eş parçaya bölünüp a parçasının alınması demektir; eşdeğer kesirler aynı miktarı farklı parça sayısıyla gösterir.",
+   "conditions_tr": [
+    "b ≠ 0",
+    "Parçalar eş büyüklüktedir."
+   ],
+   "exceptions_tr": [
+    "Eş olmayan parçalarla kesir modeli kurulamaz."
+   ],
+   "misconceptions_tr": [
+    "Paydası büyük kesrin her zaman büyük olduğunu sanmak."
+   ],
+   "visuals": [
+    "geometry"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "4.1 Visualize Fractions",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/4-1-visualize-fractions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "5-6. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.fraction-multiplication-division",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kesirler",
+   "kind": "method",
+   "title_tr": "Kesirlerde çarpma ve bölme",
+   "statement_tr": "Kesirler pay payla, payda paydayla çarpılarak çarpılır; bir kesre bölmek, o kesrin çarpmaya göre tersiyle çarpmaktır.",
+   "conditions_tr": [
+    "Bölen kesir sıfırdan farklıdır."
+   ],
+   "exceptions_tr": [
+    "0/b kesrinin çarpmaya göre tersi yoktur."
+   ],
+   "prerequisites": [
+    "math.fraction-addition"
+   ],
+   "misconceptions_tr": [
+    "Bölmede her iki kesrin de ters çevrilmesi."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "4.2 Multiply and Divide Fractions",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/4-2-multiply-and-divide-fractions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.fraction-unlike-denominators",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kesirler",
+   "kind": "method",
+   "title_tr": "Paydaları farklı kesirlerle toplama",
+   "statement_tr": "Paydaları farklı kesirler ortak paydada (çoğunlukla paydaların EKOK'unda) genişletilip paylar toplanarak toplanır.",
+   "conditions_tr": [
+    "Paydalar sıfırdan farklıdır."
+   ],
+   "prerequisites": [
+    "math.prime-factorization-lcm"
+   ],
+   "misconceptions_tr": [
+    "Payları ve paydaları ayrı ayrı toplamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "4.5 Add and Subtract Fractions with Different Denominators",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/4-5-add-and-subtract-fractions-with-different-denominators",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "5-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.decimals-place-value",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kesirler",
+   "kind": "definition",
+   "title_tr": "Ondalık gösterim ve basamak değeri",
+   "statement_tr": "Ondalık gösterimde virgülden sonraki basamaklar onda bir, yüzde bir… değerindedir; sondaki sıfırlar sayının değerini değiştirmez.",
+   "misconceptions_tr": [
+    "0,25 ile 0,250'yi farklı sayılar sanmak; basamak sayısı çok olanı büyük sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "5.1 Decimals",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/5-1-decimals",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "5-6. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.decimal-fraction-conversion",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kesirler",
+   "kind": "relationship",
+   "title_tr": "Kesir–ondalık dönüşümü",
+   "statement_tr": "Bir kesir pay paydaya bölünerek ondalık gösterime çevrilir; sadeleştirilmiş paydası yalnız 2 ve 5 asallarını içeren kesirler sonlu, diğerleri devirli ondalık açılım verir.",
+   "conditions_tr": [
+    "Kesir sadeleştirilmiştir.",
+    "Payda sıfırdan farklıdır."
+   ],
+   "misconceptions_tr": [
+    "Her kesrin sonlu ondalık açılımı olduğunu sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "5.3 Decimals and Fractions",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/5-3-decimals-and-fractions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.mean-and-simple-probability",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "istatistik",
+   "kind": "definition",
+   "title_tr": "Aritmetik ortalama ve basit olasılık",
+   "statement_tr": "Aritmetik ortalama değerlerin toplamının değer sayısına bölümüdür; eş olasılıklı çıktılarda bir olayın olasılığı istenen çıktı sayısının bütün çıktı sayısına oranıdır.",
+   "conditions_tr": [
+    "Olasılıkta çıktıların eş olasılıklı olduğu ayrıca bilinmelidir."
+   ],
+   "exceptions_tr": [
+    "Eş olasılıklı olmayan çıktılarda sayma oranı olasılık vermez."
+   ],
+   "misconceptions_tr": [
+    "Ortalamanın veri değerlerinden biri olmak zorunda olduğunu sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.statistics",
+     "checks_tr": "Ortalama ve sıklıkların kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "5.5 Averages and Probability",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/5-5-averages-and-probability",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.ratio-rate",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "oran_oranti",
+   "kind": "definition",
+   "title_tr": "Oran ve birim oran",
+   "statement_tr": "Oran iki niceliğin bölme yoluyla karşılaştırılmasıdır; birimleri farklı niceliklerin oranı hızdır (ör. km/sa) ve birim oran paydası 1 olan orandır.",
+   "conditions_tr": [
+    "Karşılaştırılan nicelik sıfırdan farklıdır."
+   ],
+   "misconceptions_tr": [
+    "Oranın sırasının önemsiz olduğunu sanmak (a:b ≠ b:a)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "5.6 Ratios and Rate",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/5-6-ratios-and-rate",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.square-roots-basic",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "definition",
+   "title_tr": "Karekök",
+   "statement_tr": "√a, karesi a olan negatif olmayan sayıdır (a ≥ 0); x² = a denkleminin gerçel çözümleri a > 0 iken ±√a'dır.",
+   "conditions_tr": [
+    "Gerçel sayılarda a ≥ 0."
+   ],
+   "exceptions_tr": [
+    "a < 0 için gerçel karekök yoktur."
+   ],
+   "misconceptions_tr": [
+    "√9 = ±3 yazmak; √(a²) = a sanmak (doğrusu |a|)."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathai.constant_expression",
+     "checks_tr": "Sabit kök ifadesinin değeri.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "5.7 Simplify and Use Square Roots",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/5-7-simplify-and-use-square-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.percent-applications",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "yuzdeler",
+   "kind": "method",
+   "title_tr": "Yüzde uygulamaları",
+   "statement_tr": "Bir miktarın yüzde p'si miktar · p/100'dür; yüzde değişim (yeni − eski)/eski · 100'dür ve taban değer her zaman eski değerdir.",
+   "conditions_tr": [
+    "Taban değer sıfırdan farklıdır."
+   ],
+   "prerequisites": [
+    "math.percent"
+   ],
+   "misconceptions_tr": [
+    "%20 zam ve ardından %20 indirimin fiyatı değiştirmediğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "6.2 Solve General Applications of Percent",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.discount-tax",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "yuzdeler",
+   "kind": "method",
+   "title_tr": "İndirim, vergi ve komisyon",
+   "statement_tr": "İndirimli fiyat liste fiyatı · (1 − indirim oranı), vergili fiyat fiyat · (1 + vergi oranı) ile bulunur; ardışık yüzde değişimler çarpımsal birleşir.",
+   "conditions_tr": [
+    "Oranlar ondalık biçimde yazılır."
+   ],
+   "prerequisites": [
+    "math.percent-applications"
+   ],
+   "misconceptions_tr": [
+    "Ardışık yüzdeleri toplamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "6.3 Solve Sales Tax, Commission, and Discount Applications",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/6-3-solve-sales-tax-commission-and-discount-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.simple-interest",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "yuzdeler",
+   "kind": "relationship",
+   "title_tr": "Basit faiz",
+   "statement_tr": "Basit faizde faiz = anapara · yıllık oran · süre (yıl) olup faiz yalnız anaparaya işler.",
+   "representation": "I = P\\,r\\,t",
+   "conditions_tr": [
+    "Oran ve süre aynı zaman birimindedir."
+   ],
+   "exceptions_tr": [
+    "Bileşik faizde faiz faize de işler; bu formül geçmez."
+   ],
+   "misconceptions_tr": [
+    "Ay cinsinden süreyi yıla çevirmemek."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "6.4 Solve Simple Interest Applications",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/6-4-solve-simple-interest-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rational-irrational",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayilar",
+   "kind": "definition",
+   "title_tr": "Rasyonel ve irrasyonel sayılar",
+   "statement_tr": "Rasyonel sayılar a/b (a, b tam sayı, b ≠ 0) biçiminde yazılabilen sayılardır; ondalık açılımı sonlu ya da devirli olmayan gerçel sayılar irrasyoneldir (ör. √2, π).",
+   "exceptions_tr": [
+    "İki irrasyonel sayının toplamı veya çarpımı rasyonel olabilir (√2 · √2 = 2)."
+   ],
+   "misconceptions_tr": [
+    "Her köklü sayının irrasyonel olduğunu sanmak (√4 = 2)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "7.1 Rational and Irrational Numbers",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/7-1-rational-and-irrational-numbers",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.identity-inverse-zero",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayilar",
+   "kind": "fact",
+   "title_tr": "Etkisiz eleman, ters eleman ve sıfır",
+   "statement_tr": "Toplamada etkisiz eleman 0, çarpmada 1'dir; her a'nın toplamaya göre tersi −a, a ≠ 0 için çarpmaya göre tersi 1/a'dır ve 0'ın çarpmaya göre tersi yoktur.",
+   "exceptions_tr": [
+    "0/a = 0 (a ≠ 0) ama a/0 tanımsızdır."
+   ],
+   "prerequisites": [
+    "math.division-by-zero"
+   ],
+   "misconceptions_tr": [
+    "0'a bölmenin 0 verdiğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "7.4 Properties of Identity, Inverses, and Zero",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/7-4-properties-of-identity-inverses-and-zero",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.both-sides-variables",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "dogrusal_denklemler",
+   "kind": "method",
+   "title_tr": "İki tarafta değişken olan denklemler",
+   "statement_tr": "Değişken terimleri bir tarafta, sabitleri diğer tarafta toplamak için eşitliğin iki tarafına aynı ifade eklenir veya çıkarılır; bu dönüşümler çözüm kümesini korur.",
+   "exceptions_tr": [
+    "Değişkenler sadeleşip 0 = 0 kalırsa her gerçel sayı, 0 = c (c ≠ 0) kalırsa hiçbir sayı çözüm değildir."
+   ],
+   "prerequisites": [
+    "math.equation-equivalence"
+   ],
+   "misconceptions_tr": [
+    "Değişkenler sadeleşince cevabın 0 olduğunu sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Sonsuz ve boş çözüm kümesinin ayırt edilmesi.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "mathematics.transformation",
+     "checks_tr": "Toplama/çıkarma adımlarının denkliği.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "8.3 Solve Equations with Variables and Constants on Both Sides",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/8-3-solve-equations-with-variables-and-constants-on-both-sides",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.problem-solving-strategy",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "problem_cozme",
+   "kind": "method",
+   "title_tr": "Problem çözme stratejisi (adımlar)",
+   "statement_tr": "Bir sözel problemde önce ne istendiği ve hangi bilgilerin verildiği belirlenir, bilinmeyene sembol verilir, ilişki denkleme çevrilir, çözülür ve sonuç soruda istenen niceliğe ve bağlama göre denetlenir.",
+   "conditions_tr": [
+    "Denklemin soru metnindeki ilişkiyi doğru temsil etmesi ayrıca denetlenir."
+   ],
+   "exceptions_tr": [
+    "Bazı problemler eksik veya çelişkili bilgi içerebilir; tek çözüm varsayılmaz."
+   ],
+   "misconceptions_tr": [
+    "Bulunan ara değeri istenen cevap sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "Modelin tutarlılığı ve hedefin tek değerli olduğu.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.1 Use a Problem Solving Strategy",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-1-use-a-problem-solving-strategy",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.volume-surface-area",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "kati_cisimler",
+   "kind": "relationship",
+   "title_tr": "Prizma, silindir ve kürede hacim–alan",
+   "statement_tr": "Dik prizma ve silindirin hacmi taban alanı · yüksekliktir; kürenin hacmi 4πr³/3, yüzey alanı 4πr²'dir.",
+   "conditions_tr": [
+    "Prizma/silindir diktir.",
+    "Uzunluklar aynı birimdedir."
+   ],
+   "exceptions_tr": [
+    "Eğik cisimlerde yüzey alanı formülleri değişir."
+   ],
+   "misconceptions_tr": [
+    "Hacim ile yüzey alanının birimlerini karıştırmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.6 Solve Geometry Applications: Volume and Surface Area",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-6-solve-geometry-applications-volume-and-surface-area",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.integer-exponents-scientific",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "uslu_ifadeler",
+   "kind": "relationship",
+   "title_tr": "Negatif üs ve bilimsel gösterim",
+   "statement_tr": "a ≠ 0 için a⁰ = 1 ve a⁻ⁿ = 1/aⁿ'dir; bilimsel gösterimde sayı 1 ≤ |m| < 10 olmak üzere m · 10ⁿ biçiminde yazılır.",
+   "conditions_tr": [
+    "a ≠ 0"
+   ],
+   "exceptions_tr": [
+    "0⁰ ifadesi bu kurallarla tanımlanmaz."
+   ],
+   "prerequisites": [
+    "math.exponent-rules"
+   ],
+   "misconceptions_tr": [
+    "Negatif üssün sayıyı negatif yaptığını sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "10.5 Integer Exponents and Scientific Notation",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/10-5-integer-exponents-and-scientific-notation",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.coordinate-plane",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "analitik_geometri",
+   "kind": "definition",
+   "title_tr": "Dik koordinat sistemi",
+   "statement_tr": "Dik koordinat sisteminde her nokta sıralı ikili (x, y) ile gösterilir; eksenler düzlemi dört bölgeye ayırır ve sıra önemlidir.",
+   "misconceptions_tr": [
+    "(2, 3) ile (3, 2)'yi aynı nokta sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "11.1 Use the Rectangular Coordinate System",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/11-1-use-the-rectangular-coordinate-system",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.slope-concept",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "analitik_geometri",
+   "kind": "definition",
+   "title_tr": "Doğrunun eğimi",
+   "statement_tr": "İki farklı noktası (x₁, y₁), (x₂, y₂) olan dikey olmayan doğrunun eğimi (y₂ − y₁)/(x₂ − x₁)'dir; yatay doğrunun eğimi 0'dır, dikey doğrunun eğimi tanımsızdır.",
+   "representation": "m=\\frac{y_2-y_1}{x_2-x_1}",
+   "conditions_tr": [
+    "x₁ ≠ x₂"
+   ],
+   "exceptions_tr": [
+    "Dikey doğrularda eğim tanımsızdır."
+   ],
+   "prerequisites": [
+    "math.coordinate-plane"
+   ],
+   "misconceptions_tr": [
+    "Farkları ters sırayla almak (pay ve paydada farklı sıra)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "11.4 Understand Slope of a Line",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/11-4-understand-slope-of-a-line",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.linear-inequality-solving",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "esitsizlikler",
+   "kind": "method",
+   "title_tr": "Doğrusal eşitsizlik çözme",
+   "statement_tr": "Doğrusal eşitsizlikte iki tarafa aynı sayı eklemek veya pozitif sayıyla çarpmak yönü korur; negatif sayıyla çarpmak veya bölmek yönü ters çevirir. Çözüm kümesi aralık olarak yazılır.",
+   "conditions_tr": [
+    "Çarpan sabit ve işareti bilinir."
+   ],
+   "exceptions_tr": [
+    "İşareti bilinmeyen değişkenli ifadeyle çarpılamaz; durum ayrımı gerekir."
+   ],
+   "prerequisites": [
+    "math.inequality-sign-reversal"
+   ],
+   "misconceptions_tr": [
+    "Negatifle bölünce yönü çevirmemek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.inequality_set",
+     "checks_tr": "Çözüm aralığı ve uç noktaların açık/kapalı olması.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "mathematics.transformation",
+     "checks_tr": "Yön değişimi denetimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "2.7 Solve Linear Inequalities",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/2-7-solve-linear-inequalities",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.percent-word-problems",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "method",
+   "title_tr": "Yüzde problemlerinde denklem kurma",
+   "statement_tr": "Yüzde problemlerinde 'tutar = oran · taban' ilişkisi kurulur; bilinmeyen tutar, oran veya taban olabilir ve hangi niceliğin taban olduğu metinden belirlenir.",
+   "conditions_tr": [
+    "Taban sıfırdan farklıdır."
+   ],
+   "prerequisites": [
+    "math.percent-applications"
+   ],
+   "misconceptions_tr": [
+    "Değişim yüzdesini yeni değere göre hesaplamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "3.2 Solve Percent Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/3-2-solve-percent-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.mixture-problems",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "method",
+   "title_tr": "Karışım problemleri",
+   "statement_tr": "Karışımda her bileşenin miktarı · oranı toplanarak karışımdaki madde miktarı bulunur; karışım oranı toplam madde miktarının toplam karışım miktarına bölümüdür ve oranlar doğrudan toplanmaz.",
+   "conditions_tr": [
+    "Karıştırmada madde kaybı veya tepkime olmadığı varsayılır."
+   ],
+   "misconceptions_tr": [
+    "Yüzdeleri doğrudan toplamak veya ortalamak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "Karışım modelinin tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "3.3 Solve Mixture Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/3-3-solve-mixture-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.uniform-motion",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "relationship",
+   "title_tr": "Düzgün hareket (yol = hız · zaman)",
+   "statement_tr": "Sabit hızla harekette yol = hız · zaman'dır; aynı anda zıt yönde hareket eden iki cisim aradaki uzaklığı hızlarının toplamıyla, aynı yönde hareket edenler hız farkıyla kapatır.",
+   "representation": "d = v\\,t",
+   "conditions_tr": [
+    "Hızlar sabittir.",
+    "Birimler uyumludur."
+   ],
+   "exceptions_tr": [
+    "Hız değişiyorsa ortalama hız, hızların ortalaması değildir."
+   ],
+   "misconceptions_tr": [
+    "Ortalama hızı iki hızın aritmetik ortalaması sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "Yol–hız–zaman modelinin tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "3.5 Solve Uniform Motion Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/3-5-solve-uniform-motion-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.slope-intercept-form",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "analitik_geometri",
+   "kind": "relationship",
+   "title_tr": "Eğim–kesen biçimi",
+   "statement_tr": "y = mx + n doğrusunda m eğim, n y-eksenini kestiği noktanın ordinatıdır; paralel doğruların eğimleri eşittir, dik doğruların (dikey olmayan) eğimleri çarpımı −1'dir.",
+   "conditions_tr": [
+    "Doğru dikey değildir."
+   ],
+   "exceptions_tr": [
+    "Dikey doğru x = a biçimindedir; eğim–kesen biçiminde yazılamaz."
+   ],
+   "prerequisites": [
+    "math.slope-concept"
+   ],
+   "misconceptions_tr": [
+    "Paralellik için kesenlerin de eşit olması gerektiğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "4.5 Use the Slope-Intercept Form of an Equation of a Line",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/4-5-use-the-slope-intercept-form-of-an-equation-of-a-line",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.line-equation-two-points",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "analitik_geometri",
+   "kind": "method",
+   "title_tr": "İki noktası bilinen doğrunun denklemi",
+   "statement_tr": "İki noktası bilinen doğrunun eğimi hesaplanır ve nokta–eğim biçimi y − y₁ = m(x − x₁) ile denklem yazılır.",
+   "conditions_tr": [
+    "Noktalar farklıdır."
+   ],
+   "exceptions_tr": [
+    "x₁ = x₂ ise doğru x = x₁ dikey doğrusudur."
+   ],
+   "prerequisites": [
+    "math.slope-concept"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "4.6 Find the Equation of a Line",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/4-6-find-the-equation-of-a-line",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.substitution-method",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "denklem_sistemleri",
+   "kind": "method",
+   "title_tr": "Yerine koyma yöntemi",
+   "statement_tr": "İki bilinmeyenli doğrusal sistemde bir denklemden bir değişken diğeri cinsinden yalnız bırakılıp öteki denkleme yazılır; elde edilen tek bilinmeyenli denklem çözülür.",
+   "exceptions_tr": [
+    "Sadeleşmede 0 = 0 kalırsa sonsuz çözüm, 0 = c (c ≠ 0) kalırsa çözüm yoktur."
+   ],
+   "prerequisites": [
+    "math.linear-systems"
+   ],
+   "misconceptions_tr": [
+    "Bulunan tek değişkenle durmak, diğerini bulmamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "5.2 Solving Systems of Equations by Substitution",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/5-2-solving-systems-of-equations-by-substitution",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.elimination-method",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "denklem_sistemleri",
+   "kind": "method",
+   "title_tr": "Yok etme yöntemi",
+   "statement_tr": "Denklemler sıfırdan farklı sayılarla çarpılarak bir değişkenin katsayıları zıt yapılır ve denklemler toplanır; sistemin çözüm kümesi değişmez.",
+   "conditions_tr": [
+    "Çarpanlar sıfırdan farklıdır."
+   ],
+   "prerequisites": [
+    "math.linear-systems"
+   ],
+   "misconceptions_tr": [
+    "Denklemin yalnız bir tarafını çarpmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "5.3 Solve Systems of Equations by Elimination",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/5-3-solve-systems-of-equations-by-elimination",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.systems-applications",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "method",
+   "title_tr": "Denklem sistemiyle problem çözme",
+   "statement_tr": "İki bilinmeyenli sözel problemde her bağımsız bilgi bir denkleme çevrilir; bilinmeyen sayısı kadar bağımsız denklem yoksa çözüm tek değildir.",
+   "conditions_tr": [
+    "Denklemler birbirinden bağımsızdır."
+   ],
+   "exceptions_tr": [
+    "Çelişkili bilgi çözümsüz sistem verir."
+   ],
+   "prerequisites": [
+    "math.linear-systems"
+   ],
+   "misconceptions_tr": [
+    "Aynı bilgiyi iki kez denklem yapmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "Bilgi yetersizliği ve çelişkinin saptanması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "5.4 Solve Applications with Systems of Equations",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/5-4-solve-applications-with-systems-of-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.gcf-grouping",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "cebirsel_ifadeler",
+   "kind": "method",
+   "title_tr": "Ortak çarpan parantezine alma ve gruplama",
+   "statement_tr": "Terimlerin ortak çarpanı parantez dışına alınır; dört terimli ifadelerde terimler gruplanıp her gruptan ortak çarpan alınarak ortak bir parantez elde edilir.",
+   "prerequisites": [
+    "math.distributive-property"
+   ],
+   "misconceptions_tr": [
+    "Ortak çarpanı yalnız ilk terimden çıkarmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "7.1 Greatest Common Factor and Factor by Grouping",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/7-1-greatest-common-factor-and-factor-by-grouping",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.factor-special-products",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ozdeslikler",
+   "kind": "relationship",
+   "title_tr": "Özel çarpımlarla çarpanlara ayırma",
+   "statement_tr": "a² − b² = (a − b)(a + b), a² ± 2ab + b² = (a ± b)² özdeşlikleri çarpanlara ayırmada kullanılır; a² + b² gerçel katsayılı çarpanlara ayrılmaz.",
+   "exceptions_tr": [
+    "a² + b² gerçel sayılarda çarpanlara ayrılmaz."
+   ],
+   "prerequisites": [
+    "math.special-products"
+   ],
+   "misconceptions_tr": [
+    "(a + b)² = a² + b² sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "7.4 Factor Special Products",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/7-4-factor-special-products",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.factoring-strategy",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "cebirsel_ifadeler",
+   "kind": "method",
+   "title_tr": "Çarpanlara ayırmada genel strateji",
+   "statement_tr": "Önce ortak çarpan alınır; sonra terim sayısına göre özel çarpım, üç terimli ayrıştırma veya gruplama denenir; her çarpan artık ayrılamayana kadar sürdürülür.",
+   "prerequisites": [
+    "math.gcf-grouping"
+   ],
+   "misconceptions_tr": [
+    "Bir kez ayrıştırıp kalan çarpanı kontrol etmemek."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "7.5 General Strategy for Factoring Polynomials",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/7-5-general-strategy-for-factoring-polynomials",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rational-expression-simplify",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "rasyonel_denklemler",
+   "kind": "method",
+   "title_tr": "Rasyonel ifadeyi sadeleştirme",
+   "statement_tr": "Rasyonel ifade pay ve payda çarpanlara ayrılıp ortak çarpanlar sadeleştirilerek yazılır; sadeleştirilen ifade özgün ifadenin tanımsız olduğu değerlerde de tanımsız kabul edilir.",
+   "conditions_tr": [
+    "Payda sıfır olmayan değerlerde çalışılır."
+   ],
+   "exceptions_tr": [
+    "(x² − 1)/(x − 1) = x + 1 eşitliği yalnız x ≠ 1 için geçerlidir."
+   ],
+   "prerequisites": [
+    "math.factoring-strategy"
+   ],
+   "misconceptions_tr": [
+    "Sadeleştirmeden sonra tanımsız noktayı unutmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.function_domain",
+     "checks_tr": "Sadeleştirmeden önceki tanımsız noktalar.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "8.1 Simplify Rational Expressions",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/8-1-simplify-rational-expressions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rational-equations-solve",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "rasyonel_denklemler",
+   "kind": "method",
+   "title_tr": "Rasyonel denklem çözme",
+   "statement_tr": "Rasyonel denklemde iki taraf paydaların EKOK'uyla çarpılır; bu adım payda sıfırı olan değerleri aday kök olarak ekleyebileceğinden her aday özgün denklemde denetlenir.",
+   "conditions_tr": [
+    "Paydaları sıfır yapan değerler tanım kümesi dışındadır."
+   ],
+   "prerequisites": [
+    "math.rational-equation-domain"
+   ],
+   "misconceptions_tr": [
+    "Paydayı sıfır yapan adayı kök kabul etmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Tanım kümesi dışındaki adayların elenmesi.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "mathematics.transformation",
+     "checks_tr": "Değişkenli ifadeyle çarpmanın genişletici olması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "8.6 Solve Rational Equations",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/8-6-solve-rational-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.similar-figures-proportion",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "eslik_benzerlik",
+   "kind": "relationship",
+   "title_tr": "Benzer şekillerde orantı",
+   "statement_tr": "Benzer iki şeklin karşılıklı kenar uzunlukları aynı oranlıdır; bu oran k ise çevreler oranı k, alanlar oranı k²'dir.",
+   "conditions_tr": [
+    "Karşılık gelen köşeler doğru eşlenmiştir."
+   ],
+   "prerequisites": [
+    "math.proportion"
+   ],
+   "misconceptions_tr": [
+    "Alan oranını kenar oranıyla aynı sanmak; köşeleri yanlış eşlemek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.similarity_correspondence",
+     "checks_tr": "Köşe eşlemesinin uzunluklarla tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "8.7 Solve Proportion and Similar Figure Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/8-7-solve-proportion-and-similar-figure-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.work-rate",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "relationship",
+   "title_tr": "İş ve akış hızı",
+   "statement_tr": "Bir işi t sürede bitiren kişinin birim zamandaki iş hızı 1/t'dir; birlikte çalışanların hızları toplanır ve ortak süre 1/(toplam hız)'dır.",
+   "representation": "\\frac{1}{t}=\\frac{1}{t_1}+\\frac{1}{t_2}",
+   "conditions_tr": [
+    "Kişilerin hızları sabittir ve birbirini etkilemez."
+   ],
+   "exceptions_tr": [
+    "Boşaltan musluk negatif hız olarak eklenir."
+   ],
+   "misconceptions_tr": [
+    "Süreleri toplamak veya ortalamak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "İş hızı modelinin tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "8.8 Solve Uniform Motion and Work Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/8-8-solve-uniform-motion-and-work-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.simplify-square-roots",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "method",
+   "title_tr": "Karekökü sadeleştirme",
+   "statement_tr": "√(a²b) = |a|√b eşitliğiyle kök içindeki tam kare çarpanlar dışarı çıkarılır; b ≥ 0 iken √(a² b) = a√b yalnız a ≥ 0 için doğrudur.",
+   "conditions_tr": [
+    "b ≥ 0"
+   ],
+   "exceptions_tr": [
+    "a negatifse dışarı |a| çıkar."
+   ],
+   "prerequisites": [
+    "math.square-roots-basic"
+   ],
+   "misconceptions_tr": [
+    "√(a+b) = √a + √b sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathai.constant_expression",
+     "checks_tr": "Sabit kök ifadesinin değeri.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.2 Simplify Square Roots",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-2-simplify-square-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.multiply-square-roots",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "relationship",
+   "title_tr": "Kareköklerin çarpımı",
+   "statement_tr": "a ≥ 0 ve b ≥ 0 iken √a · √b = √(ab)'dir; gerçel sayılarda negatif sayının karekökü tanımlı olmadığından bu kural negatif sayılara uygulanmaz.",
+   "conditions_tr": [
+    "a ≥ 0, b ≥ 0 (gerçel sayılar)."
+   ],
+   "exceptions_tr": [
+    "Karmaşık sayılarda √(−1) · √(−1) = −1 ≠ √1; kural geçmez."
+   ],
+   "prerequisites": [
+    "math.radical-product-rule"
+   ],
+   "misconceptions_tr": [
+    "Kuralı negatif kök içlerine uygulamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.4 Multiply Square Roots",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-4-multiply-square-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.divide-rationalize",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "method",
+   "title_tr": "Kareköklerde bölme ve paydayı rasyonel yapma",
+   "statement_tr": "a ≥ 0, b > 0 iken √a/√b = √(a/b)'dir; payda √b ise kesir √b ile, a + √b ise eşleniği a − √b ile genişletilerek payda rasyonel yapılır.",
+   "conditions_tr": [
+    "b > 0",
+    "Eşlenikle genişletmede a² − b ≠ 0."
+   ],
+   "prerequisites": [
+    "math.multiply-square-roots"
+   ],
+   "misconceptions_tr": [
+    "Paydayı rasyonel yaparken yalnız paydayı çarpmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.5 Divide Square Roots",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-5-divide-square-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.radical-equations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "koklu_denklemler",
+   "kind": "method",
+   "title_tr": "Köklü denklem çözme",
+   "statement_tr": "Köklü denklemde kök yalnız bırakılıp iki tarafın karesi alınır; kare alma tersinir olmadığı için bütün adaylar özgün denklemde denetlenir ve kök içi negatif olan veya eşitliği bozan aday elenir.",
+   "conditions_tr": [
+    "Kök içi negatif olamaz (çift dereceli kök)."
+   ],
+   "prerequisites": [
+    "math.extraneous-roots"
+   ],
+   "misconceptions_tr": [
+    "Kare alınca bulunan bütün değerleri kök saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Yabancı köklerin elenmesi.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "mathematics.transformation",
+     "checks_tr": "Kare almanın genişletici dönüşüm olduğu.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.6 Solve Equations with Square Roots",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-6-solve-equations-with-square-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.higher-roots",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "definition",
+   "title_tr": "n'inci dereceden kök",
+   "statement_tr": "n tek ise ⁿ√a her gerçel a için tanımlıdır; n çift ise ⁿ√a yalnız a ≥ 0 için tanımlıdır ve negatif değildir.",
+   "exceptions_tr": [
+    "ⁿ√(aⁿ) n çiftken |a|, n tekken a'dır."
+   ],
+   "prerequisites": [
+    "math.square-roots-basic"
+   ],
+   "misconceptions_tr": [
+    "∛(−8)'i tanımsız sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.7 Higher Roots",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-7-higher-roots",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rational-exponents",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "uslu_ifadeler",
+   "kind": "relationship",
+   "title_tr": "Rasyonel üs",
+   "statement_tr": "a^(m/n) = (ⁿ√a)^m'dir; çift n için a ≥ 0 gerekir. Üs kuralları negatif tabanlı rasyonel üslerde doğrudan uygulanmaz.",
+   "conditions_tr": [
+    "a > 0 iken bütün üs kuralları geçerlidir."
+   ],
+   "exceptions_tr": [
+    "(−8)^(2/6) ile (−8)^(1/3) farklı sonuç verebilir; negatif tabanda dikkat."
+   ],
+   "prerequisites": [
+    "math.higher-roots"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "9.8 Rational Exponents",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/9-8-rational-exponents",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.square-root-property",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ikinci_dereceden_denklemler",
+   "kind": "method",
+   "title_tr": "Karekök özelliğiyle çözüm",
+   "statement_tr": "x² = k denkleminin gerçel çözümleri k > 0 iken x = ±√k, k = 0 iken x = 0'dır; k < 0 iken gerçel çözüm yoktur.",
+   "exceptions_tr": [
+    "k < 0 için gerçel çözüm yoktur (karmaşık sayılarda ±i√(−k))."
+   ],
+   "prerequisites": [
+    "math.square-roots-basic"
+   ],
+   "misconceptions_tr": [
+    "Yalnız pozitif kökü yazmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Her iki işaretli kökün bulunması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "10.1 Solve Quadratic Equations Using the Square Root Property",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/10-1-solve-quadratic-equations-using-the-square-root-property",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.completing-square",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ikinci_dereceden_denklemler",
+   "kind": "method",
+   "title_tr": "Tam kareye tamamlama",
+   "statement_tr": "x² + bx = c ifadesine (b/2)² eklenerek (x + b/2)² = c + (b/2)² elde edilir; karekök özelliğiyle çözülür. a ≠ 1 ise önce a'ya bölünür.",
+   "conditions_tr": [
+    "a ≠ 0"
+   ],
+   "prerequisites": [
+    "math.square-root-property"
+   ],
+   "misconceptions_tr": [
+    "Eklenen (b/2)²'yi yalnız bir tarafa eklemek."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "10.2 Solve Quadratic Equations by Completing the Square",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/10-2-solve-quadratic-equations-by-completing-the-square",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.quadratic-formula-discriminant",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ikinci_dereceden_denklemler",
+   "kind": "relationship",
+   "title_tr": "Diskriminant ve kök sayısı",
+   "statement_tr": "ax² + bx + c = 0 (a ≠ 0) için Δ = b² − 4ac; Δ > 0 iki farklı gerçel kök, Δ = 0 bir (çakışık) kök, Δ < 0 gerçel kök yok demektir.",
+   "representation": "\\Delta=b^2-4ac",
+   "conditions_tr": [
+    "a ≠ 0",
+    "Katsayılar gerçel."
+   ],
+   "exceptions_tr": [
+    "a = 0 ise denklem ikinci dereceden değildir."
+   ],
+   "prerequisites": [
+    "math.quadratic-formula"
+   ],
+   "misconceptions_tr": [
+    "Δ < 0 iken kök formülünü uygulayıp gerçel kök bulmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Kök sayısının kesin belirlenmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "10.3 Solve Quadratic Equations Using the Quadratic Formula",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/10-3-solve-quadratic-equations-using-the-quadratic-formula",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.quadratic-applications",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ikinci_dereceden_denklemler",
+   "kind": "method",
+   "title_tr": "İkinci derece denklemle modelleme",
+   "statement_tr": "Alan, hareket veya sayı problemlerinden kurulan ikinci derece denklemin iki kökü olabilir; bağlama uymayan kök (negatif uzunluk, negatif zaman) gerekçesiyle atılır.",
+   "prerequisites": [
+    "math.quadratic-formula"
+   ],
+   "misconceptions_tr": [
+    "Her iki kökü de cevap vermek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.word_problem_model",
+     "checks_tr": "Bağlam kısıtlarıyla (pozitiflik) kök seçimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "10.4 Solve Applications Modeled by Quadratic Equations",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/10-4-solve-applications-modeled-by-quadratic-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.parabola-graph",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "ikinci_dereceden_fonksiyonlar",
+   "kind": "relationship",
+   "title_tr": "Parabolün tepe noktası ve ekseni",
+   "statement_tr": "y = ax² + bx + c parabolünün simetri ekseni x = −b/(2a), tepe noktası (−b/(2a), f(−b/(2a)))'dır; a > 0 ise tepe en küçük, a < 0 ise en büyük değerdir.",
+   "conditions_tr": [
+    "a ≠ 0"
+   ],
+   "prerequisites": [
+    "math.quadratic-function"
+   ],
+   "misconceptions_tr": [
+    "Tepe noktasının apsisini −b/a sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.function_domain",
+     "checks_tr": "Tepe noktası ve köklerin kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "10.5 Graphing Quadratic Equations in Two Variables",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/10-5-graphing-quadratic-equations-in-two-variables",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.compound-inequalities",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "esitsizlikler",
+   "kind": "method",
+   "title_tr": "Bileşik eşitsizlikler",
+   "statement_tr": "'ve' ile bağlı eşitsizliklerin çözümü kümelerin kesişimi, 'veya' ile bağlı olanlarınki birleşimidir; a < x < b zinciri iki eşitsizliğin kesişimidir.",
+   "exceptions_tr": [
+    "Kesişim boş olabilir."
+   ],
+   "prerequisites": [
+    "math.linear-inequality-solving"
+   ],
+   "misconceptions_tr": [
+    "'veya' bağlantısında kesişim almak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.inequality_set",
+     "checks_tr": "Kesişim/birleşim aralıkları.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "2.6 Solve Compound Inequalities",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/2-6-solve-compound-inequalities",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.absolute-value-inequalities",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "mutlak_deger",
+   "kind": "relationship",
+   "title_tr": "Mutlak değerli eşitsizlikler",
+   "statement_tr": "a > 0 için |x| < a ⇔ −a < x < a ve |x| > a ⇔ x < −a veya x > a'dır; a ≤ 0 durumları ayrıca incelenir.",
+   "conditions_tr": [
+    "a gerçel sabittir."
+   ],
+   "exceptions_tr": [
+    "|x| < a (a ≤ 0) çözümsüz; |x| > a (a < 0) her x için doğrudur."
+   ],
+   "prerequisites": [
+    "math.absolute-value"
+   ],
+   "misconceptions_tr": [
+    "|x| > a'yı tek aralık sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.inequality_set",
+     "checks_tr": "Kopuk aralıkların bulunması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "2.7 Solve Absolute Value Inequalities",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/2-7-solve-absolute-value-inequalities",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.relation-function",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "definition",
+   "title_tr": "Bağıntı ve fonksiyon",
+   "statement_tr": "Fonksiyon, tanım kümesindeki her elemanı değer kümesinde tam bir elemana eşleyen bağıntıdır; grafikte dikey doğru testi bir bağıntının fonksiyon olup olmadığını gösterir.",
+   "prerequisites": [
+    "math.function-definition"
+   ],
+   "misconceptions_tr": [
+    "Farklı x'lerin aynı y'ye gitmesini fonksiyon olmamak sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "3.5 Relations and Functions",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/3-5-relations-and-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.graphs-of-functions",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "method",
+   "title_tr": "Fonksiyon grafiği okuma",
+   "statement_tr": "Grafikte f(a) değeri x = a'daki noktanın ordinatıdır; x-eksenini kestiği yerler kökler, y-eksenini kestiği yer f(0)'dır. Açık nokta değerin alınmadığını gösterir.",
+   "exceptions_tr": [
+    "Tanımsız noktada grafik kopar; parçalar birleştirilmez."
+   ],
+   "misconceptions_tr": [
+    "Açık ve kapalı noktaları ayırt etmemek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.function_domain",
+     "checks_tr": "Tanımsız noktada grafiğin bölünmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "3.6 Graphs of Functions",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/3-6-graphs-of-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.composite-inverse",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "relationship",
+   "title_tr": "Bileşke ve ters fonksiyon ilişkisi",
+   "statement_tr": "f ile f⁻¹ birbirinin tersiyse tanım kümelerinde f(f⁻¹(x)) = x ve f⁻¹(f(x)) = x'tir; tersin var olması için f'nin tanım kümesinde birebir olması gerekir.",
+   "conditions_tr": [
+    "f birebir ve örtendir (değer kümesine)."
+   ],
+   "exceptions_tr": [
+    "x² gerçel eksende birebir olmadığından tersi yoktur; x ≥ 0'a kısıtlanınca √x tersidir."
+   ],
+   "prerequisites": [
+    "math.inverse-function"
+   ],
+   "misconceptions_tr": [
+    "f⁻¹(x) = 1/f(x) sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.inverse_function",
+     "checks_tr": "Birebirlik ve tek gerçel dal.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "10.1 Finding Composite and Inverse Functions",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/10-1-finding-composite-and-inverse-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.real-number-properties",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayilar",
+   "kind": "fact",
+   "title_tr": "Gerçel sayılarda işlem özellikleri",
+   "statement_tr": "Gerçel sayılarda toplama ve çarpma değişme, birleşme ve dağılma özelliklerine sahiptir; çıkarma ve bölme değişmeli değildir.",
+   "misconceptions_tr": [
+    "a − b = b − a sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "1.1 Real Numbers: Algebra Essentials",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/1-1-real-numbers-algebra-essentials",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.radicals-rational-exponents",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "karekoklu_ifadeler",
+   "kind": "relationship",
+   "title_tr": "Kök ve üs arasındaki ilişki",
+   "statement_tr": "ⁿ√a = a^(1/n) yazılabilir; köklü ifadelerde üs kuralları ancak kök tanımlı olduğunda ve tabanlar negatif değilken uygulanır.",
+   "conditions_tr": [
+    "Çift dereceli kökte taban negatif değildir."
+   ],
+   "prerequisites": [
+    "math.rational-exponents"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "1.3 Radicals and Rational Exponents",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/1-3-radicals-and-rational-exponents",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.models-applications",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sozel_problemler",
+   "kind": "method",
+   "title_tr": "Doğrusal modeller",
+   "statement_tr": "Sabit değişim içeren durumlar y = mx + b ile modellenir; m birim başına değişim, b başlangıç değeridir ve modelin geçerli olduğu aralık bağlamdan belirlenir.",
+   "exceptions_tr": [
+    "Model aralığı dışına taşma (ekstrapolasyon) gerçeği yansıtmayabilir."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "2.3 Models and Applications",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/2-3-models-and-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.other-equation-types",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "koklu_denklemler",
+   "kind": "method",
+   "title_tr": "Mutlak değerli ve rasyonel üslü denklemler",
+   "statement_tr": "|A| = c denklemi c > 0 iken A = c veya A = −c durumlarına ayrılır; c < 0 iken çözüm yoktur. Rasyonel üslü denklemlerde üs kaldırılırken adaylar özgün denklemde denetlenir.",
+   "prerequisites": [
+    "math.absolute-value"
+   ],
+   "misconceptions_tr": [
+    "|A| = c'de yalnız A = c durumunu çözmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Durumların birleşiminin çözüm kümesine eşitliği.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "2.6 Other Types of Equations",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/2-6-other-types-of-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.function-notation",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "definition",
+   "title_tr": "Fonksiyon gösterimi",
+   "statement_tr": "f(a), f fonksiyonunun a'daki değeridir; f(a + b) genel olarak f(a) + f(b) değildir ve f(x)'teki parantez çarpma anlamına gelmez.",
+   "prerequisites": [
+    "math.function-definition"
+   ],
+   "misconceptions_tr": [
+    "f(x + 2)'yi f(x) + 2 sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.1 Functions and Function Notation",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-1-functions-and-function-notation",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.domain-range",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "method",
+   "title_tr": "Tanım ve değer kümesini bulma",
+   "statement_tr": "Tanım kümesi bulunurken paydanın sıfır olduğu, çift kök içinin negatif olduğu ve logaritma argümanının pozitif olmadığı değerler çıkarılır; değer kümesi fonksiyonun aldığı bütün değerlerdir.",
+   "conditions_tr": [
+    "Gerçel değerli fonksiyonlar."
+   ],
+   "prerequisites": [
+    "math.function-domain"
+   ],
+   "misconceptions_tr": [
+    "Değer kümesini tanım kümesiyle karıştırmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.function_domain",
+     "checks_tr": "Tanım kümesi ve tanımsız noktalar.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.2 Domain and Range",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-2-domain-and-range",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rate-of-change",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "relationship",
+   "title_tr": "Ortalama değişim hızı ve artan/azalan",
+   "statement_tr": "f'nin [a, b] aralığındaki ortalama değişim hızı (f(b) − f(a))/(b − a)'dır; bir aralıkta x arttıkça f(x) artıyorsa f orada artandır.",
+   "conditions_tr": [
+    "a ≠ b"
+   ],
+   "exceptions_tr": [
+    "Ortalama değişim hızının pozitif olması fonksiyonun aralığın tamamında artan olduğunu göstermez."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.3 Rates of Change and Behavior of Graphs",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-3-rates-of-change-and-behavior-of-graphs",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.function-transformations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyon_donusumleri",
+   "kind": "relationship",
+   "title_tr": "Fonksiyon grafiği dönüşümleri",
+   "statement_tr": "y = f(x − h) + k grafiği f'nin h birim sağa ve k birim yukarı ötelemesidir; y = −f(x) x-eksenine, y = f(−x) y-eksenine göre yansımadır.",
+   "prerequisites": [
+    "math.function-notation"
+   ],
+   "misconceptions_tr": [
+    "f(x − 2)'yi sola öteleme sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.5 Transformation of Functions",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-5-transformation-of-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.absolute-value-functions",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "mutlak_deger",
+   "kind": "relationship",
+   "title_tr": "Mutlak değer fonksiyonu",
+   "statement_tr": "y = |x − h| + k grafiği tepe noktası (h, k) olan V biçimindedir; |x| parçalı olarak x ≥ 0 için x, x < 0 için −x'tir.",
+   "prerequisites": [
+    "math.absolute-value"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.6 Absolute Value Functions",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-6-absolute-value-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.piecewise-functions",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "parcali_fonksiyonlar",
+   "kind": "definition",
+   "title_tr": "Parçalı tanımlı fonksiyon",
+   "statement_tr": "Parçalı fonksiyon farklı aralıklarda farklı kurallarla tanımlanır; aralıklar ayrık olmalı ve bir x değeri yalnız bir kurala düşmelidir.",
+   "conditions_tr": [
+    "Aralıklar çakışmaz."
+   ],
+   "exceptions_tr": [
+    "Parça sınırında fonksiyon sürekli olmayabilir."
+   ],
+   "prerequisites": [
+    "math.function-notation"
+   ],
+   "misconceptions_tr": [
+    "Sınır noktasını iki kurala birden uygulamak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "3.1 Functions and Function Notation",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/3-1-functions-and-function-notation",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.polynomial-functions",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "polinomlar",
+   "kind": "definition",
+   "title_tr": "Polinom fonksiyonlar ve derece",
+   "statement_tr": "Polinom, negatif olmayan tam sayı üslü terimlerin toplamıdır; en büyük üs derecedir ve n'inci dereceden polinomun en çok n gerçel kökü vardır.",
+   "exceptions_tr": [
+    "x^(1/2) veya 1/x terimi içeren ifade polinom değildir."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "5.2 Power Functions and Polynomial Functions",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/5-2-power-functions-and-polynomial-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.rational-functions-asymptotes",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "relationship",
+   "title_tr": "Rasyonel fonksiyonlarda asimptot",
+   "statement_tr": "Sadeleşmiş rasyonel fonksiyonda paydanın sıfır olduğu (payın sıfır olmadığı) x değerinde dikey asimptot vardır; sadeleşen ortak çarpanın sıfırı grafikte boşluktur.",
+   "exceptions_tr": [
+    "Sadeleşen çarpanın sıfırında asimptot değil boşluk oluşur."
+   ],
+   "misconceptions_tr": [
+    "Boşluk noktasını asimptot sanmak; asimptot boyunca grafiği birleştirmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.function_domain",
+     "checks_tr": "Tanımsız noktalar ve kopuk grafik parçaları.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "5.6 Rational Functions",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/5-6-rational-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.exp-log-equations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "logaritma",
+   "kind": "method",
+   "title_tr": "Üstel ve logaritmik denklemler",
+   "statement_tr": "aˣ = b (a > 0, a ≠ 1, b > 0) denklemi x = logₐ b ile çözülür; logaritmik denklemde bulunan adaylar argümanı pozitif yapmalıdır.",
+   "conditions_tr": [
+    "a > 0, a ≠ 1"
+   ],
+   "exceptions_tr": [
+    "b ≤ 0 iken aˣ = b'nin gerçel çözümü yoktur."
+   ],
+   "prerequisites": [
+    "math.logarithm"
+   ],
+   "misconceptions_tr": [
+    "Logaritma argümanını negatif yapan adayı kabul etmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Tanım kümesi dışındaki adayların elenmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "6.6 Exponential and Logarithmic Equations",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/6-6-exponential-and-logarithmic-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.linear-system-cases",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "denklem_sistemleri",
+   "kind": "relationship",
+   "title_tr": "Doğrusal sistemde çözüm sayısı",
+   "statement_tr": "İki bilinmeyenli iki doğrusal denklemin grafikleri kesişen doğrularsa tek çözüm, paralel doğrularsa çözüm yok, çakışık doğrularsa sonsuz çözüm vardır.",
+   "prerequisites": [
+    "math.linear-systems"
+   ],
+   "misconceptions_tr": [
+    "Paralel doğruların bir çözümü olduğunu sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.solution_set",
+     "checks_tr": "Sonsuz/boş çözüm kümesinin ayırt edilmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "7.1 Systems of Linear Equations: Two Variables",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/7-1-systems-of-linear-equations-two-variables",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.sequence-notation",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "diziler",
+   "kind": "definition",
+   "title_tr": "Dizi ve genel terim",
+   "statement_tr": "Dizi, pozitif tam sayılardan gerçel sayılara bir fonksiyondur; aₙ genel terimdir ve dizi açık formülle veya önceki terimlere bağlı (yinelemeli) tanımlanabilir.",
+   "misconceptions_tr": [
+    "Dizinin ilk birkaç teriminden genel terimin kesin belirlendiğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "9.1 Sequences and Their Notations",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/9-1-sequences-and-their-notations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.geometric-sequence",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "diziler",
+   "kind": "relationship",
+   "title_tr": "Geometrik dizi",
+   "statement_tr": "Ardışık terimlerin oranı sabit (r) olan dizide aₙ = a₁ · rⁿ⁻¹; ilk n terim toplamı r ≠ 1 için a₁(1 − rⁿ)/(1 − r)'dir.",
+   "representation": "a_n=a_1r^{n-1}",
+   "conditions_tr": [
+    "r ≠ 1 (toplam formülü için)."
+   ],
+   "exceptions_tr": [
+    "r = 1 ise toplam n · a₁'dir."
+   ],
+   "prerequisites": [
+    "math.sequence-notation"
+   ],
+   "misconceptions_tr": [
+    "Ortak oranı ardışık farkla karıştırmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "9.3 Geometric Sequences",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/9-3-geometric-sequences",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.binomial-theorem",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayma",
+   "kind": "theorem",
+   "title_tr": "Binom açılımı",
+   "statement_tr": "(a + b)ⁿ = Σ C(n, k) aⁿ⁻ᵏ bᵏ (k = 0…n); açılımda n + 1 terim vardır ve katsayılar Pascal üçgeninin n'inci satırıdır.",
+   "conditions_tr": [
+    "n doğal sayıdır."
+   ],
+   "prerequisites": [
+    "math.combinations"
+   ],
+   "misconceptions_tr": [
+    "(a + b)ⁿ'yi aⁿ + bⁿ sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "9.6 Binomial Theorem",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/9-6-binomial-theorem",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.probability-rules",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "olasilik",
+   "kind": "relationship",
+   "title_tr": "Olasılık kuralları (tümleyen ve birleşim)",
+   "statement_tr": "P(A') = 1 − P(A) ve P(A ∪ B) = P(A) + P(B) − P(A ∩ B)'dir; olaylar ayrıksa P(A ∩ B) = 0'dır.",
+   "conditions_tr": [
+    "Olasılıklar aynı örnek uzayında tanımlıdır."
+   ],
+   "prerequisites": [
+    "math.classical-probability"
+   ],
+   "misconceptions_tr": [
+    "Ayrık olmayan olaylarda olasılıkları doğrudan toplamak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Kesin olasılık hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "9.7 Probability",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/9-7-probability",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.angle-measure-units",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "relationship",
+   "title_tr": "Açı ölçü birimleri (derece–radyan)",
+   "statement_tr": "180° = π radyandır; derece–radyan dönüşümü bu orantıyla yapılır ve trigonometrik fonksiyonda açının birimi belirtilmeden sayı yorumlanmaz.",
+   "misconceptions_tr": [
+    "sin 30 ifadesinde birimi belirtmeden derece kabul etmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.trig_interval",
+     "checks_tr": "Derece/radyan ayrımıyla çözüm.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "7.1 Angles",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/7-1-angles",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.unit-circle-signs",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "relationship",
+   "title_tr": "Birim çember ve bölgelere göre işaret",
+   "statement_tr": "Birim çemberde θ açısının bitim noktası (cos θ, sin θ)'dır; I. bölgede hepsi, II.'de sinüs, III.'te tanjant, IV.'te kosinüs pozitiftir.",
+   "prerequisites": [
+    "math.angle-measure-units"
+   ],
+   "misconceptions_tr": [
+    "Bütün açılarda sinüsün pozitif olduğunu sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "7.3 Unit Circle",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/7-3-unit-circle",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.reciprocal-trig",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "definition",
+   "title_tr": "Tanjant, kotanjant, sekant, kosekant",
+   "statement_tr": "tan θ = sin θ/cos θ (cos θ ≠ 0), cot θ = cos θ/sin θ (sin θ ≠ 0); sekant ve kosekant kosinüs ve sinüsün çarpmaya göre tersleridir.",
+   "exceptions_tr": [
+    "cos θ = 0 olan açılarda tanjant tanımsızdır (ör. 90°)."
+   ],
+   "prerequisites": [
+    "math.unit-circle-signs"
+   ],
+   "misconceptions_tr": [
+    "tan 90° = ∞ değer saymak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "7.4 The Other Trigonometric Functions",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/7-4-the-other-trigonometric-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.sine-cosine-graphs",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "relationship",
+   "title_tr": "Sinüs ve kosinüs grafikleri ve periyot",
+   "statement_tr": "y = A sin(Bx) ve y = A cos(Bx) fonksiyonlarının genliği |A|, periyodu 2π/|B|'dir; bu fonksiyonlar periyodik olduğundan bir denklemin sonsuz çözümü olabilir.",
+   "conditions_tr": [
+    "B ≠ 0"
+   ],
+   "misconceptions_tr": [
+    "Periyodu 2π · B sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "8.1 Graphs of the Sine and Cosine Functions",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/8-1-graphs-of-the-sine-and-cosine-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.inverse-trig",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "definition",
+   "title_tr": "Ters trigonometrik fonksiyonlar",
+   "statement_tr": "arcsin x yalnız [−1, 1] aralığında tanımlıdır ve [−π/2, π/2] değerini verir; sin x = c denkleminin bütün çözümleri arcsin c ile periyodik ekler ve simetrik açılardan oluşur.",
+   "conditions_tr": [
+    "|c| ≤ 1"
+   ],
+   "prerequisites": [
+    "math.unit-circle-signs"
+   ],
+   "misconceptions_tr": [
+    "arcsin değerini denklemin tek çözümü sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "8.3 Inverse Trigonometric Functions",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/8-3-inverse-trigonometric-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.sum-difference-identities",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "theorem",
+   "title_tr": "Toplam–fark formülleri",
+   "statement_tr": "sin(a ± b) = sin a cos b ± cos a sin b ve cos(a ± b) = cos a cos b ∓ sin a sin b'dir.",
+   "misconceptions_tr": [
+    "sin(a + b) = sin a + sin b sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "9.2 Sum and Difference Identities",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/9-2-sum-and-difference-identities",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.double-angle",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "theorem",
+   "title_tr": "İki kat açı formülleri",
+   "statement_tr": "sin 2a = 2 sin a cos a ve cos 2a = cos² a − sin² a = 2cos² a − 1 = 1 − 2sin² a'dır.",
+   "prerequisites": [
+    "math.sum-difference-identities"
+   ],
+   "misconceptions_tr": [
+    "sin 2a = 2 sin a sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "9.3 Double-Angle, Half-Angle, and Reduction Formulas",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/9-3-double-angle-half-angle-and-reduction-formulas",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.trig-equations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "method",
+   "title_tr": "Trigonometrik denklem çözme",
+   "statement_tr": "Trigonometrik denklem önce temel biçime indirgenir; verilen aralıktaki bütün çözümler periyot eklenerek bulunur. Sadeleştirme sırasında tanımsız açılar (ör. tan için cos = 0) dışarıda bırakılır.",
+   "conditions_tr": [
+    "Açının birimi (derece/radyan) ve aralık bellidir."
+   ],
+   "exceptions_tr": [
+    "Aralık verilmezse sonsuz çözüm vardır; tek değer cevap olamaz."
+   ],
+   "prerequisites": [
+    "math.inverse-trig"
+   ],
+   "misconceptions_tr": [
+    "Aralıktaki ikinci çözümü kaybetmek; iki tarafı trigonometrik ifadeye bölüp çözüm kaybetmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.trig_interval",
+     "checks_tr": "Aralıktaki bütün periyodik çözümler.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "9.5 Solving Trigonometric Equations",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/9-5-solving-trigonometric-equations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.law-of-cosines",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "trigonometri",
+   "kind": "theorem",
+   "title_tr": "Kosinüs teoremi",
+   "statement_tr": "Herhangi bir üçgende c² = a² + b² − 2ab cos C'dir; C = 90° iken Pisagor teoremine indirgenir.",
+   "conditions_tr": [
+    "a, b, c üçgenin kenarları, C c'nin karşısındaki açıdır."
+   ],
+   "prerequisites": [
+    "math.pythagorean-theorem"
+   ],
+   "misconceptions_tr": [
+    "Açıyı yanlış kenarın karşısına yerleştirmek."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.algebra-and-trigonometry-2e",
+     "section": "10.2 Non-right Triangles: Law of Cosines",
+     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/10-2-non-right-triangles-law-of-cosines",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.function-review",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "fonksiyonlar",
+   "kind": "fact",
+   "title_tr": "Fonksiyonların temel özellikleri (artan, azalan, simetri)",
+   "statement_tr": "Bir fonksiyon f(−x) = f(x) ise çift, f(−x) = −f(x) ise tektir; artan/azalan olması bir aralık üzerinde tanımlanır.",
+   "conditions_tr": [
+    "Tanım kümesi orijine göre simetriktir (çift/tek tanımı için)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "1.1 Review of Functions",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/1-1-review-of-functions",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.limit-laws",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "limit",
+   "kind": "theorem",
+   "title_tr": "Limit kuralları",
+   "statement_tr": "lim f ve lim g varsa toplam, fark, çarpım ve (lim g ≠ 0 iken) bölümün limiti limitlerin toplamı, farkı, çarpımı ve bölümüdür.",
+   "conditions_tr": [
+    "Kullanılan limitlerin her biri vardır (sonludur)."
+   ],
+   "exceptions_tr": [
+    "0/0 biçiminde kural doğrudan uygulanamaz; önce sadeleştirme gerekir."
+   ],
+   "prerequisites": [
+    "math.limit-concept"
+   ],
+   "misconceptions_tr": [
+    "0/0 belirsizliğini limitin olmadığı sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "2.3 The Limit Laws",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/2-3-the-limit-laws",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.one-sided-limits",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "limit",
+   "kind": "definition",
+   "title_tr": "Tek yönlü limit",
+   "statement_tr": "x → a⁺ sağdan, x → a⁻ soldan limittir; iki yönlü limit ancak iki tek yönlü limit var ve eşitse vardır.",
+   "exceptions_tr": [
+    "1/x için x → 0'da sağdan +∞, soldan −∞; iki yönlü limit yoktur."
+   ],
+   "prerequisites": [
+    "math.limit-concept"
+   ],
+   "misconceptions_tr": [
+    "Bir yandaki limiti iki yönlü limit saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.calculus_extremum",
+     "checks_tr": "Tek yönlü limitlerin ayrı hesaplanması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "2.2 The Limit of a Function",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/2-2-the-limit-of-a-function",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.continuity",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sureklilik",
+   "kind": "definition",
+   "title_tr": "Süreklilik",
+   "statement_tr": "f, a'da süreklidir ancak ve ancak f(a) tanımlı, lim f(x) (x → a) var ve bu limit f(a)'ya eşitse.",
+   "exceptions_tr": [
+    "Limitin var olması sürekliliğe yetmez (boşluk noktası)."
+   ],
+   "prerequisites": [
+    "math.one-sided-limits"
+   ],
+   "misconceptions_tr": [
+    "Tanımsız noktada fonksiyonu sürekli saymak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "2.4 Continuity",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/2-4-continuity",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.derivative-definition",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "definition",
+   "title_tr": "Türevin tanımı",
+   "statement_tr": "f'nin a'daki türevi f'(a) = lim (f(a + h) − f(a))/h (h → 0) limitidir; geometrik olarak a'daki teğetin eğimidir.",
+   "conditions_tr": [
+    "Limit vardır."
+   ],
+   "exceptions_tr": [
+    "|x| fonksiyonu 0'da süreklidir ama türevlenemez."
+   ],
+   "prerequisites": [
+    "math.limit-laws"
+   ],
+   "misconceptions_tr": [
+    "Sürekliliğin türevlenebilirliği gerektirdiğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "3.1 Defining the Derivative",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/3-1-defining-the-derivative",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.derivative-function",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "relationship",
+   "title_tr": "Türev fonksiyonu ve teğet eğimi",
+   "statement_tr": "f'(x) her noktadaki teğet eğimini veren fonksiyondur; f'(x) > 0 olan aralıkta f artan, f'(x) < 0 olan aralıkta azalandır.",
+   "prerequisites": [
+    "math.derivative-definition"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "3.2 The Derivative as a Function",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/3-2-the-derivative-as-a-function",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.differentiation-rules",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "theorem",
+   "title_tr": "Türev alma kuralları",
+   "statement_tr": "(xⁿ)' = n xⁿ⁻¹, (cf)' = c f', (f ± g)' = f' ± g', (fg)' = f'g + fg', (f/g)' = (f'g − fg')/g² (g ≠ 0).",
+   "conditions_tr": [
+    "Fonksiyonlar ilgili noktada türevlenebilirdir."
+   ],
+   "prerequisites": [
+    "math.derivative-definition"
+   ],
+   "misconceptions_tr": [
+    "(fg)' = f'g' sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "3.3 Differentiation Rules",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/3-3-differentiation-rules",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.chain-rule",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "theorem",
+   "title_tr": "Zincir kuralı",
+   "statement_tr": "(f(g(x)))' = f'(g(x)) · g'(x)'tir.",
+   "conditions_tr": [
+    "g, x'te ve f, g(x)'te türevlenebilirdir."
+   ],
+   "prerequisites": [
+    "math.differentiation-rules"
+   ],
+   "misconceptions_tr": [
+    "İç fonksiyonun türeviyle çarpmayı unutmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "3.6 The Chain Rule",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/3-6-the-chain-rule",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.critical-points-extrema",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "theorem",
+   "title_tr": "Kritik nokta ve ekstremum",
+   "statement_tr": "Yerel ekstremum türevlenebilir bir fonksiyonda yalnız f'(c) = 0 olan (veya türevin olmadığı) noktalarda oluşabilir; f'(c) = 0 olması ekstremum olduğunu göstermez — türevin işaret değiştirmesi gerekir.",
+   "exceptions_tr": [
+    "f(x) = x³ için f'(0) = 0 ama 0'da ekstremum yoktur."
+   ],
+   "prerequisites": [
+    "math.derivative-function"
+   ],
+   "misconceptions_tr": [
+    "Türevin sıfır olduğu her noktayı ekstremum saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.calculus_extremum",
+     "checks_tr": "Birinci türev testiyle ekstremum sınıflandırması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "4.3 Maxima and Minima",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/4-3-maxima-and-minima",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.first-derivative-test",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "method",
+   "title_tr": "Birinci türev testi",
+   "statement_tr": "Kritik noktanın solunda f' > 0, sağında f' < 0 ise yerel en büyük; solunda f' < 0, sağında f' > 0 ise yerel en küçük değer vardır; işaret değişmiyorsa ekstremum yoktur.",
+   "conditions_tr": [
+    "f kritik noktanın komşuluğunda süreklidir."
+   ],
+   "prerequisites": [
+    "math.critical-points-extrema"
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.calculus_extremum",
+     "checks_tr": "İşaret değişimi denetimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "4.5 Derivatives and the Shape of a Graph",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/4-5-derivatives-and-the-shape-of-a-graph",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.absolute-extrema-interval",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "turev",
+   "kind": "method",
+   "title_tr": "Kapalı aralıkta mutlak ekstremum",
+   "statement_tr": "Kapalı [a, b] aralığında sürekli fonksiyonun mutlak en büyük ve en küçük değerleri kritik noktalardaki ve uç noktalardaki değerler karşılaştırılarak bulunur.",
+   "conditions_tr": [
+    "f [a, b]'de süreklidir."
+   ],
+   "exceptions_tr": [
+    "Açık aralıkta mutlak ekstremum olmayabilir."
+   ],
+   "prerequisites": [
+    "math.first-derivative-test"
+   ],
+   "misconceptions_tr": [
+    "Uç noktaları kontrol etmemek; yerel ekstremumu mutlak sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "4.7 Applied Optimization Problems",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/4-7-applied-optimization-problems",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.antiderivatives",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "integral",
+   "kind": "definition",
+   "title_tr": "Ters türev (belirsiz integral)",
+   "statement_tr": "F' = f ise F, f'nin bir ters türevidir; f'nin bütün ters türevleri F + C biçimindedir. Önerilen ters türev türevi alınarak denetlenir.",
+   "prerequisites": [
+    "math.differentiation-rules"
+   ],
+   "misconceptions_tr": [
+    "Sabit C'yi unutmak; belirsiz integrali sayı sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.antiderivative",
+     "checks_tr": "F' = f denetimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "4.10 Antiderivatives",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/4-10-antiderivatives",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.definite-integral-signed",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "integral",
+   "kind": "definition",
+   "title_tr": "Belirli integral ve işaretli alan",
+   "statement_tr": "∫ₐᵇ f(x) dx, eğri ile x-ekseni arasındaki işaretli alandır: eksenin altındaki bölgeler negatif katkı verir; geometrik alan için |f| integrali alınır.",
+   "conditions_tr": [
+    "f [a, b]'de integrallenebilirdir."
+   ],
+   "exceptions_tr": [
+    "Aralıkta tanımsız nokta veya sonsuz sınır varsa integral genelleştirilmiştir (improper)."
+   ],
+   "prerequisites": [
+    "math.antiderivatives"
+   ],
+   "misconceptions_tr": [
+    "İşaretli integrali alan sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.definite_integral",
+     "checks_tr": "İşaretli integral ile alanın ayrımı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "5.2 The Definite Integral",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/5-2-the-definite-integral",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.substitution-integration",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "integral",
+   "kind": "method",
+   "title_tr": "Değişken değiştirme",
+   "statement_tr": "∫ f(g(x)) g'(x) dx integralinde u = g(x) dönüşümü ∫ f(u) du verir; belirli integralde sınırlar da u'ya çevrilir.",
+   "prerequisites": [
+    "math.chain-rule"
+   ],
+   "misconceptions_tr": [
+    "Sınırları dönüştürmeyi unutmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.antiderivative",
+     "checks_tr": "Sonucun türevle denetimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "5.5 Substitution",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/5-5-substitution",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.area-between-curves",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "integral",
+   "kind": "method",
+   "title_tr": "İki eğri arasındaki alan",
+   "statement_tr": "[a, b]'de iki eğri arasındaki alan ∫ |f − g| dx'tir; eğriler kesişiyorsa aralık kesişim noktalarında bölünür.",
+   "prerequisites": [
+    "math.definite-integral-signed"
+   ],
+   "misconceptions_tr": [
+    "Hangi eğrinin üstte olduğunu bütün aralık için aynı saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.definite_integral",
+     "checks_tr": "Kesişimlerde bölünmüş alan.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "6.1 Areas between Curves",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/6-1-areas-between-curves",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.limits-at-infinity",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "limit",
+   "kind": "relationship",
+   "title_tr": "Sonsuzda limit ve yatay asimptot",
+   "statement_tr": "x → ±∞ iken rasyonel fonksiyonun limiti pay ve paydanın derecelerine bağlıdır: payın derecesi küçükse 0, eşitse baş katsayıların oranıdır.",
+   "prerequisites": [
+    "math.limit-laws"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.calculus-volume-1",
+     "section": "4.6 Limits at Infinity and Asymptotes",
+     "url": "https://openstax.org/books/calculus-volume-1/pages/4-6-limits-at-infinity-and-asymptotes",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.sample-space-terms",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "olasilik",
+   "kind": "definition",
+   "title_tr": "Örnek uzay, olay ve eş olasılık",
+   "statement_tr": "Örnek uzay bir deneyin bütün olası çıktılarıdır; olay bunun alt kümesidir. Çıktılar eş olasılıklı değilse olasılık çıktı sayılarının oranı değildir.",
+   "misconceptions_tr": [
+    "İki zar toplamının bütün değerlerini eş olasılıklı sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "3.1 Terminology",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/3-1-terminology",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.independent-vs-exclusive",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "olasilik",
+   "kind": "relationship",
+   "title_tr": "Bağımsız ve ayrık olaylar farklıdır",
+   "statement_tr": "A ve B bağımsızsa P(A ∩ B) = P(A)P(B); ayrıksa P(A ∩ B) = 0'dır. Olasılıkları sıfırdan büyük iki olay hem ayrık hem bağımsız olamaz.",
+   "conditions_tr": [
+    "P(A) > 0, P(B) > 0 (son cümle için)."
+   ],
+   "prerequisites": [
+    "math.independent-events"
+   ],
+   "misconceptions_tr": [
+    "Ayrık olayları bağımsız sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Bağımsızlık ve ayrıklığın kesin denetimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "3.2 Independent and Mutually Exclusive Events",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/3-2-independent-and-mutually-exclusive-events",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.conditional-probability",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kosullu_olasilik",
+   "kind": "definition",
+   "title_tr": "Koşullu olasılık",
+   "statement_tr": "P(B) > 0 iken P(A | B) = P(A ∩ B)/P(B)'dir; yerine koymadan çekilişte ikinci çekilişin olasılığı ilk çekilişin sonucuna bağlıdır.",
+   "conditions_tr": [
+    "P(B) > 0"
+   ],
+   "prerequisites": [
+    "math.sample-space-terms"
+   ],
+   "misconceptions_tr": [
+    "P(A | B) ile P(B | A)'yı karıştırmak; yerine koymadan çekilişi bağımsız saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Koşullu olasılığın örnek uzayından kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "3.3 Two Basic Rules of Probability",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/3-3-two-basic-rules-of-probability",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "11-12. sınıf",
+    "AYT"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.contingency-tables",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kosullu_olasilik",
+   "kind": "method",
+   "title_tr": "Çapraz tablolarda olasılık",
+   "statement_tr": "Çapraz tabloda P(A | B), A ve B'nin birlikte görüldüğü hücrenin B satırının (veya sütununun) toplamına bölümüdür; satır ve sütun toplamları genel toplamla tutarlı olmalıdır.",
+   "prerequisites": [
+    "math.conditional-probability"
+   ],
+   "misconceptions_tr": [
+    "Koşulu genel toplamla bölmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Tablo toplamlarının tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "3.4 Contingency Tables",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/3-4-contingency-tables",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.tree-diagrams",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kosullu_olasilik",
+   "kind": "method",
+   "title_tr": "Olasılık ağacı",
+   "statement_tr": "Ağaçta bir yol boyunca olasılıklar çarpılır, aynı olaya giden yolların olasılıkları toplanır; her düğümden çıkan dalların toplamı 1'dir.",
+   "misconceptions_tr": [
+    "Yerine koymadan çekilişte ikinci dal olasılıklarını değiştirmemek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Yol olasılıklarının kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "3.5 Tree and Venn Diagrams",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/3-5-tree-and-venn-diagrams",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.percentiles-quartiles",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "istatistik",
+   "kind": "definition",
+   "title_tr": "Çeyrekler ve yüzdelikler",
+   "statement_tr": "Sıralı veride ortanca veriyi iki eşit parçaya, çeyrekler dört eşit parçaya böler; çeyrekler açıklığı Q3 − Q1'dir ve uç değerlerden az etkilenir.",
+   "conditions_tr": [
+    "Veri sıralanmıştır."
+   ],
+   "exceptions_tr": [
+    "Farklı kaynaklar çeyrek hesabında farklı kurallar kullanabilir."
+   ],
+   "misconceptions_tr": [
+    "Sıralamadan ortanca bulmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.statistics",
+     "checks_tr": "Ortancanın kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "2.3 Measures of the Location of the Data",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/2-3-measures-of-the-location-of-the-data",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.skewness-center",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "istatistik",
+   "kind": "relationship",
+   "title_tr": "Çarpıklık ve merkezi eğilim",
+   "statement_tr": "Sağa çarpık dağılımda ortalama genellikle ortancadan büyüktür; uç değerler ortalamayı ortancadan daha çok etkiler.",
+   "exceptions_tr": [
+    "'Genellikle' ifadesi kesin bir kural değildir; istisnai dağılımlar vardır."
+   ],
+   "prerequisites": [
+    "math.measures-of-center"
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.introductory-statistics-2e",
+     "section": "2.6 Skewness and the Mean, Median, and Mode",
+     "url": "https://openstax.org/books/introductory-statistics-2e/pages/2-6-skewness-and-the-mean-median-and-mode",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.multiplication-rule-counting",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayma",
+   "kind": "theorem",
+   "title_tr": "Çarpma ilkesi",
+   "statement_tr": "Ardışık k seçimin her birinde sırasıyla n₁, n₂, …, nₖ seçenek varsa ve seçenek sayısı önceki seçime bağlı değilse toplam durum sayısı n₁ · n₂ · … · nₖ'dir.",
+   "conditions_tr": [
+    "Seçenek sayıları önceki seçimlerden bağımsızdır."
+   ],
+   "prerequisites": [
+    "math.counting-principle"
+   ],
+   "misconceptions_tr": [
+    "Ayrık durumları çarpmak (toplanmalıydı)."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "7.1 The Multiplication Rule for Counting",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/7-1-the-multiplication-rule-for-counting",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.permutations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayma",
+   "kind": "definition",
+   "title_tr": "Permütasyon (sıralı seçim)",
+   "statement_tr": "n farklı nesneden k tanesinin sıralı dizilişi P(n, k) = n!/(n − k)!'dir; sıra önemlidir.",
+   "conditions_tr": [
+    "0 ≤ k ≤ n"
+   ],
+   "exceptions_tr": [
+    "Tekrarlı nesnelerde aynı dizilişler ayrıca bölünerek sayılır."
+   ],
+   "prerequisites": [
+    "math.multiplication-rule-counting"
+   ],
+   "misconceptions_tr": [
+    "Sıranın önemsiz olduğu seçimde permütasyon kullanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Sayma sonucunun kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "7.2 Permutations",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/7-2-permutations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.combinations",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "sayma",
+   "kind": "definition",
+   "title_tr": "Kombinasyon (sırasız seçim)",
+   "statement_tr": "n farklı nesneden k tanesinin sırasız seçimi C(n, k) = n!/(k!(n − k)!)'dir ve C(n, k) = C(n, n − k)'dir.",
+   "conditions_tr": [
+    "0 ≤ k ≤ n"
+   ],
+   "prerequisites": [
+    "math.permutations"
+   ],
+   "misconceptions_tr": [
+    "Sıralı ve sırasız seçimi karıştırmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.probability_exact",
+     "checks_tr": "Sayma sonucunun kesin hesabı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "7.3 Combinations",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/7-3-combinations",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.set-concepts",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kumeler",
+   "kind": "definition",
+   "title_tr": "Küme kavramları",
+   "statement_tr": "Küme iyi tanımlanmış nesneler topluluğudur; A ⊆ B, A'nın her elemanının B'de olmasıdır. Kesişim ortak elemanlar, birleşim herhangi birinde olan elemanlardır.",
+   "exceptions_tr": [
+    "Boş küme her kümenin alt kümesidir."
+   ],
+   "misconceptions_tr": [
+    "Elemanın kümesiyle (a ile {a}) karıştırılması."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "1.1 Basic Set Concepts",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/1-1-basic-set-concepts",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "math.interval-notation",
+   "version": 1,
+   "subject": "mathematics",
+   "topic": "kumeler",
+   "kind": "definition",
+   "title_tr": "Aralık gösterimi",
+   "statement_tr": "[a, b] uçları dahil, (a, b) uçları hariç aralıktır; sonsuzluk bir sayı olmadığından uçta her zaman açık parantez yazılır. Birleşim ∪ ile, tek nokta dışlama {a} ile gösterilir.",
+   "misconceptions_tr": [
+    "[2, ∞] yazmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.inequality_set",
+     "checks_tr": "Açık/kapalı uçların kesin gösterimi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.intermediate-algebra-2e",
+     "section": "2.6 Solve Compound Inequalities",
+     "url": "https://openstax.org/books/intermediate-algebra-2e/pages/2-6-solve-compound-inequalities",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.points-lines-planes",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "aci_kavrami",
+   "kind": "definition",
+   "title_tr": "Nokta, doğru, ışın, doğru parçası",
+   "statement_tr": "Doğru iki yönde sınırsız uzanır, ışın bir uçtan başlayıp tek yönde uzanır, doğru parçası iki uç noktası arasındadır; farklı iki noktadan tek bir doğru geçer.",
+   "misconceptions_tr": [
+    "Işını iki uçlu sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.1 Points, Lines, and Planes",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-1-points-lines-and-planes",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "5-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.angle-relationships",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "aci_kavrami",
+   "kind": "relationship",
+   "title_tr": "Tümler, bütünler ve ters açılar",
+   "statement_tr": "Ölçüleri toplamı 90° olan açılar tümler, 180° olanlar bütünlerdir; kesişen iki doğrunun oluşturduğu ters açılar eşittir.",
+   "misconceptions_tr": [
+    "Komşu her iki açıyı bütünler sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.2 Angles",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-2-angles",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.parallel-angles",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "aci_kavrami",
+   "kind": "theorem",
+   "title_tr": "Paralel doğrularda kesenle oluşan açılar",
+   "statement_tr": "İki paralel doğruyu bir kesen kestiğinde yöndeş açılar ve iç ters açılar eşit, karşı durumlu iç açılar bütünlerdir; karşıtı da doğrudur: iç ters açılar eşitse doğrular paraleldir.",
+   "conditions_tr": [
+    "Doğruların paralelliği verilmiştir (şekilde paralel görünmesi yetmez)."
+   ],
+   "prerequisites": [
+    "geo.angle-relationships"
+   ],
+   "misconceptions_tr": [
+    "Paralel görünen doğruları paralel kabul etmek."
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 29",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI29.html",
+     "verified_on": "2026-11-25"
+    },
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.2 Angles",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-2-angles",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.triangle-classification",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "definition",
+   "title_tr": "Üçgen türleri",
+   "statement_tr": "Üçgenler kenarlarına göre çeşitkenar, ikizkenar, eşkenar; açılarına göre dar, dik, geniş açılı olarak sınıflanır.",
+   "misconceptions_tr": [
+    "Her eşkenar üçgenin dik olabileceğini sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.3 Triangles",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-3-triangles",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-7. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.exterior-angle",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "theorem",
+   "title_tr": "Dış açı teoremi",
+   "statement_tr": "Bir üçgende bir kenar uzatıldığında oluşan dış açı, kendisine komşu olmayan iki iç açının toplamına eşittir.",
+   "conditions_tr": [
+    "Uzatma kenarın doğrultusundadır."
+   ],
+   "prerequisites": [
+    "math.triangle-angle-sum"
+   ],
+   "misconceptions_tr": [
+    "Dış açıyı komşu iç açıya eşit sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.geometry_constraints",
+     "checks_tr": "Açı kısıtlarından hedef açının belirlenmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 32",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI32.html",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.pythagorean-converse",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "theorem",
+   "title_tr": "Pisagor teoreminin karşıtı",
+   "statement_tr": "Kenarları a, b, c olan üçgende a² + b² = c² ise c'nin karşısındaki açı diktir.",
+   "conditions_tr": [
+    "a, b, c bir üçgenin kenar uzunluklarıdır."
+   ],
+   "prerequisites": [
+    "math.pythagorean-theorem"
+   ],
+   "misconceptions_tr": [
+    "Şekilde dik görünen açıyı kenarlara bakmadan dik kabul etmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.triangle_inequality",
+     "checks_tr": "Kenarların üçgen oluşturması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 48",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI48.html",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.triangle-inequality",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "theorem",
+   "title_tr": "Üçgen eşitsizliği",
+   "statement_tr": "Bir üçgende her kenar diğer iki kenarın toplamından küçük ve farkının mutlak değerinden büyüktür; eşitlik durumunda noktalar doğrusal olur (dejenere üçgen).",
+   "misconceptions_tr": [
+    "2, 3, 7 uzunluklarıyla üçgen çizilebileceğini sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.triangle_inequality",
+     "checks_tr": "İmkânsız/dejenere üçgen saptaması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 20",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI20.html",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.isosceles",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "theorem",
+   "title_tr": "İkizkenar üçgende taban açıları",
+   "statement_tr": "İki kenarı eşit üçgende bu kenarların karşısındaki (taban) açılar eşittir; karşıtı da geçerlidir.",
+   "conditions_tr": [
+    "Kenar eşitliği metinde verilmiş veya şekilde işaretlenmiştir."
+   ],
+   "misconceptions_tr": [
+    "Eşit görünen kenarları eşit kabul etmek."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.geometry_constraints",
+     "checks_tr": "Eşit kenar olgusundan açı eşitliği.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 5",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI5.html",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.congruence-criteria",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "eslik_benzerlik",
+   "kind": "theorem",
+   "title_tr": "Eşlik ölçütleri",
+   "statement_tr": "İki üçgen KAK (iki kenar ve aradaki açı), AKA (iki açı ve aradaki kenar) veya KKK (üç kenar) eşliğiyle eştir; AAA eşlik değil benzerlik verir.",
+   "conditions_tr": [
+    "Köşe eşlemesi açıkça belirtilir."
+   ],
+   "exceptions_tr": [
+    "KKA (iki kenar ve karşı açı) genel olarak eşlik ölçütü değildir."
+   ],
+   "misconceptions_tr": [
+    "AAA'yı eşlik ölçütü sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.similarity_correspondence",
+     "checks_tr": "Köşe eşlemesinin tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 4",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI4.html",
+     "verified_on": "2026-11-25"
+    },
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 8",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI8.html",
+     "verified_on": "2026-11-25"
+    },
+    {
+     "source_id": "joyce.euclid-elements",
+     "section": "Elements, Book I, Proposition 26",
+     "url": "https://mathcs.clarku.edu/~djoyce/java/elements/bookI/propI26.html",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.similarity",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "eslik_benzerlik",
+   "kind": "theorem",
+   "title_tr": "Üçgenlerde benzerlik",
+   "statement_tr": "İki üçgenin karşılıklı açıları eşitse (AA) üçgenler benzerdir ve karşılıklı kenarları orantılıdır; orantı ancak doğru köşe eşlemesiyle kurulur.",
+   "conditions_tr": [
+    "Karşılıklı köşeler doğru eşlenmiştir."
+   ],
+   "prerequisites": [
+    "math.similar-figures-proportion"
+   ],
+   "misconceptions_tr": [
+    "Kenarları sıralı yazıp eşlemeyi yanlış kurmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.similarity_correspondence",
+     "checks_tr": "Uyumsuz eşlemenin saptanması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.elementary-algebra-2e",
+     "section": "8.7 Solve Proportion and Similar Figure Applications",
+     "url": "https://openstax.org/books/elementary-algebra-2e/pages/8-7-solve-proportion-and-similar-figure-applications",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.triangle-area",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "relationship",
+   "title_tr": "Üçgenin alanı",
+   "statement_tr": "Üçgenin alanı taban · o tabana ait yükseklik / 2'dir; yükseklik tabana dik çizilen doğru parçasıdır ve geniş açılı üçgende üçgenin dışına düşebilir.",
+   "conditions_tr": [
+    "Yükseklik kullanılan tabana aittir."
+   ],
+   "misconceptions_tr": [
+    "Dik olmayan bir kenarı yükseklik almak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.4 Use Properties of Rectangles, Triangles, and Trapezoids",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-4-use-properties-of-rectangles-triangles-and-trapezoids",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.quadrilaterals",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "dortgen_cokgen",
+   "kind": "fact",
+   "title_tr": "Özel dörtgenlerin özellikleri",
+   "statement_tr": "Paralelkenarda karşılıklı kenarlar paralel ve eşit, köşegenler birbirini ortalar; dikdörtgende ayrıca köşegenler eşit, eşkenar dörtgende köşegenler diktir.",
+   "conditions_tr": [
+    "Dörtgenin türü metinde verilmiştir."
+   ],
+   "exceptions_tr": [
+    "Görünüşe göre tür belirlenmez."
+   ],
+   "misconceptions_tr": [
+    "Her paralelkenarın köşegenlerini eşit sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.4 Polygons, Perimeter, and Circumference",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-4-polygons-perimeter-and-circumference",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.polygon-angles",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "dortgen_cokgen",
+   "kind": "relationship",
+   "title_tr": "Çokgenin iç açıları toplamı",
+   "statement_tr": "n kenarlı dışbükey çokgenin iç açıları toplamı (n − 2) · 180°, dış açıları toplamı 360°'dir; düzgün çokgende her iç açı (n − 2) · 180°/n'dir.",
+   "conditions_tr": [
+    "n ≥ 3, dışbükey çokgen."
+   ],
+   "prerequisites": [
+    "math.triangle-angle-sum"
+   ],
+   "misconceptions_tr": [
+    "İç açılar toplamını n · 180° sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.4 Polygons, Perimeter, and Circumference",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-4-polygons-perimeter-and-circumference",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "7-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.area-formulas",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "dortgen_cokgen",
+   "kind": "relationship",
+   "title_tr": "Dörtgenlerde alan",
+   "statement_tr": "Dikdörtgenin alanı a · b, paralelkenarın taban · yükseklik, yamuğun (a + c) · h / 2'dir; yükseklik tabana dik uzaklıktır.",
+   "misconceptions_tr": [
+    "Paralelkenarda yan kenarı yükseklik almak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.6 Area",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-6-area",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-9. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.circle-parts",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "cember_daire",
+   "kind": "definition",
+   "title_tr": "Çember ve dairenin elemanları",
+   "statement_tr": "Çember merkeze eşit uzaklıktaki noktalardır; yarıçap merkezden çembere, kiriş çemberin iki noktasını birleştiren doğru parçasıdır ve çap en uzun kiriştir.",
+   "misconceptions_tr": [
+    "Çember ile daireyi aynı sanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.5 Solve Geometry Applications: Circles and Irregular Figures",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "6-8. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.tangent-radius",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "cember_daire",
+   "kind": "theorem",
+   "title_tr": "Teğet ile yarıçapın dikliği",
+   "statement_tr": "Çembere bir noktada teğet olan doğru, o noktadaki yarıçapa diktir.",
+   "conditions_tr": [
+    "Doğrunun teğet olduğu verilmiştir."
+   ],
+   "prerequisites": [
+    "geo.circle-parts"
+   ],
+   "misconceptions_tr": [
+    "Çembere değiyormuş gibi görünen doğruyu teğet saymak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.geometry_constraints",
+     "checks_tr": "Teğet olgusundan dik açı kısıtı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.5 Solve Geometry Applications: Circles and Irregular Figures",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.inscribed-angle",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "cember_daire",
+   "kind": "theorem",
+   "title_tr": "Çevre açı ve merkez açı",
+   "statement_tr": "Aynı yayı gören çevre açı, merkez açının yarısıdır; çapı gören çevre açı diktir.",
+   "conditions_tr": [
+    "Açının köşesi çember üzerindedir.",
+    "Aynı yay gösterilir."
+   ],
+   "prerequisites": [
+    "geo.circle-parts"
+   ],
+   "misconceptions_tr": [
+    "Farklı yayları gören açıları karşılaştırmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.prealgebra-2e",
+     "section": "9.5 Solve Geometry Applications: Circles and Irregular Figures",
+     "url": "https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "10-12. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.midpoint",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "analitik_geometri",
+   "kind": "relationship",
+   "title_tr": "Orta nokta",
+   "statement_tr": "A(x₁, y₁) ve B(x₂, y₂) için AB'nin orta noktası ((x₁ + x₂)/2, (y₁ + y₂)/2)'dir ve uç noktalara eşit uzaklıktadır.",
+   "prerequisites": [
+    "math.distance-formula"
+   ],
+   "misconceptions_tr": [
+    "Koordinat farkının yarısını orta nokta sanmak."
+   ],
+   "verifiers": [
+    {
+     "verifier": "mathematics.geometry_constraints",
+     "checks_tr": "Koordinatlardan uzaklık ve orta nokta.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.college-algebra-2e",
+     "section": "2.1 The Rectangular Coordinate Systems and Graphs",
+     "url": "https://openstax.org/books/college-algebra-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-11. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.right-triangle-trig",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "ucgenler",
+   "kind": "definition",
+   "title_tr": "Dik üçgende trigonometrik oranlar",
+   "statement_tr": "Dik üçgende dar açı için sinüs karşı/hipotenüs, kosinüs komşu/hipotenüs, tanjant karşı/komşu oranıdır; oranlar üçgenin büyüklüğünden bağımsızdır.",
+   "conditions_tr": [
+    "Üçgen diktir (dik açı verilmiş/işaretli)."
+   ],
+   "prerequisites": [
+    "math.right-triangle-trig"
+   ],
+   "misconceptions_tr": [
+    "Karşı ve komşu kenarı açıya göre değil şekle göre seçmek."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.8 Right Triangle Trigonometry",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-8-right-triangle-trigonometry",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
+  },
+  {
+   "id": "geo.solid-volume",
+   "version": 1,
+   "subject": "geometry",
+   "topic": "kati_cisimler",
+   "kind": "relationship",
+   "title_tr": "Koni ve piramitte hacim",
+   "statement_tr": "Koni ve piramidin hacmi aynı taban ve yükseklikteki prizma/silindirin üçte biridir: V = taban alanı · yükseklik / 3.",
+   "conditions_tr": [
+    "Yükseklik tabana dik uzaklıktır."
+   ],
+   "prerequisites": [
+    "math.volume-surface-area"
+   ],
+   "misconceptions_tr": [
+    "Eğik yüksekliği hacimde kullanmak."
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.contemporary-mathematics",
+     "section": "10.7 Volume and Surface Area",
+     "url": "https://openstax.org/books/contemporary-mathematics/pages/10-7-volume-and-surface-area",
+     "verified_on": "2026-11-25"
+    }
+   ],
+   "levels": [
+    "8-10. sınıf"
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Matematiksel olgunun özgün Türkçe anlatımı; kaynak metni kopyalanmadı veya uyarlanmadı. Kaynak yalnız doğrulama başvurusudur.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "decision": "pending"
+   }
   }
  ]
 }

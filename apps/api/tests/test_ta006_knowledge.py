@@ -7,7 +7,13 @@ from pydantic import ValidationError
 
 from apps.api.app.features.education.base import Subject
 from apps.api.app.features.education.contribution import TeacherContribution
-from apps.api.app.features.education.knowledge import KnowledgeEntry, ReviewerAuthorization, SourceRecord, content_digest
+from apps.api.app.features.education.knowledge import (
+    KnowledgeEntry,
+    ReviewerAuthorization,
+    SourceRecord,
+    content_digest,
+    rights_digest,
+)
 from apps.api.app.features.knowledge import capabilities as caps
 from apps.api.app.features.knowledge import registry as k
 from scripts import dataset_manifest
@@ -30,20 +36,28 @@ def registry():
     return k.default_knowledge()
 
 
+def seal_rights(entry):
+    """TA-008: hak kararı, karar verilen hak kaydının ve içeriğin özetini taşır (yalnız test fikstürü)."""
+    return entry.model_copy(update={"rights": entry.rights.model_copy(update={"decision_digest": rights_digest(entry)})})
+
+
 def approved(entry: KnowledgeEntry, rights: dict | None = None, **review) -> KnowledgeEntry:
     """TA-007: onay bilimsel aşamada, aynı sürümün içerik özetiyle verilir."""
     base = {**REVIEW, "reviewed_version": entry.version, "stage": "scientific", "content_digest": content_digest(entry)}
     data = {**entry.model_dump(), "status": "approved", "reviews": [{**base, **review}]}
     if rights is not None:
         data["rights"] = rights
+        return seal_rights(KnowledgeEntry.model_validate(data))
     return KnowledgeEntry.model_validate(data)
 
 
 def test_balanced_initial_dataset_is_sourced_draft_and_not_runtime_eligible(registry):
     rows = {row["subject"]: row for row in k.coverage(registry)}
     # TA-007: dengeli genişletme (hedef aralık, kota değil): çekirdek branşlarda 40–60, ortaokul fende 15–30.
-    for subject in ("mathematics", "physics", "chemistry", "biology"):
+    for subject in ("physics", "chemistry", "biology"):
         assert 40 <= rows[subject]["total"] <= 60
+    # TA-008: matematik/geometri uzmanlık fazında hedef aralık 150–250 (kota değil).
+    assert 150 <= rows["mathematics"]["total"] <= 250
     assert 15 <= rows["science"]["total"] <= 30
     assert all(entry.status == "draft" and entry.authored_by == "claude-draft" and not entry.reviews
                for entry in registry.entries.values())
@@ -55,7 +69,8 @@ def test_no_fabricated_page_numbers_and_every_locator_points_to_verified_section
     for entry in registry.entries.values():
         for locator in entry.provenance:
             assert locator.page is None
-            assert locator.verified_on == date(2026, 11, 24) and (locator.url or locator.section)
+            # TA-008 eklemeleri 2026-11-25'te sayfa başlığıyla doğrulandı.
+            assert locator.verified_on in {date(2026, 11, 24), date(2026, 11, 25)} and (locator.url or locator.section)
 
 
 def test_biology_is_not_forced_into_equations(registry):

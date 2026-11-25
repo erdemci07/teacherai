@@ -1,4 +1,5 @@
 import json
+from ..mathematics import guidance as mathematics_guidance
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -117,6 +118,8 @@ def build_lesson_generation_context(
             # Acil sıkıştırmada isteğe bağlı olduğu için düşer.
             "curriculum_context": policy.curriculum_context.model_dump(exclude_none=True)
             if policy.curriculum_context and level == "normal" else None,
+            # TA-008: kaynak ifadelerden belirlenimci tanım kümesi koşulları (yoksa anahtar eklenmez).
+            "mathematics_hints": mathematics_guidance.prompt_hints(analysis),
         }
     )
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))

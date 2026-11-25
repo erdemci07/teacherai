@@ -125,7 +125,7 @@ def browse(program_id: str, grade: int, response: Response, user: User):
     outcome_ids = {item.id for item in registry.outcomes_for(program_id, grade)}
     linked = [entry for entry in knowledge.entries.values() if outcome_ids & set(entry.outcome_refs)]
     approved = sum(1 for entry in linked
-                   if not knowledge_registry.runtime_eligibility(entry, knowledge.sources, knowledge.reviewers))
+                   if not knowledge_registry.eligibility(knowledge, entry))
     drafts = len(linked) - approved
     _cache(response)
     return ApiResponse(data=BrowseView(program=_summary(registry, program), grade=grade,

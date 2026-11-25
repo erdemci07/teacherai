@@ -26,6 +26,7 @@ from apps.api.app.features.knowledge import reviewers as reviewer_registry
 from apps.api.app.features.lessons.schemas import Expression, Step
 from apps.api.tests.test_curriculum import CLEAN, DERIVATIVE, Provider, authorize, linear_analysis
 from apps.api.tests.test_question_integrity import analysis
+from apps.api.tests.test_ta006_knowledge import seal_rights
 from scripts import eval_import, eval_pack, review_import, teacher_contributions, teacher_forms
 
 TODAY = date(2026, 11, 24)
@@ -74,7 +75,8 @@ def q(text, expressions=()):
 def test_structure_beats_words_and_is_the_only_certain_topic():
     mapping = topics.map_question(linear_analysis(), Subject.MATHEMATICS)
     assert mapping.status == "structural" and mapping.certain == "dogrusal_denklemler"
-    lexical = topics.map_question(SimpleNamespace(question_text="Üçgenin iç açıları", integrity=None), Subject.MATHEMATICS)
+    # TA-008: taksonomiye "açılar" konusu eklendiği için iç açı sözü artık iki konuya düşer; tek konulu örnek seçildi.
+    lexical = topics.map_question(SimpleNamespace(question_text="Üçgenin çevresi", integrity=None), Subject.MATHEMATICS)
     assert lexical.status == "single" and lexical.certain is None and lexical.keys == ("ucgenler",)
 
 
@@ -125,8 +127,8 @@ def eligible_registry(*entry_ids, mutate=None):
                   "stage": "scientific", "content_digest": content_digest(base)}
         rights = {"source_use": "independent_fact", "basis_tr": "Özgün anlatım.", "decision": "approved",
                   "decided_by": "owner:test-sahip", "decided_on": "2026-12-02"}
-        entries[entry_id] = KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved",
-                                                           "reviews": [review], "rights": rights})
+        entries[entry_id] = seal_rights(KnowledgeEntry.model_validate({**base.model_dump(), "status": "approved",
+                                                                       "reviews": [review], "rights": rights}))
     return knowledge.KnowledgeRegistry(sources=registry.sources, entries=entries, digest=f"t{len(entry_ids)}",
                                        reviewers=reviewers)
 

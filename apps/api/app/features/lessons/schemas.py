@@ -3,6 +3,8 @@ from typing import Annotated, Literal
 from apps.api.app.features.vision.schemas import VisionAnalysis
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from apps.api.app.features.education.mathematics import MathematicalModel
+
 
 class Expression(BaseModel):
     model_config=ConfigDict(extra="forbid")
@@ -33,6 +35,8 @@ class LessonContent(BaseModel):
     final_answer: str=Field(min_length=1)
     final_answer_expressions: list[Expression]=Field(min_length=1)
     takeaway: str=Field(min_length=1)
+    # TA-008: sağlayıcının önerdiği yapılandırılmış model (sözel problem/geometri). Sunucu bağımsız denetler.
+    mathematical_model: MathematicalModel|None=None
     @model_validator(mode="after")
     def sequential_steps(self):
         if [x.id for x in self.steps] != [f"step_{i}" for i in range(1,len(self.steps)+1)]: raise ValueError("step IDs must be sequential")
@@ -55,6 +59,59 @@ class StepResponse(BaseModel):
     explanation: str
     expressions: list[ExpressionResponse]
     visual_reference: str|None
+class WordQuantityResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    symbol: str
+    name_tr: str
+    unit: str|None
+    value: str|None
+    discrete: bool
+    origin: Literal["stated","derived","assumed","visual_uncertain"]
+class WordConstraintResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    symbol: str
+    kind: Literal["positive","nonnegative","integer","natural"]
+class WordProblemResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    problem_type: Literal["age","motion","work_rate","mixture","percent","profit_loss","ratio","linear_system","data_table","scheduling","other"]
+    quantities: list[WordQuantityResponse]
+    relations: list[str]
+    constraints: list[WordConstraintResponse]
+    objective: str
+class GeometryFactResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    kind: Literal["segment_length","angle_measure","equal_segments","equal_angles","parallel","perpendicular","right_angle","collinear","midpoint","point_on_segment","triangle","polygon","circle","point_on_circle","tangent","similar","congruent","coordinate","area"]
+    points: list[str]
+    other: list[str]
+    value: str|None
+    origin: Literal["stated","marked","derived","visual_uncertain","construction"]
+class ConstructionResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    kind: Literal["altitude","segment","extension","parallel_line","midpoint","radius","perpendicular","angle_bisector"]
+    references: list[str]
+    new_points: list[str]
+    establishes: list[str]
+    requires_proof: list[str]
+    purpose_tr: str
+class GeometryTargetResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    kind: Literal["length","angle","area","perimeter","ratio","coordinate"]
+    points: list[str]
+class GeometryResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    points: list[str]
+    facts: list[GeometryFactResponse]
+    constructions: list[ConstructionResponse]
+    target: GeometryTargetResponse|None
+    schematic: bool
+class MathematicalModelResponse(BaseModel):
+    """TA-008: kısıtsız düz tipler (Anthropic izdüşümü gerekmez); sunucuda özgün sözleşmeyle doğrulanır."""
+    model_config=ConfigDict(extra="forbid")
+    kind: Literal["word_problem","geometry"]
+    word_problem: WordProblemResponse|None
+    geometry: GeometryResponse|None
 class LessonContentResponse(BaseModel):
     model_config=ConfigDict(extra="forbid")
     question_understanding: str
@@ -73,6 +130,7 @@ class LessonContentResponse(BaseModel):
     final_answer: str
     final_answer_expressions: list[ExpressionResponse]
     takeaway: str
+    mathematical_model: MathematicalModelResponse|None=None
 class LessonDraftResponse(BaseModel):
     model_config=ConfigDict(extra="forbid")
     learning_objectives: list[str]

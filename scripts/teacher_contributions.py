@@ -100,11 +100,62 @@ def training_allowed(record: ContributionRecord | None, contribution: TeacherCon
     return contribution.consent_model_training and not withdrawn
 
 
+SNAPSHOT = ROOT / "apps/api/app/features/knowledge/data/contribution_publications.json"
+
+
+def snapshot(register: ContributionRegister | None = None, reviewers=None) -> dict:
+    """TA-008: çalışma zamanının okuduğu değişmez yayın anlık görüntüsü. Yalnız engelsiz yayımlanmış katkılar
+    ``published`` olur; geri çekilen, reddedilen, yerine başkası geçen veya düzeltme istenen katkılar durumlarıyla
+    yazılır ve çalışma zamanında uygunluğu düşürür. Süren (yayımlanmamış) katkılar yazılmaz."""
+    register = register or load_register()
+    records = []
+    for record in sorted(register.records, key=lambda item: item.contribution_id):
+        contribution = TeacherContribution.model_validate_json(registry_v2._read(FOLDER / record.path))
+        last = record.events[-1]
+        if last.stage in TERMINAL_STAGES or last.stage == "revision_requested":
+            status, published_by = last.stage, None
+        elif last.stage == "published" and not publication_blockers(record, contribution, reviewers):
+            status, published_by = "published", last.by
+        else:
+            continue
+        records.append({"contribution_id": record.contribution_id, "contributor": contribution.contributor,
+                        "subject": contribution.subject.value, "content_digest": contribution_digest(contribution),
+                        "status": status, "decided_on": last.on.isoformat(), "published_by": published_by,
+                        "consent_use": contribution.consent_use,
+                        "consent_model_training": contribution.consent_model_training and status == "published"})
+    register_bytes = registry_v2._read(REGISTER) if REGISTER.exists() else b""
+    dates = [item["decided_on"] for item in records]
+    return {"schema_name": "teacherai.contribution_publications", "version": "1.0.0",
+            "generated_on": max(dates) if dates else None,
+            "register_digest": hashlib.sha256(register_bytes).hexdigest() if register_bytes else None,
+            "records": records}
+
+
+def _snapshot_text(data: dict) -> str:
+    return json.dumps(data, ensure_ascii=False, indent=1) + "\n"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["validate", "validate-all", "status"])
+    parser.add_argument("mode", choices=["validate", "validate-all", "status", "snapshot"])
+    parser.add_argument("--write", action="store_true")
+    parser.add_argument("--check", action="store_true")
     parser.add_argument("path", nargs="?", type=Path)
     args = parser.parse_args(argv)
+    if args.mode == "snapshot":
+        text = _snapshot_text(snapshot())
+        if args.check:
+            current = SNAPSHOT.read_text(encoding="utf-8") if SNAPSHOT.exists() else ""
+            if json.loads(current or "{}") != json.loads(text):
+                raise SystemExit("Katkı yayın anlık görüntüsü güncel değil: python -m scripts.teacher_contributions snapshot --write")
+            print("Katkı yayın anlık görüntüsü güncel.")
+            return
+        if args.write:
+            SNAPSHOT.write_text(text, encoding="utf-8", newline="\n")
+            print(f"Yazıldı: {SNAPSHOT.relative_to(ROOT)}")
+        else:
+            print(text)
+        return
     if args.mode == "status":
         register = load_register()
         for record in register.records:

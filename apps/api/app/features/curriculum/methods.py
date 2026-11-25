@@ -36,7 +36,7 @@ from . import registry_v2, topics
 
 DIGEST_FIELDS = ("subject", "topic", "framework", "program_ids", "grades", "prerequisites", "applicable_when",
                  "allowed_operations", "forbidden_operations", "unsuitable_when", "preferred_representations",
-                 "alternatives", "outcome_ids")
+                 "alternatives", "outcome_ids", "contribution_id", "contribution_digest")
 
 
 def policy_digest(policy: MethodPolicyV2) -> str:
@@ -52,9 +52,20 @@ def all_policies(curriculum: registry_v2.CurriculumRegistryV2 | None = None) -> 
     return [*registry_v2.migrate_v1_policies(legacy.default_registry()), *curriculum.catalog.policies]
 
 
-def inactive_reason(policy: MethodPolicyV2, reviewers) -> str | None:
+def inactive_reason(policy: MethodPolicyV2, reviewers, publications=None) -> str | None:
     if policy.status != "approved":
         return "draft"
+    if policy.contribution_id is not None:
+        # TA-008: geri çekilen, reddedilen veya yayımlanmamış katkıdan türetilen politika etkin olmaz.
+        publication = (publications or {}).get(policy.contribution_id)
+        if publication is None:
+            return "contribution_unpublished"
+        if publication.status != "published" or not publication.consent_use:
+            return f"contribution_{publication.status}" if publication.status != "published" else "contribution_consent_missing"
+        if policy.contribution_digest != publication.content_digest:
+            return "contribution_digest_mismatch"
+        if policy.approved_by == publication.contributor:
+            return "not_independent"
     if policy.approved_on is None or policy.approval_digest is None:
         return "approval_incomplete"
     if not reviewer_registry.authorized(reviewers, policy.approved_by, "pedagogical", policy.subject, "teacher",
@@ -101,8 +112,12 @@ def program_candidates(resolution: CurriculumResolution | None) -> tuple[str | N
 
 
 def select(resolution: CurriculumResolution | None, mapping: topics.TopicMapping, subject: Subject, grade: int, *,
-           curriculum=None, reviewers=None) -> PolicySet:
+           curriculum=None, reviewers=None, publications=None) -> PolicySet:
     reviewers = reviewer_registry.default_reviewers() if reviewers is None else reviewers
+    if publications is None:
+        from ..knowledge import registry as knowledge_registry
+
+        publications = knowledge_registry.default_knowledge().publications
     policies = all_policies(curriculum)
     certain = mapping.certain
     candidates = mapping.keys
@@ -112,7 +127,7 @@ def select(resolution: CurriculumResolution | None, mapping: topics.TopicMapping
         rows = applicable(policies, subject=subject, program_id=program_id, grade=grade, topic_keys=candidates)
         active = []
         for policy in rows:
-            reason = inactive_reason(policy, reviewers)
+            reason = inactive_reason(policy, reviewers, publications)
             if reason is None:
                 active.append(policy)
                 active_all[policy.id] = policy

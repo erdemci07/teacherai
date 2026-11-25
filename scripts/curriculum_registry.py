@@ -1,6 +1,6 @@
 """Müfredat Kaydı v2 doğrulaması ve kapsam raporu (TA-006). Ağ ve sağlayıcı çağrısı yoktur.
 
-    python -m scripts.curriculum_registry          # kaydı doğrular, docs/curriculum/TA-007-coverage.md yazar
+    python -m scripts.curriculum_registry          # kaydı doğrular, docs/curriculum/TA-008-coverage.md yazar
     python -m scripts.curriculum_registry --check  # doğrular; rapor güncel değilse başarısız olur
 """
 
@@ -14,7 +14,7 @@ from apps.api.app.features.curriculum import registry as legacy
 from apps.api.app.features.curriculum import registry_v2
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs/curriculum/TA-007-coverage.md"
+REPORT = ROOT / "docs/curriculum/TA-008-coverage.md"
 SUBJECT_TR = {"mathematics": "Matematik", "science": "Fen Bilimleri", "physics": "Fizik", "chemistry": "Kimya",
               "biology": "Biyoloji"}
 FRAMEWORK_TR = {"meb_2018": "MEB 2018", "tymm": "Maarif Modeli (2026)"}
@@ -29,7 +29,7 @@ def render(registry: registry_v2.CurriculumRegistryV2) -> str:
     total = sum(row["actual"] for row in rows)
     disciplines = Counter(item.discipline.value for item in registry.outcomes.values())
     lines = [
-        "# TA-007 müfredat kapsam raporu",
+        "# TA-008 müfredat kapsam raporu",
         "",
         "Bu dosya `python -m scripts.curriculum_registry` ile üretilir; elle düzenlenmez. CI `--check` ile eskimiş raporu reddeder.",
         "",

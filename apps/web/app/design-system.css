@@ -307,3 +307,14 @@ body:has(.taBoardFrame[data-expanded="true"]) { overflow: hidden; }
 
 /* Ana sayfa ızgarasında alan bölümü tam genişlik kaplar. */
 .mobileHome .taHomeSubjects { grid-column: 1 / -1; width: auto; margin: 0; }
+
+/* TA-008: tahta matematik öğeleri */
+.boardNumberLine { margin: var(--ta-space-3) 0; overflow-x: auto; }
+.boardNumberLine svg { width: 100%; max-width: 520px; height: auto; }
+.boardNumberLine .axis { stroke: var(--ta-muted); stroke-width: 1; }
+.boardNumberLine .range { stroke: var(--ta-green); stroke-width: 3; }
+.boardNumberLine circle.closed { fill: var(--ta-green); }
+.boardNumberLine circle.open { fill: var(--ta-surface); stroke: var(--ta-green); stroke-width: 1.5; }
+.boardNumberLine text { font-size: 7px; fill: var(--ta-charcoal); }
+.boardNumberLine figcaption { font-size: 0.9rem; overflow-wrap: anywhere; }
+.board-geometry_facts ul { margin: var(--ta-space-2) 0 0; padding-left: var(--ta-space-4); }

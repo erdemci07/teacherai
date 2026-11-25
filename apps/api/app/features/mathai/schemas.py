@@ -2,6 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from ..education.mathematics import MathematicsReport
 from ..education.reasoning import TargetResolution
 
 
@@ -15,6 +16,8 @@ class VerificationCheck(BaseModel):
 class GraphData(BaseModel):
     expression:str; variable:str="x"; roots:list[float]=Field(default_factory=list); y_intercept:float|None=None
     critical_points:list[float]=Field(default_factory=list); sample_points:list[tuple[float,float]]=Field(default_factory=list)
+    # TA-008: tanımsız noktalar; çizimde grafik bu noktalarda birleştirilmez. Örnek noktalar kanıt değildir.
+    discontinuities:list[float]=Field(default_factory=list)
 class ChoiceMatch(BaseModel):
     """Seçenek uzlaştırmasının açık kaydı. En yakın değer seçilmez; eşleşme yalnızca kesin eşdeğerliktir."""
     model_config=ConfigDict(extra="forbid")
@@ -32,3 +35,5 @@ class VerificationResult(BaseModel):
     choice_match:ChoiceMatch|None=None
     # TA-004: istenen hedef, verilen model, ara değer, öneri ve bağımsız değer ayrı kaydı. Eski kayıtlarda yoktur.
     target:TargetResolution|None=None
+    # TA-008: matematik uzmanlığı raporu (aynı yalıtılmış işçide). Durumu yalnız zayıflatabilir.
+    mathematics:MathematicsReport|None=None

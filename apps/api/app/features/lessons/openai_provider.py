@@ -70,6 +70,7 @@ class OpenAILessonProvider:
             raise error
 
         context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
+        sent_levels = [context.metrics.context_compaction_level]
         client = self._client()
         try:
             response = await self._request_lesson(client, context, "lessons.correction" if correction_feedback else "lessons.initial")
@@ -90,6 +91,7 @@ class OpenAILessonProvider:
                     emergency.metrics.size_bytes,
                 )
                 context = emergency  # köken kaydı: gerçekten gönderilen bağlam düzeyi
+                sent_levels.append(emergency.metrics.context_compaction_level)
                 try:
                     response = await self._request_lesson(client, emergency, "lessons.context_retry")
                 except BadRequestError as retry_exc:
@@ -134,7 +136,8 @@ class OpenAILessonProvider:
 
         # Normalizasyon gateway içinde çalışır; başarısızlığı invalid_output olarak sınıflanır.
         return LessonProviderResult(response.output_parsed, self.name, self.model,
-                                    context_level=context.metrics.context_compaction_level)
+                                    context_level=context.metrics.context_compaction_level,
+                                    context_levels=tuple(sent_levels))
 
     async def _request_lesson(self, client: AsyncOpenAI, context: BuiltLessonContext, purpose: str = "lessons.initial"):
         logger.info(
@@ -234,6 +237,7 @@ class AnthropicLessonProvider(OpenAILessonProvider):
         if not self.api_key:
             raise LessonProviderConfigurationError
         context = self._build_budgeted_context(analysis, correction_feedback, teaching_context, "normal")
+        sent_levels = [context.metrics.context_compaction_level]
         purpose = "lessons.correction" if correction_feedback else "lessons.initial"
         try:
             response = await self._request_lesson(None, context, purpose)
@@ -250,6 +254,7 @@ class AnthropicLessonProvider(OpenAILessonProvider):
                            "first_size=%s retry_size=%s", request_id or "unknown", context.metrics.size_bytes,
                            emergency.metrics.size_bytes)
             context = emergency  # köken kaydı: gerçekten gönderilen bağlam düzeyi
+            sent_levels.append(emergency.metrics.context_compaction_level)
             try:
                 response = await self._request_lesson(None, emergency, "lessons.context_retry")
             except AIOutcomeError as retry:
@@ -260,7 +265,8 @@ class AnthropicLessonProvider(OpenAILessonProvider):
                     raise
                 raise mapped from retry
         return LessonProviderResult(response.output_parsed, self.name, self.model,
-                                    context_level=context.metrics.context_compaction_level)
+                                    context_level=context.metrics.context_compaction_level,
+                                    context_levels=tuple(sent_levels))
 
 
 def _failure(exc: AIOutcomeError) -> str | None:
