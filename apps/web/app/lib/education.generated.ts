@@ -85,6 +85,23 @@ export type ChoiceMatch = {
   matched_labels?: Array<string>;
 };
 
+export type CircuitElement = {
+  id: string;
+  kind: "resistor" | "bulb" | "battery" | "switch" | "ammeter" | "voltmeter" | "wire";
+  nodes: Array<string>;
+  value?: string | null;
+  internal_resistance?: string | null;
+  positive_node?: string | null;
+  closed?: boolean | null;
+  connection_certain?: boolean;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
+};
+
+export type CircuitModel = {
+  nodes: Array<string>;
+  elements: Array<CircuitElement>;
+};
+
 export type Claim = {
   id: string;
   text: string;
@@ -93,7 +110,7 @@ export type Claim = {
   relation: "increases" | "decreases" | "no_change" | "differs" | "equal";
   causal?: boolean;
   groups?: Array<string>;
-  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
 };
 
 export type ClarificationRecord = {
@@ -108,9 +125,24 @@ export type ClarificationRequest = {
   selection: string;
 };
 
+export type Collision = {
+  id: string;
+  bodies: Array<string>;
+  kind?: "elastic" | "perfectly_inelastic" | "inelastic" | "explosion" | "unknown";
+  velocities_before?: Array<string | null>;
+  velocities_after?: Array<string | null>;
+  external_impulse?: "none_stated" | "negligible_assumed" | "present" | "unknown";
+};
+
 export type Condition = {
   variable: string;
   value: string;
+};
+
+export type ConditionClaim = {
+  condition: string;
+  state: "satisfied" | "violated" | "unknown";
+  basis: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
 };
 
 export type ContextAttempt = {
@@ -244,7 +276,7 @@ export type Entity = {
   kind: "object" | "body" | "vehicle" | "planet" | "field" | "charge" | "circuit_element" | "lens" | "particle" | "species" | "substance" | "solution" | "apparatus" | "cell" | "organelle" | "organism" | "population" | "structure" | "process_stage" | "gene" | "point" | "segment" | "angle" | "region" | "axis" | "other";
   label?: string | null;
   figure?: string | null;
-  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
 };
 
 export type EvidenceRef = {
@@ -312,6 +344,17 @@ export type ForbiddenOperation = {
   reason: string;
 };
 
+export type ForceSpec = {
+  id: string;
+  kind: "gravity" | "normal" | "tension" | "static_friction" | "kinetic_friction" | "applied" | "spring" | "electric" | "magnetic" | "buoyancy" | "drag" | "other";
+  on: string;
+  by?: string | null;
+  magnitude?: string | null;
+  direction: "+x" | "-x" | "+y" | "-y" | "up_incline" | "down_incline" | "angle";
+  angle_deg?: string | null;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
+};
+
 export type Grade = {
   value: number;
   origin: "declared" | "profile";
@@ -361,6 +404,12 @@ export type KnowledgeRef = {
   id: string;
   version: number;
   content_digest: string;
+};
+
+export type LawUse = {
+  law: string;
+  system?: Array<string>;
+  conditions?: Array<ConditionClaim>;
 };
 
 export type LessonIntent = {
@@ -437,6 +486,22 @@ export type ModeSupport = {
   reason: "available" | "planned" | "subject_generation_unavailable";
 };
 
+export type MotionPhase = {
+  id: string;
+  entity: string;
+  axis?: "horizontal" | "vertical" | "incline";
+  acceleration_kind?: "constant" | "zero" | "varying" | "unknown";
+  acceleration_basis?: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed" | null;
+  initial_velocity?: string | null;
+  final_velocity?: string | null;
+  displacement?: string | null;
+  distance?: string | null;
+  duration?: string | null;
+  acceleration?: string | null;
+  graph?: string | null;
+  free_fall?: boolean;
+};
+
 export type NarrationSegment = {
   id: string;
   order: number;
@@ -468,7 +533,7 @@ export type NumberAnswer = {
 export type Observation = {
   id: string;
   statement: string;
-  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
   evidence?: Array<EvidenceRef>;
   figure?: string | null;
   source?: string | null;
@@ -483,6 +548,38 @@ export type Outcome = {
   outcome_text_tr?: string | null;
   source: CurriculumSource;
   source_status: "sourced" | "pending";
+};
+
+export type PhysicalBody = {
+  entity: string;
+  mass?: string | null;
+  surface?: string | null;
+};
+
+export type PhysicsModel = {
+  domain: "kinematics" | "dynamics" | "energy" | "momentum" | "dc_circuit" | "other";
+  sign_convention?: string | null;
+  bodies?: Array<PhysicalBody>;
+  surfaces?: Array<Surface>;
+  forces?: Array<ForceSpec>;
+  strings?: Array<StringLink>;
+  phases?: Array<MotionPhase>;
+  collisions?: Array<Collision>;
+  circuit?: CircuitModel | null;
+  laws?: Array<LawUse>;
+  equations?: Array<string>;
+  target?: PhysicsTarget | null;
+};
+
+export type PhysicsTarget = {
+  quantity?: string | null;
+  kind: string;
+  entity?: string | null;
+  state?: string | null;
+  representation?: "magnitude" | "component" | "unspecified";
+  unit?: UnitSpec | null;
+  element?: string | null;
+  between?: Array<string>;
 };
 
 export type PolicyCheck = {
@@ -543,9 +640,15 @@ export type QuantityValue = {
   unit?: UnitSpec | null;
   significant_digits?: number | null;
   direction?: "none" | "positive" | "negative" | "left" | "right" | "up" | "down" | "into" | "out_of" | "unclear";
-  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
   evidence?: Array<EvidenceRef>;
   entity?: string | null;
+  kind?: string | null;
+  state?: string | null;
+  representation?: "magnitude" | "component" | "unspecified";
+  constant_source?: string | null;
+  derivation?: string | null;
+  confidence?: number | null;
 };
 
 export type QuestionIntent = {
@@ -586,10 +689,10 @@ export type Relation = {
   subject: string;
   object: string;
   figure?: string | null;
-  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived";
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
   direction_clear?: boolean;
   interpretation?: string | null;
-  interpretation_provenance?: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | null;
+  interpretation_provenance?: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed" | null;
 };
 
 export type SchemaIdentity = {
@@ -621,6 +724,7 @@ export type ScientificProblemModel = {
   premises?: Array<Premise>;
   uncertainties?: Array<string>;
   notes?: Array<string>;
+  physics?: PhysicsModel | null;
 };
 
 export type SourceExpression = {
@@ -657,7 +761,24 @@ export type SourceUncertainty = {
   note?: string | null;
 };
 
+export type StringLink = {
+  id: string;
+  bodies: Array<string>;
+  over_pulley?: boolean;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
+};
+
 export type Subject = "mathematics" | "geometry" | "physics" | "chemistry" | "biology" | "science" | "unknown";
+
+export type Surface = {
+  id: string;
+  kind: "horizontal" | "incline" | "vertical";
+  angle_deg?: string | null;
+  friction?: "none" | "present" | "unknown";
+  mu_static?: string | null;
+  mu_kinetic?: string | null;
+  provenance: "source_text" | "visual_reading" | "student_confirmed" | "background_knowledge" | "modeling_assumption" | "inferred" | "derived" | "problem_convention" | "standard_constant" | "provider_proposed";
+};
 
 export type Table = {
   headers: Array<string>;
