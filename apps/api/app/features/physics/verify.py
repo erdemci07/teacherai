@@ -189,6 +189,10 @@ def _graph(problem, model, target, ctx, add) -> mechanics.Solution | None:
         if target is not None and target.kind in {"displacement", "distance"}:
             sol = mechanics.Solution(status="solved", reason="graph_area", laws=[])
             sol.value = facts.displacement if target.kind == "displacement" else facts.distance
+            if facts.displacement != facts.distance:  # yanılgı izi: alanı yol (veya yolu yer değiştirme) saymak
+                sol.derived["misconception_value"] = (
+                    "graph_area_as_distance" if target.kind == "distance" else "distance_as_displacement",
+                    facts.displacement if target.kind == "distance" else facts.distance)
             sol.steps.append("Hız–zaman grafiğinin altındaki alan: yer değiştirme işaretli, alınan yol |v| alanıdır.")
             return sol
     return None
@@ -214,7 +218,7 @@ def _answer(report, solution, problem, target, claims, add):
             continue
         quantity = symbols.get(parsed.symbol or "")
         if quantity is not None and target.quantity and quantity.id != target.quantity:
-            outcomes.append(("mismatch", ("intermediate_not_requested",), text))
+            outcomes.append(("mismatch", ("intermediate_not_requested",), text, None))
             continue
         claimed = parsed.typed
         if quantity is not None:
@@ -222,7 +226,7 @@ def _answer(report, solution, problem, target, claims, add):
         policy = quantities.Policy(mode="exact" if solution.exact and not claimed.decimals else "claim_precision",
                                    unit_when_missing=unit)
         result = quantities.compare(expected, claimed, policy)
-        outcomes.append((result.status, result.reasons, text))
+        outcomes.append((result.status, result.reasons, text, claimed))
     if not outcomes:
         report.answer = "absent" if not claims else "undecidable"
         add("answer", "answer", "not_checked", "claim_unparsed" if claims else "claim_absent")
@@ -238,9 +242,20 @@ def _answer(report, solution, problem, target, claims, add):
         reason = "intermediate_not_requested" if "intermediate_not_requested" in bad[1] else "answer_mismatch"
         add("answer", "answer", "failed", reason,
             f"Bağımsız değer {report.computed}; son cevap {bad[2]} ({', '.join(bad[1])}).")
+        trace = solution.derived.get("misconception_value")
+        claimed = bad[3]
+        if trace and claimed is not None and claimed.value is not None and _same_value(claimed, trace[1], unit):
+            # Yanılgı adlandırılır; maddi sayım yukarıdaki cevap uyuşmazlığıdır (çift sayılmaz).
+            add("misconception", "answer", "partially_checked", f"misconception_{trace[0]}",
+                "Cevap bilinen bir yanılgıyla elde edilen değerle aynı.")
         return
     report.answer = "matched"
     add("answer", "answer", "passed", "answer_matches_target", f"Bağımsız değer {report.computed}.")
+
+
+def _same_value(claimed, value: Fraction, unit) -> bool:
+    got = claimed.value if claimed.dim is not None or unit is None else claimed.value * unit.scale
+    return abs(got - value) <= max(abs(value) * Fraction(1, 10**6), Fraction(1, 10**9))
 
 
 def _dimensions(problem, add):

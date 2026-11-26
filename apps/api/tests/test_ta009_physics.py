@@ -300,3 +300,55 @@ def test_physics_flow_through_the_endpoint_is_verified(monkeypatch):
     response = post(app, "u_" + uuid4().hex)
     assert response.status_code == 200, response.text
     assert response.json()["data"]["verification"]["physics"]["capability"] == "verified" and len(seen) == 1
+
+
+# --- bilgi kaydı, haklar, yanılgılar ve yöntem politikası --------------------------------------------------------
+
+def test_every_physics_formula_record_carries_machine_checkable_conditions():
+    from apps.api.app.features.knowledge import registry as knowledge
+
+    registry = knowledge.default_knowledge()
+    physics = [e for e in registry.entries.values() if e.subject.value == "physics"]
+    assert len(physics) >= 60 and all(e.status == "draft" and not e.reviews for e in physics)
+    for entry in physics:
+        if entry.representation and "=" in entry.representation or entry.representation and "\le" in entry.representation:
+            assert entry.applicability_law in laws.LAWS, entry.id
+            assert laws.LAWS[entry.applicability_law].conditions, entry.id
+    for law in laws.LAWS.values():
+        assert law.knowledge is None or law.knowledge in registry.entries, law.id
+
+
+def test_commercial_restrictions_are_recorded_per_source():
+    from apps.api.app.features.knowledge import registry as knowledge
+
+    sources = knowledge.default_knowledge().sources
+    for key in ("openstax.university-physics-volume-1", "openstax.college-physics-2e", "mit.ocw"):
+        perms = sources[key].permissions
+        assert sources[key].license_verified and "NC" in sources[key].license
+        assert perms.commercial_use == "not_allowed" and perms.model_training == "not_allowed"
+        assert perms.ingestion == "not_allowed"
+    assert sources["serway-jewett-peroomian.physics-11e"].isbn == "9798214193151"
+    assert sources["serway-jewett-peroomian.physics-11e"].permissions.ingestion == "not_allowed"
+
+
+def test_misconceptions_name_a_real_detection_or_are_documentation_only():
+    from apps.api.app.features.physics.misconceptions import MISCONCEPTIONS
+    from apps.api.app.features.knowledge import registry as knowledge
+
+    entries = knowledge.default_knowledge().entries
+    reasons = set()
+    for case in json.loads(physics_matrix.CASES.read_text(encoding="utf-8"))["cases"]:
+        report = physics_matrix.run_case(case)
+        reasons |= {c.reason for c in report.checks} | set(report.answer_reasons)
+    for item in MISCONCEPTIONS:
+        assert item.status == "draft" and all(record in entries for record in item.records)
+        if item.cause_identified:
+            assert item.detection in reasons, item.id  # tuzak setinde gerçekten yakalanır
+    assert any(item.documentation_only for item in MISCONCEPTIONS)
+
+
+def test_physics_method_policy_is_a_draft_and_restricts_nothing():
+    raw = json.loads((physics_matrix.ROOT / "apps/api/app/features/curriculum/data/catalog.json").read_text(encoding="utf-8"))
+    policy = next(p for p in raw["policies"] if p["id"] == "physics.lise.genel")
+    assert policy["status"] == "draft" and policy["authored_by"] == "claude-draft" and "approved_by" not in policy
+    assert not [p for p in raw["policies"] if p["subject"] == "physics" and p["status"] == "approved"]  # kısıt uygulanmaz

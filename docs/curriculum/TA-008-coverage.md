@@ -2,10 +2,10 @@
 
 Bu dosya `python -m scripts.curriculum_registry` ile üretilir; elle düzenlenmez. CI `--check` ile eskimiş raporu reddeder.
 
-- Kayıt sürümü: `2.0.0+f9dbcc1e22c1`
+- Kayıt sürümü: `2.0.0+69eff6144c4d`
 - Program sürümü: 16 · başlık (ünite/tema/konu): 919 · kazanım/öğrenme çıktısı: 2197
 - Disiplin dağılımı: biology 261, chemistry 355, geometry 195, mathematics 467, physics 555, science 364
-- Yöntem politikası: 5 (hepsi `draft`; v1'den göç)
+- Yöntem politikası: 6 (hepsi `draft`; v1'den göç)
 
 Sütunlar: **beklenen** resmî sayı tablosundan okunabildiyse yazılır, okunamadıysa `bilinmiyor` kalır. **eksik** yalnız beklenen
 sayı biliniyorsa hesaplanır. **resmî metin** TA-005'ten korunan birebir kazanım metnidir (hak incelemesi bekliyor).

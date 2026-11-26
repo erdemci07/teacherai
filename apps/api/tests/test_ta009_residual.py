@@ -43,6 +43,13 @@ def test_value_is_not_matched_inside_a_larger_number():
     assert result.rejected == {"ab": "provider_proposed"}
 
 
+def test_proposed_value_is_not_matched_inside_the_quoted_number():
+    """TA-008B tabanında kabul ediliyordu: değer denetimi alt dizeydi ("5" ⊂ "15")."""
+    result = run({"points": ["A", "B", "C"], "facts": [f("a", "angle_measure", ["A", "B", "C"], value="5",
+                                                        evidence="B açısı 15 derece")]}, "ABC üçgeninde B açısı 15 derecedir.")
+    assert result.rejected == {"a": "quote_does_not_assert_fact"}
+
+
 def test_segment_label_is_not_matched_inside_unrelated_notation():
     assert not quotes.has_label(quotes.tokens("ABC çevresi 6"), "AB", "BA")
     result = run({"points": ["A", "B", "C"], "facts": [f("ab", "segment_length", ["A", "B"], value="6",

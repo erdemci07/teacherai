@@ -344,6 +344,9 @@ def _single(body: _Body, values, facts, g, at_rest, sol: Solution) -> dict:
         sol.derived["sliding"] = "static"
         sol.steps.append(f"Kayma denetimi: |F_sürükleyen| = {_fmt(abs(drive))} N ≤ μ_s N = {_fmt(mu_s * normal)} N → cisim kaymaz")
         a, friction = Fraction(0), abs(drive)
+        # Yanılgı izi: kaymadığı hâlde kinetik sürtünmeyle bulunan ivme (TA-009 §15).
+        sol.derived["misconception_value"] = ("kinetic_friction_while_static",
+                                              (drive - (1 if drive > 0 else -1) * mu_k * normal) / body.mass)
     else:
         sol.laws.append("dynamics.friction")
         sol.derived["sliding"] = "kinetic"
@@ -390,6 +393,8 @@ def _pair(bodies: dict[str, _Body], link, values, facts, g, at_rest, sol: Soluti
         sol.derived["sliding"] = "static"
         sol.steps.append(f"Kayma denetimi: |sürükleyen| = {_fmt(abs(drive))} N ≤ μ_s N = {_fmt(mu_s * normal)} N → sistem durur")
         a = Fraction(0)
+        sol.derived["misconception_value"] = ("kinetic_friction_while_static",
+                                              (drive - (1 if drive > 0 else -1) * mu_k * normal) / total)
     else:
         sol.laws.append("dynamics.friction")
         sol.derived["sliding"] = "kinetic"
