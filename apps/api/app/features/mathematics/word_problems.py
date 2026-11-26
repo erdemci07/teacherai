@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from fractions import Fraction
 
 import sympy as sp
 
 from ..education.mathematics import MathCheck, WordProblemModel
+from ..reasoning import quotes
 from . import expr
 
 MAX_SYMBOLS = 8
@@ -74,12 +76,11 @@ def analyze(model: WordProblemModel, question_text: str) -> WordResult:
     # Sadakat (TA-008B): bilinen değerin metinde geçmesi anlamını kanıtlamaz. Değer, metinden birebir alıntıyla
     # (``evidence``) bağlanırsa "dayanaklı", yalnız sayı metinde varsa "anlamı doğrulanmamış" sayılır.
     numbers = _numbers_in(question_text)
-    text = _norm(question_text)
     missing, unanchored = [], []
     for item, value in stated:
         if value not in numbers and -value not in numbers:
             missing.append(item.symbol)
-        elif not (item.evidence and _norm(item.evidence) in text and value in _numbers_in(item.evidence)):
+        elif not _anchored(item.evidence, question_text, value):
             unanchored.append(item.symbol)
     if missing:
         status, reason = "failed", "value_not_in_source"
@@ -154,6 +155,18 @@ def _admissible(solution, symbols, constraints, discrete) -> bool:
         if "natural" in kinds and value < 0:
             return False
     return True
+
+
+def _anchored(evidence: str | None, question_text: str, value) -> bool:
+    """TA-009 §3.1: alıntı kaynakta belirteç dizisi olarak geçmeli (``5 elma`` ``15 elma`` içinde değil) ve soru veya
+    olumsuzlama olmayan bir yan cümlesi bu sayıyı taşımalı."""
+    if not evidence or not quotes.contains(question_text or "", evidence):
+        return False
+    try:
+        wanted = Fraction(str(sp.nsimplify(value)))
+    except (TypeError, ValueError):
+        return False
+    return any(wanted in quotes.numbers(clause) or -wanted in quotes.numbers(clause) for clause in quotes.asserting(evidence))
 
 
 def _norm(text: str) -> str:

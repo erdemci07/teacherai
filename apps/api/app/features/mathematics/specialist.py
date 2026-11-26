@@ -15,6 +15,7 @@ TA-008B ayrımları:
 from __future__ import annotations
 
 import re
+from fractions import Fraction
 from time import perf_counter
 
 import sympy as sp
@@ -24,6 +25,8 @@ from ..education.base import Subject
 from ..education.mathematics import GeometryFactStatus, MathCheck, MathematicsReport
 from ..integrity import expression as tree
 from . import alternatives, expr, functions, geometry, guidance, sets, theorems, transforms, trig, word_problems
+from . import domain as domains
+from ..reasoning import quantities, quotes, units
 
 TIME_BUDGET_SECONDS = 2.5
 MAX_CHECKS = 64
@@ -156,7 +159,8 @@ def analyze(plan, verification=None, deadline: float | None = None) -> Mathemati
             return fn()
         except FAILURE_TYPES as exc:
             partial = True
-            add(MathCheck(id=f"{name}_error", area="target", status="unsupported", reason="analysis_unsupported",
+            reason = "domain_conditions_truncated" if isinstance(exc, domains.DomainOverflow) else "analysis_unsupported"
+            add(MathCheck(id=f"{name}_error", area="target", status="unsupported", reason=reason,
                           detail=type(exc).__name__))
             return None
 
@@ -253,7 +257,8 @@ def analyze(plan, verification=None, deadline: float | None = None) -> Mathemati
                     _answer_check(plan, result.objective_values[0], "word", "word_answer_mismatch",
                                   bound=_objective_bound(model.word_problem, target), add=add)
         if model.geometry is not None:
-            source = geometry.Source(_source_text(analysis), _has_figure(analysis))
+            source = geometry.Source(_source_text(analysis), _has_figure(analysis), _observations(analysis),
+                                     _confirmed(analysis))
             result = guarded("geometry", lambda: geometry.analyze(model.geometry, source))
             if result is not None:
                 accepted = result.accepted
@@ -269,8 +274,14 @@ def analyze(plan, verification=None, deadline: float | None = None) -> Mathemati
                                   detail="Soru metninden alınan olgular kendi aralarında çelişiyor; çözüm doğrulanamaz."))
                 report["model_status"] = "accepted" if result.determinacy in {"determined", "consistent"} else "rejected"
                 if result.determinacy == "determined" and len(result.target_values) == 1:
+                    target_kind = model.geometry.target.kind if model.geometry.target else "length"
+                    visual = any(result.accepted.get(f) in geometry.VISUAL_CLASSES for f in result.accepted)
                     _answer_check(plan, result.target_values[0], "geometry", "geometry_answer_mismatch",
-                                  bound=_geometry_target_bound(model.geometry, analysis), add=add)
+                                  bound=_geometry_target_bound(model.geometry, analysis), add=add,
+                                  unit=_geometry_unit(analysis, target_kind),
+                                  kind="angle" if target_kind == "angle" else "length" if target_kind in {
+                                      "length", "perimeter"} else None,
+                                  labels=_target_labels(model.geometry), visual=visual)
                 notes.append("Kaynak olguları soru metninden doğrulandı; metnin kendisi görselden AI ile okunmuş olabilir.")
                 if model.geometry.schematic:
                     notes.append("Şekil ölçekli değildir; görünen orantılar veri sayılmadı.")
@@ -298,33 +309,50 @@ def analyze(plan, verification=None, deadline: float | None = None) -> Mathemati
 
 
 def _steps(plan, equation, variable, add):
-    """Ardışık adımların denkliği (TA-008B §6).
+    """Ardışık adımların denkliği (TA-008B §6, TA-009 §3.5).
 
     - Bir adımdaki ardışık denklemler tek tek önceki denkleme karşı denetlenir.
     - Durum ayrımı (``case`` adımları veya aynı adımda dallara ayrılan birden çok denklem): tek bir dalın daha az
       çözümü olması meşrudur; dalların (özgün tanım kümesindeki) birleşimi önceki denklemin kümesine eşit olmalıdır.
-      Ayrımdan sonraki adımlar dal içidir ve bu sürümde ardışık denetlenmez.
+    - TA-009 §3.5: ayrımdan sonraki her denklem *bir dalın içinde* denetlenir (dalı korur, yalnız yabancı adayı eler
+      veya dalları birleştirir). Ayrım geçersiz veya karar verilemezse kalan adımlar açıkça ``not_checked`` olur;
+      yalnız dal birleşimi denetlendiğinde bütün zincir doğrulanmış sayılmaz.
     - Kare alma gibi genişleten adımdan sonra yabancı adayın elenmesi kayıp değildir (``eliminates``).
+    - Sınır: dalın kendi koşulunun (ör. ``x ≥ 2``) adımda yazılı olup olmadığı denetlenmez.
     """
     previous = equation
     steps = list(plan.content.steps)
-    for position, step in enumerate(steps):
+    domain = _domain(equation, variable)
+    solution = sp.Intersection(sets.solve_equation(equation, variable).value, domain)
+    branches: list | None = None
+    position = 0
+    while position < len(steps):
+        step = steps[position]
         equations = _step_equations(step, variable)
-        if step.type == "case":
-            branches = list(equations)
-            for later in steps[position + 1:]:
-                if later.type != "case":
-                    break
-                branches.extend(_step_equations(later, variable))
-            if branches:
-                _split_check(step.id, previous, branches, equation, variable, add)
-            return
+        if branches is None and step.type == "case":
+            group, end = list(equations), position + 1
+            while end < len(steps) and steps[end].type == "case":
+                group.extend(_step_equations(steps[end], variable))
+                end += 1
+            if group:
+                branches = _split_check(step.id, previous, group, domain, variable, add)
+                if branches is None:
+                    _unchecked(steps[end:], variable, add)
+                    return
+            position = end
+            continue
         for index, item in enumerate(equations):
+            if branches is not None:
+                _branch_step(f"{step.id}_{index}", item.latex, variable, branches, solution, domain, add)
+                continue
             verdict = transforms.compare(previous, item.latex, equation, variable)
             rest = equations[index:]
             if verdict.relation in {"loses", "changed"} and len(rest) > 1:
-                _split_check(step.id, previous, rest, equation, variable, add)
-                return
+                branches = _split_check(f"{step.id}_{index}", previous, rest, domain, variable, add)
+                if branches is None:
+                    _unchecked(steps[position + 1:], variable, add)
+                    return
+                break
             status = {"equivalent": "passed", "eliminates": "passed", "gains": "partially_checked", "loses": "failed",
                       "changed": "failed"}.get(verdict.relation, "unsupported")
             reason = verdict.hazard or ("extraneous_eliminated" if verdict.relation == "eliminates" else f"step_{verdict.relation}")
@@ -332,33 +360,70 @@ def _steps(plan, equation, variable, add):
                           statement=item.latex[:400], detail=verdict.detail))
             if status in {"passed", "partially_checked"}:
                 previous = item.latex
+        position += 1
 
 
 def _step_equations(step, variable):
     return [item for item in step.expressions if item.type == "equation" and _single_variable(item.latex) == variable]
 
 
-def _split_check(step_id, previous, branches, original, variable, add):
-    domain = _domain(original, variable)
+def _subset(left, right) -> bool | None:
+    return sets.same_set(sp.Intersection(left, right), left)
+
+
+def _split_check(step_id, previous, branches, domain, variable, add):
+    """Dalların birleşimi önceki kümeye eşitse dal kümelerini döndürür; değilse veya karar verilemezse None."""
     try:
         before = sp.Intersection(sets.solve_equation(previous, variable).value, domain)
-        union = sp.S.EmptySet
-        for item in branches:
-            union = sp.Union(union, sets.solve_equation(item.latex, variable).value)
-        same = sets.same_set(sp.Intersection(union, domain), before)
+        branch_sets = [sp.Intersection(sets.solve_equation(item.latex, variable).value, domain) for item in branches]
+        same = sets.same_set(sp.Union(*branch_sets), before)
     except FAILURE_TYPES:
-        same = None
+        same, branch_sets = None, []
     add(MathCheck(id=f"{step_id}_cases", area="transformation",
                   status="passed" if same else "failed" if same is False else "unsupported",
                   reason="case_split_complete" if same else "case_branch_invalid" if same is False else "case_split_unchecked",
                   detail="Dalların (özgün tanım kümesindeki) birleşimi önceki denklemin çözüm kümesine eşit." if same else
                   "Dalların birleşimi önceki denklemin çözüm kümesini vermiyor (eksik dal veya yanlış eleme)." if same is False
                   else "Dallar kesin karşılaştırılamadı."))
+    return branch_sets if same else None
+
+
+def _branch_step(check_id, latex, variable, branches, solution, domain, add):
+    """Ayrımdan sonraki adım: bir dalın kümesini korumalı, yalnız yabancı adayı elemeli veya dalları birleştirmeli."""
+    def record(status, reason, detail):
+        add(MathCheck(id=f"{check_id}_branch", area="transformation", status=status, reason=reason,
+                      statement=latex[:400], detail=detail))
+
+    try:
+        current = sp.Intersection(sets.solve_equation(latex, variable).value, domain)
+        union = sp.Union(*branches)
+        for position, branch in enumerate(branches):
+            if sets.same_set(current, branch):
+                return record("passed", "branch_preserved", "Dal içinde çözüm kümesi korundu.")
+            if _subset(current, branch) and _subset(sp.Intersection(branch, solution), current):
+                branches[position] = current
+                return record("passed", "extraneous_eliminated", "Dal içinde yalnız yabancı aday elendi.")
+        if sets.same_set(current, union) or sets.same_set(current, solution):
+            return record("passed", "branches_merged", "Dalların sonuçları birleştirildi.")
+        if _subset(current, union) and _subset(solution, current):
+            return record("passed", "extraneous_eliminated", "Yalnız yabancı adaylar elendi.")
+        if _subset(current, union):
+            return record("failed", "solution_lost", "Dal sonucu geçerli bir çözümü düşürdü.")
+        if _subset(current, union) is False:
+            return record("failed", "step_changed", "Adım hiçbir dalın kümesiyle uyumlu değil.")
+    except FAILURE_TYPES:
+        pass
+    record("unsupported", "branch_step_unchecked", "Dal içi adım kesin karşılaştırılamadı.")
+
+
+def _unchecked(steps, variable, add):
+    remaining = sum(len(_step_equations(step, variable)) for step in steps)
+    if remaining:
+        add(MathCheck(id="steps_after_split", area="transformation", status="not_checked", reason="branch_steps_unchecked",
+                      detail=f"Durum ayrımı doğrulanamadığı için sonraki {remaining} denklem dal içinde denetlenmedi."))
 
 
 def _domain(latex, variable):
-    from . import domain as domains
-
     return domains.domain_set(domains.conditions_of(latex), expr.symbol(variable))
 
 
@@ -434,33 +499,166 @@ def _constant(plan, requested, add):
         return
 
 
-def _answer_check(plan, value, name, mismatch_reason, *, bound: bool, add, area: str | None = None):
-    """Bağımsız hesaplanan hedef ↔ öğrenciye gösterilen son cevap. Hedef kimliği bağımsız kurulamadıysa eşleşme
-    yalnız kısmi doğrulamadır; *uyuşmazlık* ise modelin kendisiyle çelişen cevap olduğu için maddi çelişkidir."""
-    claim = claimed_value(plan)
-    same = _compare(claim, value)
+def _answer_check(plan, value, name, mismatch_reason, *, bound: bool, add, area: str | None = None,
+                  unit=None, kind: str | None = None, labels: tuple[str, ...] = (), visual: bool = False):
+    """Bağımsız hesaplanan hedef ↔ öğrenciye gösterilen son cevap (TA-009 §3.3: türlü karşılaştırma).
+
+    - Kimlik: cevap başka bir nesneyi adlandırıyorsa (``BC = 7`` iken hedef ``AC``) bu ara değer veya yanlış hedeftir.
+    - Birim: beklenen değer kaynakta kurulmuş birimle (``unit``) bağlanır; ``5 km`` ile ``5 cm`` aynı cevap değildir.
+      Kaynakta birim yokken birimli cevap doğrulanamaz.
+    - Hedef kimliği kaynağa bağlanamadıysa eşleşme kısmi, uyuşmazlık maddi olmayan ``model_answer_disagreement``.
+    - Cevap görselden AI ile okunmuş bir işarete dayanıyorsa (``visual``) eşleşme kısmi kalır.
+    """
     area = area or ("geometry" if name == "geometry" else "word_problem")
+    outcome, shown = _typed_outcome(plan, value, unit, kind, labels)
+    expected_text = expr.text(value)
+    if outcome in {"undecidable", "unparsed"}:
+        reason = {"unparsed": "claim_unparsed"}.get(outcome, shown or "claim_undecidable")
+        add(MathCheck(id=f"{name}_answer", area=area, status="not_checked", reason=reason,
+                      detail=f"Bağımsız değer: {expected_text}; son cevap bu değerle güvenle karşılaştırılamadı."))
+        return
+    if outcome == "match":
+        status = "passed" if bound and not visual else "partially_checked"
+        reason = ("answer_matches_target" if bound and not visual else
+                  "answer_matches_target_visual_dependency" if bound else "answer_matches_model_target_identity_unverified")
+        add(MathCheck(id=f"{name}_answer", area=area, status=status, reason=reason, detail=f"Bağımsız değer: {expected_text}"))
+        return
+    reason = mismatch_reason if bound else "model_answer_disagreement"
+    if outcome == "identity_mismatch":
+        reason = "target_identity_mismatch" if bound else "model_answer_disagreement"
+    add(MathCheck(id=f"{name}_answer", area=area, status="failed", reason=reason,
+                  detail=(f"Bağımsız değer {expected_text}; son cevap {shown}." if bound else
+                          f"Modelin hedef değeri {expected_text}; son cevap {shown}. Hedef kimliği soru metnine "
+                          "bağlanamadığından hangisinin yanlış olduğu belirlenmedi.")))
+
+
+def _typed_outcome(plan, value, unit, kind, labels):
+    """(sonuç, gösterim): match | mismatch | identity_mismatch | undecidable | unparsed."""
+    exact = _fraction(value)
+    outcomes = []
+    for item in plan.content.final_answer_expressions:
+        parsed = quantities.parse_claim(item.latex)
+        symbol = _label(parsed.symbol) if parsed is not None else _label(item.latex.partition("=")[0]) if "=" in item.latex else None
+        if labels and symbol and symbol not in labels and _is_point_label(symbol):
+            outcomes.append(("identity_mismatch", item.latex[:120]))
+            continue
+        if parsed is None or exact is None:
+            outcomes.append(_symbolic_outcome(item.latex, value, unit))
+            continue
+        claimed = parsed.typed
+        if unit is None and claimed.unit is not None and claimed.dim not in (None, quantities.DIMENSIONLESS):
+            outcomes.append(("undecidable", "unit_not_established"))
+            continue
+        expected = quantities.Typed(exact * (unit.scale if unit is not None else 1),
+                                    unit.dim if unit is not None else claimed.dim, kind)
+        policy = quantities.Policy(mode="exact" if not claimed.decimals else "claim_precision",
+                                   unit_when_missing=unit)
+        result = quantities.compare(expected, claimed, policy)
+        outcomes.append(("match" if result.matched else "undecidable" if result.status == "undecidable" else "mismatch",
+                         item.latex[:120] if result.status != "undecidable" else result.reasons[0]))
+    decided = [o for o in outcomes if o[0] not in {"undecidable", "unparsed"}]
+    if not outcomes:
+        return "unparsed", None
+    if not decided:
+        return outcomes[0]
+    kinds = {o[0] for o in decided}
+    if len(kinds) > 1:
+        return "undecidable", "multiple_conflicting_claims"
+    return decided[0]
+
+
+
+def _fraction(value):
+    try:
+        number = sp.nsimplify(value)
+    except (TypeError, ValueError, sp.SympifyError):
+        return None
+    return Fraction(int(number.p), int(number.q)) if number.is_Rational else None
+
+
+def _symbolic_outcome(latex, value, unit):
+    """İrrasyonel hedef (5√2) veya iddia: yalnız birimsiz ya da kaynak birimiyle aynı birimli yazım karşılaştırılır."""
+    text = latex.split("=")[-1].strip()
+    text = re.sub(r"\\(?:text|mathrm)\{([^}]*)\}", r" \1 ", text).strip()
+    suffix = re.search(r"\s*(mm|cm|km|m|derece|°|\^\\circ)\s*$", text)
+    if suffix:
+        written = suffix.group(1)
+        if written in {"mm", "cm", "km", "m"} and (unit is None or written != unit.original):
+            return "undecidable", "unit_not_established"
+        text = text[: suffix.start()].strip()
+    try:
+        claim = expr.expression(text)
+    except expr.ExprError:
+        return "unparsed", None
+    if claim.free_symbols or not expr.finite(claim):
+        return "unparsed", None
+    same = _compare(sp.nsimplify(claim), value)
     if same is None:
-        add(MathCheck(id=f"{name}_answer", area=area, status="not_checked", reason="claim_unparsed",
-                      detail=f"Bağımsız değer: {expr.text(value)}; son cevap sayısal olarak okunamadı."))
-    elif same:
-        add(MathCheck(id=f"{name}_answer", area=area, status="passed" if bound else "partially_checked",
-                      reason="answer_matches_target" if bound else "answer_matches_model_target_identity_unverified",
-                      detail=f"Bağımsız değer: {expr.text(value)}"))
-    elif bound:
-        add(MathCheck(id=f"{name}_answer", area=area, status="failed", reason=mismatch_reason,
-                      detail=f"Bağımsız değer {expr.text(value)}; son cevap {expr.text(claim)}."))
-    else:
-        # Hedef kimliği kaynağa bağlanamadı: model ile cevap çelişiyor ama hangisinin yanlış olduğu (model sadakati mi,
-        # cevap mı) belirlenemez. Doğrulanmış sayılmaz; maddi çelişki olarak düzeltme akışını tetiklemez.
-        add(MathCheck(id=f"{name}_answer", area=area, status="failed", reason="model_answer_disagreement",
-                      detail=f"Modelin hedef değeri {expr.text(value)}; son cevap {expr.text(claim)}. Hedef kimliği "
-                             "soru metnine bağlanamadığından hangisinin yanlış olduğu belirlenmedi."))
+        return "undecidable", "claim_undecidable"
+    return ("match" if same else "mismatch"), latex[:120]
+
+
+_POINT_LABEL = re.compile(r"^[A-ZÇĞİÖŞÜ]{2,3}$")
+
+
+def _label(text: str | None) -> str | None:
+    if not text:
+        return None
+    cleaned = re.sub(r"\\(?:overline|overrightarrow|widehat|angle|left|right)|[|{}\\\s]", "", text)
+    cleaned = cleaned.replace("∠", "").replace("m(", "").replace("s(", "").rstrip(")")
+    return cleaned or None
+
+
+def _is_point_label(symbol: str) -> bool:
+    return bool(_POINT_LABEL.match(symbol))
+
+
+def _geometry_unit(analysis, target_kind: str):
+    """Kaynakta kurulmuş tek uzunluk birimi (``AB = 3 cm``). Birden çok veya hiç yoksa None (birimsiz model)."""
+    found = set()
+    tokens = quotes.tokens(_source_text(analysis))
+    for left, right in zip(tokens, tokens[1:]):
+        if left.kind == "number" and right.kind == "word" and right.text in {"mm", "cm", "m", "km"}:
+            found.add(right.text)
+    if target_kind == "angle" or len(found) != 1:
+        return None
+    base = units.parse_unit(found.pop())
+    if target_kind == "area":
+        return units.parse_unit(f"{base.original}^2")
+    return base if target_kind in {"length", "perimeter"} else None
+
+
+def _target_labels(model) -> tuple[str, ...]:
+    if model.target is None:
+        return ()
+    points = "".join(model.target.points)
+    if model.target.kind in {"length", "perimeter"} and len(model.target.points) == 2:
+        return (points, points[::-1])
+    if model.target.kind == "angle" and len(model.target.points) == 3:
+        return (points, points[::-1], model.target.points[1])
+    return (points,)
 
 
 def _source_text(analysis) -> str:
     statements = list(getattr(getattr(analysis, "source", None), "statements", []) or [])
     return " ".join([analysis.question_text or "", *statements, *list(analysis.mathematical_expressions or [])])
+
+
+def _observations(analysis) -> tuple[str, ...]:
+    """İlk görsel okumanın şekil gözlemleri (TA-009 §3.2). AI okumasıdır; bağımsız görsel doğrulama değildir."""
+    visual = getattr(analysis, "visual_elements", None)
+    if visual is None:
+        return ()
+    items = [*getattr(visual, "relevant_visual_facts", []), *getattr(visual, "relationships", [])]
+    if visual.description:
+        items.append(visual.description)
+    return tuple(item for item in items if item)[:32]
+
+
+def _confirmed(analysis) -> tuple[str, ...]:
+    """Öğrencinin hedefli soruda onayladığı düzeltmeler (bağımsız doğrulama değildir)."""
+    integrity = getattr(analysis, "integrity", None)
+    return tuple(item.corrected for item in getattr(integrity, "corrections", []) or [])[:16]
 
 
 def _has_figure(analysis) -> bool:

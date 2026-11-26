@@ -2,10 +2,14 @@
 
 TA-008B kanıt zinciri — bir olgu ancak *sunucu* kabul ederse kısıt olur:
 
-- ``stated``: ``evidence`` alanındaki alıntı soru metninde (normalleştirilmiş) birebir bulunmalı ve olgunun noktalarını
-  ve değerini içermelidir → ``source_text``. Bulunmazsa olgu yalnız sağlayıcı önerisidir (``provider_proposed``) ve
-  kullanılmaz. Metnin kendisi görselden AI ile okunmuş olabilir; bu sınır raporda yazılır.
-- ``marked``: soruda şekil olmalıdır → ``diagram_interpreted`` (işaretin varlığı görselden AI okumasıdır; kısmi).
+- ``stated``: ``evidence`` alanındaki alıntı soru metninde *belirteç dizisi olarak* bulunmalı (``5 cm`` ``15 cm``
+  içinde, ``AB`` ``ABC`` içinde bulunmaz) ve bir yan cümlesi olguyu *ileri sürmelidir* (soru veya olumsuzlama değil;
+  etiket ile değer arasında başka etiket yok) → ``source_text``. TA-009 §3.1: bu yapısal eşleşmedir; cümlenin anlamının
+  olguyu gerektirdiği (anlamsal gerektirme) kanıtlanmaz. Metnin kendisi görselden AI ile okunmuş olabilir.
+- ``marked``: TA-009 §3.2: şeklin varlığı yetmez. Alıntı ilk görsel okumanın gözlem listesinde
+  (``relevant_visual_facts``, ``relationships``, açıklama) bulunmalı ve olguyu ileri sürmeli → ``diagram_observation``
+  (AI okumasıdır, bağımsız görsel doğrulama değildir); ya da öğrencinin onayladığı düzeltmede → ``student_confirmed``.
+  Bağlanamayan işaret yorum olarak kalır (``diagram_marking_unlinked``) ve kısıt olmaz.
 - ``derived``: ``premises`` ve ``rule`` ile; öncüller kabul edilmiş, kural desteklenen ve yerel olarak uygulanabilir
   olmalı, döngü olmamalı → ``validated_derivation``. Aksi halde açıklayıcı hipotezdir, kısıt değildir.
 - ``construction``: yalnız geometrik olarak doğrulanmış bir yardımcı çizimin tanımından izleyen olgu
@@ -20,12 +24,13 @@ kısıt sisteminin bütün çözümleri; Öklid düzleminde gerçekleşebilirlik
 from __future__ import annotations
 
 import itertools
-import re
 from dataclasses import dataclass, field
+from fractions import Fraction
 
 import sympy as sp
 
 from ..education.mathematics import GeometryModel, MathCheck
+from ..reasoning import quotes
 from . import expr
 from .theorems import THEOREMS
 
@@ -72,40 +77,149 @@ def _coord(latex: str):
     return tuple(_value(item) for item in parts)
 
 
-def _norm(text: str) -> str:
-    lowered = (text or "").replace("İ", "i").replace("I", "ı").lower()
-    lowered = lowered.replace("°", " derece ").replace("∠", " açı ").replace("'", "").replace("’", "")
-    return re.sub(r"\s+", " ", re.sub(r"\s*([=,.:;])\s*", r"\1", lowered)).strip()
+def _seg(a: str, b: str) -> tuple[str, str]:
+    return (f"{a}{b}", f"{b}{a}")
 
 
-def _pair(raw: str, a: str, b: str) -> bool:
-    return f"{a}{b}" in raw or f"{b}{a}" in raw or f"|{a}{b}|" in raw
+def _angle(p: str, v: str, q: str) -> tuple[str, str]:
+    return (f"{p}{v}{q}", f"{q}{v}{p}")
 
 
-def _supports(fact, fragment: str) -> bool:
-    """Alıntı olgunun nesnelerini ve değerini içeriyor mu? (anlamını kanıtlamaz; yalnız kaynağa bağ kurar)"""
-    raw = fragment or ""
-    lowered = _norm(raw)
-    if fact.kind in {"angle_measure", "right_angle"} and len(fact.points) == 3:
-        vertex = fact.points[1]
-        named = "".join(fact.points) in raw or "".join(reversed(fact.points)) in raw
-        has_objects = named or (vertex in raw and ("açı" in lowered or "dik" in lowered))
-    elif fact.kind in {"segment_length"} and len(fact.points) == 2:
-        has_objects = _pair(raw, *fact.points)
-    elif fact.kind == "equal_segments" and len(fact.points) == 2 and len(fact.other) == 2:
-        has_objects = _pair(raw, *fact.points) and _pair(raw, *fact.other)
-    else:
-        has_objects = all(p in raw for p in fact.points + fact.other)
-    has_value = fact.value is None or _norm(fact.value).replace(" ", "") in lowered.replace(" ", "")
-    return has_objects and has_value
+def _triangle_names(points) -> tuple[str, ...]:
+    return tuple("".join(order) for order in itertools.permutations(points))
+
+
+def _fact_value(fact) -> Fraction | None:
+    """Olgu değerinin kesin rasyonel karşılığı; irrasyonel/yazılamayan değer için None."""
+    if fact.value is None:
+        return None
+    plain = quotes.number_value(fact.value)
+    if plain is not None:
+        return plain
+    try:
+        value = sp.nsimplify(_value(fact.value))
+    except (expr.ExprError, TypeError, ValueError):
+        return None
+    return Fraction(int(value.p), int(value.q)) if value.is_Rational else None
+
+
+def _clause_asserts(fact, clause, value) -> bool:
+    """Bu yan cümle olgunun nesnelerini, ilişkisini ve (varsa) değerini birlikte ileri sürüyor mu?"""
+    kind, pts, other = fact.kind, fact.points, fact.other
+    has = quotes.has_label
+
+    def word(*stems) -> bool:
+        return quotes.has_word(clause, *stems)
+
+    def valued(index) -> bool:
+        if fact.value is None:
+            return True
+        if index is None:
+            return False
+        if value is not None:
+            return quotes.value_near(clause, index, value)
+        return quotes.contains(" ".join(t.text for t in clause), fact.value)
+
+    if kind == "segment_length" and len(pts) == 2:
+        return valued(quotes.label_index(clause, *_seg(*pts)))
+    if kind in {"angle_measure", "right_angle"} and len(pts) == 3:
+        index = quotes.label_index(clause, *_angle(*pts))
+        if index is None and word("açı", "dik"):
+            index = quotes.label_index(clause, pts[1])
+        if index is None:
+            return False
+        if kind == "right_angle":
+            return word("dik") or any(t.text == "⊥" for t in clause) or quotes.value_near(clause, index, Fraction(90))
+        return valued(index)
+    if kind == "equal_segments" and len(pts) == 2 and len(other) == 2:
+        return has(clause, *_seg(*pts)) and has(clause, *_seg(*other)) and (
+            any(t.text in {"=", "≠"} for t in clause) or word("eşit", "eş"))
+    if kind == "equal_angles" and len(pts) == 3 and len(other) == 3:
+        return has(clause, *_angle(*pts)) and has(clause, *_angle(*other)) and (
+            any(t.text in {"=", "≠"} for t in clause) or word("eşit", "eş"))
+    if kind == "triangle":
+        return has(clause, *_triangle_names(pts)) and word("üçgen")
+    if kind == "polygon":
+        return has(clause, *_triangle_names(pts)) if len(pts) <= 4 else all(has(clause, p) for p in pts)
+    if kind in {"parallel", "perpendicular"} and len(pts) == 2 and len(other) == 2:
+        symbol = "∥" if kind == "parallel" else "⊥"
+        relation = any(t.text == symbol for t in clause) or word("paralel" if kind == "parallel" else "dik")
+        return has(clause, *_seg(*pts)) and has(clause, *_seg(*other)) and relation
+    if kind == "collinear":
+        return all(has(clause, p) for p in pts) and (word("doğrusal") or (word("aynı") and word("doğru")))
+    if kind == "midpoint" and len(pts) == 3:
+        return has(clause, pts[0]) and has(clause, *_seg(pts[1], pts[2])) and word("orta")
+    if kind == "point_on_segment" and len(pts) == 3:
+        return has(clause, pts[0]) and has(clause, *_seg(pts[1], pts[2])) and word("üzerinde", "üstünde", "arasında")
+    if kind == "coordinate" and len(pts) == 1:
+        index = quotes.label_index(clause, pts[0])
+        try:
+            wanted = [Fraction(str(sp.nsimplify(item))) for item in _coord(fact.value or "")]
+        except (expr.ExprError, TypeError, ValueError):
+            return False
+        return index is not None and _signed_numbers(clause[index + 1:])[:2] == wanted
+    if kind in {"similar", "congruent"} and len(pts) == 3 and len(other) == 3:
+        symbol = "~" if kind == "similar" else "≅"
+        relation = any(t.text == symbol for t in clause) or word("benzer" if kind == "similar" else "eş")
+        return has(clause, *_triangle_names(pts)) and has(clause, *_triangle_names(other)) and relation
+    if kind in {"circle", "point_on_circle"}:
+        return all(_mentions(clause, p) for p in pts) and word("çember", "daire", "merkez")
+    if kind == "tangent":
+        return all(_mentions(clause, p) for p in pts if p != pts[0]) and word("teğet")
+    if kind == "area":
+        index = next((quotes.label_index(clause, name) for name in _triangle_names(pts)
+                      if quotes.label_index(clause, name) is not None), None)
+        return word("alan") and valued(index)
+    return False
+
+
+def _mentions(clause, letter: str) -> bool:
+    """Nokta harfi bir etiketin parçası olarak geçiyor mu (``PT`` doğrusu P ve T'yi anar)?"""
+    return any(t.kind == "label" and letter in t.text for t in clause)
+
+
+def _signed_numbers(found) -> list[Fraction]:
+    out, negative = [], False
+    for token in found:
+        if token.text in {"-", "−"}:
+            negative = True
+        elif token.kind == "number":
+            out.append(-token.number if negative else token.number)
+            negative = False
+        elif token.text not in {"(", ",", " "}:
+            negative = False
+    return out
+
+
+def assertion(fact, fragment: str) -> str | None:
+    """None: alıntının bir yan cümlesi olguyu ileri sürüyor. Aksi halde ret nedeni (TA-009 §3.1)."""
+    value = _fact_value(fact)
+    negated = asked = False
+    for clause in quotes.clauses(fragment or ""):
+        if not _clause_asserts(fact, clause, value):
+            continue
+        if quotes.is_negated(clause):
+            negated = True
+        elif quotes.is_question(clause):
+            asked = True
+        else:
+            return None
+    if negated:
+        return "negated_in_source"
+    if asked:
+        return "quote_mentions_without_asserting"
+    return "quote_does_not_assert_fact"
 
 
 @dataclass(frozen=True)
 class Source:
-    """Sorunun sunucudaki kaydı: metin ve şekil var mı. ``text`` görselden okunmuş olabilir (AI destekli)."""
+    """Sorunun sunucudaki kaydı. ``text`` görselden okunmuş olabilir (AI destekli). ``observations``: ilk görsel
+    okumanın şekil gözlemleri (işaret, etiket, ilişki); ``confirmed``: öğrencinin onayladığı düzeltmeler."""
 
     text: str = ""
     has_figure: bool = False
+    observations: tuple[str, ...] = ()
+    confirmed: tuple[str, ...] = ()
 
 
 def analyze(model: GeometryModel, source: Source | None = None) -> GeometryResult:
@@ -128,8 +242,7 @@ def analyze(model: GeometryModel, source: Source | None = None) -> GeometryResul
     usable = [item for item in model.facts if item.id in result.accepted]
     for fid, reason in result.rejected.items():
         result.ignored.append(fid)
-        if reason in {"visual_fact_not_given", "provider_proposed", "unsupported_derivation", "circular_derivation",
-                      "missing_premise", "tangent_preconditions_unmet", "degenerate_object", "rule_not_applicable"}:
+        if reason in _REASON_TR:
             add(MathCheck(id=f"fact_{fid}", area="geometry", status="not_checked", reason=reason, scope="not_applicable",
                           detail=_REASON_TR.get(reason)))
     try:
@@ -168,6 +281,11 @@ _REASON_TR = {
     "tangent_preconditions_unmet": "Teğet olgusu için çember merkezi ve değme noktası modelde yok.",
     "degenerate_object": "Nesne tekrarlı noktalarla tanımlanmış (dejenere); kullanılmadı.",
     "rule_not_applicable": "Kural bu olguların yerel nesnelerine uymuyor.",
+    "quote_does_not_assert_fact": "Alıntı kaynakta var ama bu olguyu (nesne, ilişki ve değer birlikte) ileri sürmüyor.",
+    "quote_mentions_without_asserting": "Alıntı nesneden yalnız soru içinde söz ediyor; değeri ileri sürmüyor.",
+    "negated_in_source": "Kaynak bu ilişkiyi olumsuzluyor (≠, 'değildir'); olumlu olgu olarak kullanılmadı.",
+    "diagram_marking_unlinked": "Şekil var ama bu işaret ilk görsel okumadaki bir gözleme veya öğrenci onayına "
+                                "bağlanamadı; yorum olarak kaldı.",
 }
 
 
@@ -182,23 +300,33 @@ def _validate_objects(model: GeometryModel, result: GeometryResult):
 
 
 def _classify_sources(model: GeometryModel, source: Source, result: GeometryResult):
-    text = _norm(source.text)
     for item in model.facts:
         if item.id in result.rejected:
             continue
+        fragment = item.evidence or ""
         if item.origin == "visual_uncertain":
             result.rejected[item.id] = "visual_fact_not_given"
         elif item.origin == "stated":
-            fragment = item.evidence or ""
-            if fragment and _norm(fragment) in text and _supports(item, fragment):
+            if not fragment or not quotes.contains(source.text, fragment):
+                result.rejected[item.id] = "provider_proposed"
+                continue
+            reason = assertion(item, fragment)
+            if reason is None:
                 result.accepted[item.id] = "source_text"
             else:
-                result.rejected[item.id] = "provider_proposed"
+                result.rejected[item.id] = reason
         elif item.origin == "marked":
-            if source.has_figure:
-                result.accepted[item.id] = "diagram_interpreted"
-            else:
+            # TA-009 §3.2: şeklin varlığı her işaret önerisini yetkilendirmez.
+            confirmed = next((text for text in source.confirmed if fragment and quotes.contains(text, fragment)), None)
+            observed = next((text for text in source.observations if fragment and quotes.contains(text, fragment)), None)
+            if not source.has_figure and confirmed is None:
                 result.rejected[item.id] = "provider_proposed"
+            elif confirmed is not None and assertion(item, fragment) is None:
+                result.accepted[item.id] = "student_confirmed"
+            elif observed is not None and assertion(item, fragment) is None:
+                result.accepted[item.id] = "diagram_observation"
+            else:
+                result.rejected[item.id] = "diagram_marking_unlinked"
 
 
 def _validate_derivations(model: GeometryModel, result: GeometryResult):
@@ -511,9 +639,13 @@ def _solve(model: GeometryModel, base, collinear, result: GeometryResult, usable
                                    scope="model" if status == "passed" else "not_applicable", detail=detail))
 
 
+DIRECT_CLASSES = {"source_text", "diagram_observation", "student_confirmed"}
+VISUAL_CLASSES = {"diagram_observation"}
+
+
 def _all_source(usable, result) -> bool:
     """Bütün kabul edilen olgular doğrudan kaynaktan mı (metin/şekil)? O zaman çelişki kaynağın kendisindedir."""
-    return bool(usable) and all(result.accepted.get(item.id) in {"source_text", "diagram_interpreted"} for item in usable)
+    return bool(usable) and all(result.accepted.get(item.id) in DIRECT_CLASSES for item in usable)
 
 
 def _admissible(symbol, value) -> bool:

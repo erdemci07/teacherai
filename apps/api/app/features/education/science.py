@@ -21,6 +21,8 @@ from .source import ElementRef, Fragment, SourceRegion
 Provenance = Literal[
     "source_text", "visual_reading", "student_confirmed", "background_knowledge", "modeling_assumption",
     "inferred", "derived",
+    # TA-009 §10: sorunun verdiği uzlaşım (g = 10 m/s²), standart sabit (sürümüyle) ve denetlenmemiş sağlayıcı önerisi.
+    "problem_convention", "standard_constant", "provider_proposed",
 ]
 DIRECT_PROVENANCE = frozenset({"source_text", "visual_reading", "student_confirmed"})
 Roman = Annotated[str, Field(pattern=r"^[IVX]{1,4}$")]
@@ -77,6 +79,14 @@ class QuantityValue(Contract):
     provenance: Provenance
     evidence: list[EvidenceRef] = Field(default_factory=list, max_length=8)
     entity: Identifier | None = None
+    # TA-009: nicelik türü (sürat/hız, kütle/ağırlık…; ``reasoning.quantities.KINDS``), durum (ilk, son, t = 2 s),
+    # gösterim (büyüklük/işaretli bileşen), standart sabitin kaynağı, türetme adımı, görsel okumanın güveni.
+    kind: Identifier | None = None
+    state: Label | None = None
+    representation: Literal["magnitude", "component", "unspecified"] = "unspecified"
+    constant_source: Label | None = None
+    derivation: Identifier | None = None
+    confidence: float | None = Field(default=None, ge=0, le=1)
 
 
 EntityKind = Literal[
@@ -276,6 +286,138 @@ class NarrativeSegment(Contract):
         return self
 
 
+# --------------------------------------------------------------------------- TA-009 fiziksel model
+
+PhysicsDomain = Literal["kinematics", "dynamics", "energy", "momentum", "dc_circuit", "other"]
+AxisDirection = Literal["+x", "-x", "+y", "-y", "up_incline", "down_incline", "angle"]
+ForceKind = Literal["gravity", "normal", "tension", "static_friction", "kinetic_friction", "applied", "spring",
+                    "electric", "magnetic", "buoyancy", "drag", "other"]
+ConditionState = Literal["satisfied", "violated", "unknown"]
+
+
+class PhysicalBody(Contract):
+    entity: Identifier
+    mass: Identifier | None = None  # nicelik kimliği
+    surface: Identifier | None = None
+
+
+class Surface(Contract):
+    id: Identifier
+    kind: Literal["horizontal", "incline", "vertical"]
+    angle_deg: NumberText | None = None
+    # none: sürtünmesiz (yalnız kaynakta yazılıysa veya açık varsayımsa); unknown: bilinmiyor.
+    friction: Literal["none", "present", "unknown"] = "unknown"
+    mu_static: Identifier | None = None
+    mu_kinetic: Identifier | None = None
+    provenance: Provenance
+
+
+class ForceSpec(Contract):
+    """Hangi kuvvetin hangi cisme, hangi yönde etkidiği. Sağlayıcının çizdiği ok bir kuvvetin kanıtı değildir."""
+
+    id: Identifier
+    kind: ForceKind
+    on: Identifier
+    by: Identifier | None = None
+    magnitude: Identifier | None = None
+    direction: AxisDirection
+    angle_deg: NumberText | None = None  # angle yönünde +x eksenine göre
+    provenance: Provenance
+
+
+class StringLink(Contract):
+    id: Identifier
+    bodies: list[Identifier] = Field(min_length=2, max_length=2)
+    over_pulley: bool = False
+    provenance: Provenance
+
+
+class MotionPhase(Contract):
+    """Bir cismin bir zaman aralığındaki hareketi. İvmenin sabitliği yasa seçiminin ön koşuludur."""
+
+    id: Identifier
+    entity: Identifier
+    axis: Literal["horizontal", "vertical", "incline"] = "horizontal"
+    acceleration_kind: Literal["constant", "zero", "varying", "unknown"] = "unknown"
+    acceleration_basis: Provenance | None = None
+    initial_velocity: Identifier | None = None
+    final_velocity: Identifier | None = None
+    displacement: Identifier | None = None
+    distance: Identifier | None = None
+    duration: Identifier | None = None
+    acceleration: Identifier | None = None
+    graph: Identifier | None = None  # hız-zaman grafiği (GraphSeries kimliği)
+    free_fall: bool = False
+
+
+class Collision(Contract):
+    id: Identifier
+    bodies: list[Identifier] = Field(min_length=2, max_length=2)
+    kind: Literal["elastic", "perfectly_inelastic", "inelastic", "explosion", "unknown"] = "unknown"
+    velocities_before: list[Identifier | None] = Field(default_factory=list, max_length=2)
+    velocities_after: list[Identifier | None] = Field(default_factory=list, max_length=2)
+    # Sistemin sınırı ve net dış itmenin sıfır (veya ihmal edilebilir) olduğu kaynağa dayanmalı.
+    external_impulse: Literal["none_stated", "negligible_assumed", "present", "unknown"] = "unknown"
+
+
+class CircuitElement(Contract):
+    id: Identifier
+    kind: Literal["resistor", "bulb", "battery", "switch", "ammeter", "voltmeter", "wire"]
+    nodes: list[Identifier] = Field(min_length=2, max_length=2)
+    value: Identifier | None = None  # direnç veya EMK nicelik kimliği
+    internal_resistance: Identifier | None = None
+    positive_node: Identifier | None = None
+    closed: bool | None = None  # anahtar
+    # Bağlantı görselden okunduysa ve kesin değilse false: seri/paralel kararı tahminle verilmez.
+    connection_certain: bool = True
+    provenance: Provenance
+
+
+class CircuitModel(Contract):
+    nodes: list[Identifier] = Field(min_length=2, max_length=24)
+    elements: list[CircuitElement] = Field(min_length=1, max_length=32)
+
+
+class ConditionClaim(Contract):
+    condition: Identifier
+    state: ConditionState
+    basis: Provenance
+
+
+class LawUse(Contract):
+    """Sağlayıcının önerdiği yasa ve koşul iddiaları. Sunucu koşulları kendisi yeniden değerlendirir."""
+
+    law: Identifier
+    system: list[Identifier] = Field(default_factory=list, max_length=8)
+    conditions: list[ConditionClaim] = Field(default_factory=list, max_length=12)
+
+
+class PhysicsTarget(Contract):
+    quantity: Identifier | None = None  # bilinmeyen nicelik kimliği
+    kind: Identifier
+    entity: Identifier | None = None
+    state: Label | None = None
+    representation: Literal["magnitude", "component", "unspecified"] = "unspecified"
+    unit: UnitSpec | None = None
+    element: Identifier | None = None  # devre: ölçülen eleman
+    between: list[Identifier] = Field(default_factory=list, max_length=2)  # devre: eşdeğer direnç uçları
+
+
+class PhysicsModel(Contract):
+    domain: PhysicsDomain
+    sign_convention: Label | None = None  # ör. "+x sağa"; eksen önce sabitlenir
+    bodies: list[PhysicalBody] = Field(default_factory=list, max_length=8)
+    surfaces: list[Surface] = Field(default_factory=list, max_length=4)
+    forces: list[ForceSpec] = Field(default_factory=list, max_length=24)
+    strings: list[StringLink] = Field(default_factory=list, max_length=4)
+    phases: list[MotionPhase] = Field(default_factory=list, max_length=6)
+    collisions: list[Collision] = Field(default_factory=list, max_length=2)
+    circuit: CircuitModel | None = None
+    laws: list[LawUse] = Field(default_factory=list, max_length=8)
+    equations: list[Fragment] = Field(default_factory=list, max_length=12)  # sağlayıcı denklemleri: yetkili değildir
+    target: PhysicsTarget | None = None
+
+
 class ScientificProblemModel(Contract):
     schema_version: Literal["1.0.0"] = "1.0.0"
     subject: Subject
@@ -300,6 +442,8 @@ class ScientificProblemModel(Contract):
     premises: list[Premise] = Field(default_factory=list, max_length=6)
     uncertainties: list[Identifier] = Field(default_factory=list, max_length=16)
     notes: list[Text] = Field(default_factory=list, max_length=8)
+    # TA-009: fiziksel sistem (isteğe bağlı; eski kayıtlarda yoktur).
+    physics: PhysicsModel | None = None
 
     @model_validator(mode="after")
     def integrity(self):
@@ -340,4 +484,39 @@ class ScientificProblemModel(Contract):
         for item in self.known:
             if item.magnitude is None:
                 raise ValueError("Bilinen nicelik bir değer taşır.")
+        if self.physics is not None:
+            _physics_references(self.physics, set(entities), quantities, {item.id for item in self.graphs})
         return self
+
+
+def _physics_references(model: PhysicsModel, entities: set[str], quantities: set[str], graphs: set[str]) -> None:
+    """Fiziksel modelin bütün başvuruları modelde tanımlı olmalı (tanımsız cisim veya niceliğe kuvvet bağlanmaz)."""
+    surfaces = {item.id for item in model.surfaces}
+    used = {b.entity for b in model.bodies} | {f.on for f in model.forces} | {f.by for f in model.forces if f.by}
+    used |= {b for link in model.strings for b in link.bodies} | {phase.entity for phase in model.phases}
+    used |= {b for c in model.collisions for b in c.bodies}
+    if not used <= entities:
+        raise ValueError("Fiziksel model tanımsız bir cisme başvuruyor.")
+    refs = [b.mass for b in model.bodies] + [f.magnitude for f in model.forces]
+    refs += [item.mu_static for item in model.surfaces] + [item.mu_kinetic for item in model.surfaces]
+    for phase in model.phases:
+        refs += [phase.initial_velocity, phase.final_velocity, phase.displacement, phase.distance, phase.duration,
+                 phase.acceleration]
+    for collision in model.collisions:
+        refs += [*collision.velocities_before, *collision.velocities_after]
+    if model.circuit is not None:
+        refs += [e.value for e in model.circuit.elements] + [e.internal_resistance for e in model.circuit.elements]
+        nodes = set(model.circuit.nodes)
+        for element in model.circuit.elements:
+            if not set(element.nodes) <= nodes or (element.positive_node and element.positive_node not in nodes):
+                raise ValueError("Devre elemanı tanımsız bir düğüme bağlı.")
+        if len({e.id for e in model.circuit.elements}) != len(model.circuit.elements):
+            raise ValueError("Devre eleman kimlikleri benzersiz olmalı.")
+    if model.target is not None:
+        refs.append(model.target.quantity)
+    if not {ref for ref in refs if ref} <= quantities:
+        raise ValueError("Fiziksel model tanımsız bir niceliğe başvuruyor.")
+    if any(b.surface and b.surface not in surfaces for b in model.bodies):
+        raise ValueError("Cisim tanımsız bir yüzeyde.")
+    if any(phase.graph and phase.graph not in graphs for phase in model.phases):
+        raise ValueError("Hareket evresi tanımsız bir grafiğe bağlı.")

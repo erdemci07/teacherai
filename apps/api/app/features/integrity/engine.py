@@ -75,6 +75,8 @@ class EvaluationState:
     corrections: tuple[Correction, ...] = ()
     clarifications: tuple[ClarificationRecord, ...] = ()
     prior: IntegrityReport | None = None
+    # TA-009 §18: yalnız fizik bayrağı açıkken ders hattı fiziği bu kapıdan geçirir (varsayılan kapalı).
+    allow_physics: bool = False
 
 
 def _element_content(analysis, element: str, choices: list[AnswerChoice], statements: list[str]) -> str | None:
@@ -228,7 +230,7 @@ def evaluate(analysis, state: EvaluationState = EvaluationState()) -> IntegrityR
         return report("incomplete", "retake", extra_checks=[("incomplete_source", "fatal")])
     if not analysis.is_valid_question or analysis.image_status != "valid_math_question":
         return report("no_question", "retake", extra_checks=[("not_a_question", "fatal")])
-    if not capabilities(subject).generation:
+    if not capabilities(subject).generation and not (state.allow_physics and subject == Subject.PHYSICS):
         return report("unsupported_subject", "none", extra_checks=[("unsupported_subject", "fatal")])
     if not (analysis.question_text or "").strip() and not analysis.mathematical_expressions:
         return report("incomplete", "retake", extra_checks=[("missing_question_text", "fatal")])

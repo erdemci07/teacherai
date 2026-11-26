@@ -44,6 +44,36 @@ CAPABILITIES: dict[str, Capability] = {
                                                "Formülün fiziksel olarak doğru olduğunu."),
     "reasoning.formula.graph_slope": Capability("reasoning.formula:graph_slope", "Grafikte iki nokta arası eğim ve birimi.",
                                                 "Grafiğin görselden doğru okunduğunu."),
+    "physics.kinematics.constant_acceleration": Capability(
+        "physics.mechanics:solve_kinematics", "Sabit ivmeli hareketin beş bağıntısından yalnız hedef; evre zinciri; alınan yol.",
+        "İvmenin gerçekten sabit olduğunu (koşul ayrıca denetlenir) veya görselin doğru okunduğunu."),
+    "physics.dynamics.newton": Capability(
+        "physics.mechanics:solve_dynamics", "Tek cisim ve iple bağlı iki cisimde ivme, gerilme, tepki; statik–kinetik karar.",
+        "Kuvvetlerin soruda gerçekten kurulduğunu (kaynak denetimi ayrıdır)."),
+    "physics.energy.conservation": Capability(
+        "physics.mechanics:solve_energy", "Tek cisim tek evrede enerji korunumu; sürtünme işi hesaba katılarak.",
+        "Korunumsuz kuvvetin olmadığını; bu koşul ayrıca değerlendirilir."),
+    "physics.momentum.collision": Capability(
+        "physics.mechanics:solve_momentum", "Tek doğrultuda esnek, tamamen esnek olmayan çarpışma ve bilinmeyen tek hız.",
+        "Net dış itmenin sıfır olduğunu; sistem sınırı kaynakta kurulmalıdır."),
+    "physics.circuits.nodal": Capability(
+        "physics.circuits:solve", "Bağlantı grafiğinden düğüm gerilimleri, eleman akımları ve Kirchhoff akım dengesi.",
+        "Görselden okunan bağlantının doğru olduğunu; belirsiz bağlantı çözülmez."),
+    "physics.circuits.equivalent_resistance": Capability(
+        "physics.circuits:equivalent_resistance", "İki düğüm arasındaki eşdeğer direnç (test kaynağıyla).",
+        "Elemanların ohmik olduğunu (görünür varsayım)."),
+    "physics.graphs.velocity_time": Capability(
+        "physics.graphs:velocity_time", "Basılı hız–zaman noktalarından işaretli alan, |v| alanı ve eğim sabitliği.",
+        "Piksellerden okunan değerleri; yalnız basılı değerler kullanılır."),
+    "physics.laws.applicability": Capability(
+        "physics.laws:evaluate", "Yasanın koşullarını satisfied/violated/unknown olarak değerlendirir.",
+        "Bilinmeyen koşulun sağlandığını; varsayım yalnız görünür yazılır."),
+    "physics.conventions.values": Capability(
+        "physics.conventions:read", "Soru uzlaşımları (g, sin/cos, π) ve yazılı idealleştirmeler.",
+        "Metnin görselden doğru okunduğunu."),
+    "reasoning.quantities.compare": Capability(
+        "reasoning.quantities:compare", "Kimlik, tür, boyut, birim, işaret ve yaklaşım politikasıyla cevap karşılaştırması.",
+        "İstenen hedefin doğru belirlendiğini (hedef ayrıca kurulur)."),
     "reasoning.formula.graph_area": Capability("reasoning.formula:graph_area", "Parçalı doğrusal grafiğin altındaki alan.",
                                                "Alanın fiziksel yorumunun soruya uygunluğunu."),
     "reasoning.chemistry.parse_species": Capability("reasoning.chemistry:parse_species", "Formülün bileşimi, hâli ve yükü (yazım düzeyinde).",

@@ -1274,7 +1274,48 @@
    }
   }
  ],
- "policies": [],
+ "policies": [
+  {
+   "id": "physics.lise.genel",
+   "subject": "physics",
+   "topic": "genel",
+   "framework": null,
+   "program_ids": [
+    "meb-2018.fizik.9-12",
+    "tymm-2026.fizik.9-12"
+   ],
+   "grades": [
+    9,
+    10,
+    11,
+    12
+   ],
+   "applicable_when": [
+    "Standart (fen lisesi dışı) lise fizik sorusunun çözüm açıklaması."
+   ],
+   "allowed_operations": [],
+   "forbidden_operations": [
+    {
+     "operation": "derivative",
+     "reason": "Standart lise fizik çözümlerinde türev kullanılmaz; sabit ivmeli bağıntılar ve grafik eğimi kullanılır."
+    },
+    {
+     "operation": "integral",
+     "reason": "Standart lise fizik çözümlerinde integral kullanılmaz; hız–zaman grafiğinin altındaki alan geometrik olarak bulunur."
+    }
+   ],
+   "unsuitable_when": [
+    "Öğrenci düzeyi ve kayıt açıkça kalkülüse izin veriyorsa (ör. ileri düzey talep) bu politika uygulanmaz."
+   ],
+   "preferred_representations": [
+    "serbest cisim diyagramı",
+    "hız–zaman grafiği",
+    "devre şeması"
+   ],
+   "status": "draft",
+   "authored_by": "claude-draft"
+  }
+ ],
  "pending_programs": [
   {
    "id": "tymm-2024.mat5678",

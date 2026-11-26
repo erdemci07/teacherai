@@ -106,6 +106,7 @@ def build_container(settings: Settings | None = None) -> Container:
             sender=resolved_settings.feedback_email_sender,
         )
     vision_provider = _vision_provider(resolved_settings)
+    mathai = IsolatedMathAI()
     return Container(
         settings=resolved_settings,
         token_verifier=FirebaseTokenVerifier(identity_app),
@@ -117,8 +118,10 @@ def build_container(settings: Settings | None = None) -> Container:
         account_deletion=AccountDeletionService(resolved_settings, db, FirebaseIdentity(identity_app)),
         health_service=HealthService(settings=resolved_settings),
         version_service=VersionService(settings=resolved_settings),
-        interaction_service=InteractionService(_interaction_provider(resolved_settings), IsolatedMathAI(), practice_store),
-        lesson_service=LessonService(_lesson_provider(resolved_settings), IsolatedMathAI(), BoardPlanner()),
+        # TA-009 §21: tek MathAI ve tek eşzamanlılık sınırı; iki hizmet süreç üst sınırını ikiye katlamaz.
+        interaction_service=InteractionService(_interaction_provider(resolved_settings), mathai, practice_store),
+        lesson_service=LessonService(_lesson_provider(resolved_settings), mathai, BoardPlanner(),
+                                     physics_enabled=resolved_settings.physics_student_enabled),
         vision_service=VisionService(
             provider=vision_provider,
             storage=LocalTemporaryImageStorage(resolved_settings.upload_temp_directory),

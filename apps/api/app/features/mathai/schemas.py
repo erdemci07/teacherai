@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..education.mathematics import GraphSegment, MathematicsReport
+from ..education.physics import PhysicsReport
 from ..education.reasoning import TargetResolution
 
 
@@ -42,3 +43,5 @@ class VerificationResult(BaseModel):
     target:TargetResolution|None=None
     # TA-008: matematik uzmanlığı raporu (aynı yalıtılmış işçide). Durumu yalnız zayıflatabilir.
     mathematics:MathematicsReport|None=None
+    # TA-009: fizik doğrulama raporu (yalnız fizik dersinde; aynı yalıtılmış işçide).
+    physics:PhysicsReport|None=None

@@ -29,6 +29,7 @@ from hashlib import sha256
 from fastapi import HTTPException
 
 from ..lessons.schemas import LessonPlan
+from . import priority
 from .parser import MathParseError
 from .schemas import VerificationResult
 from .worker import READY
@@ -60,40 +61,86 @@ def _env_int(name, default):
         return default
 
 
+class Limiter:
+    """Süreç başına tek eşzamanlılık sınırı (TA-009 §21). Ders ve etkileşim hizmetleri aynı nesneyi paylaşır; böylece
+    ``TEACHERAI_MATHAI_MAX_PROCESSES`` örnek başına gerçekten üst sınırdır (TA-008B'de iki ayrı semafor vardı)."""
+
+    def __init__(self, max_processes: int, max_waiting: int):
+        self.max_processes = max_processes
+        self.max_waiting = max_waiting
+        self.slots = threading.BoundedSemaphore(max_processes)
+        self.lock = threading.Lock()
+        self.waiting = 0
+
+
+_SHARED: Limiter | None = None
+_SHARED_GUARD = threading.Lock()
+
+
+def shared_limiter() -> Limiter:
+    global _SHARED
+    with _SHARED_GUARD:
+        if _SHARED is None:
+            processes = _env_int("TEACHERAI_MATHAI_MAX_PROCESSES", os.cpu_count() or 2)
+            _SHARED = Limiter(processes, _env_int("TEACHERAI_MATHAI_MAX_WAITING", 4 * processes))
+        return _SHARED
+
+
+def reset_shared_limiter() -> None:
+    """Yalnız testler: ortam değişkeni değiştirildikten sonra paylaşılan sınırı yeniden kurar."""
+    global _SHARED
+    with _SHARED_GUARD:
+        _SHARED = None
+
+
 class IsolatedMathAI:
     timeout_seconds = 8.0
     queue_timeout_seconds = 2.0
+    # TA-009 §21: ücretli sağlayıcı çağrısından sonraki doğrulama için sınırlı, daha uzun bekleme.
+    post_provider_queue_timeout_seconds = float(os.environ.get("TEACHERAI_MATHAI_POST_PROVIDER_WAIT", "10"))
     retry_after_seconds = 2
     cache_size = 32
 
-    def __init__(self, max_processes: int | None = None, max_waiting: int | None = None):
-        self.max_processes = max_processes or _env_int("TEACHERAI_MATHAI_MAX_PROCESSES", os.cpu_count() or 2)
-        self.max_waiting = max_waiting if max_waiting is not None else _env_int(
-            "TEACHERAI_MATHAI_MAX_WAITING", 4 * self.max_processes)
-        self._slots = threading.BoundedSemaphore(self.max_processes)
-        self._lock = threading.Lock()
-        self._waiting = 0
+    def __init__(self, max_processes: int | None = None, max_waiting: int | None = None, limiter: Limiter | None = None):
+        if limiter is None and (max_processes is not None or max_waiting is not None):
+            processes = max_processes or _env_int("TEACHERAI_MATHAI_MAX_PROCESSES", os.cpu_count() or 2)
+            limiter = Limiter(processes, max_waiting if max_waiting is not None else 4 * processes)
+        self.limiter = limiter or shared_limiter()
+        self.max_processes = self.limiter.max_processes
+        self.max_waiting = self.limiter.max_waiting
+        self._lock = threading.Lock()  # yalnız doğrulama önbelleği
         self._verified: OrderedDict[str, dict] = OrderedDict()
         self.last_timing: dict | None = None  # ölçüm betiği için: spawn ve hesaplama ayrı
         self.last_phases: dict | None = None
 
+    @property
+    def _slots(self) -> threading.BoundedSemaphore:
+        return self.limiter.slots
+
+    @property
+    def _waiting(self) -> int:
+        return self.limiter.waiting
+
     def _acquire(self):
-        if self._slots.acquire(blocking=False):
+        limiter = self.limiter
+        if limiter.slots.acquire(blocking=False):
             return
-        with self._lock:
-            if self._waiting >= self.max_waiting:
+        paid = priority.active()
+        with limiter.lock:
+            if limiter.waiting >= limiter.max_waiting and not paid:
                 logger.warning(json.dumps({"event": "mathai_unavailable", "code": "mathai_busy", "reason": "queue_full",
-                                           "waiting": self._waiting, "max_waiting": self.max_waiting}))
+                                           "waiting": limiter.waiting, "max_waiting": limiter.max_waiting}))
                 raise MathAIUnavailable("mathai_busy", self.retry_after_seconds)
-            self._waiting += 1
+            limiter.waiting += 1
+        wait = self.post_provider_queue_timeout_seconds if paid else self.queue_timeout_seconds
         try:
-            if not self._slots.acquire(timeout=self.queue_timeout_seconds):
+            if not limiter.slots.acquire(timeout=wait):
                 logger.warning(json.dumps({"event": "mathai_unavailable", "code": "mathai_busy", "reason": "queue_wait",
-                                           "queue_timeout_seconds": self.queue_timeout_seconds}))
+                                           "queue_timeout_seconds": wait, "after_paid_call": paid}))
                 raise MathAIUnavailable("mathai_busy", self.retry_after_seconds)
         finally:
-            with self._lock:
-                self._waiting -= 1
+            with limiter.lock:
+                limiter.waiting -= 1
 
     def _run(self, operation, data):
         self._acquire()

@@ -5,7 +5,7 @@
  "entries": [
   {
    "id": "phys.mass-weight",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kuvvet_ve_hareket",
    "kind": "definition",
@@ -46,6 +46,11 @@
     {
      "verifier": "reasoning.units.dimension",
      "checks_tr": "mg çarpımının kuvvet boyutunda olduğu. Doğru yasanın seçildiğini kanıtlamaz."
+    },
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -66,7 +71,22 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "dynamics.weight",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.units.dimension\", \"checks_tr\": \"mg çarpımının kuvvet boyutunda olduğu. Doğru yasanın seçildiğini kanıtlamaz.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.newton-first-law",
@@ -106,11 +126,12 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "verifiers": []
   },
   {
    "id": "phys.newton-second-law",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "newton_yasalari",
    "kind": "law",
@@ -162,6 +183,16 @@
     {
      "verifier": "reasoning.formula.dimensions",
      "checks_tr": "Formül iki tarafının boyut uyumu."
+    },
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -182,7 +213,22 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "dynamics.newton_second",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Verilen nicelikler ve birimlerle F = ma hesabı.\"}, {\"verifier\": \"reasoning.formula.dimensions\", \"checks_tr\": \"Formül iki tarafının boyut uyumu.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.newton-third-law",
@@ -219,7 +265,8 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "verifiers": []
   },
   {
    "id": "phys.free-body-diagram",
@@ -254,11 +301,13 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "verifiers": [],
+   "conditions_tr": []
   },
   {
    "id": "phys.constant-acceleration",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kinematik",
    "kind": "relationship",
@@ -294,6 +343,21 @@
     {
      "verifier": "reasoning.formula.graph_area",
      "checks_tr": "Hız-zaman grafiği altındaki alandan yer değiştirme."
+    },
+    {
+     "verifier": "physics.kinematics.constant_acceleration",
+     "checks_tr": "Sabit ivme koşulu kurulduğunda hedef niceliğin belirlenimci çözümü.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.graphs.velocity_time",
+     "checks_tr": "Basılı hız–zaman noktalarından eğim, işaretli alan ve |v| alanı.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -314,11 +378,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "kinematics.constant_acceleration",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Sayısal yerine koyma ve birimli sonuç.\"}, {\"verifier\": \"reasoning.formula.graph_slope\", \"checks_tr\": \"Hız-zaman grafiğinde eğimden ivme.\"}, {\"verifier\": \"reasoning.formula.graph_area\", \"checks_tr\": \"Hız-zaman grafiği altındaki alandan yer değiştirme.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.free-fall",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kinematik",
    "kind": "relationship",
@@ -356,11 +435,38 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "verifiers": [
+    {
+     "verifier": "physics.kinematics.constant_acceleration",
+     "checks_tr": "Sabit ivme koşulu kurulduğunda hedef niceliğin belirlenimci çözümü.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.conventions.values",
+     "checks_tr": "Sorunun verdiği uzlaşımların standart sabitin önüne geçmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "applicability_law": "kinematics.free_fall",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.standard-gravity",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kinematik",
    "kind": "fact",
@@ -387,6 +493,11 @@
     {
      "verifier": "reasoning.units.conversion",
      "checks_tr": "İvme birimleri arasında dönüşüm."
+    },
+    {
+     "verifier": "physics.conventions.values",
+     "checks_tr": "Sorunun verdiği uzlaşımların standart sabitin önüne geçmesi.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -405,11 +516,25 @@
     "license_versions": [],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "conditions_tr": [],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "verifiers"
+     ],
+     "previous_json": "{\"verifiers\": [{\"verifier\": \"reasoning.units.conversion\", \"checks_tr\": \"İvme birimleri arasında dönüşüm.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.work-energy-theorem",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "enerji",
    "kind": "theorem",
@@ -429,6 +554,11 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "Sayısal iş ve kinetik enerji hesabı."
+    },
+    {
+     "verifier": "physics.energy.conservation",
+     "checks_tr": "Tek cisim, tek evrede enerji dengesi (sürtünme işi dahil).",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -449,11 +579,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "energy.work_energy",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Sayısal iş ve kinetik enerji hesabı.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.mechanical-energy-conservation",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "enerji",
    "kind": "law",
@@ -477,6 +622,16 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "Enerji denkleminin sayısal çözümü. Sürtünmenin ihmal edilebilir olduğunu kanıtlamaz."
+    },
+    {
+     "verifier": "physics.energy.conservation",
+     "checks_tr": "Tek cisim, tek evrede enerji dengesi (sürtünme işi dahil).",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -497,11 +652,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "energy.mechanical_conservation",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Enerji denkleminin sayısal çözümü. Sürtünmenin ihmal edilebilir olduğunu kanıtlamaz.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.momentum-conservation",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "momentum",
    "kind": "law",
@@ -525,6 +695,16 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "Momentum denkleminin sayısal çözümü."
+    },
+    {
+     "verifier": "physics.momentum.collision",
+     "checks_tr": "Tek doğrultuda çarpışmada momentum dengesi ve kinetik enerji değişimi.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -545,11 +725,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "momentum.conservation",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Momentum denkleminin sayısal çözümü.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.ohms-law",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "law",
@@ -600,6 +795,11 @@
     {
      "verifier": "reasoning.evidence.constant_ratio",
      "checks_tr": "Ölçüm tablosunda V/I oranının sabit olup olmadığı (ohmik davranış verisi)."
+    },
+    {
+     "verifier": "physics.circuits.nodal",
+     "checks_tr": "Bağlantı grafiğinden akım ve gerilimler; düğümde akım dengesi.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -620,11 +820,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "circuit.ohm",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"V = IR hesabı ve birimli sonuç.\"}, {\"verifier\": \"reasoning.evidence.constant_ratio\", \"checks_tr\": \"Ölçüm tablosunda V/I oranının sabit olup olmadığı (ohmik davranış verisi).\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.resistivity",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "relationship",
@@ -665,11 +880,25 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "circuit.resistivity",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.series-parallel",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "relationship",
@@ -692,6 +921,11 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "Eşdeğer direnç hesabı (devre şemasının doğru okunduğunu kanıtlamaz)."
+    },
+    {
+     "verifier": "physics.circuits.equivalent_resistance",
+     "checks_tr": "İki düğüm arasındaki eşdeğer direnç.",
+     "coverage": "partial"
     }
    ],
    "provenance": [
@@ -712,11 +946,26 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "circuit.series_parallel",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"Eşdeğer direnç hesabı (devre şemasının doğru okunduğunu kanıtlamaz).\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.density",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "madde_ve_ozellikleri",
    "kind": "definition",
@@ -767,11 +1016,25 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "applicability_law": "matter.density",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
+   ]
   },
   {
    "id": "phys.pressure",
-   "version": 2,
+   "version": 3,
    "subject": "physics",
    "topic": "basinc",
    "kind": "relationship",
@@ -831,8 +1094,20 @@
      ],
      "previous_json": "{\"statement_tr\": \"Basınç birim yüzeye dik etki eden kuvvettir. Durgun ve sıkıştırılamaz bir sıvıda derinlik arttıkça basınç ρgh kadar artar; bu artış kabın biçimine bağlı değildir.\"}",
      "audit_ref": "TA-007-draft-audit"
+    },
+    {
+     "version": 3,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
     }
-   ]
+   ],
+   "applicability_law": "fluids.hydrostatic"
   },
   {
    "id": "phys.si-base-units",
@@ -873,7 +1148,8 @@
     ],
     "commercial_use": "unknown",
     "decision": "pending"
-   }
+   },
+   "conditions_tr": []
   },
   {
    "id": "phys.planetary-gravity",
@@ -927,11 +1203,12 @@
      "previous_json": "{\"assumptions_tr\": null}",
      "audit_ref": "TA-007-draft-audit"
     }
-   ]
+   ],
+   "verifiers": []
   },
   {
    "id": "phys.scalars-vectors",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "vektorler",
    "kind": "definition",
@@ -967,11 +1244,32 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.1.1"
+   ],
+   "verifiers": [
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
+    }
+   ],
+   "conditions_tr": [],
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "verifiers"
+     ],
+     "previous_json": "{\"verifiers\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.average-velocity",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kinematik",
    "kind": "definition",
@@ -1007,6 +1305,11 @@
     {
      "verifier": "reasoning.formula.graph_slope",
      "checks_tr": "Konum-zaman grafiğinden eğim."
+    },
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
     }
    ],
    "visuals": [
@@ -1021,11 +1324,30 @@
    ],
    "outcome_refs": [
     "meb-2018.fizik.9-12::9.3.1.2"
+   ],
+   "conditions_tr": [
+    "Ortalama hız yer değiştirmeye, ortalama sürat alınan yola bağlıdır; hareket yön değiştirirse ikisi farklıdır."
+   ],
+   "applicability_law": "kinematics.average_velocity",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.graph_slope\", \"checks_tr\": \"Konum-zaman grafiğinden eğim.\"}], \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.projectile-motion",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "iki_boyutta_hareket",
    "kind": "relationship",
@@ -1069,11 +1391,33 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.1.5"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.kinematics.constant_acceleration",
+     "checks_tr": "Sabit ivme koşulu kurulduğunda hedef niceliğin belirlenimci çözümü.",
+     "coverage": "partial"
+    }
+   ],
+   "applicability_law": "kinematics.free_fall",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.uniform-circular-motion",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "cembersel_hareket",
    "kind": "relationship",
@@ -1113,11 +1457,26 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::12.1.1"
+   ],
+   "verifiers": [],
+   "applicability_law": "circular.uniform",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.friction",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kuvvet",
    "kind": "relationship",
@@ -1144,7 +1503,8 @@
    },
    "representation": "f_k=\\mu_k N",
    "conditions_tr": [
-    "Ampirik yaklaşımdır; yüzeyler ve hızla değişebilir."
+    "Ampirik yaklaşımdır; yüzeyler ve hızla değişebilir.",
+    "Kinetik sürtünme yalnız kayma varken kullanılır; kayma yokken statik sürtünme f_s ≤ μ_s N eşitsizliğiyle gerektiği kadar büyür. Önce kayma durumu belirlenir."
    ],
    "misconceptions_tr": [
     "Sürtünmenin her zaman harekete zıt yönde olduğunu sanmak (yürümede ileri yönde olabilir).",
@@ -1159,11 +1519,34 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::9.3.4"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    }
+   ],
+   "applicability_law": "dynamics.friction",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [], \"conditions_tr\": [\"Ampirik yaklaşımdır; yüzeyler ve hızla değişebilir.\"]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.centripetal-force",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "cembersel_hareket",
    "kind": "relationship",
@@ -1201,11 +1584,30 @@
    "related": [
     "phys.uniform-circular-motion",
     "phys.newton-second-law"
+   ],
+   "verifiers": [],
+   "conditions_tr": [
+    "Düzgün çembersel hareket; merkezcil kuvvet ayrı bir kuvvet değil, merkeze doğru olan bileşke kuvvettir."
+   ],
+   "applicability_law": "circular.centripetal_force",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.work",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "enerji",
    "kind": "definition",
@@ -1256,11 +1658,25 @@
    "outcome_refs": [
     "meb-2018.fizik.9-12::9.4.1.2",
     "tymm-2026.fizik.9-12::FIZ.10.2.2"
+   ],
+   "applicability_law": "energy.work_constant_force",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.kinetic-energy",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "enerji",
    "kind": "definition",
@@ -1296,6 +1712,11 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "½mv² hesabı ve birim."
+    },
+    {
+     "verifier": "physics.energy.conservation",
+     "checks_tr": "Tek cisim, tek evrede enerji dengesi (sürtünme işi dahil).",
+     "coverage": "partial"
     }
    ],
    "quantities": [
@@ -1304,11 +1725,26 @@
      "name_tr": "kinetik enerji",
      "si_unit": "J"
     }
+   ],
+   "applicability_law": "energy.kinetic",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"½mv² hesabı ve birim.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.power",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "enerji",
    "kind": "definition",
@@ -1352,11 +1788,29 @@
    ],
    "outcome_refs": [
     "meb-2018.fizik.9-12::9.4.1.2"
+   ],
+   "conditions_tr": [
+    "Ortalama güçtür; anlık güç ayrıca tanımlanır (sabit kuvvette P = F v)."
+   ],
+   "applicability_law": "energy.power_average",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.impulse",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "momentum",
    "kind": "theorem",
@@ -1402,11 +1856,25 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.1.7"
+   ],
+   "applicability_law": "momentum.impulse",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.collisions",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "momentum",
    "kind": "relationship",
@@ -1442,6 +1910,28 @@
    ],
    "related": [
     "phys.momentum-conservation"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.momentum.collision",
+     "checks_tr": "Tek doğrultuda çarpışmada momentum dengesi ve kinetik enerji değişimi.",
+     "coverage": "partial"
+    }
+   ],
+   "applicability_law": "momentum.conservation",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
@@ -1488,11 +1978,12 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.1.9"
-   ]
+   ],
+   "verifiers": []
   },
   {
    "id": "phys.universal-gravitation",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "kutle_cekimi",
    "kind": "law",
@@ -1535,6 +2026,20 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::12.1.4"
+   ],
+   "applicability_law": "gravitation.universal",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
@@ -1578,11 +2083,12 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.2.1"
-   ]
+   ],
+   "verifiers": []
   },
   {
    "id": "phys.archimedes",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "akiskanlar",
    "kind": "law",
@@ -1628,11 +2134,25 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.2.2"
+   ],
+   "applicability_law": "fluids.archimedes",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.simple-harmonic-motion",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "titresim",
    "kind": "relationship",
@@ -1669,11 +2189,26 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::12.2.1"
+   ],
+   "verifiers": [],
+   "applicability_law": "oscillation.spring_mass",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.wave-speed",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "dalgalar",
    "kind": "relationship",
@@ -1719,6 +2254,25 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.3.1"
+   ],
+   "verifiers": [],
+   "conditions_tr": [
+    "Periyodik dalga ve düzgün ortam; hız ortama, frekans kaynağa bağlıdır."
+   ],
+   "applicability_law": "waves.speed",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
@@ -1757,7 +2311,9 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.3.4"
-   ]
+   ],
+   "verifiers": [],
+   "conditions_tr": []
   },
   {
    "id": "phys.thermal-equilibrium",
@@ -1800,11 +2356,12 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::9.5.3"
-   ]
+   ],
+   "verifiers": []
   },
   {
    "id": "phys.specific-heat",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "isi_sicaklik",
    "kind": "relationship",
@@ -1844,11 +2401,25 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::9.5.1"
+   ],
+   "applicability_law": "thermo.specific_heat",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.latent-heat",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "isi_sicaklik",
    "kind": "relationship",
@@ -1885,11 +2456,26 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::9.5.2"
+   ],
+   "verifiers": [],
+   "applicability_law": "thermo.latent_heat",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.first-law-thermodynamics",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "termodinamik",
    "kind": "law",
@@ -1920,11 +2506,26 @@
    ],
    "levels": [
     "11-12. sınıf"
+   ],
+   "verifiers": [],
+   "applicability_law": "thermo.first_law",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.coulomb-law",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrostatik",
    "kind": "law",
@@ -1964,11 +2565,25 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.2.1"
+   ],
+   "applicability_law": "electrostatics.coulomb",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.electric-current",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "definition",
@@ -2012,11 +2627,30 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.1.1"
+   ],
+   "verifiers": [],
+   "conditions_tr": [
+    "Ortalama akımdır; anlık akım için aralık çok küçük alınır."
+   ],
+   "applicability_law": "circuit.current",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.electric-power",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "relationship",
@@ -2052,15 +2686,35 @@
     {
      "verifier": "reasoning.formula.evaluate",
      "checks_tr": "P = VI hesabı."
+    },
+    {
+     "verifier": "physics.circuits.nodal",
+     "checks_tr": "Bağlantı grafiğinden akım ve gerilimler; düğümde akım dengesi.",
+     "coverage": "partial"
     }
    ],
    "related": [
     "phys.ohms-law"
+   ],
+   "applicability_law": "circuit.power",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": [{\"verifier\": \"reasoning.formula.evaluate\", \"checks_tr\": \"P = VI hesabı.\"}]}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.kirchhoff-rules",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "elektrik",
    "kind": "law",
@@ -2096,6 +2750,28 @@
    ],
    "related": [
     "phys.series-parallel"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.circuits.nodal",
+     "checks_tr": "Bağlantı grafiğinden akım ve gerilimler; düğümde akım dengesi.",
+     "coverage": "partial"
+    }
+   ],
+   "applicability_law": "circuit.kirchhoff",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "verifiers"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"verifiers\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
@@ -2136,11 +2812,13 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.1.3"
-   ]
+   ],
+   "verifiers": [],
+   "conditions_tr": []
   },
   {
    "id": "phys.faraday-law",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "manyetizma",
    "kind": "law",
@@ -2174,6 +2852,21 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::11.2.4"
+   ],
+   "verifiers": [],
+   "applicability_law": "induction.faraday",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
@@ -2218,11 +2911,12 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.4.3"
-   ]
+   ],
+   "verifiers": []
   },
   {
    "id": "phys.refraction-snell",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "optik",
    "kind": "law",
@@ -2260,11 +2954,26 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.4.6"
+   ],
+   "verifiers": [],
+   "applicability_law": "optics.snell",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.thin-lens",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "optik",
    "kind": "relationship",
@@ -2298,11 +3007,26 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::10.4.7"
+   ],
+   "verifiers": [],
+   "applicability_law": "optics.thin_lens",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.photoelectric-effect",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "modern_fizik",
    "kind": "relationship",
@@ -2336,11 +3060,30 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::12.5.3"
+   ],
+   "verifiers": [],
+   "conditions_tr": [
+    "Yalnız eşik frekansının üstündeki ışıkta elektron sökülür; en büyük kinetik enerji ışık şiddetine bağlı değildir."
+   ],
+   "applicability_law": "modern.photoelectric",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law",
+      "conditions_tr"
+     ],
+     "previous_json": "{\"applicability_law\": null, \"conditions_tr\": []}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
   },
   {
    "id": "phys.radioactive-decay",
-   "version": 1,
+   "version": 2,
    "subject": "physics",
    "topic": "modern_fizik",
    "kind": "relationship",
@@ -2377,7 +3120,874 @@
    ],
    "curriculum_topic_refs": [
     "meb-2018.fizik.9-12::12.4.3"
+   ],
+   "verifiers": [],
+   "applicability_law": "modern.radioactive_decay",
+   "revisions": [
+    {
+     "version": 2,
+     "revised_on": "2026-11-26",
+     "author": "claude-draft",
+     "summary_tr": "TA-009: uygulanabilirlik yasası bağı, fizik denetleyicileri ve eksik geçerlilik koşulları eklendi.",
+     "changed_fields": [
+      "applicability_law"
+     ],
+     "previous_json": "{\"applicability_law\": null}",
+     "audit_ref": "TA-009-physics-audit"
+    }
    ]
+  },
+  {
+   "id": "phys.speed-vs-velocity",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "definition",
+   "title_tr": "Sürat ve hız",
+   "statement_tr": "Sürat, alınan yolun geçen süreye oranıdır ve skalerdir; hız, yer değiştirmenin geçen süreye oranıdır ve yönü olan bir vektördür. Hız eksen üzerinde işaretli bir bileşenle yazılabilir; sürat negatif olamaz.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Ortalama değerler aynı zaman aralığı için karşılaştırılır."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [
+    "phys.average-velocity",
+    "phys.scalars-vectors"
+   ],
+   "misconceptions_tr": [
+    "Sürat ve hızı aynı nicelik saymak.",
+    "Negatif hızı 'yavaşlama' sanmak (işaret yön bildirir)."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.2 Instantaneous Velocity and Speed",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-2-instantaneous-velocity-and-speed",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.distance-vs-displacement",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "definition",
+   "title_tr": "Alınan yol ve yer değiştirme",
+   "statement_tr": "Yer değiştirme son konumla ilk konum arasındaki farktır (vektör); alınan yol izlenen yörüngenin toplam uzunluğudur (skaler, negatif değil). Yön değiştiren harekette alınan yol yer değiştirmenin büyüklüğünden büyüktür.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Hareket aynı zaman aralığında karşılaştırılır."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [
+    "phys.speed-vs-velocity"
+   ],
+   "misconceptions_tr": [
+    "Geri dönülen harekette alınan yolu sıfır saymak."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.graphs.velocity_time",
+     "checks_tr": "Basılı hız–zaman noktalarından eğim, işaretli alan ve |v| alanı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.1 Position, Displacement, and Average Velocity",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-1-position-displacement-and-average-velocity",
+     "page": null,
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.velocity-time-graph",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kinematik",
+   "kind": "relationship",
+   "title_tr": "Hız–zaman grafiğinin eğimi ve alanı",
+   "statement_tr": "Hız–zaman grafiğinde eğim ivmeyi verir. Grafikle zaman ekseni arasındaki işaretli alan yer değiştirmedir; hız işaret değiştiriyorsa alınan yol, eksenin altındaki parçalar artı sayılarak bulunur.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Eksenlerin birimi ve ölçeği bilinmelidir; değerler basılı noktalardan okunur.",
+    "Eğim aralık boyunca değişiyorsa ivme sabit değildir."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Hız–zaman grafiğinin altındaki alanı her zaman alınan yol saymak."
+   ],
+   "visuals": [
+    "coordinate_graph"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.graphs.velocity_time",
+     "checks_tr": "Basılı hız–zaman noktalarından eğim, işaretli alan ve |v| alanı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "3.3 Average and Instantaneous Acceleration",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/3-3-average-and-instantaneous-acceleration",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf",
+    "11. sınıf"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.normal-force",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "definition",
+   "title_tr": "Yüzeyin tepki (normal) kuvveti",
+   "statement_tr": "Bir yüzey, üzerine bastıran cisme yüzeye dik doğrultuda tepki kuvveti uygular. Büyüklüğü her zaman ağırlığa eşit değildir: eğik düzlemde ve eğik çekilen cisimde dik bileşenlerin dengesinden bulunur.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Cisim yüzeyle temas hâlindedir; tepki kuvveti negatif olamaz (negatifse cisim yüzeyden ayrılır)."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [
+    "phys.newton-second-law"
+   ],
+   "misconceptions_tr": [
+    "Tepki kuvvetini her durumda m g saymak."
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.6 Common Forces",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-6-common-forces",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9-12. sınıf (lise fiziği)"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.tension",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "definition",
+   "title_tr": "İp gerilmesi",
+   "statement_tr": "Gergin bir ip, bağlı olduğu cisme ip doğrultusunda ve cismi ipe doğru çeken bir kuvvet uygular. İp gevşekse gerilme sıfırdır; ip itemez.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "İp gergindir."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [
+    "phys.ideal-string-tension"
+   ],
+   "misconceptions_tr": [
+    "Gerilmeyi asılı cismin ağırlığına her zaman eşit saymak."
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "5.6 Common Forces",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/5-6-common-forces",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9-12. sınıf (lise fiziği)"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.ideal-string-tension",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "relationship",
+   "title_tr": "Kütlesiz ip ve ideal makara",
+   "statement_tr": "Kütlesi önemsiz ip ve kütlesiz, sürtünmesiz makara varsayımıyla gerilme ip boyunca aynıdır ve iple bağlı cisimler aynı büyüklükte ivmeyle hareket eder.",
+   "representation": "T_1 = T_2",
+   "quantities": [],
+   "conditions_tr": [
+    "İp esnemez ve gergindir."
+   ],
+   "assumptions_tr": [
+    "İpin kütlesi önemsizdir.",
+    "Makara kütlesiz ve sürtünmesizdir."
+   ],
+   "exceptions_tr": [
+    "Kütleli makarada iki taraftaki gerilmeler farklıdır."
+   ],
+   "related": [],
+   "misconceptions_tr": [],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "6.1 Solving Problems with Newton’s Laws",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/6-1-solving-problems-with-newtons-laws",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf",
+    "11. sınıf"
+   ],
+   "applicability_law": "dynamics.ideal_string"
+  },
+  {
+   "id": "phys.static-friction-decision",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "method",
+   "title_tr": "Statik mi kinetik mi: kayma kararı",
+   "statement_tr": "Durgun bir cisimde önce sürükleyici kuvvetlerin yüzey boyunca bileşkesi μ_s N ile karşılaştırılır. Bileşke μ_s N'yi aşmıyorsa cisim kaymaz, ivme sıfırdır ve statik sürtünme bileşkeye eşittir; aşıyorsa cisim kayar ve kinetik sürtünme μ_k N kullanılır.",
+   "representation": "f_s \\le \\mu_s N",
+   "quantities": [],
+   "conditions_tr": [
+    "Cisim başlangıçta durgundur; hareket eden cisimde doğrudan kinetik sürtünme kullanılır."
+   ],
+   "assumptions_tr": [
+    "Tek katsayı verilmişse statik ve kinetik katsayıların eşit alındığı açıkça yazılır."
+   ],
+   "exceptions_tr": [],
+   "related": [
+    "phys.friction"
+   ],
+   "misconceptions_tr": [
+    "Kuvvet uygulanınca cismin mutlaka kaydığını sanmak.",
+    "Statik sürtünmeyi hep μ_s N saymak."
+   ],
+   "visuals": [
+    "free_body_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "6.2 Friction",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/6-2-friction",
+     "page": null,
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf",
+    "11. sınıf"
+   ],
+   "applicability_law": "dynamics.friction"
+  },
+  {
+   "id": "phys.inclined-plane",
+   "version": 1,
+   "subject": "physics",
+   "topic": "kuvvet",
+   "kind": "relationship",
+   "title_tr": "Eğik düzlemde kuvvet bileşenleri",
+   "statement_tr": "Eğim açısı α olan düzlemde ağırlık, düzlem boyunca m g sin α ve düzleme dik m g cos α bileşenlerine ayrılır. Tepki kuvveti dik bileşenler dengesinden, ivme düzlem boyunca bileşke kuvvetten bulunur.",
+   "representation": "F_{\\parallel} = m g \\sin\\alpha,\\ N = m g \\cos\\alpha",
+   "quantities": [],
+   "conditions_tr": [
+    "Cisim düzlem üzerinde kalır; düzleme dik ek kuvvet varsa tepki kuvveti değişir.",
+    "sin α ve cos α soru uzlaşımından alınır; verilmemiş açı değeri uydurulmaz."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Bileşenlerde sin ile cos'u karıştırmak."
+   ],
+   "visuals": [
+    "free_body_diagram",
+    "vector_diagram"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.dynamics.newton",
+     "checks_tr": "Kurulmuş kuvvetlerle Newton'un ikinci yasasından ivme, gerilme, tepki ve sürtünme.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "6.2 Friction",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/6-2-friction",
+     "page": null,
+     "verified_on": "2026-11-24"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "11. sınıf"
+   ],
+   "applicability_law": "dynamics.newton_second"
+  },
+  {
+   "id": "phys.gravitational-potential-energy",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "definition",
+   "title_tr": "Yerçekimi potansiyel enerjisi",
+   "statement_tr": "Yüzeye yakın düzgün yerçekimi alanında m kütleli cismin, seçilen sıfır düzeyine göre h yüksekliğindeki potansiyel enerjisi m g h'dir. Önemli olan iki konum arasındaki farktır; sıfır düzeyi keyfi seçilir.",
+   "representation": "E_p = m g h",
+   "quantities": [
+    {
+     "symbol": "m",
+     "name_tr": "kütle",
+     "si_unit": "kg"
+    },
+    {
+     "symbol": "g",
+     "name_tr": "yerçekimi ivmesi",
+     "si_unit": "m/s²"
+    },
+    {
+     "symbol": "h",
+     "name_tr": "yükseklik",
+     "si_unit": "m"
+    }
+   ],
+   "conditions_tr": [
+    "Yükseklik farkı Dünya yarıçapına göre küçüktür."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Potansiyel enerjinin mutlak bir değeri olduğunu sanmak."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "physics.energy.conservation",
+     "checks_tr": "Tek cisim, tek evrede enerji dengesi (sürtünme işi dahil).",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "8.1 Potential Energy of a System",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/8-1-potential-energy-of-a-system",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "applicability_law": "energy.gravitational_potential"
+  },
+  {
+   "id": "phys.nonconservative-work",
+   "version": 1,
+   "subject": "physics",
+   "topic": "enerji",
+   "kind": "relationship",
+   "title_tr": "Sürtünme ve mekanik enerji",
+   "statement_tr": "Sürtünme gibi korunumsuz kuvvetlerin işi mekanik enerjiyi değiştirir: mekanik enerjideki değişim korunumsuz kuvvetlerin yaptığı işe eşittir. Sürtünmeli yüzeyde mekanik enerjinin korunumu, bu iş hesaba katılmadan uygulanamaz.",
+   "representation": "W_{nc} = \\Delta E_{mek}",
+   "quantities": [],
+   "conditions_tr": [
+    "Korunumsuz kuvvetlerin işi açıkça hesaplanır."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [
+    "phys.mechanical-energy-conservation"
+   ],
+   "misconceptions_tr": [
+    "Sürtünmeli eğik düzlemde mekanik enerjinin korunduğunu sanmak."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "physics.energy.conservation",
+     "checks_tr": "Tek cisim, tek evrede enerji dengesi (sürtünme işi dahil).",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "physics.laws.applicability",
+     "checks_tr": "Yasanın koşullarının satisfied/violated/unknown değerlendirmesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "8.2 Conservative and Non-Conservative Forces",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/8-2-conservative-and-non-conservative-forces",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9-10. sınıf"
+   ],
+   "applicability_law": "energy.nonconservative_work"
+  },
+  {
+   "id": "phys.internal-resistance",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "relationship",
+   "title_tr": "Üretecin iç direnci ve uç gerilimi",
+   "statement_tr": "Gerçek bir üretecin iç direnci vardır; akım geçerken uç gerilimi EMK'dan iç dirençteki gerilim düşümü kadar azdır. Devre akımı EMK'nın toplam dirence (dış dirençler + iç direnç) oranıdır.",
+   "representation": "V = \\varepsilon - I r",
+   "quantities": [
+    {
+     "symbol": "\\varepsilon",
+     "name_tr": "elektromotor kuvvet",
+     "si_unit": "V"
+    },
+    {
+     "symbol": "r",
+     "name_tr": "iç direnç",
+     "si_unit": "Ω"
+    }
+   ],
+   "conditions_tr": [
+    "Doğru akım, kararlı durum; iç direnç sabittir."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Akım hesabında iç direnci unutmak."
+   ],
+   "visuals": [
+    "circuit"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.circuits.nodal",
+     "checks_tr": "Bağlantı grafiğinden akım ve gerilimler; düğümde akım dengesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "10.1 Electromotive Force",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/10-1-electromotive-force",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "10. sınıf"
+   ],
+   "applicability_law": "circuit.internal_resistance"
+  },
+  {
+   "id": "phys.ideal-meters",
+   "version": 1,
+   "subject": "physics",
+   "topic": "elektrik",
+   "kind": "definition",
+   "title_tr": "İdeal ampermetre ve voltmetre",
+   "statement_tr": "Ampermetre ölçtüğü akımın geçtiği kola seri, voltmetre ölçtüğü uçlara paralel bağlanır. İdeal ampermetrenin direnci sıfır, ideal voltmetrenin direnci sonsuz kabul edilir; böylece ölçüm devreyi değiştirmez.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Ölçü aletleri ideal değilse kendi dirençleri hesaba katılır."
+   ],
+   "assumptions_tr": [
+    "Soruda belirtilmemişse ölçü aletlerinin ideal kabul edildiği açıkça yazılır."
+   ],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Voltmetreyi seri bağlamanın aynı sonucu verdiğini sanmak."
+   ],
+   "visuals": [
+    "circuit"
+   ],
+   "verifiers": [
+    {
+     "verifier": "physics.circuits.nodal",
+     "checks_tr": "Bağlantı grafiğinden akım ve gerilimler; düğümde akım dengesi.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-2",
+     "section": "10.4 Electrical Measuring Instruments",
+     "url": "https://openstax.org/books/university-physics-volume-2/pages/10-4-electrical-measuring-instruments",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "10. sınıf"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.unit-conversion",
+   "version": 1,
+   "subject": "physics",
+   "topic": "olcme",
+   "kind": "method",
+   "title_tr": "Birim dönüşümü ve sınav birimleri",
+   "statement_tr": "Dönüşüm, birimin SI karşılığıyla çarpılarak yapılır: 72 km/sa = 20 m/s, 1 kWh = 3,6 × 10⁶ J, 1 atm = 101 325 Pa. Soru kendi dönüşüm uzlaşımını veriyorsa (ör. 1 atm = 76 cmHg) o kullanılır. Celsius ötelemeli bir ölçektir; sıcaklık farkı ile mutlak sıcaklık ayrı ele alınır.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Dönüşüm çarpanı tanımlı veya kaynaklı standart değerdir."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "km/sa değerini m/s'ye çevirmeden saniyeyle çarpmak."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "reasoning.units.conversion",
+     "checks_tr": "Önekli ve sınav birimleri arasında kaynaklı dönüşüm.",
+     "coverage": "partial"
+    },
+    {
+     "verifier": "reasoning.quantities.compare",
+     "checks_tr": "Tür (skaler/vektör), boyut, birim ve işaretle cevap karşılaştırması.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "1.3 Unit Conversion",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/1-3-unit-conversion",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "applicability_law": null
+  },
+  {
+   "id": "phys.dimensional-homogeneity",
+   "version": 1,
+   "subject": "physics",
+   "topic": "olcme",
+   "kind": "method",
+   "title_tr": "Boyut tutarlılığı",
+   "statement_tr": "Bir fizik denkleminde toplanan ve eşitlenen terimler aynı boyutta olmalıdır. Boyut tutarlılığı yanlış bir formülü yakalayabilir ama boyutça doğru bir formülün doğru yasa olduğunu kanıtlamaz.",
+   "representation": null,
+   "quantities": [],
+   "conditions_tr": [
+    "Boyutsuz sayılar (ör. ½) boyut denetiminde görünmez."
+   ],
+   "assumptions_tr": [],
+   "exceptions_tr": [],
+   "related": [],
+   "misconceptions_tr": [
+    "Birimleri tutan her formülü doğru saymak."
+   ],
+   "visuals": [],
+   "verifiers": [
+    {
+     "verifier": "reasoning.formula.dimensions",
+     "checks_tr": "Denklemin boyut tutarlılığı.",
+     "coverage": "partial"
+    }
+   ],
+   "provenance": [
+    {
+     "source_id": "openstax.university-physics-volume-1",
+     "section": "1.4 Dimensional Analysis",
+     "url": "https://openstax.org/books/university-physics-volume-1/pages/1-4-dimensional-analysis",
+     "page": null,
+     "verified_on": "2026-11-26"
+    }
+   ],
+   "authored_by": "claude-draft",
+   "status": "draft",
+   "reviews": [],
+   "rights": {
+    "source_use": "independent_fact",
+    "basis_tr": "Bilimsel olgunun özgün Türkçe anlatımı; kaynak metni, şekli veya örneği kopyalanmadı. OpenStax (CC BY-NC-SA 4.0) yalnız akademik başvurudur; ticari içeri alma yapılmadı.",
+    "license_versions": [
+     "CC BY-NC-SA 4.0"
+    ],
+    "commercial_use": "unknown",
+    "share_alike": false,
+    "decision": "pending"
+   },
+   "levels": [
+    "9. sınıf"
+   ],
+   "applicability_law": null
   }
  ]
 }

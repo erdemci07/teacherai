@@ -119,7 +119,8 @@ def run_case(case: dict):
         return calculus.check_antiderivative(a["integrand"], a["candidate"])
     if kind == "geometry":
         # TA-008B: olgular yalnız kaynağa (metin alıntısı / işaretli şekil) bağlanırsa kısıt olur.
-        source = geometry.Source(a.get("text", ""), bool(a.get("figure", False)))
+        source = geometry.Source(a.get("text", ""), bool(a.get("figure", False)), tuple(a.get("observations", ())),
+                                 tuple(a.get("confirmed", ())))
         result = geometry.analyze(GeometryModel.model_validate(a["model"]), source)
         return {"determinacy": result.determinacy, "values": [_text(v) for v in result.target_values],
                 "reasons": sorted({c.reason for c in result.checks})}

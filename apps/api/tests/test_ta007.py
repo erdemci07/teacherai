@@ -56,8 +56,16 @@ def test_audit_covers_all_74_original_drafts_and_revisions_keep_history():
     rows = audit["rows"] if "rows" in audit else audit["entries"]
     registry = knowledge.default_knowledge()
     assert len(rows) == 74 and len({row["entry_id"] for row in rows}) == 74
+    # Sonraki denetimler (TA-009 fizik) aynı girdiyi yeniden sürümleyebilir: beklenen sürüm en son denetimdendir ve
+    # o denetim de sürüm geçmişini korumalıdır.
+    later = json.loads((ROOT / "apps/api/app/features/knowledge/audit/TA-009-physics-audit.json").read_text(encoding="utf-8"))
+    latest = {row["entry_id"]: row for row in later["rows"]}
     for row in rows:
         entry = registry.entries[row["entry_id"]]
+        newer = latest.get(row["entry_id"])
+        if newer is not None:
+            assert newer["version_before"] == row["version_after"]  # zincir kopmaz
+            row = newer
         assert entry.version == row["version_after"]
         if row["action"] == "revised":
             assert entry.revisions and entry.revisions[-1].version == entry.version

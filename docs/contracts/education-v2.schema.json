@@ -667,6 +667,149 @@
       "title": "ChoiceMatch",
       "type": "object"
     },
+    "CircuitElement": {
+      "additionalProperties": false,
+      "properties": {
+        "closed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closed"
+        },
+        "connection_certain": {
+          "default": true,
+          "title": "Connection Certain",
+          "type": "boolean"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "internal_resistance": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Internal Resistance"
+        },
+        "kind": {
+          "enum": [
+            "resistor",
+            "bulb",
+            "battery",
+            "switch",
+            "ammeter",
+            "voltmeter",
+            "wire"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Nodes",
+          "type": "array"
+        },
+        "positive_node": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Positive Node"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "nodes",
+        "provenance"
+      ],
+      "title": "CircuitElement",
+      "type": "object"
+    },
+    "CircuitModel": {
+      "additionalProperties": false,
+      "properties": {
+        "elements": {
+          "items": {
+            "$ref": "#/$defs/CircuitElement"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Elements",
+          "type": "array"
+        },
+        "nodes": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 24,
+          "minItems": 2,
+          "title": "Nodes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "nodes",
+        "elements"
+      ],
+      "title": "CircuitModel",
+      "type": "object"
+    },
     "Claim": {
       "additionalProperties": false,
       "properties": {
@@ -697,7 +840,10 @@
             "background_knowledge",
             "modeling_assumption",
             "inferred",
-            "derived"
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
           ],
           "title": "Provenance",
           "type": "string"
@@ -804,6 +950,87 @@
       "title": "ClarificationRequest",
       "type": "object"
     },
+    "Collision": {
+      "additionalProperties": false,
+      "properties": {
+        "bodies": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Bodies",
+          "type": "array"
+        },
+        "external_impulse": {
+          "default": "unknown",
+          "enum": [
+            "none_stated",
+            "negligible_assumed",
+            "present",
+            "unknown"
+          ],
+          "title": "External Impulse",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "unknown",
+          "enum": [
+            "elastic",
+            "perfectly_inelastic",
+            "inelastic",
+            "explosion",
+            "unknown"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "velocities_after": {
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxItems": 2,
+          "title": "Velocities After",
+          "type": "array"
+        },
+        "velocities_before": {
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxItems": 2,
+          "title": "Velocities Before",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "bodies"
+      ],
+      "title": "Collision",
+      "type": "object"
+    },
     "Condition": {
       "additionalProperties": false,
       "properties": {
@@ -824,6 +1051,48 @@
         "value"
       ],
       "title": "Condition",
+      "type": "object"
+    },
+    "ConditionClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "condition": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Condition",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition",
+        "state",
+        "basis"
+      ],
+      "title": "ConditionClaim",
       "type": "object"
     },
     "ContextAttempt": {
@@ -2002,7 +2271,10 @@
             "background_knowledge",
             "modeling_assumption",
             "inferred",
-            "derived"
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
           ],
           "title": "Provenance",
           "type": "string"
@@ -2521,6 +2793,117 @@
       "title": "ForbiddenOperation",
       "type": "object"
     },
+    "ForceSpec": {
+      "additionalProperties": false,
+      "description": "Hangi kuvvetin hangi cisme, hangi yönde etkidiği. Sağlayıcının çizdiği ok bir kuvvetin kanıtı değildir.",
+      "properties": {
+        "angle_deg": {
+          "anyOf": [
+            {
+              "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Angle Deg"
+        },
+        "by": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "By"
+        },
+        "direction": {
+          "enum": [
+            "+x",
+            "-x",
+            "+y",
+            "-y",
+            "up_incline",
+            "down_incline",
+            "angle"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "gravity",
+            "normal",
+            "tension",
+            "static_friction",
+            "kinetic_friction",
+            "applied",
+            "spring",
+            "electric",
+            "magnetic",
+            "buoyancy",
+            "drag",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "magnitude": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Magnitude"
+        },
+        "on": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "On",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "on",
+        "direction",
+        "provenance"
+      ],
+      "title": "ForceSpec",
+      "type": "object"
+    },
     "Grade": {
       "additionalProperties": false,
       "properties": {
@@ -2905,6 +3288,39 @@
         "content_digest"
       ],
       "title": "KnowledgeRef",
+      "type": "object"
+    },
+    "LawUse": {
+      "additionalProperties": false,
+      "description": "Sağlayıcının önerdiği yasa ve koşul iddiaları. Sunucu koşulları kendisi yeniden değerlendirir.",
+      "properties": {
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/ConditionClaim"
+          },
+          "maxItems": 12,
+          "title": "Conditions",
+          "type": "array"
+        },
+        "law": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Law",
+          "type": "string"
+        },
+        "system": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "System",
+          "type": "array"
+        }
+      },
+      "required": [
+        "law"
+      ],
+      "title": "LawUse",
       "type": "object"
     },
     "LessonIntent": {
@@ -3519,6 +3935,169 @@
       "title": "ModeSupport",
       "type": "object"
     },
+    "MotionPhase": {
+      "additionalProperties": false,
+      "description": "Bir cismin bir zaman aralığındaki hareketi. İvmenin sabitliği yasa seçiminin ön koşuludur.",
+      "properties": {
+        "acceleration": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acceleration"
+        },
+        "acceleration_basis": {
+          "anyOf": [
+            {
+              "enum": [
+                "source_text",
+                "visual_reading",
+                "student_confirmed",
+                "background_knowledge",
+                "modeling_assumption",
+                "inferred",
+                "derived",
+                "problem_convention",
+                "standard_constant",
+                "provider_proposed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acceleration Basis"
+        },
+        "acceleration_kind": {
+          "default": "unknown",
+          "enum": [
+            "constant",
+            "zero",
+            "varying",
+            "unknown"
+          ],
+          "title": "Acceleration Kind",
+          "type": "string"
+        },
+        "axis": {
+          "default": "horizontal",
+          "enum": [
+            "horizontal",
+            "vertical",
+            "incline"
+          ],
+          "title": "Axis",
+          "type": "string"
+        },
+        "displacement": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Displacement"
+        },
+        "distance": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distance"
+        },
+        "duration": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration"
+        },
+        "entity": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Entity",
+          "type": "string"
+        },
+        "final_velocity": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Final Velocity"
+        },
+        "free_fall": {
+          "default": false,
+          "title": "Free Fall",
+          "type": "boolean"
+        },
+        "graph": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Graph"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial_velocity": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Initial Velocity"
+        }
+      },
+      "required": [
+        "id",
+        "entity"
+      ],
+      "title": "MotionPhase",
+      "type": "object"
+    },
     "NarrationSegment": {
       "additionalProperties": false,
       "description": "Gelecekteki sesli anlatım için yalnızca sözleşme. Ses üretimi TA-014'tedir.",
@@ -3722,7 +4301,10 @@
             "background_knowledge",
             "modeling_assumption",
             "inferred",
-            "derived"
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
           ],
           "title": "Provenance",
           "type": "string"
@@ -3821,6 +4403,269 @@
         "source_status"
       ],
       "title": "Outcome",
+      "type": "object"
+    },
+    "PhysicalBody": {
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Entity",
+          "type": "string"
+        },
+        "mass": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mass"
+        },
+        "surface": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface"
+        }
+      },
+      "required": [
+        "entity"
+      ],
+      "title": "PhysicalBody",
+      "type": "object"
+    },
+    "PhysicsModel": {
+      "additionalProperties": false,
+      "properties": {
+        "bodies": {
+          "items": {
+            "$ref": "#/$defs/PhysicalBody"
+          },
+          "maxItems": 8,
+          "title": "Bodies",
+          "type": "array"
+        },
+        "circuit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CircuitModel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "collisions": {
+          "items": {
+            "$ref": "#/$defs/Collision"
+          },
+          "maxItems": 2,
+          "title": "Collisions",
+          "type": "array"
+        },
+        "domain": {
+          "enum": [
+            "kinematics",
+            "dynamics",
+            "energy",
+            "momentum",
+            "dc_circuit",
+            "other"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "equations": {
+          "items": {
+            "maxLength": 400,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Equations",
+          "type": "array"
+        },
+        "forces": {
+          "items": {
+            "$ref": "#/$defs/ForceSpec"
+          },
+          "maxItems": 24,
+          "title": "Forces",
+          "type": "array"
+        },
+        "laws": {
+          "items": {
+            "$ref": "#/$defs/LawUse"
+          },
+          "maxItems": 8,
+          "title": "Laws",
+          "type": "array"
+        },
+        "phases": {
+          "items": {
+            "$ref": "#/$defs/MotionPhase"
+          },
+          "maxItems": 6,
+          "title": "Phases",
+          "type": "array"
+        },
+        "sign_convention": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sign Convention"
+        },
+        "strings": {
+          "items": {
+            "$ref": "#/$defs/StringLink"
+          },
+          "maxItems": 4,
+          "title": "Strings",
+          "type": "array"
+        },
+        "surfaces": {
+          "items": {
+            "$ref": "#/$defs/Surface"
+          },
+          "maxItems": 4,
+          "title": "Surfaces",
+          "type": "array"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhysicsTarget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "domain"
+      ],
+      "title": "PhysicsModel",
+      "type": "object"
+    },
+    "PhysicsTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "between": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "title": "Between",
+          "type": "array"
+        },
+        "element": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Element"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
+        },
+        "kind": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Kind",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "representation": {
+          "default": "unspecified",
+          "enum": [
+            "magnitude",
+            "component",
+            "unspecified"
+          ],
+          "title": "Representation",
+          "type": "string"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UnitSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "PhysicsTarget",
       "type": "object"
     },
     "PolicyCheck": {
@@ -4206,6 +5051,47 @@
     "QuantityValue": {
       "additionalProperties": false,
       "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "constant_source": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Constant Source"
+        },
+        "derivation": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Derivation"
+        },
         "direction": {
           "default": "none",
           "enum": [
@@ -4248,6 +5134,19 @@
           "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
           "title": "Id",
           "type": "string"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
         },
         "magnitude": {
           "anyOf": [
@@ -4298,9 +5197,22 @@
             "background_knowledge",
             "modeling_assumption",
             "inferred",
-            "derived"
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
           ],
           "title": "Provenance",
+          "type": "string"
+        },
+        "representation": {
+          "default": "unspecified",
+          "enum": [
+            "magnitude",
+            "component",
+            "unspecified"
+          ],
+          "title": "Representation",
           "type": "string"
         },
         "significant_digits": {
@@ -4316,6 +5228,20 @@
           ],
           "default": null,
           "title": "Significant Digits"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
         },
         "symbol": {
           "anyOf": [
@@ -4662,7 +5588,10 @@
                 "background_knowledge",
                 "modeling_assumption",
                 "inferred",
-                "derived"
+                "derived",
+                "problem_convention",
+                "standard_constant",
+                "provider_proposed"
               ],
               "type": "string"
             },
@@ -4686,7 +5615,10 @@
             "background_knowledge",
             "modeling_assumption",
             "inferred",
-            "derived"
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
           ],
           "title": "Provenance",
           "type": "string"
@@ -4867,6 +5799,17 @@
           "maxItems": 128,
           "title": "Observations",
           "type": "array"
+        },
+        "physics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhysicsModel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "premises": {
           "items": {
@@ -5303,6 +6246,54 @@
       "title": "SourceUncertainty",
       "type": "object"
     },
+    "StringLink": {
+      "additionalProperties": false,
+      "properties": {
+        "bodies": {
+          "items": {
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Bodies",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "over_pulley": {
+          "default": false,
+          "title": "Over Pulley",
+          "type": "boolean"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "bodies",
+        "provenance"
+      ],
+      "title": "StringLink",
+      "type": "object"
+    },
     "Subject": {
       "enum": [
         "mathematics",
@@ -5315,6 +6306,97 @@
       ],
       "title": "Subject",
       "type": "string"
+    },
+    "Surface": {
+      "additionalProperties": false,
+      "properties": {
+        "angle_deg": {
+          "anyOf": [
+            {
+              "pattern": "^-?[0-9]{1,15}(/[1-9][0-9]{0,14})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Angle Deg"
+        },
+        "friction": {
+          "default": "unknown",
+          "enum": [
+            "none",
+            "present",
+            "unknown"
+          ],
+          "title": "Friction",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "horizontal",
+            "incline",
+            "vertical"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "mu_kinetic": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mu Kinetic"
+        },
+        "mu_static": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mu Static"
+        },
+        "provenance": {
+          "enum": [
+            "source_text",
+            "visual_reading",
+            "student_confirmed",
+            "background_knowledge",
+            "modeling_assumption",
+            "inferred",
+            "derived",
+            "problem_convention",
+            "standard_constant",
+            "provider_proposed"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "provenance"
+      ],
+      "title": "Surface",
+      "type": "object"
     },
     "Table": {
       "additionalProperties": false,

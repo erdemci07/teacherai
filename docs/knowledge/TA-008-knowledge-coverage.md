@@ -2,8 +2,8 @@
 
 Bu dosya `python -m scripts.knowledge_registry` ile üretilir; elle düzenlenmez.
 
-- Kayıt sürümü: `1.0.0+1030d03b5455`
-- Kaynak: 36 · bilgi girdisi: 332 · tanımlı denetleyici: 37
+- Kayıt sürümü: `1.0.0+61fba2b6e2c2`
+- Kaynak: 42 · bilgi girdisi: 346 · tanımlı denetleyici: 47
 
 Bütün girdiler `claude-draft` taslağıdır. Hiçbiri öğretmen veya alan uzmanınca incelenmedi; inceleyen yetki kaydı
 boştur (0 yetkili). Bu yüzden çalışma zamanına uygun girdi sayısı 0'dır. Denetleyici
@@ -12,7 +12,7 @@ bağlantısı iddianın yalnız belirtilen parçasını kapsar.
 | Alan | Girdi | Kaynaklı | Kaynaksız | Kazanıma bağlı | Denetleyicili | İncelenen | Çalışma zamanına uygun | Tür dağılımı |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Matematik (geometri dahil) | 175 | 174 | 1 | 40 | 73 | 0 | 0 | definition 49, fact 5, method 38, relationship 44, theorem 39 |
-| Fizik | 51 | 51 | 0 | 21 | 23 | 0 | 0 | definition 9, fact 4, law 17, method 1, relationship 18, theorem 2 |
+| Fizik | 65 | 65 | 0 | 21 | 43 | 0 | 0 | definition 15, fact 4, law 17, method 4, relationship 23, theorem 2 |
 | Kimya | 45 | 45 | 0 | 16 | 14 | 0 | 0 | definition 13, fact 1, law 5, relationship 26 |
 | Biyoloji | 45 | 45 | 0 | 24 | 9 | 0 | 0 | definition 5, fact 3, law 2, process 23, relationship 12 |
 | Ortaokul fen (bütünleşik) | 16 | 16 | 0 | 7 | 1 | 0 | 0 | fact 1, process 2, relationship 13 |
@@ -20,7 +20,7 @@ bağlantısı iddianın yalnız belirtilen parçasını kapsar.
 | Alan | Düzeltilen (sürüm 2+) | Müfredat başlığına bağlı | Kaynak kullanım sınıfı |
 | --- | --- | --- | --- |
 | Matematik (geometri dahil) | 2 | 4 | independent_fact 174, unresolved 1 |
-| Fizik | 2 | 24 | independent_fact 51 |
+| Fizik | 41 | 24 | independent_fact 65 |
 | Kimya | 1 | 22 | independent_fact 45 |
 | Biyoloji | 6 | 9 | independent_fact 45 |
 | Ortaokul fen (bütünleşik) | 2 | 9 | independent_fact 16 |
@@ -35,10 +35,10 @@ Uzman kararı gereken girdiler: `chem.atom-ion-molecule`, `chem.equilibrium-cons
 
 | Ölçü | TA-006 | TA-007 |
 | --- | --- | --- |
-| Kaynak | 30 | 36 |
-| Bilgi girdisi | 74 | 332 |
+| Kaynak | 30 | 42 |
+| Bilgi girdisi | 74 | 346 |
 | Matematik (geometri dahil) | 19 | 175 |
-| Fizik | 18 | 51 |
+| Fizik | 18 | 65 |
 | Kimya | 16 | 45 |
 | Biyoloji | 15 | 45 |
 | Ortaokul fen (bütünleşik) | 6 | 16 |
@@ -123,35 +123,41 @@ Dört izin ayrıdır: akademik başvuru, içeri alma/dönüştürme, öğrenciye
 | `brown-lemay.central-science` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `campbell.biology` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `chang.chemistry` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
+| `halliday-resnick-walker.fundamentals` | textbook | not_accessed | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `iupac.gold-book` | reference_work | access_restricted | — | hayır | bilinmiyor | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `joyce.euclid-elements` | classic | open_web | — | hayır | evet | hayır | hayır | hayır | 8 |
 | `libretexts` | oer_platform | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `meb.ogretim-programlari` | official_curriculum | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
+| `mit.ocw` | oer_platform | open_web | CC BY-NC-SA 4.0 | evet | evet | hayır | koşullu | hayır | 0 |
 | `nasa.planetary-fact-sheet` | reference_data | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 1 |
 | `nih.ncbi-bookshelf` | oer_platform | access_restricted | — | hayır | bilinmiyor | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `nih.pubchem` | database | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `nist.codata` | reference_data | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 1 |
+| `nist.sp-811` | standard | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `openstax.algebra-and-trigonometry-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 12 |
 | `openstax.astronomy-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 1 |
 | `openstax.biology-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 52 |
 | `openstax.calculus-volume-1` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 19 |
 | `openstax.chemistry-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 49 |
 | `openstax.college-algebra-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 31 |
-| `openstax.college-physics-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 1 |
+| `openstax.college-physics-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | hayır | koşullu | hayır | 1 |
 | `openstax.contemporary-mathematics` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 13 |
 | `openstax.elementary-algebra-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 34 |
 | `openstax.intermediate-algebra-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 12 |
 | `openstax.introductory-statistics-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 11 |
 | `openstax.prealgebra-2e` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 38 |
-| `openstax.university-physics-volume-1` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 35 |
-| `openstax.university-physics-volume-2` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 14 |
-| `openstax.university-physics-volume-3` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | koşullu | koşullu | bilinmiyor | 6 |
+| `openstax.university-physics-volume-1` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | hayır | koşullu | hayır | 47 |
+| `openstax.university-physics-volume-2` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | hayır | koşullu | hayır | 16 |
+| `openstax.university-physics-volume-3` | open_textbook | open_web | CC BY-NC-SA 4.0 | evet | evet | hayır | koşullu | hayır | 6 |
 | `polya.how-to-solve-it` | classic | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
+| `serway-jewett-peroomian.physics-11e` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `serway-jewett.physics` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
+| `serway-jewett.physics-modern-10e` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `siyavula.mathematics-10` | open_textbook | open_web | — | hayır | evet | bilinmiyor | bilinmiyor | bilinmiyor | 0 |
 | `siyavula.physical-sciences-10` | open_textbook | open_web | CC BY (sürüm sayfada belirtilmedi) | evet | evet | koşullu | koşullu | bilinmiyor | 0 |
 | `stewart.calculus` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
 | `sullivan.algebra-trigonometry` | textbook | purchase_required | — | hayır | evet | hayır | hayır | hayır | 0 |
+| `young-freedman.university-physics` | textbook | not_accessed | — | hayır | evet | hayır | hayır | hayır | 0 |
 
 ## Denetleyici kapsamı
 
@@ -177,6 +183,15 @@ Dört izin ayrıdır: akademik başvuru, içeri alma/dönüştürme, öğrenciye
 | `mathematics.triangle_inequality` | Kenar uzunluklarının üçgen eşitsizliğini sağladığı (dejenere/imkânsız üçgen). | Açıların veya şeklin ölçekli olduğunu. | 2 |
 | `mathematics.trig_interval` | Derece/radyan ayrımıyla verilen aralıktaki bütün kökler (periyodik çözümler kaybolmadan). | Aralık verilmediğinde sonlu bir hedef belirlemez. | 2 |
 | `mathematics.word_problem_model` | Sözel problem modelinin tutarlılığı, hedefin tek değerli olduğu ve bilinen değerlerin metinde geçtiği. | İlişkilerin soru metnine uygun kurulduğunu (model sadakati kısmi denetlenir). | 6 |
+| `physics.circuits.equivalent_resistance` | İki düğüm arasındaki eşdeğer direnç (test kaynağıyla). | Elemanların ohmik olduğunu (görünür varsayım). | 1 |
+| `physics.circuits.nodal` | Bağlantı grafiğinden düğüm gerilimleri, eleman akımları ve Kirchhoff akım dengesi. | Görselden okunan bağlantının doğru olduğunu; belirsiz bağlantı çözülmez. | 5 |
+| `physics.conventions.values` | Soru uzlaşımları (g, sin/cos, π) ve yazılı idealleştirmeler. | Metnin görselden doğru okunduğunu. | 2 |
+| `physics.dynamics.newton` | Tek cisim ve iple bağlı iki cisimde ivme, gerilme, tepki; statik–kinetik karar. | Kuvvetlerin soruda gerçekten kurulduğunu (kaynak denetimi ayrıdır). | 7 |
+| `physics.energy.conservation` | Tek cisim tek evrede enerji korunumu; sürtünme işi hesaba katılarak. | Korunumsuz kuvvetin olmadığını; bu koşul ayrıca değerlendirilir. | 5 |
+| `physics.graphs.velocity_time` | Basılı hız–zaman noktalarından işaretli alan, |v| alanı ve eğim sabitliği. | Piksellerden okunan değerleri; yalnız basılı değerler kullanılır. | 3 |
+| `physics.kinematics.constant_acceleration` | Sabit ivmeli hareketin beş bağıntısından yalnız hedef; evre zinciri; alınan yol. | İvmenin gerçekten sabit olduğunu (koşul ayrıca denetlenir) veya görselin doğru okunduğunu. | 3 |
+| `physics.laws.applicability` | Yasanın koşullarını satisfied/violated/unknown olarak değerlendirir. | Bilinmeyen koşulun sağlandığını; varsayım yalnız görünür yazılır. | 7 |
+| `physics.momentum.collision` | Tek doğrultuda esnek, tamamen esnek olmayan çarpışma ve bilinmeyen tek hız. | Net dış itmenin sıfır olduğunu; sistem sınırı kaynakta kurulmalıdır. | 2 |
 | `reasoning.chemistry.balance` | Atom ve yük dengesi, en küçük tam sayı katsayılar. | Tepkimenin gerçekleştiğini, kendiliğindenliği, hızı veya koşulları. | 5 |
 | `reasoning.chemistry.limiting_reactant` | Sınırlayıcı bileşen ve kuramsal ürün miktarı. | Gerçek verimi. | 1 |
 | `reasoning.chemistry.parse_species` | Formülün bileşimi, hâli ve yükü (yazım düzeyinde). | Türün gerçekte var olduğunu veya kararlılığını. | 1 |
@@ -186,13 +201,14 @@ Dört izin ayrıdır: akademik başvuru, içeri alma/dönüştürme, öğrenciye
 | `reasoning.evidence.constant_ratio` | Tablodaki iki değişkenin oranının sabitliği. | İlişkinin nedensel olduğunu veya yasanın geçerlilik koşullarını. | 3 |
 | `reasoning.evidence.controlled_comparison` | Deney gruplarında yalnız bir değişkenin değiştiği. | Deneyin gerçekten yapıldığını veya ölçümlerin doğruluğunu. | 3 |
 | `reasoning.evidence.sequence_order` | Verilen süreç sırasının modeldeki sırayla uyumu. | Modelin biyolojik olarak doğru olduğunu (model kaynaktan gelmelidir). | 1 |
-| `reasoning.formula.dimensions` | Formül iki tarafının boyut eşitliği. | Formülün fiziksel olarak doğru olduğunu. | 4 |
+| `reasoning.formula.dimensions` | Formül iki tarafının boyut eşitliği. | Formülün fiziksel olarak doğru olduğunu. | 5 |
 | `reasoning.formula.evaluate` | Verilen formülde birimli yerine koyma ve sayısal sonuç. | Formülün bu duruma uygulanabilir olduğunu (koşullar ayrıca denetlenmez). | 18 |
 | `reasoning.formula.graph_area` | Parçalı doğrusal grafiğin altındaki alan. | Alanın fiziksel yorumunun soruya uygunluğunu. | 2 |
 | `reasoning.formula.graph_slope` | Grafikte iki nokta arası eğim ve birimi. | Grafiğin görselden doğru okunduğunu. | 3 |
+| `reasoning.quantities.compare` | Kimlik, tür, boyut, birim, işaret ve yaklaşım politikasıyla cevap karşılaştırması. | İstenen hedefin doğru belirlendiğini (hedef ayrıca kurulur). | 6 |
 | `reasoning.sequence.codon` | mRNA'da belirli konumdaki kodon. | Okuma çerçevesinin biyolojik olarak doğru seçildiğini. | 1 |
 | `reasoning.sequence.transcription` | Kalıp DNA'dan tamamlayıcı mRNA dizisi. | Gen ifadesinin düzenlenmesini veya biyolojik işlevi. | 2 |
-| `reasoning.units.conversion` | Önekli ve türetilmiş birimler arasında kesin dönüşüm. | Ölçümün doğruluğunu veya anlamlı basamakları. | 3 |
+| `reasoning.units.conversion` | Önekli ve türetilmiş birimler arasında kesin dönüşüm. | Ölçümün doğruluğunu veya anlamlı basamakları. | 4 |
 | `reasoning.units.dimension` | İki niceliğin veya bir formülün boyut uyumu. | Doğru fizik yasasının seçildiğini; boyutça doğru formül yanlış yasa olabilir. | 5 |
 
-Girdi düzeyinde iddia durumu: `partially_checked` 120, `not_checked` 212, `passed` 0 (yapı gereği).
+Girdi düzeyinde iddia durumu: `partially_checked` 140, `not_checked` 206, `passed` 0 (yapı gereği).

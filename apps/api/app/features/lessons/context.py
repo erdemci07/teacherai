@@ -5,7 +5,9 @@ from typing import Any, Literal
 
 from apps.api.app.features.vision.schemas import VisionAnalysis
 
+from ..education.base import Subject
 from ..education.policy import TeachingPolicy
+from ..education.domain import canonical_subject
 from ..integrity.engine import symbols_of
 from ..integrity.expression import parse as parse_expression
 from ..integrity.expression import symbols as expression_symbols
@@ -28,6 +30,21 @@ class LessonContextMetrics:
     teaching_context_included: bool
     answer_strategy: str | None = None
     answer_strategy_reason: str | None = None
+
+
+# TA-009 §15, §17: fizik isteğine eklenen kısa yönerge. Sağlayıcının modeli yetkili değildir; sunucu denetler.
+PHYSICS_INSTRUCTIONS = {
+    "subject_mode": "physics",
+    "model_tr": ("physics_model alanında fiziksel sistemi yapılandır: nicelikleri (soruda yazıldığı biçimiyle original "
+                 "alanına birebir alıntı, birimle), cisimleri, yüzeyleri, kuvvetleri, ipleri, hareket evrelerini, "
+                 "çarpışmaları veya devre bağlantı grafiğini ve istenen hedefi yaz. Sorunun verdiği uzlaşımları "
+                 "(g = 10 m/s², sin 37° = 0,6) problem_convention olarak kullan; standart sabitle değiştirme. Soruda "
+                 "yazmayan idealleştirmeyi varsayım olarak belirt. Seri/paralel kararını görsel yakınlıktan değil "
+                 "bağlantılardan ver; emin olmadığın bağlantıda connection_certain=false yaz."),
+    "explanation_tr": ("Açıklamada seçilen sistemi, eksenleri ve pozitif yönü, uygulanan yasayı ve neden uygulanabildiğini, "
+                       "varsayımları ve kısa bir fiziksel anlamlılık denetimini yaz. Sürat/hız, kütle/ağırlık, yer "
+                       "değiştirme/alınan yol terimlerini karıştırma. Öğrencinin sınıf düzeyinde türev/integral kullanma."),
+}
 
 
 @dataclass(frozen=True)
@@ -120,6 +137,8 @@ def build_lesson_generation_context(
             if policy.curriculum_context and level == "normal" else None,
             # TA-008: kaynak ifadelerden belirlenimci tanım kümesi koşulları (yoksa anahtar eklenmez).
             "mathematics_hints": mathematics_guidance.prompt_hints(analysis),
+            # TA-009: yalnız fizik dersinde (bayrak açıkken bu hatta gelir); matematik isteği değişmez.
+            "physics": PHYSICS_INSTRUCTIONS if canonical_subject(analysis.subject) == Subject.PHYSICS else None,
         }
     )
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))

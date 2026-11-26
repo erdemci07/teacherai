@@ -1,0 +1,955 @@
+{
+ "schema_name": "teacherai.knowledge_audit",
+ "version": "1.0.0",
+ "audit_id": "TA-009-physics-audit",
+ "audited_on": "2026-11-26",
+ "auditor": "claude-draft",
+ "notice_tr": "AI ön incelemesidir; onay değildir. Bütün fizik girdileri taslaktır. Yeni girdiler özgün Türkçe anlatımdır; kaynak konumları açılan bölüm adresleridir, sayfa numarası yazılmadı.",
+ "rows": [
+  {
+   "entry_id": "phys.mass-weight",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-first-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-second-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.newton-third-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.free-body-diagram",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.constant-acceleration",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.free-fall",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.standard-gravity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.work-energy-theorem",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.mechanical-energy-conservation",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.momentum-conservation",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.ohms-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.resistivity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.series-parallel",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.density",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.pressure",
+   "subject": "physics",
+   "version_before": 2,
+   "version_after": 3,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.si-base-units",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.planetary-gravity",
+   "subject": "physics",
+   "version_before": 2,
+   "version_after": 2,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.scalars-vectors",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.average-velocity",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.projectile-motion",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.uniform-circular-motion",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.friction",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "major",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.centripetal-force",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.work",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.kinetic-energy",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.power",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.impulse",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.collisions",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.static-equilibrium",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.universal-gravitation",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.pascal-principle",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.archimedes",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.simple-harmonic-motion",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.wave-speed",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.sound-waves",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.thermal-equilibrium",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.specific-heat",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.latent-heat",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.first-law-thermodynamics",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.coulomb-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.electric-current",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.electric-power",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.kirchhoff-rules",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.magnetic-field-lines",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.faraday-law",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.law-of-reflection",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 1,
+   "action": "no_change",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Belirgin hata bulunmadı; uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.refraction-snell",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.thin-lens",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.photoelectric-effect",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "conditions",
+     "severity": "minor",
+     "note_tr": "Formülün geçerlilik koşulu eksikti; eklendi."
+    },
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.radioactive-decay",
+   "subject": "physics",
+   "version_before": 1,
+   "version_after": 2,
+   "action": "revised",
+   "findings": [
+    {
+     "category": "applicability",
+     "severity": "minor",
+     "note_tr": "Makinece denetlenen koşullar için yasa kaydına bağlandı."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.speed-vs-velocity",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.distance-vs-displacement",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.velocity-time-graph",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.normal-force",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.tension",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.ideal-string-tension",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.static-friction-decision",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.inclined-plane",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.gravitational-potential-energy",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.nonconservative-work",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.internal-resistance",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.ideal-meters",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.unit-conversion",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  },
+  {
+   "entry_id": "phys.dimensional-homogeneity",
+   "subject": "physics",
+   "version_before": 0,
+   "version_after": 1,
+   "action": "added",
+   "findings": [
+    {
+     "category": "scientific_correctness",
+     "severity": "info",
+     "note_tr": "Yeni AI taslağı; öğretmen/uzman incelemesi bekliyor."
+    }
+   ]
+  }
+ ]
+}

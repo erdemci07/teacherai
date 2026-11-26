@@ -44,6 +44,11 @@ VerifierId = Literal[
     "reasoning.chemistry.redox_electrons", "reasoning.sequence.transcription", "reasoning.sequence.codon",
     "reasoning.evidence.controlled_comparison", "reasoning.evidence.claim", "reasoning.evidence.constant_ratio",
     "reasoning.evidence.sequence_order",
+    # TA-009 fizik uzmanlığı
+    "physics.kinematics.constant_acceleration", "physics.dynamics.newton", "physics.energy.conservation",
+    "physics.momentum.collision", "physics.circuits.nodal", "physics.circuits.equivalent_resistance",
+    "physics.graphs.velocity_time", "physics.laws.applicability", "physics.conventions.values",
+    "reasoning.quantities.compare",
     # TA-008 matematik uzmanlığı
     "mathematics.solution_set",
     "mathematics.inequality_set",
@@ -69,6 +74,8 @@ class Permissions(Contract):
     ingestion: Permission
     redistribution: Permission
     model_training: Permission
+    # TA-009 §5: kaynak düzeyinde ticari kullanım (TeacherAI ticari bir ürün olacaktır). Kamuya açık olmak izin değildir.
+    commercial_use: Permission = "unknown"
     conditions_tr: Text | None = None
 
     @model_validator(mode="after")
@@ -112,6 +119,8 @@ class SourceRecord(Contract):
             raise ValueError("Satın alınan ders kitabı içeri alma izni sayılmaz.")
         if self.license and re.search(r"(?:^|[-\s])SA\b", self.license.upper()) and "conditional" not in (perms.ingestion, perms.redistribution):
             raise ValueError("Share-alike lisansın yükümlülüğü koşul olarak yazılır.")
+        if self.license and "NC" in self.license.upper().replace("-", " ").split() and perms.commercial_use == "allowed":
+            raise ValueError("Ticari olmayan (NC) lisansta ticari kullanım izni verilemez.")
         if self.license_verified and self.verified_on is None:
             raise ValueError("Doğrulanmış lisans doğrulama tarihi taşır.")
         return self
@@ -278,6 +287,9 @@ class KnowledgeEntry(Contract):
     # TA-008: içeriğin yazarı (öğretmen/uzman yazımında zorunlu). AI taslağında None. Yazar kendi içeriğini
     # bağımsız olarak onaylayamaz.
     author_ref: ReviewerRef | None = None
+    # TA-009 §11: formül taşıyan fizik girdisinin makinece denetlenen uygulanabilirlik koşulları
+    # (``physics.laws.LAWS`` kimliği). Koşul metni ``conditions_tr`` içinde, yüklemler kodda.
+    applicability_law: Identifier | None = None
 
     @model_validator(mode="after")
     def author_is_identified(self):

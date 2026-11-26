@@ -4,15 +4,15 @@
 
 | Alan | Vaka | Ortanca (ms) | En yavaş (ms) |
 | --- | --- | --- | --- |
-| algebra | 18 | 27.0 | 173.6 |
-| calculus | 8 | 2.3 | 25.3 |
-| foundations | 9 | 9.4 | 33.6 |
-| functions | 10 | 24.3 | 47.7 |
-| geometry | 21 | 5.9 | 119.5 |
+| algebra | 18 | 29.8 | 170.0 |
+| calculus | 8 | 2.1 | 22.3 |
+| foundations | 9 | 8.9 | 33.4 |
+| functions | 10 | 23.3 | 45.8 |
+| geometry | 29 | 5.2 | 117.5 |
 | probability | 5 | 0.1 | 0.1 |
 | statistics | 1 | 0.1 | 0.1 |
 | strategy | 2 | 0.0 | 0.0 |
-| trigonometry | 5 | 0.1 | 507.0 |
-| word_problems | 10 | 7.5 | 12.1 |
+| trigonometry | 5 | 0.1 | 519.0 |
+| word_problems | 10 | 7.7 | 12.0 |
 
 Beklenenle uyuşmayan vaka: 0.
