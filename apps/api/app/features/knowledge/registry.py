@@ -97,6 +97,8 @@ def _rights_reasons(entry: KnowledgeEntry, sources: dict[str, SourceRecord], rev
                 reasons.append(f"quotation_not_licensed:{source.id}")
             if rights.commercial_use != "eligible":
                 reasons.append(f"commercial_use:{rights.commercial_use}")
+        if rights.source_use in {"licensed_adaptation", "direct_quotation"} and perms.commercial_use == "not_allowed":
+            reasons.append(f"source_commercial_use_not_allowed:{source.id}")
         if rights.source_use in {"licensed_adaptation", "direct_quotation"} and source.license and \
                 "NC" in source.license.upper().replace("-", " ").split() and rights.commercial_use == "eligible":
             reasons.append(f"noncommercial_license:{source.id}")

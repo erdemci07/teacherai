@@ -54,8 +54,10 @@ def approved(entry: KnowledgeEntry, rights: dict | None = None, **review) -> Kno
 def test_balanced_initial_dataset_is_sourced_draft_and_not_runtime_eligible(registry):
     rows = {row["subject"]: row for row in k.coverage(registry)}
     # TA-007: dengeli genişletme (hedef aralık, kota değil): çekirdek branşlarda 40–60, ortaokul fende 15–30.
-    for subject in ("physics", "chemistry", "biology"):
+    for subject in ("chemistry", "biology"):
         assert 40 <= rows[subject]["total"] <= 60
+    # TA-009: fizik uzmanlık fazı (planlama hedefi 200–300, kota değil; inceleme kapasitesiyle sınırlı).
+    assert 51 <= rows["physics"]["total"] <= 300
     # TA-008: matematik/geometri uzmanlık fazında hedef aralık 150–250 (kota değil).
     assert 150 <= rows["mathematics"]["total"] <= 250
     assert 15 <= rows["science"]["total"] <= 30
@@ -69,8 +71,9 @@ def test_no_fabricated_page_numbers_and_every_locator_points_to_verified_section
     for entry in registry.entries.values():
         for locator in entry.provenance:
             assert locator.page is None
-            # TA-008 eklemeleri 2026-11-25'te sayfa başlığıyla doğrulandı.
-            assert locator.verified_on in {date(2026, 11, 24), date(2026, 11, 25)} and (locator.url or locator.section)
+            # TA-008 eklemeleri 2026-11-25'te, TA-009 fizik eklemeleri 2026-11-26'da sayfa başlığıyla doğrulandı.
+            assert locator.verified_on in {date(2026, 11, 24), date(2026, 11, 25), date(2026, 11, 26)} and (
+                locator.url or locator.section)
 
 
 def test_biology_is_not_forced_into_equations(registry):
@@ -115,7 +118,8 @@ def test_rights_cannot_be_assumed():
 def test_approval_requires_human_review_of_the_same_version(registry):
     entry = registry.entries["phys.ohms-law"]
     assert approved(entry).status == "approved"
-    for bad in ({"reviewer": "claude:taslak"}, {"role": "project_owner"}, {"reviewed_version": 2}, {"decision": "source_verified"},
+    for bad in ({"reviewer": "claude:taslak"}, {"role": "project_owner"}, {"reviewed_version": entry.version + 1},
+                {"decision": "source_verified"},
                 {"content_digest": None}, {"stage": "pedagogical"}):
         with pytest.raises(ValidationError):
             approved(entry, **bad)
@@ -148,7 +152,8 @@ def test_drafts_are_excluded_from_runtime_selection_but_visible_in_offline_previ
     assert k.select(registry, Subject.PHYSICS, topic_keys={"elektrik"}) == []
     preview = [entry.id for entry in k.select(registry, Subject.PHYSICS, topic_keys={"elektrik"}, include_drafts=True)]
     # TA-007: genişletmeyle "elektrik" konusunda daha çok taslak var; sıra kimliğe göre belirlenimcidir.
-    assert preview == ["phys.electric-current", "phys.electric-power", "phys.kirchhoff-rules"]
+    # TA-009: ideal ölçü aletleri girdisi eklendi; seçim sınırı 3, sıra kimliğe göre.
+    assert preview == ["phys.electric-current", "phys.electric-power", "phys.ideal-meters"]
     shown = k.preview(registry, "phys.ohms-law")
     assert "status:draft" in shown["runtime_blockers"] and shown["notice_tr"].startswith("TASLAK")
 

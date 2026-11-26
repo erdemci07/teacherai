@@ -173,14 +173,15 @@
    "rights_holder": "Rice University",
    "permissions": {
     "academic_reference": "allowed",
-    "ingestion": "conditional",
+    "ingestion": "not_allowed",
     "redistribution": "conditional",
-    "model_training": "unknown",
-    "conditions_tr": "Ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0)."
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed",
+    "conditions_tr": "Yalnız ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0); ticari kullanım OpenStax'ın ayrı iznini gerektirir."
    },
-   "verified_on": "2026-11-24",
+   "verified_on": "2026-11-26",
    "edition_verified": false,
-   "notes_tr": "Bölüm adresleri ve lisans ifadesi 2026-11-24'te sayfadan doğrulandı.",
+   "notes_tr": "TA-009 (2026-11-26): kitap önsözü 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA)' ifadesini gösterir; OpenStax yardım sayfası ticari kullanım için ayrı izin (içerik yeniden kullanım formu) ister. Eski baskı kopyalarındaki CC BY 4.0 ifadesi güncel çevrimiçi sürüme uygulanmaz. TeacherAI ticari bir ürün olacağından metin, şekil, örnek ve alıştırma içeri alınmaz, uyarlanmaz, alıntılanmaz, sağlayıcıya gönderilmez ve model eğitiminde kullanılmaz; yalnız akademik başvuru (bilimsel olgunun özgün anlatımı) yapılır.",
    "review_status": "unreviewed"
   },
   {
@@ -198,14 +199,15 @@
    "rights_holder": "Rice University",
    "permissions": {
     "academic_reference": "allowed",
-    "ingestion": "conditional",
+    "ingestion": "not_allowed",
     "redistribution": "conditional",
-    "model_training": "unknown",
-    "conditions_tr": "Ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0)."
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed",
+    "conditions_tr": "Yalnız ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0); ticari kullanım OpenStax'ın ayrı iznini gerektirir."
    },
-   "verified_on": "2026-11-24",
+   "verified_on": "2026-11-26",
    "edition_verified": false,
-   "notes_tr": "Bölüm adresleri 2026-11-24'te doğrulandı.",
+   "notes_tr": "TA-009 (2026-11-26): kitap önsözü 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA)' ifadesini gösterir; OpenStax yardım sayfası ticari kullanım için ayrı izin (içerik yeniden kullanım formu) ister. Eski baskı kopyalarındaki CC BY 4.0 ifadesi güncel çevrimiçi sürüme uygulanmaz. TeacherAI ticari bir ürün olacağından metin, şekil, örnek ve alıştırma içeri alınmaz, uyarlanmaz, alıntılanmaz, sağlayıcıya gönderilmez ve model eğitiminde kullanılmaz; yalnız akademik başvuru (bilimsel olgunun özgün anlatımı) yapılır.",
    "review_status": "unreviewed"
   },
   {
@@ -305,10 +307,11 @@
     "redistribution": "unknown",
     "model_training": "unknown"
    },
-   "verified_on": "2026-11-24",
-   "edition_verified": false,
-   "notes_tr": "Değer sayfası (ör. standart yerçekimi ivmesi) erişilebilir. NIST telif sayfası yazılım için ABD'de telif olmadığını söyler; veri tabanları için ayrı veri uyarısı vardır. Standard Reference Data koşulları doğrulanmadı: veri yalnız başvuru olarak kullanılır.",
-   "review_status": "unreviewed"
+   "verified_on": "2026-11-26",
+   "edition_verified": true,
+   "notes_tr": "TA-009 (2026-11-26): NIST, 2022 önerilen değerlerini Reviews of Modern Physics 97, 025002 ve J. Phys. Chem. Ref. Data 54, 033105 (2025) olarak listeler; G = 6,674 30(15) × 10⁻¹¹ m³ kg⁻¹ s⁻² (göreli belirsizlik 2,2 × 10⁻⁵; 2018 değeriyle aynı). Sabitlerin değeri bağımsız bilimsel olgudur; veri sayfası metni içeri alınmaz. Standard Reference Data koşulları doğrulanmadı.",
+   "review_status": "unreviewed",
+   "edition": "CODATA 2022 düzeltmesi"
   },
   {
    "id": "nasa.planetary-fact-sheet",
@@ -618,30 +621,6 @@
    "review_status": "unreviewed"
   },
   {
-   "id": "serway-jewett.physics",
-   "title": "Physics for Scientists and Engineers",
-   "authors": [
-    "Raymond A. Serway",
-    "John W. Jewett"
-   ],
-   "institution": "Cengage",
-   "kind": "textbook",
-   "access": "purchase_required",
-   "subjects": [
-    "physics"
-   ],
-   "license_verified": false,
-   "permissions": {
-    "academic_reference": "allowed",
-    "ingestion": "not_allowed",
-    "redistribution": "not_allowed",
-    "model_training": "not_allowed"
-   },
-   "edition_verified": false,
-   "notes_tr": "Telifli; baskı doğrulanmadı ve edinilmedi.",
-   "review_status": "unreviewed"
-  },
-  {
    "id": "brown-lemay.central-science",
    "title": "Chemistry: The Central Science",
    "authors": [
@@ -775,14 +754,15 @@
    "rights_holder": "Rice University",
    "permissions": {
     "academic_reference": "allowed",
-    "ingestion": "conditional",
+    "ingestion": "not_allowed",
     "redistribution": "conditional",
-    "model_training": "unknown",
-    "conditions_tr": "Ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0). Ticari kullanım ayrı izin ister."
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed",
+    "conditions_tr": "Yalnız ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0); ticari kullanım OpenStax'ın ayrı iznini gerektirir."
    },
-   "verified_on": "2026-11-24",
+   "verified_on": "2026-11-26",
    "edition_verified": false,
-   "notes_tr": "TA-007'de eklendi; bölüm adresleri ve sayfa altbilgisindeki lisans 2026-11-24'te doğrulandı.",
+   "notes_tr": "TA-009 (2026-11-26): kitap önsözü 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA)' ifadesini gösterir; OpenStax yardım sayfası ticari kullanım için ayrı izin (içerik yeniden kullanım formu) ister. Eski baskı kopyalarındaki CC BY 4.0 ifadesi güncel çevrimiçi sürüme uygulanmaz. TeacherAI ticari bir ürün olacağından metin, şekil, örnek ve alıştırma içeri alınmaz, uyarlanmaz, alıntılanmaz, sağlayıcıya gönderilmez ve model eğitiminde kullanılmaz; yalnız akademik başvuru (bilimsel olgunun özgün anlatımı) yapılır.",
    "review_status": "unreviewed"
   },
   {
@@ -801,14 +781,15 @@
    "rights_holder": "Rice University",
    "permissions": {
     "academic_reference": "allowed",
-    "ingestion": "conditional",
+    "ingestion": "not_allowed",
     "redistribution": "conditional",
-    "model_training": "unknown",
-    "conditions_tr": "Ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0). Ticari kullanım ayrı izin ister."
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed",
+    "conditions_tr": "Yalnız ticari olmayan kullanım, atıf ve aynı lisansla paylaşım (CC BY-NC-SA 4.0); ticari kullanım OpenStax'ın ayrı iznini gerektirir."
    },
-   "verified_on": "2026-11-24",
+   "verified_on": "2026-11-26",
    "edition_verified": true,
-   "notes_tr": "TA-007'de eklendi; bölüm adresleri ve sayfa altbilgisindeki lisans 2026-11-24'te doğrulandı.",
+   "notes_tr": "TA-009 (2026-11-26): kitap önsözü 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA)' ifadesini gösterir; OpenStax yardım sayfası ticari kullanım için ayrı izin (içerik yeniden kullanım formu) ister. Eski baskı kopyalarındaki CC BY 4.0 ifadesi güncel çevrimiçi sürüme uygulanmaz. TeacherAI ticari bir ürün olacağından metin, şekil, örnek ve alıştırma içeri alınmaz, uyarlanmaz, alıntılanmaz, sağlayıcıya gönderilmez ve model eğitiminde kullanılmaz; yalnız akademik başvuru (bilimsel olgunun özgün anlatımı) yapılır.",
    "review_status": "unreviewed",
    "edition": "2e"
   },
@@ -889,6 +870,197 @@
    },
    "edition_verified": false,
    "notes_tr": "Önermelerin kendisi kamu malıdır; Joyce'un web baskısı (çeviri, açıklama, şekiller) telif bildirimi taşır. Yalnız önerme başvurusu olarak kullanılır; metin alınmadı. Önerme sayfaları 2026-11-25'te başlıklarıyla doğrulandı.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "serway-jewett.physics",
+   "title": "Physics for Scientists and Engineers (baskı belirtilmemiş eski kayıt)",
+   "authors": [
+    "Raymond A. Serway",
+    "John W. Jewett"
+   ],
+   "institution": "Cengage",
+   "kind": "textbook",
+   "access": "purchase_required",
+   "subjects": [
+    "physics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed"
+   },
+   "edition_verified": false,
+   "notes_tr": "Telifli; TA-007 kaydı. TA-009'da 10. ve 11. baskılar ayrı kayıtlarla yazıldı; bu kayıt yalnız geriye dönük başvurular için korunur.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "serway-jewett.physics-modern-10e",
+   "title": "Physics for Scientists and Engineers with Modern Physics",
+   "authors": [
+    "Raymond A. Serway",
+    "John W. Jewett"
+   ],
+   "institution": "Cengage",
+   "edition": "10th edition",
+   "isbn": "9781337553292",
+   "url": "https://www.cengage.com/c/physics-for-scientists-and-engineers-with-modern-physics-10e-serway-jewett/9781337553292",
+   "kind": "textbook",
+   "access": "purchase_required",
+   "subjects": [
+    "physics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed"
+   },
+   "edition_verified": false,
+   "notes_tr": "Akademik başvuru adayı; kitap edinilmedi ve bölüm düzeyinde incelenmedi. ISBN proje sahibinin verdiği yayıncı adresinden alındı, ürün sayfası bu fazda açılmadı. Yayıncı sayfası içerik incelemesi sayılmaz.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "serway-jewett-peroomian.physics-11e",
+   "title": "Physics for Scientists & Engineers",
+   "authors": [
+    "Raymond A. Serway",
+    "John W. Jewett",
+    "Vahé Peroomian"
+   ],
+   "institution": "Cengage",
+   "edition": "11th edition",
+   "year": 2025,
+   "isbn": "9798214193151",
+   "url": "https://www.cengage.com/c/new-edition/9798214193151",
+   "kind": "textbook",
+   "access": "purchase_required",
+   "subjects": [
+    "physics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed"
+   },
+   "edition_verified": true,
+   "verified_on": "2026-11-26",
+   "notes_tr": "TA-009 (2026-11-26): baskı, yazarlar ve ISBN-13 9798214193151 yayıncı ürün listelemesinden doğrulandı (uluslararası baskı 9798214446158). Kitap edinilmedi; bölüm düzeyinde inceleme iddia edilmez.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "halliday-resnick-walker.fundamentals",
+   "title": "Fundamentals of Physics",
+   "authors": [
+    "David Halliday",
+    "Robert Resnick",
+    "Jearl Walker"
+   ],
+   "institution": "Wiley",
+   "kind": "textbook",
+   "access": "not_accessed",
+   "subjects": [
+    "physics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed"
+   },
+   "edition_verified": false,
+   "notes_tr": "Akademik başvuru adayı; baskı, ISBN ve içerik bu fazda doğrulanmadı ve edinilmedi.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "young-freedman.university-physics",
+   "title": "University Physics with Modern Physics",
+   "authors": [
+    "Hugh D. Young",
+    "Roger A. Freedman"
+   ],
+   "institution": "Pearson",
+   "kind": "textbook",
+   "access": "not_accessed",
+   "subjects": [
+    "physics"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "not_allowed",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed"
+   },
+   "edition_verified": false,
+   "notes_tr": "Akademik başvuru adayı; baskı, ISBN ve içerik bu fazda doğrulanmadı ve edinilmedi.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "mit.ocw",
+   "title": "MIT OpenCourseWare",
+   "institution": "Massachusetts Institute of Technology",
+   "url": "https://ocw.mit.edu/pages/privacy-and-terms-of-use/",
+   "kind": "oer_platform",
+   "access": "open_web",
+   "subjects": [
+    "physics",
+    "mathematics"
+   ],
+   "license": "CC BY-NC-SA 4.0",
+   "license_verified": true,
+   "rights_holder": "Massachusetts Institute of Technology",
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "not_allowed",
+    "redistribution": "conditional",
+    "model_training": "not_allowed",
+    "commercial_use": "not_allowed",
+    "conditions_tr": "CC BY-NC-SA 4.0: ticari kullanım yasak. Kullanım koşullarının yapay zekâ bölümü eğitimi yalnız ticari olmayan amaçla, atıf ve aynı lisansla türev model dağıtımı koşuluyla izinli sayar."
+   },
+   "verified_on": "2026-11-26",
+   "edition_verified": false,
+   "notes_tr": "TA-009 (2026-11-26): 'Privacy and Terms of Use' sayfası CC BY-NC-SA 4.0 ve 'Commercialization is prohibited' der; yapay zekâ eğitiminde ticari uygulama yasaktır. TeacherAI ticari olacağından OCW içeriği içeri alınmaz, sağlayıcıya gönderilmez ve eğitimde kullanılmaz; yalnız akademik başvuru.",
+   "review_status": "unreviewed"
+  },
+  {
+   "id": "nist.sp-811",
+   "title": "Guide for the Use of the International System of Units (SI) — NIST Special Publication 811",
+   "authors": [
+    "Ambler Thompson",
+    "Barry N. Taylor"
+   ],
+   "institution": "NIST",
+   "edition": "2008",
+   "year": 2008,
+   "url": "https://www.nist.gov/pml/special-publication-811",
+   "kind": "standard",
+   "access": "open_web",
+   "subjects": [
+    "physics",
+    "chemistry"
+   ],
+   "license_verified": false,
+   "permissions": {
+    "academic_reference": "allowed",
+    "ingestion": "unknown",
+    "redistribution": "unknown",
+    "model_training": "unknown",
+    "commercial_use": "unknown"
+   },
+   "edition_verified": false,
+   "notes_tr": "Dönüşüm çarpanları (cal_th = 4,184 J; atm = 101 325 Pa; mmHg) için başvuru. Çarpanlar bağımsız standart değerdir; yayın metni içeri alınmaz. Sayfa bu fazda yeniden açılmadı: baskı doğrulanmadı.",
    "review_status": "unreviewed"
   }
  ]
