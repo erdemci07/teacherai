@@ -58,3 +58,14 @@ export function GeometryFacts({ note, facts, schematic }: { note: string | null;
     </section>
   );
 }
+
+// TA-009 §16: fizik tahtası yalnız sunucunun kurduğu veya açıkça etiketlediği öğeleri listeler; çizim üretilmez.
+export function PhysicsFacts({ note, facts }: { note: string | null; facts: string[] }) {
+  return (
+    <section className="boardItem board-physics_facts" aria-label="Fizik doğrulaması">
+      <small>Fiziksel model<span className="taBadge">ölçekli değildir</span></small>
+      {note && <p>{note}</p>}
+      <ul>{facts.map((fact, index) => <li key={index}>{fact}</li>)}</ul>
+    </section>
+  );
+}

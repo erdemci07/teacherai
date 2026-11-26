@@ -50,7 +50,7 @@ class UnsupportedSubjectError(LessonError):
     public_message = "Bu alanda ders üretimi henüz kullanılamıyor."
 
 
-def understand(analysis: VisionAnalysis) -> QuestionUnderstanding:
+def understand(analysis: VisionAnalysis, allow_physics: bool = False) -> QuestionUnderstanding:
     """Mevcut v1 görsel analizini ortak soru sözleşmesine çevirir.
 
     Mevcut görsel istemi yalnızca matematik sorularını ``valid_math_question`` olarak kabul eder ve
@@ -63,7 +63,7 @@ def understand(analysis: VisionAnalysis) -> QuestionUnderstanding:
         subject = Subject.MATHEMATICS
     status = {"unreadable": "unreadable", "incomplete_question": "incomplete",
               "not_math_question": "unresolved_subject"}.get(analysis.image_status, "educational")
-    if status == "educational" and not capabilities(subject).generation:
+    if status == "educational" and not capabilities(subject).generation and not (allow_physics and subject == Subject.PHYSICS):
         status = "unresolved_subject" if subject == Subject.UNKNOWN else "unsupported_subject"
     visual = analysis.visual_elements
     descriptions = [visual.description] if visual.description else []
@@ -86,6 +86,30 @@ def with_integrity(analysis: VisionAnalysis) -> VisionAnalysis:
         return analysis
     report = evaluate(analysis, EvaluationState(revision=analysis.revision, origin="legacy"))
     return analysis.model_copy(update={"integrity": report})
+
+
+def is_physics(analysis: VisionAnalysis) -> bool:
+    return canonical_subject(analysis.subject) == Subject.PHYSICS
+
+
+def require_physics_question(analysis: VisionAnalysis) -> tuple[VisionAnalysis, QuestionUnderstanding]:
+    """TA-009 §18: yalnız fizik bayrağı açıkken. Bütünlük kararı sağlayıcı çağırmadan, fizik kapısı açık olarak yeniden
+    hesaplanır (görsel analizindeki "desteklenmeyen alan" kararı diğer denetimleri atlatmıştı)."""
+    if not analysis.is_valid_question:
+        raise InvalidQuestionAnalysisError
+    prior = analysis.integrity
+    state = EvaluationState(revision=analysis.revision, origin=prior.revision_origin if prior else "legacy",
+                            recheck_limit=prior.recheck_limit if prior else 0,
+                            rechecks_used=prior.rechecks_used if prior else 0,
+                            corrections=tuple(prior.corrections) if prior else (),
+                            clarifications=tuple(prior.clarifications) if prior else (), allow_physics=True)
+    analysis = analysis.model_copy(update={"integrity": evaluate(analysis, state)})
+    question = understand(analysis, allow_physics=True)
+    if question.status != "educational":
+        raise UnsupportedSubjectError
+    if not analysis.integrity.solvable:
+        raise QuestionClarificationRequiredError
+    return analysis, question
 
 
 def require_math_question(analysis: VisionAnalysis) -> QuestionUnderstanding:

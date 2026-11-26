@@ -5,7 +5,7 @@ from apps.api.app.features.mathai.schemas import GraphData
 class BoardElement(BaseModel):
     model_config=ConfigDict(extra="forbid")
     id:str
-    type:Literal["title","teacher_note","equation","rule","arrow","box","check","cross","warning","tip","known_values","unknown_value","mini_example","graph","geometry_diagram","final_answer","number_line","geometry_facts"]
+    type:Literal["title","teacher_note","equation","rule","arrow","box","check","cross","warning","tip","known_values","unknown_value","mini_example","graph","geometry_diagram","final_answer","number_line","geometry_facts","physics_facts"]
     text:str|None=None; latex:str|None=None; mark:Literal["none","check","cross","warning"]="none"
     source_step_id:str|None=None; graph:GraphData|None=None
     shape:Literal["triangle","rectangle","circle","line_segment"]|None=None

@@ -54,6 +54,8 @@ class MathAIService:
         - Uzmanlık denetimi beklenmedik biçimde çökerse sessizce düşmez: ``specialist_status="unavailable"`` raporu ve
           uyarı döner. Çekirdek denetimlerin kendi kanıtı ayrı olduğundan çekirdek durum korunur.
         """
+        if getattr(plan.content, "physics_model", None) is not None:
+            return self._verify_physics(plan)
         started = perf_counter()
         result = self._verify_core(plan)
         core_done = perf_counter()
@@ -90,6 +92,42 @@ class MathAIService:
                        "warnings": [*result.warnings, "Matematik uzmanlık denetimi tamamlanamadı veya model/cevap "
                                     "uyumunu doğrulayamadı."]}
         return result.model_copy(update=update)
+
+    def _verify_physics(self, plan: LessonPlan) -> VerificationResult:
+        """TA-009: fizik dersi. Matematik çekirdeği çalışmaz; durum yalnız fizik raporundan, şu eşlemeyle gelir:
+        maddi çelişki → ``failed``; ``verified`` + eşleşen cevap → ``verified``; ``partially_checked`` →
+        ``partially_verified``; ``interpreted``/``unsupported`` → ``unsupported``. Çökme gizlenmez."""
+        started = perf_counter()
+        analysis = plan.source_analysis
+        statements = list(getattr(getattr(analysis, "source", None), "statements", []) or [])
+        text = " ".join([analysis.question_text or "", *statements])
+        integrity = getattr(analysis, "integrity", None)
+        confirmed = tuple(item.corrected for item in getattr(integrity, "corrections", []) or [])
+        claims = [item.latex for item in plan.content.final_answer_expressions]
+        try:
+            from ..physics import verify as physics
+
+            report = physics.verify(plan.content.physics_model, text, claims, confirmed)
+        except Exception as exc:  # noqa: BLE001 — eksik denetim açıkça işaretlenir; içerik günlüğe yazılmaz
+            _LOGGER.warning("physics_verification_unavailable", extra={"error_type": type(exc).__name__})
+            return self._result("unsupported", [], False, False, ["Fizik doğrulaması çalıştırılamadı."], started)
+        if report.material_count:
+            status, final, contradiction = "failed", False, True
+        elif report.capability == "verified" and report.answer == "matched":
+            status, final, contradiction = "verified", True, False
+        elif report.capability == "partially_checked":
+            status, final, contradiction = "partially_verified", False, False
+        else:
+            status, final, contradiction = "unsupported", False, False
+        checks = [VerificationCheck(id=f"physics_{c.id}"[:120], kind="final_answer" if c.area == "answer" else "answer_target",
+                                    status="passed" if c.status == "passed" else "failed" if c.status == "failed" else "unsupported",
+                                    statement=c.reason, detail=c.detail, reason=c.reason) for c in report.checks][:64]
+        warnings = [f"Fizik doğrulama sınıfı: {report.capability}."]
+        if report.clarification_needed and report.clarification_tr:
+            warnings.append(report.clarification_tr)
+        confidence = 0.9 if status == "verified" else 0.5 if status == "partially_verified" else 0.0
+        result = self._result(status, checks, final, contradiction, warnings, started, confidence)
+        return result.model_copy(update={"physics": report})
 
     def _verify_core(self, plan: LessonPlan) -> VerificationResult:
         started = perf_counter()

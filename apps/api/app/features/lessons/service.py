@@ -21,7 +21,9 @@ from ..education.curriculum_v2 import EducationalProvenance
 from ..education.domain import EducationContext, Grade, Reference
 from ..education.policy import TeachingPolicy
 from ..education.math_adapter import (
+    is_physics,
     require_math_question,
+    require_physics_question,
     resolved_context,
     validated_math_lesson,
     with_integrity,
@@ -72,6 +74,9 @@ def correction_feedback(verification: VerificationResult) -> str:
     if report is not None:
         lines += [f"- [uzmanlık/{item.area}/{item.reason}] {item.detail or item.statement or ''}"[:300]
                   for item in report.material_failures]
+    physics = verification.physics
+    if physics is not None:  # fizik dersinde çekirdek denetimleri fizik raporunun kopyasıdır; yalnız maddi olanlar
+        lines = [f"- [fizik/{item.area}/{item.reason}] {item.detail or ''}"[:300] for item in physics.checks if item.material]
     return ("MathAI çelişki buldu. Aşağıdaki maddi sorunları düzelt; doğru adımları koru, özgün sorunun tanım "
             "kümesini ve istenen hedefi değiştirme:\n" + "\n".join(lines[:12]))[:1200]
 
@@ -84,6 +89,9 @@ def correction_resolved(verification: VerificationResult) -> bool:
         return False
     if verification.final_answer_verified:
         return True
+    if verification.physics is not None:
+        # Fizik: maddi çelişki kalmamalı ve türlü cevap bağımsız değerle eşleşmeli (koşul açıksa kısmi kalır).
+        return verification.physics.material_count == 0 and verification.physics.answer == "matched"
     report = verification.mathematics
     return report is not None and report.material_count == 0 and any(
         check.status == "passed" and (check.id.endswith(ANSWER_LEVEL_CHECKS[0]) or check.id in ANSWER_LEVEL_CHECKS[1:])
@@ -117,9 +125,11 @@ def with_strategies(verification, analysis, grade, policy_set):
 
 class LessonService:
     def __init__(self, provider: LessonProvider, mathai: MathAIService, board_planner: BoardPlanner,
-                 clock: Callable[[], date] = _today):
+                 clock: Callable[[], date] = _today, physics_enabled: bool = False):
         self.provider = provider
         self.mathai = mathai
+        # TA-009 §18: fizik öğrenciye varsayılan olarak kapalıdır (TEACHERAI_PHYSICS_STUDENT_ENABLED=false).
+        self.physics_enabled = physics_enabled
         self.board_planner = board_planner
         self.clock = clock
 
@@ -129,7 +139,11 @@ class LessonService:
                        advanced_method_requested: bool = False) -> GeneratedLesson:
         resolved_request_id = request_id or analysis.request_id
         analysis = with_integrity(analysis)
-        question = require_math_question(analysis)
+        physics = self.physics_enabled and is_physics(analysis)
+        if physics:
+            analysis, question = require_physics_question(analysis)
+        else:
+            question = require_math_question(analysis)
         education_context = resolved_context(question, teaching_context).model_copy(update={"grade": grade})
         # TA-006: belirlenimci ve sınırlı bağlam; ek sağlayıcı çağrısı veya Firestore okuması yoktur.
         selected = curriculum_context.select(analysis, education_context.subject, grade.value if grade else None,
@@ -205,10 +219,12 @@ class LessonService:
         if method.state == "failed":
             logger.warning("Lesson method not verified for grade", extra={"request_id": resolved_request_id, "stage": "method_check"})
         curriculum = methods.curriculum_check(selected.resolution, selected.mapping, grade_value, list(selected.matched))
-        verification = with_strategies(verification, analysis, grade_value, policy_set)
+        if not physics:
+            verification = with_strategies(verification, analysis, grade_value, policy_set)
 
         board_started = perf_counter()
-        artifact = validated_math_lesson(plan, verification, education_context, (method, curriculum))
+        # Matematik ders sözleşmesi (LessonPlanV2) fizik için kurulmaz; tahta yalnız fizik raporunu kullanır.
+        artifact = None if physics else validated_math_lesson(plan, verification, education_context, (method, curriculum))
         board = self.board_planner.create(plan, verification, artifact)
         logger.info(
             "Lesson board created",

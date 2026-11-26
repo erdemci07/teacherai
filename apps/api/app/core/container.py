@@ -120,7 +120,8 @@ def build_container(settings: Settings | None = None) -> Container:
         version_service=VersionService(settings=resolved_settings),
         # TA-009 §21: tek MathAI ve tek eşzamanlılık sınırı; iki hizmet süreç üst sınırını ikiye katlamaz.
         interaction_service=InteractionService(_interaction_provider(resolved_settings), mathai, practice_store),
-        lesson_service=LessonService(_lesson_provider(resolved_settings), mathai, BoardPlanner()),
+        lesson_service=LessonService(_lesson_provider(resolved_settings), mathai, BoardPlanner(),
+                                     physics_enabled=resolved_settings.physics_student_enabled),
         vision_service=VisionService(
             provider=vision_provider,
             storage=LocalTemporaryImageStorage(resolved_settings.upload_temp_directory),

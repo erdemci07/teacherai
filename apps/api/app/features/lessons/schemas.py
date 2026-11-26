@@ -4,6 +4,7 @@ from apps.api.app.features.vision.schemas import VisionAnalysis
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from apps.api.app.features.education.mathematics import MathematicalModel
+from apps.api.app.features.education.science import ScientificProblemModel
 
 
 class Expression(BaseModel):
@@ -37,6 +38,8 @@ class LessonContent(BaseModel):
     takeaway: str=Field(min_length=1)
     # TA-008: sağlayıcının önerdiği yapılandırılmış model (sözel problem/geometri). Sunucu bağımsız denetler.
     mathematical_model: MathematicalModel|None=None
+    # TA-009: fizik dersinde sağlayıcının önerdiği fiziksel model (kanonik ScientificProblemModel). Yetkili değildir.
+    physics_model: ScientificProblemModel|None=None
     @model_validator(mode="after")
     def sequential_steps(self):
         if [x.id for x in self.steps] != [f"step_{i}" for i in range(1,len(self.steps)+1)]: raise ValueError("step IDs must be sequential")
@@ -140,6 +143,126 @@ class LessonDraftResponse(BaseModel):
     learning_objectives: list[str]
     concept_id: str
     content: LessonContentResponse
+# --------------------------------------------------------------------------- TA-009 fizik yanıt şeması
+# Düz tipler, sınır yok (Anthropic izdüşümü gerekmez); sunucuda kanonik sözleşmeyle doğrulanır, geçersizse atılır.
+PhysicsProvenance=Literal["source_text","visual_reading","problem_convention","standard_constant","modeling_assumption",
+                          "provider_proposed"]
+class PhysicsQuantityResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    symbol: str|None
+    kind: str|None
+    magnitude: str|None  # bilinmeyende null; "8", "0,5", "3/2"
+    unit: str|None
+    original: str|None  # sorudaki yazılış (birebir alıntı)
+    provenance: PhysicsProvenance
+    entity: str|None
+    state: str|None
+    representation: Literal["magnitude","component","unspecified"]
+class PhysicsBodyResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    entity: str
+    mass: str|None
+    surface: str|None
+class PhysicsSurfaceResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    kind: Literal["horizontal","incline","vertical"]
+    angle_deg: str|None
+    friction: Literal["none","present","unknown"]
+    mu_static: str|None
+    mu_kinetic: str|None
+    provenance: PhysicsProvenance
+class PhysicsForceResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    kind: Literal["gravity","normal","tension","static_friction","kinetic_friction","applied","spring","electric","magnetic",
+                  "buoyancy","drag","other"]
+    on: str
+    by: str|None
+    magnitude: str|None
+    direction: Literal["+x","-x","+y","-y","up_incline","down_incline","angle"]
+    angle_deg: str|None
+    provenance: PhysicsProvenance
+class PhysicsStringResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    bodies: list[str]
+    over_pulley: bool
+    provenance: PhysicsProvenance
+class PhysicsPhaseResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    entity: str
+    axis: Literal["horizontal","vertical","incline"]
+    acceleration_kind: Literal["constant","zero","varying","unknown"]
+    initial_velocity: str|None
+    final_velocity: str|None
+    displacement: str|None
+    distance: str|None
+    duration: str|None
+    acceleration: str|None
+    free_fall: bool
+class PhysicsCollisionResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    bodies: list[str]
+    kind: Literal["elastic","perfectly_inelastic","inelastic","explosion","unknown"]
+    velocities_before: list[str|None]
+    velocities_after: list[str|None]
+    external_impulse: Literal["none_stated","negligible_assumed","present","unknown"]
+class PhysicsElementResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    id: str
+    kind: Literal["resistor","bulb","battery","switch","ammeter","voltmeter","wire"]
+    nodes: list[str]
+    value: str|None
+    internal_resistance: str|None
+    positive_node: str|None
+    closed: bool|None
+    connection_certain: bool
+    provenance: PhysicsProvenance
+class PhysicsCircuitResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    nodes: list[str]
+    elements: list[PhysicsElementResponse]
+class PhysicsLawResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    law: str
+    system: list[str]
+class PhysicsTargetResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    quantity: str|None
+    kind: str
+    entity: str|None
+    state: str|None
+    representation: Literal["magnitude","component","unspecified"]
+    unit: str|None
+    element: str|None
+    between: list[str]
+class PhysicsModelResponse(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    domain: Literal["kinematics","dynamics","energy","momentum","dc_circuit","other"]
+    sign_convention: str|None
+    quantities: list[PhysicsQuantityResponse]
+    bodies: list[PhysicsBodyResponse]
+    surfaces: list[PhysicsSurfaceResponse]
+    forces: list[PhysicsForceResponse]
+    strings: list[PhysicsStringResponse]
+    phases: list[PhysicsPhaseResponse]
+    collisions: list[PhysicsCollisionResponse]
+    circuit: PhysicsCircuitResponse|None
+    laws: list[PhysicsLawResponse]
+    equations: list[str]
+    target: PhysicsTargetResponse|None
+class PhysicsLessonContentResponse(LessonContentResponse):
+    physics_model: PhysicsModelResponse|None
+class PhysicsLessonDraftResponse(BaseModel):
+    """Yalnız fizik dersi isteğinde gönderilen şema; matematik isteğinin şeması ve maliyeti değişmez."""
+    model_config=ConfigDict(extra="forbid")
+    learning_objectives: list[str]
+    concept_id: str
+    content: PhysicsLessonContentResponse
 class LessonPlan(BaseModel):
     schema_: Annotated[dict[str,str], Field(alias="schema")]=Field(default_factory=lambda:{"name":"teacherai.lesson_plan","version":"1.0.0"})
     lesson_plan_id: str; lesson_plan_version: str="1"; status: str="verification_pending"

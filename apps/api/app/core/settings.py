@@ -98,6 +98,9 @@ class Settings(BaseSettings):
     usage_timeout_seconds: float = Field(5, gt=0, le=30)
     usage_transaction_attempts: int = Field(5, ge=1, le=10)
     ai_enabled: bool = True
+    # TA-009 §18: fizik dersleri öğrenciye kapalı. Açmak proje sahibinin kararıdır ve bağımsız değerlendirme,
+    # öğretmen onayı ve açılan konularda verified yeteneği gerektirir.
+    physics_student_enabled: bool = False
     account_deletion_max_auth_age_seconds: int = Field(300, ge=30, le=3600)
     account_deletion_time_budget_seconds: float = Field(20, ge=0, le=120)
     ai_concurrency: int = Field(4, ge=1, le=64)

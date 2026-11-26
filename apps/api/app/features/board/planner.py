@@ -28,6 +28,35 @@ def _fact_label(verdict) -> str:
     return f"kullanılmadı: {_REJECTED.get(verdict.basis, verdict.basis)}"
 
 
+_PHYSICS_STATE = {"verified": "Fizik doğrulaması: doğrulandı (bu problem için belirlenimci denetimler geçti).",
+                  "partially_checked": "Fizik doğrulaması: kısmi (bir koşul veya girdi doğrulanamadı).",
+                  "interpreted": "Fizik doğrulaması: yalnız yorum (girdiler kaynağa bağlanamadı).",
+                  "unsupported": "Fizik doğrulaması: desteklenmiyor (çözücü yok veya açıklama gerekiyor)."}
+_ORIGIN = {"source_text": "soruda verilen", "problem_convention": "sorunun uzlaşımı", "standard_constant": "standart değer",
+           "student_confirmed": "öğrencinin onayladığı", "visual": "görselden okundu", "unverified": "doğrulanmadı",
+           "derived": "türetildi"}
+
+
+def _physics_facts(problem, report) -> list[str]:
+    """TA-009 §16: tahtada yalnız modelce kurulmuş veya açıkça etiketlenmiş öğeler; sağlayıcı oku kuvvet kanıtı değildir."""
+    facts = [f"{v.symbol} = {v.value} ({_ORIGIN.get(v.origin, v.origin)})" for v in report.values_used]
+    model = problem.physics
+    for force in model.forces:
+        state = "kurulmuş" if force.provenance in {"source_text", "student_confirmed", "problem_convention"} else "yorum"
+        facts.append(f"Kuvvet {force.kind} → {force.on} ({force.direction}; {state})")
+    if model.circuit is not None:
+        for element in model.circuit.elements:
+            facts.append(f"{element.kind} {element.id}: {element.nodes[0]}–{element.nodes[1]} "
+                         f"({'bağlantı kesin' if element.connection_certain else 'bağlantı belirsiz — kullanılmadı'})")
+    facts += [f"Varsayım: {item}" for item in report.assumptions_tr]
+    facts += [f"Koşul sağlanmadı: {c.law} / {c.condition}" for c in report.conditions if c.state == "violated"]
+    facts += [f"Koşul bilinmiyor: {c.law} / {c.condition}" for c in report.conditions
+              if c.state == "unknown" and not c.assumption_tr]
+    if report.computed:
+        facts.append(f"Bağımsız sonuç: {report.computed}")
+    return facts[:24]
+
+
 def _number(value: str) -> bool:
     try:
         float(value)
@@ -87,6 +116,11 @@ class BoardPlanner:
             add("geometry_facts", text="Şekil ölçekli değildir; yalnız doğrulanmış olgular hesapta kullanılır. "
                                        "Şekil ve metin görselden AI ile okunmuş olabilir.",
                 facts=facts, schematic=model.geometry.schematic)
+        physics_report = getattr(verification, "physics", None)
+        if physics_report is not None and getattr(c, "physics_model", None) is not None:
+            add("physics_facts", text=_PHYSICS_STATE[physics_report.capability], facts=_physics_facts(c.physics_model,
+                                                                                                    physics_report),
+                schematic=True)
         answer = artifact.content.answer if artifact else None
         add("final_answer",text=answer.description if isinstance(answer, MathAnswer) else c.final_answer,latex=answer.expressions[0] if isinstance(answer, MathAnswer) else c.final_answer_expressions[0].latex,mark="check" if verification.final_answer_verified else "warning")
         return BoardPlan(board_id=f"board_{uuid4().hex}",lesson_plan_id=lesson.lesson_plan_id,title=lesson.source_analysis.topic,elements=elements)

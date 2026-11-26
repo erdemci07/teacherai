@@ -35,7 +35,8 @@ from .exceptions import (
 )
 from .normalization import normalize_lesson_draft_response
 from .provider import LessonProviderResult
-from .schemas import LessonDraftResponse
+from .physics_normalization import normalize_physics_lesson_draft_response
+from .schemas import LessonDraftResponse, PhysicsLessonDraftResponse
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +154,12 @@ class OpenAILessonProvider:
                 "answer_strategy_reason": context.metrics.answer_strategy_reason,
             },
         )
+        physics = "physics" in context.payload  # TA-009: yalnız fizik isteğinde fizik şeması (matematik şeması değişmez)
         request = ProviderRequest(Operation.LESSONS, self.model, user=context.serialized, system=self.prompt,
-                                  schema=LessonDraftResponse, timeout=self.timeout + 2)
-        return await invoke(self._adapter(client), request, validate=normalize_lesson_draft_response, purpose=purpose)
+                                  schema=PhysicsLessonDraftResponse if physics else LessonDraftResponse,
+                                  timeout=self.timeout + 2)
+        validate = normalize_physics_lesson_draft_response if physics else normalize_lesson_draft_response
+        return await invoke(self._adapter(client), request, validate=validate, purpose=purpose)
 
     def _build_budgeted_context(self, analysis: VisionAnalysis, correction_feedback: str | None, teaching_context, level: str) -> BuiltLessonContext:
         context = build_lesson_generation_context(analysis, correction_feedback, teaching_context, level)  # type: ignore[arg-type]

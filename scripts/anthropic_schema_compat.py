@@ -20,14 +20,15 @@ import sys
 def schemas():
     from apps.api.app.core.operations import Operation
     from apps.api.app.features.interactions.schemas import AdaptiveDraft
-    from apps.api.app.features.lessons.schemas import LessonDraftResponse
+    from apps.api.app.features.lessons.schemas import LessonDraftResponse, PhysicsLessonDraftResponse
     from apps.api.app.features.vision.schemas import (
         RecheckResponse,
         VisionProviderAnalysis,
     )
 
     return {Operation.VISION: {"VisionProviderAnalysis": VisionProviderAnalysis, "RecheckResponse": RecheckResponse},
-            Operation.LESSONS: {"LessonDraftResponse": LessonDraftResponse},
+            Operation.LESSONS: {"LessonDraftResponse": LessonDraftResponse,
+                                "PhysicsLessonDraftResponse": PhysicsLessonDraftResponse},
             Operation.INTERACTION: {"AdaptiveDraft": AdaptiveDraft}}
 
 
