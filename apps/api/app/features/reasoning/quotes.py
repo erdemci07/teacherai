@@ -20,7 +20,7 @@ from fractions import Fraction
 MAX_TOKENS = 4000
 _UPPER, _LOWER = "A-ZÇĞİÖŞÜ", "a-zçğıöşüâîû"
 _TOKEN = re.compile(
-    rf"\d+(?:[.,]\d+)?"                                   # sayı (ondalık virgül veya nokta)
+    rf"[0-9]+(?:[.,][0-9]+)?"                             # sayı (yalnız ASCII rakam; ² gibi üst simgeler sayı değil)
     rf"|[{_UPPER}][{_LOWER}]+"                            # büyük harfle başlayan sözcük (Şekildeki, Ali)
     rf"|[{_UPPER}](?:_\{{?\d+\}}?)?(?:[{_UPPER}](?:_\{{?\d+\}}?)?)*"  # nokta etiketi dizisi (B, AB, ABC, P_1)
     rf"|[{_LOWER}]+"                                      # sözcük
@@ -52,7 +52,7 @@ def tokens(text: str) -> list[Token]:
     out: list[Token] = []
     for match in _TOKEN.finditer(text or ""):
         value = match.group(0)
-        if value[0].isdigit():
+        if "0" <= value[0] <= "9":
             out.append(Token(value, "number"))
         elif value[0].isalpha() and value[0].isupper() and not (len(value) > 1 and value[1].islower()):
             out.append(Token(value, "label"))
