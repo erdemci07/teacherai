@@ -45,6 +45,7 @@ jobs:
       - run: python -m scripts.science_matrix --check
       - run: python -m scripts.question_pack --check
       - run: python -m scripts.math_matrix --check
+      - run: python -m scripts.physics_matrix --check
       - run: python -m scripts.anthropic_schema_compat --check
       - run: python -m scripts.curriculum_registry --check
       - run: python -m scripts.knowledge_registry --check
