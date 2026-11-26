@@ -20,7 +20,10 @@ import sys
 def schemas():
     from apps.api.app.core.operations import Operation
     from apps.api.app.features.interactions.schemas import AdaptiveDraft
-    from apps.api.app.features.lessons.schemas import LessonDraftResponse, PhysicsLessonDraftResponse
+    from apps.api.app.features.lessons.schemas import (
+        LessonDraftResponse,
+        PhysicsLessonDraftResponse,
+    )
     from apps.api.app.features.vision.schemas import (
         RecheckResponse,
         VisionProviderAnalysis,
