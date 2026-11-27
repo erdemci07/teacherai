@@ -23,6 +23,51 @@ def prices() -> dict[str, tuple[float, float, float]]:
             for name, m in catalog()["models"].items() if m.get("usd_per_million_tokens")}
 
 
+def tiers() -> dict[str, tuple[tuple[int, tuple[float, float, float]], ...]]:
+    """TA-009B §2: model → ((istem eşiği, (girdi, önbellekli, çıktı)), ...). İstem token sayısı eşiği *aşarsa*
+    isteğin tamamı o kademeden fiyatlanır (Haiku 5.5: 100.000; OpenAI uzun bağlam: 272.000)."""
+    out = {}
+    for name, m in catalog()["models"].items():
+        rows = [(t["above_prompt_tokens"], (t["usd_per_million_tokens"]["input"], t["usd_per_million_tokens"]["cached_input"],
+                                            t["usd_per_million_tokens"]["output"])) for t in m.get("tiers") or ()]
+        if rows and m.get("usd_per_million_tokens"):
+            out[name] = tuple(sorted(rows))
+    return out
+
+
+def rates_for(model: str, prompt_tokens: int | None, base: dict, tiered: dict) -> tuple[float, float, float] | None:
+    """İsteğin gerçek istem token sayısına göre fiyat kademesi. Kademeli modelde istem sayısı bilinmiyorsa
+    kademe seçilemez ve maliyet uydurulmaz (None)."""
+    rates = base.get(model)
+    steps = tiered.get(model) or ()
+    if rates is None or not steps:
+        return rates
+    if prompt_tokens is None:
+        return None
+    for threshold, step in steps:
+        if prompt_tokens > threshold:
+            rates = step
+    return rates
+
+
+def shutdown_problems(models, today) -> tuple[list[str], list[str]]:
+    """TA-009B §2: (uyarılar, engeller). Kapanışa 30 günden az kalan model uyarı; kapanış günü geçmiş model
+    başlatmayı engeller. ``applies_to`` yalnız bilgi amaçlıdır; takma adın da kapanacağı varsayılır."""
+    from datetime import date
+
+    warnings, blockers = [], []
+    for model in sorted(set(models)):
+        life = (catalog()["models"].get(model) or {}).get("lifecycle") or {}
+        if not life.get("shutdown"):
+            continue
+        left = (date.fromisoformat(life["shutdown"]) - today).days
+        if left < 0:
+            blockers.append(f"{model} kapanış tarihi {life['shutdown']} geçti; önerilen: {life.get('replacement') or 'yok'}.")
+        elif left < 30:
+            warnings.append(f"{model} için kapanışa {left} gün kaldı ({life['shutdown']}).")
+    return warnings, blockers
+
+
 def pricing_version() -> str:
     return catalog()["pricing_version"]
 

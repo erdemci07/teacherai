@@ -40,6 +40,7 @@ from .ai_outcomes import (
     AITimeoutError,
     Outcome,
 )
+from . import model_catalog
 from .ai_port import ProviderAdapter, ProviderRequest, Usage, issue
 from .operations import Operation, validate_effort
 
@@ -161,7 +162,8 @@ def _usage_fields(usage: Usage) -> dict:
 
 
 def _price(event, settings):
-    rates = settings.model_prices.get(event["model"])
+    rates = model_catalog.rates_for(event["model"], event.get("input_tokens"), settings.model_prices,
+                                    settings.model_price_tiers)
     if not (rates and settings.pricing_version):
         return
     if any(event[k] is None for k in ("input_tokens", "cached_tokens", "output_tokens")):

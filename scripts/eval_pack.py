@@ -37,7 +37,7 @@ def load_pricing(path: Path = MODELS) -> tuple[str, dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
     prices = {model: (m["usd_per_million_tokens"]["input"], m["usd_per_million_tokens"]["cached_input"],
                       m["usd_per_million_tokens"]["output"]) for model, m in data["models"].items()
-              if m.get("usd_per_million_tokens")}  # fiyatsız model (ör. kademeli fiyat) maliyetlenmez
+              if m.get("usd_per_million_tokens")}  # fiyatsız model maliyetlenmez; kademeler Settings.model_price_tiers
     return data["pricing_version"], prices
 
 

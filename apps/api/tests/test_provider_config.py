@@ -62,7 +62,7 @@ def test_anthropic_lesson_needs_explicit_model_key_and_price():
     assert ok.model_for(Operation.LESSONS) == "claude-sonnet-5-5" and ok.provider_for(Operation.VISION) == "openai"
     with pytest.raises(ValidationError, match="Fiyatı tanımsız"):
         Settings(**PRODUCTION, openai_api_key="k", provider_lesson="anthropic", anthropic_api_key="k",
-                 anthropic_lesson_model="claude-haiku-5-5")  # kademeli fiyat katalogda yok
+                 anthropic_lesson_model="claude-unpriced")  # TA-009B: Haiku 5.5 artık kademeli fiyatlı; fiyatsız örnek
     with pytest.raises(ValidationError, match="reasoning"):
         Settings(**base, anthropic_api_key="k", anthropic_lesson_model="claude-sonnet-5-5",
                  reasoning_effort_by_operation={"lessons": "low"})

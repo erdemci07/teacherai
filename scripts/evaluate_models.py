@@ -30,6 +30,7 @@ from pathlib import Path
 from statistics import median
 from time import perf_counter
 
+from apps.api.app.core import model_catalog
 from apps.api.app.core.ai_outcomes import AIOutcomeError
 from apps.api.app.core.gateway import begin_offline_accounting, end_accounting
 from apps.api.app.core.operations import Operation, validate_effort
@@ -162,12 +163,15 @@ def input_tokens_estimate(call, dataset_dir, image_tokens):
 def price_calls(calls, settings, dataset_dir, image_tokens):
     """Her çağrıya üst maliyet yazar; fiyatı olmayan modelde None bırakır."""
     for call in calls:
-        rates = settings.model_prices.get(call.model) if settings.pricing_version else None
+        prompt = input_tokens_estimate(call, dataset_dir, image_tokens)
+        # TA-009B: kademeli fiyatta kademe tahmini istem boyutuyla seçilir (üst tahmin).
+        rates = model_catalog.rates_for(call.model, prompt, settings.model_prices,
+                                        settings.model_price_tiers) if settings.pricing_version else None
         if not rates:
             call.upper_usd = None
             continue
         limit = settings.max_output_tokens_by_operation[Operation(call.operation)]
-        per_call = (input_tokens_estimate(call, dataset_dir, image_tokens) * rates[0] + limit * rates[2]) / 1_000_000
+        per_call = (prompt * rates[0] + limit * rates[2]) / 1_000_000
         call.upper_usd = per_call * call.calls
     return calls
 
