@@ -65,7 +65,7 @@ def plan(manifest_path: Path = MANIFEST, images: Path = IMAGES) -> tuple[list[di
     return runs, sorted(set(pack) - seen)
 
 
-def upper_usd(runs, vision_model, lesson_model, prices, image_tokens=1600) -> float | None:
+def upper_usd(runs, vision_model, lesson_model, prices, image_tokens=1600, lessons=True) -> float | None:
     """Kaba üst tahmin: her çağrı tam çıktı sınırını kullanır; giriş = istem baytı / 2 (+ görsel)."""
     if vision_model not in prices or lesson_model not in prices:
         return None
@@ -76,7 +76,7 @@ def upper_usd(runs, vision_model, lesson_model, prices, image_tokens=1600) -> fl
     vision = MAX_CALLS["vision"] * (vision_in * prices[vision_model][0] + DEFAULT_LIMITS[Operation.VISION] * prices[vision_model][2])
     lesson_in = math.ceil(lesson_prompt / 2) + 6000  # ders bağlamı üst sınırı ≈ 24 KB / 4
     lesson = MAX_CALLS["lessons"] * (lesson_in * prices[lesson_model][0] + DEFAULT_LIMITS[Operation.LESSONS] * prices[lesson_model][2])
-    return len(runs) * (vision + lesson) / 1_000_000
+    return len(runs) * (vision + (lesson if lessons else 0)) / 1_000_000
 
 
 # --------------------------------------------------------------------------- metrikler (saf)
@@ -137,6 +137,9 @@ def summarize(rows: list[dict]) -> dict:
         "questions": len(rows),
         "reading_accuracy": {name: (rate(sum(v), len(v)) if v else "ölçülmedi") for name, v in sorted(fields.items())},
         "answer_accuracy_teacher": rate(sum(row["teacher_answer"] == row["selected"] for row in keyed), len(keyed)) if keyed else "anahtar_yok",
+        # TA-009B §3 birincil ölçüt: netleştirme istemeden ve çekimser kalmadan yanlış şık seçme (öğretmen anahtarıyla).
+        "confident_wrong_rate": rate(sum(row["selected"] is not None and row["selected"] != row["teacher_answer"]
+                                         for row in keyed), len(keyed)) if keyed else "anahtar_yok",
         "clarification_rate": rate(sum(row["decision"] == "clarification_required" for row in rows), len(rows)),
         "abstain_rate": rate(sum(row["selected"] is None for row in rows), len(rows)),
         "provider_calls_per_question": rate(sum(row["provider_calls"] for row in rows), len(rows)),
@@ -195,7 +198,7 @@ class Services:
         return await self.lessons.generate(analysis, None, request_id)
 
 
-async def run_question(item: dict, services, settings, teacher: dict) -> dict:
+async def run_question(item: dict, services, settings, teacher: dict, lessons: bool = True) -> dict:
     """Bir soru: analiz ve (çözülebilirse) ders. Kullanım satırları gateway günlüğünden toplanır."""
     import logging
 
@@ -227,13 +230,15 @@ async def run_question(item: dict, services, settings, teacher: dict) -> dict:
             end_accounting(token)
         row["decision"] = analysis.integrity.decision if analysis.integrity else None
         row["reading"] = reading_scores(question["reading"], analysis)
-        if analysis.integrity is not None and analysis.integrity.solvable:
+        if lessons and analysis.integrity is not None and analysis.integrity.solvable:
             token = begin_offline_accounting(request_id, settings, max_calls=MAX_CALLS["lessons"])
             try:
                 lesson = await services.generate(analysis, request_id)
             finally:
                 end_accounting(token)
             row["selected"] = label_of(lesson.lesson.content.final_answer)
+            # Kör öğretmen puanlaması için ham ders (Git dışı evals/runs). Model adı içermez.
+            row["lesson"] = lesson.lesson.content.model_dump(mode="json", exclude={"physics_model", "mathematical_model"})
     except (AIOutcomeError, VisionError, LessonError, ProviderCallBudgetExhausted) as exc:
         row["error"] = getattr(exc, "code", type(exc).__name__)
     finally:
@@ -272,7 +277,8 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
         print(f"Sağlayıcı: ders {_label(lesson_provider)}, Vision {_label(vision_provider)}. Fallback yok; "
               "öğretmen anahtarı ve okuma referansı sağlayıcıya gönderilmez.")
     runs, missing = plan()
-    estimate = upper_usd(runs, vision_model, lesson_model, prices)
+    lessons = not getattr(args, "vision_only", False)  # TA-009B: Vision kararlılık tekrarı dersi üretmez
+    estimate = upper_usd(runs, vision_model, lesson_model, prices, lessons=lessons)
     calls = len(runs) * (MAX_CALLS["vision"] + MAX_CALLS["lessons"])
     print(f"Plan: {len(runs)} soru, en çok {calls} çağrı, üst tahmin {'fiyatsız model' if estimate is None else f'≈{estimate:.4f} USD'} "
           f"(Vision {vision_model}, ders {lesson_model}). Görseli eksik: {', '.join(missing) or 'yok'}.")
@@ -292,6 +298,10 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
         print("Durduruldu: fiyat bulunamadı veya çağrı sınırı tek soruya yetmiyor. Çağrı yapılmadı.")
         return 3
     efforts = {Operation.VISION: args.reasoning_effort} if args.reasoning_effort else {}
+    lesson_effort = getattr(args, "lesson_reasoning_effort", None)
+    if lesson_effort:
+        validate_effort(lesson_model, lesson_effort)
+        efforts[Operation.LESSONS] = lesson_effort
     run_settings = settings.model_copy(update={"pricing_version": version, "model_prices": prices,
                                                "reasoning_effort_by_operation": efforts})
     extra = {"lesson_provider": "anthropic"} if lesson_provider == "anthropic" else {}
@@ -309,7 +319,7 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
         if stopped:
             print(f"Kalan sorular koşulmadı: {stopped}.")
             break
-        row = await run_question(item, services, run_settings, teacher)
+        row = await run_question(item, services, run_settings, teacher, lessons=lessons)
         rows.append(row)
         spent += row["estimated_usd"] if row["estimated_usd"] is not None else per_question
         used += row["provider_calls"]
@@ -317,6 +327,7 @@ async def run(args, settings, services_factory=Services, out_root: Path = RUNS) 
     out.mkdir(parents=True, exist_ok=True)
     (out / "raw.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     summary = summarize(rows) | {"vision_model": vision_model, "lesson_model": lesson_model, "reasoning_effort": args.reasoning_effort,
+                                 "lesson_reasoning_effort": lesson_effort,
                                  "pricing_version": version, "spent_usd_estimate": round(spent, 4), "stopped": stopped}
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))

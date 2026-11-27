@@ -277,7 +277,16 @@ async def execute(call, settings, client_factory, dataset_dir, api_key):
             analysis = (await provider.analyze_image(image, "image/png", f"eval-{call.item.id}")).analysis
             row.update(schema_valid=True, **vision_metrics(call.item, analysis))
         else:
-            provider = OpenAIInteractionProvider(api_key, call.model, settings.interaction_provider_timeout_seconds, client_factory=client_factory)
+            if model_catalog.provider_of(call.model) == "anthropic":  # TA-009B §3: Anthropic etkileşim adayı
+                from apps.api.app.features.interactions.openai_provider import (
+                    AnthropicInteractionProvider,
+                )
+
+                provider = AnthropicInteractionProvider(settings.anthropic_api_key, call.model,
+                                                        settings.interaction_provider_timeout_seconds)
+            else:
+                provider = OpenAIInteractionProvider(api_key, call.model, settings.interaction_provider_timeout_seconds,
+                                                     client_factory=client_factory)
             draft = await provider.adapt("hint", item_plan(call.item), 1)
             row.update(schema_valid=True, answer_leak=leaks(draft.text, call.item.forbidden_in_hint), output=draft.text)
     except (AIOutcomeError, VisionError, InteractionError) as exc:
@@ -477,6 +486,18 @@ def parser():
     pack.add_argument("--max-usd", type=float)
     pack.add_argument("--max-calls", type=int)
     commands.add_parser("readiness", help="TA-005C: gerçek değerlendirmeye hazırlık raporu (çağrı yok).")
+    for name, text in (("matrix", "TA-009B: aday matrisi (Vision, ders, etkileşim)."),
+                       ("regress", "TA-009B: varsayılan yapılandırmayı yeniden ölç, son sonuçla farkı yaz.")):
+        sub = commands.add_parser(name, help=text)
+        sub.add_argument("--dry-run", action="store_true")
+        sub.add_argument("--allow-paid", action="store_true")
+        sub.add_argument("--max-usd", type=float)
+        sub.add_argument("--max-calls", type=int)
+        if name == "matrix":
+            sub.add_argument("--pack-images-to-anthropic", action="store_true",
+                             help="Yalnız Erdem'in kendi paket görselleri; production izni açılmaz.")
+    scored = commands.add_parser("matrix-score", help="TA-009B: kör puanları eşleme anahtarıyla birleştir (çağrı yok).")
+    scored.add_argument("folder", type=Path)
     return root
 
 
@@ -491,7 +512,25 @@ def main(argv=None, settings=None, client_factory=None, out_root=ROOT / "eval-re
         print(json.dumps(eval_pack.readiness(), ensure_ascii=False, indent=2))
         print("Hazırlık raporu; sağlayıcı çağrısı yapılmadı. Gerçek doğruluk ölçülmedi.")
         return 0
+    if args.mode == "matrix-score":
+        from scripts import eval_matrix
+
+        print(json.dumps(eval_matrix.score(args.folder), ensure_ascii=False, indent=2))
+        return 0
     settings = settings or get_settings()
+    if args.mode in ("matrix", "regress"):
+        from scripts import eval_matrix
+
+        if not args.dry_run:
+            missing = [flag for flag, value in (("--allow-paid", args.allow_paid), ("--max-usd", args.max_usd),
+                                                ("--max-calls", args.max_calls)) if not value]
+            if missing or not settings.openai_api_key or not settings.ai_enabled:
+                parser().error("Ücretli koşu için birlikte gerekli: --allow-paid, --max-usd, --max-calls ve anahtar. Çağrı yapılmadı.")
+            if args.mode == "matrix" and not settings.anthropic_api_key:
+                parser().error("Matris Anthropic adaylarını içerir: ANTHROPIC_API_KEY gerekli. Çağrı yapılmadı.")
+        logging.basicConfig(level=logging.WARNING, format="%(message)s")
+        runner = eval_matrix.run_matrix if args.mode == "matrix" else eval_matrix.regress
+        return asyncio.run(runner(args, settings))
     if args.mode == "pack":
         from scripts import eval_pack
 
