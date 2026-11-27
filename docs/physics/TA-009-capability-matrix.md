@@ -37,14 +37,15 @@ Bu dosya `python -m scripts.physics_matrix` ile üretilir; elle düzenlenmez. CI
 
 ## Tuzak seti
 
-`apps/api/tests/fixtures/physics/traps.json`: 31 özgün vaka; geçen 31/31. Bütün beklenen cevaplar türetilmiştir (`answer_origin = derived`); bağımsız öğretmen cevap anahtarı yoktur.
+`apps/api/tests/fixtures/physics/traps.json`: 42 özgün vaka; geçen 42/42. Bütün beklenen cevaplar türetilmiştir (`answer_origin = derived`); bağımsız öğretmen cevap anahtarı yoktur.
 
 | Alan | Vaka | Geçen |
 | --- | --- | --- |
 | applicability | 2 | 2 |
+| binding | 9 | 9 |
 | circuit | 4 | 4 |
 | conservation | 3 | 3 |
-| convention | 5 | 5 |
+| convention | 7 | 7 |
 | dimension | 1 | 1 |
 | friction | 5 | 5 |
 | graph | 1 | 1 |

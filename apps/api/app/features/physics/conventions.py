@@ -44,6 +44,8 @@ class Convention:
     value: Fraction
     unit: str | None
     quote: str
+    # TA-009B §1.4: soru vermediği için sınavda yaygın değerle (10 veya 9,81) denenen g; uzlaşım değildir.
+    assumed: bool = False
 
 
 # Türkçe idealleştirme ifadeleri → açık koşul. Kök eşleşmesi (ekler: "sürtünmesiz", "sürtünmesizdir").
@@ -142,7 +144,7 @@ def gravity(facts: SourceFacts) -> ValueChoice | None:
     soru değer vermemişse None: değer uydurulmaz, hesap ``unsupported`` kalır."""
     if "g" in facts.conventions:
         item = facts.conventions["g"]
-        return ValueChoice("g", item.value, "m/s^2", "problem_convention", item.quote)
+        return ValueChoice("g", item.value, "m/s^2", "exam_default" if item.assumed else "problem_convention", item.quote)
     if facts.off_earth:
         return None
     value, unit, source, _ = STANDARD_CONSTANTS["g_n"]

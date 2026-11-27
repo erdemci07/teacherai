@@ -107,7 +107,10 @@ class MathAIService:
         try:
             from ..physics import verify as physics
 
-            report = physics.verify(plan.content.physics_model, text, claims, confirmed)
+            visual = getattr(analysis, "visual_elements", None)
+            observations = tuple([*getattr(visual, "relevant_visual_facts", []), *getattr(visual, "relationships", [])])
+            report = physics.verify(plan.content.physics_model, text, claims, confirmed,
+                                    choices=tuple(getattr(analysis, "answer_choices", []) or []), observations=observations)
         except Exception as exc:  # noqa: BLE001 — eksik denetim açıkça işaretlenir; içerik günlüğe yazılmaz
             _LOGGER.warning("physics_verification_unavailable", extra={"error_type": type(exc).__name__})
             return self._result("unsupported", [], False, False, ["Fizik doğrulaması çalıştırılamadı."], started)
