@@ -238,7 +238,9 @@ async def run_question(item: dict, services, settings, teacher: dict, lessons: b
                 end_accounting(token)
             row["selected"] = label_of(lesson.lesson.content.final_answer)
             # Kör öğretmen puanlaması için ham ders (Git dışı evals/runs). Model adı içermez.
-            row["lesson"] = lesson.lesson.content.model_dump(mode="json", exclude={"physics_model", "mathematical_model"})
+            content = lesson.lesson.content
+            if hasattr(content, "model_dump"):
+                row["lesson"] = content.model_dump(mode="json", exclude={"physics_model", "mathematical_model"})
     except (AIOutcomeError, VisionError, LessonError, ProviderCallBudgetExhausted) as exc:
         row["error"] = getattr(exc, "code", type(exc).__name__)
     finally:
