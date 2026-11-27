@@ -81,14 +81,44 @@ def _same(source: Token, quote: Token) -> bool:
     return _key(source) == _key(quote)
 
 
-def contains(source: str, quote: str) -> bool:
-    """Alıntının belirteç dizisi kaynakta ardışık olarak geçiyor mu? (alt dize değil)"""
+# TA-009B §1: birimin devam ettiğini gösteren simgeler. "20 m" alıntısı "20 m/s", "20 m²" veya "20 N·m" içinde değildir.
+UNIT_CONTINUATION = {"/", "·", "⋅", "*", "^", "²", "³", "¹", "⁻", "⁰"}
+
+
+def _unit_word(needle: list[Token], index: int) -> bool:
+    """Sayıdan hemen sonra gelen birim simgesi (``m``, ``kg``, ``cm``, ``Ω``) önek olarak eşleşmez (``m`` ≠ ``mm``);
+    Türkçe eki kesme işaretiyle ayrılır. Açık yazılmış birim sözcüğü (``derece`` → ``derecedir``) ek alabilir."""
+    token = needle[index]
+    symbol_like = len(token.text) <= 3 or not token.text.isalpha()
+    return index > 0 and needle[index - 1].kind == "number" and token.kind in {"word", "label", "symbol"} and symbol_like
+
+
+def occurrences(source: str, quote: str) -> tuple[list[Token], list[int]]:
+    """Alıntının kaynaktaki başlangıç konumları (kesme işaretleri atılmış belirteç dizisinde) ve o dizi.
+
+    Sayıdan sonra gelen birim birebir eşleşir; eşleşmeden sonra birim devam ediyorsa (``/``, ``·``, ``^``, ``²``)
+    eşleşme sayılmaz."""
     needle = [t for t in tokens(quote) if t.text not in APOSTROPHES]
     hay = [t for t in tokens(source) if t.text not in APOSTROPHES]
     if not needle or len(needle) > len(hay):
-        return False
-    return any(all(_same(a, b) for a, b in zip(hay[i:i + len(needle)], needle))
-               for i in range(len(hay) - len(needle) + 1))
+        return hay, []
+    unit_tail = _unit_word(needle, len(needle) - 1)
+    found = []
+    for i in range(len(hay) - len(needle) + 1):
+        window = hay[i:i + len(needle)]
+        if not all((a.text == b.text if _unit_word(needle, j) else _same(a, b))
+                   for j, (a, b) in enumerate(zip(window, needle))):
+            continue
+        following = hay[i + len(needle)] if i + len(needle) < len(hay) else None
+        if unit_tail and following is not None and following.text in UNIT_CONTINUATION:
+            continue
+        found.append(i)
+    return hay, found
+
+
+def contains(source: str, quote: str) -> bool:
+    """Alıntının belirteç dizisi kaynakta ardışık olarak geçiyor mu? (alt dize değil; birim sınırına saygılı)"""
+    return bool(occurrences(source, quote)[1])
 
 
 def clauses(text: str) -> list[list[Token]]:

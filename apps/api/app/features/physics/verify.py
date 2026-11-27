@@ -23,7 +23,8 @@ MATERIAL = {"answer_mismatch", "intermediate_not_requested", "law_not_applicable
 
 
 def verify(problem: ScientificProblemModel, source_text: str, claims: list[str],
-           confirmed: tuple[str, ...] = ()) -> PhysicsReport:
+           confirmed: tuple[str, ...] = (), choices: tuple[str, ...] = (),
+           observations: tuple[str, ...] = ()) -> PhysicsReport:
     model = problem.physics
     report = PhysicsReport()
     if model is None:
@@ -39,13 +40,14 @@ def verify(problem: ScientificProblemModel, source_text: str, claims: list[str],
                                    material=status == "failed" and reason in MATERIAL))
 
     facts = conventions.read(source_text)
-    resolved = resolve(problem, source_text, facts, confirmed)
+    resolved = resolve(problem, source_text, facts, confirmed, observations)
     values = resolved.values
     for item in resolved.problems:
         add(f"value_{item}", "source", "unsupported", "value_unparsed")
     referenced = _referenced(model)
     resolved.unverified = [item for item in resolved.unverified if item in referenced]
     resolved.visual = [item for item in resolved.visual if item in referenced]
+    resolved.unbound = [item for item in resolved.unbound if item in referenced]
     for item in resolved.unverified:
         add(f"value_{item}", "source", "not_checked", "value_not_anchored",
             "Değer kaynağa, uzlaşıma veya kaynaklı sabite bağlanamadı; yalnız sağlayıcı önerisi.")
@@ -65,6 +67,12 @@ def verify(problem: ScientificProblemModel, source_text: str, claims: list[str],
                 add(f"law_{use.law}_{result.condition}", "law", "failed", "law_not_applicable",
                     f"{laws.LAWS[use.law].title_tr}: {result.detail or result.condition}")
     solution = _dispatch(problem, model, values, facts, target, ctx) if graph_value is None else graph_value
+    if graph_value is None and choices and solution.status == "solved" and \
+            solution.used.get("g", ("", ""))[1] == "standard_constant":
+        solution = _gravity_choices(problem, model, values, facts, target, ctx, choices, solution, add)
+    if solution.status == "solved" and resolved.unbound:
+        resolved.unbound = _binding_effect(problem, model, values, facts, target, ctx, solution, resolved.unbound,
+                                           report, add)
     ctx.derived.update(solution.derived)
     for law_id in dict.fromkeys(solution.laws):
         for result in laws.evaluate(law_id, ctx):
@@ -296,17 +304,111 @@ def _plausibility(problem, model, values: dict[str, Value], solution, add):
 
 
 def _capability(report, solution, resolved, open_conditions, blocked) -> str:
-    if solution.status != "solved" or blocked or report.clarification_needed:
+    if solution.status != "solved" or blocked:
         return "unsupported"
     if resolved.unverified or any(c.reason == "value_not_anchored" for c in report.checks):
         return "interpreted"
     if any(c.condition == "forces_established" and c.state != "satisfied" for c in report.conditions):
         return "interpreted"
-    if open_conditions or resolved.visual or report.answer != "matched":
+    if open_conditions or resolved.visual or resolved.unbound or report.answer != "matched":
+        return "partially_checked"
+    if any(c.reason == "convention_ambiguous" for c in report.checks):
         return "partially_checked"
     if any(c.status in {"failed", "unsupported"} for c in report.checks):
         return "partially_checked"
     return "verified"
+
+
+def _binding_effect(problem, model, values, facts, target, ctx, solution, unbound, report, add) -> list[str]:
+    """TA-009B §1.2: bağı kanıtlanmamış değerler aynı boyutta yer değiştirilerek yeniden çözülür. Hiçbir permütasyon
+    sonucu değiştirmiyorsa sonuç bağdan bağımsızdır (``binding_irrelevant``); değiştiriyorsa sınıf en fazla kısmidir
+    ve hedefli netleştirme sorusu gerekir (tahmin edilmez). Grup başına en çok 3 değer (6 permütasyon)."""
+    import itertools
+
+    groups: dict = {}
+    for item in unbound:
+        groups.setdefault(values[item].dim, []).append(item)
+    still, changed = [], []
+    for members in groups.values():
+        if len(members) < 2 or len(members) > 3:
+            still.extend(members)
+            continue
+        originals = [values[m] for m in members]
+        differs = False
+        for order in itertools.permutations(originals):
+            trial = dict(values)
+            for member, source in zip(members, order):
+                trial[member] = Value(**{**values[member].__dict__, "si": source.si})
+            other = _dispatch(problem, model, trial, facts, target, ctx)
+            if other.status != "solved" or other.value != solution.value:
+                differs = True
+                break
+        if differs:
+            still.extend(members)
+            changed.append(members)
+        else:
+            add(f"bind_{'_'.join(members)}", "source", "passed", "binding_irrelevant",
+                "Değerlerin hangi cisme ait olduğu kanıtlanmadı ama hiçbir yer değiştirme sonucu değiştirmiyor.")
+    for item in still:
+        add(f"bind_{item}", "source", "not_checked", "value_binding_unproven",
+            "Metinde aynı boyutta birden çok değer var; bu değerin hangi cisme/etikete ait olduğu metinden kanıtlanamadı.")
+    if changed:
+        names = "; ".join(", ".join(values[m].text for m in members) for members in changed)
+        report.clarification_needed = True
+        report.clarification_tr = (f"Metindeki {names} değerlerinin hangi cisme/etikete ait olduğu belirsiz ve yer "
+                                   "değiştirince sonuç değişiyor. Öğrenciye hedefli olarak sorulmalı; tahmin edilmez.")
+        add("binding_changes_answer", "source", "not_checked", "binding_changes_answer", report.clarification_tr)
+    return still
+
+
+def _gravity_choices(problem, model, values, facts, target, ctx, choices, solution, add):
+    """TA-009B §1.4: şıklı soruda g verilmemişse 10 ve 9,81 ile çözülür. Seçilen şık değişirse ``convention_ambiguous``
+    (kısmi); değişmezse öğrenciye gösterilen değer 10'dur."""
+    import copy
+
+    from .conventions import Convention
+
+    results, picks = {}, {}
+    for label, value in (("10", Fraction(10)), ("9,81", Fraction(981, 100))):
+        trial = copy.deepcopy(facts)
+        trial.conventions["g"] = Convention("g", value, "m/s^2", f"g verilmedi; {label} m/s² ile denendi", assumed=True)
+        other = _dispatch(problem, model, values, trial, target, ctx)
+        results[label] = other
+        picks[label] = _choice(other, target, choices) if other.status == "solved" else None
+    if picks["10"] != picks["9,81"]:
+        add("gravity_convention", "solution", "not_checked", "convention_ambiguous",
+            f"Soru g vermiyor: g = 10 ile {picks['10'] or 'hiçbir şık'}, g = 9,81 ile {picks['9,81'] or 'hiçbir şık'} "
+            "seçiliyor. Sonuç uzlaşıma bağlı.")
+    elif picks["10"] is not None:
+        add("gravity_convention", "solution", "passed", "convention_irrelevant",
+            "Soru g vermiyor; 10 ve 9,81 aynı şıkkı verdiği için gösterilen değer 10 m/s².")
+    return results["10"] if results["10"].status == "solved" else solution
+
+
+def _choice(solution, target, choices) -> str | None:
+    """Bağımsız değerle tam olarak bir şık eşleşiyorsa onun etiketi."""
+    import re
+
+    unit = None
+    if target.unit is not None:
+        try:
+            unit = parse_unit(target.unit.original)
+        except UnitError:
+            unit = None
+    spec = quantities.KINDS.get(target.kind)
+    expected = quantities.Typed(solution.value, spec.dim if spec else None, target.kind, exact=solution.exact)
+    matched = []
+    for choice in choices:
+        found = re.match(r"^\s*([A-Ea-e])\s*[\)\.]\s*(.+)$", choice or "")
+        if not found:
+            continue
+        parsed = quantities.parse_claim(found.group(2))
+        if parsed is None:
+            continue
+        policy = quantities.Policy(mode="claim_precision", unit_when_missing=unit)
+        if quantities.compare(expected, parsed.typed, policy).matched:
+            matched.append(found.group(1).upper())
+    return matched[0] if len(matched) == 1 else None
 
 
 def _referenced(model) -> set[str]:

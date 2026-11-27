@@ -311,7 +311,7 @@ def test_every_physics_formula_record_carries_machine_checkable_conditions():
     physics = [e for e in registry.entries.values() if e.subject.value == "physics"]
     assert len(physics) >= 60 and all(e.status == "draft" and not e.reviews for e in physics)
     for entry in physics:
-        if entry.representation and "=" in entry.representation or entry.representation and "\le" in entry.representation:
+        if entry.representation and "=" in entry.representation or entry.representation and r"\le" in entry.representation:
             assert entry.applicability_law in laws.LAWS, entry.id
             assert laws.LAWS[entry.applicability_law].conditions, entry.id
     for law in laws.LAWS.values():

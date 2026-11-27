@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
@@ -143,6 +144,10 @@ class Settings(BaseSettings):
     # TEACHERAI_PRICING_VERSION yalnız açık geçersiz kılmadır. Doğrulanmış USD / milyon token: girdi, önbellekli, çıktı.
     pricing_version: str | None = Field(default_factory=model_catalog.pricing_version)
     model_prices: dict[str, tuple[Price, Price, Price]] = Field(default_factory=model_catalog.prices)
+    # TA-009B §2: istem boyutuna bağlı kademeler (katalogdan). Geçersiz kılınan fiyat tek kademelidir: taban fiyatı
+    # katalogdakinden farklı modelde katalog kademeleri uygulanmaz.
+    model_price_tiers: dict[str, tuple[tuple[int, tuple[Price, Price, Price]], ...]] = Field(
+        default_factory=model_catalog.tiers)
     # TA-005B: işlem bazında sağlayıcı. Fallback yoktur: bir sağlayıcı hata verirse diğerine geçilmez.
     provider_vision: Literal["openai", "anthropic"] = "openai"
     provider_lesson: Literal["openai", "anthropic"] = "openai"
@@ -203,10 +208,21 @@ class Settings(BaseSettings):
                                  and model_catalog.supports(model, op) is not True})
             if unverified:
                 raise ValueError(f"İşlem desteği katalogda doğrulanmamış model production'da kullanılamaz: {', '.join(unverified)}.")
-        for model in sorted({model for op in Operation if (model := self.model_for(op))}):
+        catalog_prices = model_catalog.prices()
+        self.model_price_tiers = {model: steps for model, steps in self.model_price_tiers.items()
+                                  if model in self.model_prices
+                                  and tuple(self.model_prices[model]) == tuple(catalog_prices.get(model, ()))}
+        models = sorted({model for op in Operation if (model := self.model_for(op))})
+        for model in models:
             notice = model_catalog.lifecycle_notice(model)
             if notice:
                 logging.getLogger(__name__).warning("Model yaşam döngüsü: %s", notice)
+        # TA-009B §2: kapanışı geçmiş model başlatmaz; 30 günden az kalan model ayrıca uyarılır.
+        soon, past = model_catalog.shutdown_problems(models, _today())
+        for message in soon:
+            logging.getLogger(__name__).warning("Model kapanışı yaklaşıyor: %s", message)
+        if past:
+            raise ValueError("Kapanmış model kullanılamaz: " + " ".join(past))
         return self
     public_app_url: str = Field(default="https://teacherai-07.web.app", validation_alias=AliasChoices("PUBLIC_APP_URL", "TEACHERAI_PUBLIC_APP_URL"))
     public_share_url_base: str | None = Field(default=None, validation_alias=AliasChoices("PUBLIC_SHARE_URL_BASE", "TEACHERAI_PUBLIC_SHARE_URL_BASE"))
@@ -215,6 +231,11 @@ class Settings(BaseSettings):
     feedback_notification_email: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_NOTIFICATION_EMAIL", "TEACHERAI_FEEDBACK_NOTIFICATION_EMAIL"))
     feedback_email_sender: str | None = Field(default=None, validation_alias=AliasChoices("FEEDBACK_EMAIL_SENDER", "TEACHERAI_FEEDBACK_EMAIL_SENDER"))
     resend_api_key: str | None = Field(default=None, validation_alias=AliasChoices("RESEND_API_KEY", "TEACHERAI_RESEND_API_KEY"))
+
+
+def _today() -> date:
+    """Kapanış denetiminin günü (testte sabitlenebilir)."""
+    return date.today()
 
 
 @lru_cache

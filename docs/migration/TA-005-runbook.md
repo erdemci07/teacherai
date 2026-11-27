@@ -123,6 +123,31 @@ K2 kararı verilince `scripts/deploy-production.json` içindeki `region` ile `fi
 - Sıra: yerel kapılar → ön koşullar (yalnız kontrol) → yapılandırma → image build ve digest → Cloud Run (digest ile) → hazır revizyon ve digest eşliği → `/health` → URL → web Firebase yapılandırması → web build → rewrite → Hosting (yalnız `-PublishHosting`).
 - Geri alma için hazır revizyon adı ve image digest'i çıktıda yazılır: `gcloud run services update-traffic teacherai-api --to-revisions=<önceki>=100 --region=$REGION --project=$DST`.
 
+### 2.7b: TA-009B Bootstrap planı (yalnız plan, 27 Kasım 2026)
+
+`python -m scripts.deploy_plan --mode bootstrap --region europe-west1` komutu çalıştırıldı. Bu, `-PlanOnly` ile aynıdır: hiçbir dış komut çalışmaz. Bölge K2 önerisidir, karar değildir; `deploy-production.json` içinde `region` hâlâ `null`.
+
+```
+Mod: bootstrap  Proje: teacherai-07  Bölge: europe-west1  Servis: teacherai-api
+ 1. Yerel kapılar: main dalı, temiz ağaç, origin/main, API testleri
+ 2. Ön koşullar (yalnız kontrol): proje, billing, API'ler, Artifact Registry, secret, hizmet hesabı, mod
+ 3. Yapılandırma doğrulaması (değişiklikten önce): bölge, instance sınırları, rewrite, .firebaserc ve image yolu, web yapılandırması (biçim + firebase apps:sdkconfig ile gerçek uygulama), çalışan ortamın uzlaştırılması
+ 4. Image build ve digest
+ 5. Cloud Run dağıtımı (digest ile)
+ 6. Hazır revizyon ve digest eşliği
+ 7. /api/v1/health doğrulaması
+ 8. API URL'si
+ 9. Web Firebase yapılandırması
+10. Web build (NEXT_PUBLIC_API_BASE_URL = Cloud Run URL/api/v1)
+11. firebase.json /s/** rewrite tutarlılığı (servis ve bölge)
+12. Hosting yayını (yalnız --publish-hosting)
+    gcloud run deploy teacherai-api --image europe-west1-docker.pkg.dev/teacherai-07/teacherai/teacherai-api@<digest> --region europe-west1 --platform managed --port 8000 --service-account teacherai-api-runtime@teacherai-07.iam.gserviceaccount.com --max-instances 20 --min-instances 0 --concurrency 80 --timeout 300 --cpu 1 --memory 512Mi --set-env-vars TEACHERAI_ENVIRONMENT=production,TEACHERAI_FIREBASE_ENABLED=true,TEACHERAI_FIREBASE_PROJECT_ID=teacherai-07,TEACHERAI_FIREBASE_AUTH_PROJECT_ID=teacherai-07 --set-secrets OPENAI_API_KEY=openai-api-key:latest --allow-unauthenticated --project teacherai-07
+    Firebase web yapılandırması (çevrimdışı): Firebase web yapılandırması eksik: API_KEY, AUTH_DOMAIN, PROJECT_ID, APP_ID
+    Hosting yayımlanmayacak; sonra: firebase deploy --only hosting --project teacherai-07
+```
+
+Model seçimi: TA-009B ölçümü beklemede olduğu için plan model değişkeni yazmaz ve uygulama varsayılanları geçerlidir: Vision ve etkileşim `gpt-4.1-mini`, ders `gpt-5.6-terra`. Uygulama, kapanışı geçmiş modelle başlamaz (TA-009B §2). `gpt-4.1-mini` 14 Ocak 2027'de kapanır. Bootstrap bu tarihten sonra yapılacaksa model kararı ondan önce verilmelidir. Karar ya yeni varsayılan commit'i ya da `OPENAI_VISION_MODEL` ve `OPENAI_INTERACTION_MODEL` çalışma zamanı ayarıdır; ikisi de `preserve_env` içindedir.
+
 ## 3. Prova
 
 1. **[W]** Anlık görüntüyü kopyala. Geçişten önce SRC yetkilidir (`--authority source`). Kopya, yetkili tarafın (SRC) Auth UID listesini okur; sahibi orada olmayan kullanıcı belgesi yazılmaz. Önce kuru koşu:

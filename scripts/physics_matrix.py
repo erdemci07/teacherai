@@ -42,7 +42,8 @@ def _units(value):
 
 def run_case(case: dict):
     problem = ScientificProblemModel.model_validate(_units(case["problem"]))
-    return verify.verify(problem, case["text"], case["claims"])
+    return verify.verify(problem, case["text"], case["claims"], choices=tuple(case.get("choices", ())),
+                         observations=tuple(case.get("observations", ())))
 
 
 def matches(report, expect: dict) -> list[str]:
